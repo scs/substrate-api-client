@@ -78,12 +78,15 @@ impl Api {
             "jsonrpc": "2.0",
             "id": "1",
         });
-        let genesis_hash_str = self.get(jsonreq.to_string()).unwrap();
-        println!("got genesis hash: {:?}", genesis_hash_str);
-        
+        let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
+        let mut gh: [u8; 32] = Default::default();
+        gh.copy_from_slice(&hexstr_to_vec(genesis_hash_str));
+        self.genesis_hash = Hash::from(gh);
+        println!("got genesis hash: {:?}", self.genesis_hash);
     }
 
-    pub fn get(&self, jsonreq: String) -> Result<String> {
+    // low level access
+    pub fn get_request(&self, jsonreq: String) -> Result<String> {
         let (result_in, result_out) = channel();
         let _url = self.url.clone();
         let _client = thread::Builder::new()
@@ -98,11 +101,30 @@ impl Api {
                 }).unwrap()
             })
             .unwrap();
-
         Ok(result_out.recv().unwrap())
-
     }
 
+    pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Result<String> {
+        let mut key = module.as_bytes().to_vec();
+        key.append(&mut vec!(' ' as u8));
+        key.append(&mut storage_key_name.as_bytes().to_vec());
+        match param {
+            Some(par) => key.append(&mut par.clone()),
+            _ => println!("getStorage without params"),
+        }
+        println!("will query storage for: {:?}", key);
+        let mut keyhash = hex::encode(twox_128(&key));
+        keyhash.insert_str(0, "0x");
+        println!("with storage key: {}", keyhash);
+        let jsonreq = json!({
+            "method": "state_getStorage",
+            "params": [keyhash],
+            "jsonrpc": "2.0",
+            "id": "1",
+        });
+        self.get_request(jsonreq.to_string())
+
+    }
 }
 
 struct Getter {
@@ -129,8 +151,22 @@ impl Handler for Getter {
     }
 }
 
+pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
+    let mut _hexstr = hexstr.clone();
+    if _hexstr.starts_with("0x") {
+        _hexstr.remove(0);
+        _hexstr.remove(0);
+    }
+    else {
+        println!("converting non-prefixed hex string")
+    }
+    hex::decode(&_hexstr).unwrap()
+}
 
-
+pub fn hexstr_to_u256(hexstr: String) -> U256 {
+    let _unhex = hexstr_to_vec(hexstr);
+    U256::from_little_endian(&mut &_unhex[..])
+}
 
 pub struct Client {
     out: Sender,
