@@ -41,9 +41,10 @@ use node_primitives::Hash;
 use primitives::twox_128;
 use primitive_types::U256;
 
-#[macro_use]
-extern crate clap;
-use clap::App;
+use std::sync::mpsc::Sender as ThreadOut;
+use std::sync::mpsc::channel;
+use std::thread;
+
 
 const REQUEST_GENESIS_HASH: u32     = 1;
 const REQUEST_METADATA: u32         = 2;
@@ -57,9 +58,90 @@ struct JsonBasic {
     params: String,
 }
 
-// Our Handler struct.
-// Here we explicity indicate that the Client needs a Sender,
-// whereas a closure captures the Sender for us automatically.
+pub struct Api {
+    url : String,
+    genesis_hash : Hash,
+}
+
+impl Api {
+    pub fn new(url: String) -> Api {
+        let (result_in, result_out) = channel();
+        
+        let client = thread::Builder::new()
+            .name("client".to_owned())
+            .spawn(move || {
+                connect(url, |out| {
+                    Getter {
+                        out,
+                        method: "chain_getBlockHash".to_string(),
+                        params: "[0]".to_string(),
+                        result: result_in.clone(),
+                    }
+                }).unwrap()
+            })
+            .unwrap();
+
+        let result_data = result_out.recv().unwrap();
+
+        println!("got genesis hash: {:?}", result_data);
+        Api {   
+            url : "dummy".to_string(),
+            genesis_hash : Default::default(),
+        }
+    }
+}
+
+struct Getter {
+    out: Sender,
+    method: String,
+    params: String,
+    result: ThreadOut<String>,
+}
+/* 
+impl Getter {
+    pub fn new(url: String) -> Getter {
+        Getter {
+            out: Default::default(),
+            url: url,
+            method : Default::default(),
+            params : Default::default(),
+            result: Default::default(),
+        }
+    }
+
+    pub fn get(&mut self, method: &str, params: &str) {
+        self.method = method.to_string();
+        self.params = params.to_string();
+        self.out.connect(self.url)
+    }
+}
+*/
+impl Handler for Getter {
+    fn on_open(&mut self, _: Handshake) -> Result<()> {
+        let jsonreq = json!({
+            "method": self.method,
+            "params": [0], //self.params,
+            "jsonrpc": "2.0",
+            "id": "1",
+        });
+        println!("sending request: {}", jsonreq.to_string());
+        self.out.send(jsonreq.to_string()).unwrap();
+        Ok(())
+    }
+    fn on_message(&mut self, msg: Message) -> Result<()> {
+        println!("Got message: {}", msg);
+        let retstr = msg.as_text().unwrap();
+        let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
+
+        self.result.send(value["result"].as_str().unwrap().to_string()).unwrap();
+        self.out.close(CloseCode::Normal);
+        Ok(())
+    }
+}
+
+
+
+
 pub struct Client {
     out: Sender,
     chain: Chain,
@@ -71,6 +153,10 @@ impl Client {
             out: out,
             chain: Default::default(),
         }
+    }
+
+    pub fn init() {
+
     }
 
     fn author_submitAndWatchExtrinsic(&mut self, nonce: U256) {
@@ -240,10 +326,3 @@ impl Handler for Client {
 
 
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}

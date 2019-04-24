@@ -20,12 +20,10 @@ extern crate substrate_api_client;
 use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
 use std::{i64, net::SocketAddr};
 
-use substrate_api_client::Client;
+use substrate_api_client::Api;
 
 
 fn main() {
-
+    let api = Api::new("ws://127.0.0.1:9944".to_string());
     
-    // Now, instead of a closure, the Factory returns a new instance of our Handler.
-    connect("ws://127.0.0.1:9944", |out| Client::new(out)).unwrap()
 }
