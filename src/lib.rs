@@ -65,67 +65,57 @@ pub struct Api {
 
 impl Api {
     pub fn new(url: String) -> Api {
-        let (result_in, result_out) = channel();
+        Api {   
+            url : url,
+            genesis_hash : Default::default(),
+        }
+    }
+
+    pub fn init(&mut self) {
+        let jsonreq = json!({
+            "method": "chain_getBlockHash",
+            "params": [0], //self.params,
+            "jsonrpc": "2.0",
+            "id": "1",
+        });
+        let genesis_hash_str = self.get(jsonreq.to_string()).unwrap();
+        println!("got genesis hash: {:?}", genesis_hash_str);
         
-        let client = thread::Builder::new()
+    }
+
+    pub fn get(&self, jsonreq: String) -> Result<String> {
+        let (result_in, result_out) = channel();
+        let _url = self.url.clone();
+        let _client = thread::Builder::new()
             .name("client".to_owned())
             .spawn(move || {
-                connect(url, |out| {
+                connect(_url, |out| {
                     Getter {
-                        out,
-                        method: "chain_getBlockHash".to_string(),
-                        params: "[0]".to_string(),
+                        out: out,
+                        request: jsonreq.clone(),
                         result: result_in.clone(),
                     }
                 }).unwrap()
             })
             .unwrap();
 
-        let result_data = result_out.recv().unwrap();
+        Ok(result_out.recv().unwrap())
 
-        println!("got genesis hash: {:?}", result_data);
-        Api {   
-            url : "dummy".to_string(),
-            genesis_hash : Default::default(),
-        }
     }
+
 }
 
 struct Getter {
     out: Sender,
-    method: String,
-    params: String,
+    request: String,
     result: ThreadOut<String>,
 }
-/* 
-impl Getter {
-    pub fn new(url: String) -> Getter {
-        Getter {
-            out: Default::default(),
-            url: url,
-            method : Default::default(),
-            params : Default::default(),
-            result: Default::default(),
-        }
-    }
 
-    pub fn get(&mut self, method: &str, params: &str) {
-        self.method = method.to_string();
-        self.params = params.to_string();
-        self.out.connect(self.url)
-    }
-}
-*/
 impl Handler for Getter {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-        let jsonreq = json!({
-            "method": self.method,
-            "params": [0], //self.params,
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
-        println!("sending request: {}", jsonreq.to_string());
-        self.out.send(jsonreq.to_string()).unwrap();
+
+        println!("sending request: {}", self.request);
+        self.out.send(self.request.clone()).unwrap();
         Ok(())
     }
     fn on_message(&mut self, msg: Message) -> Result<()> {

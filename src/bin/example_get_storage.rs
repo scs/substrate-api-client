@@ -24,6 +24,6 @@ use substrate_api_client::Api;
 
 
 fn main() {
-    let api = Api::new("ws://127.0.0.1:9944".to_string());
-    
+    let mut api = Api::new("ws://127.0.0.1:9944".to_string());
+    api.init();
 }
