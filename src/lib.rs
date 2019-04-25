@@ -28,8 +28,9 @@ use std::{i64, net::SocketAddr};
 // use regex::Regex;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
-mod extrinsic;
+pub mod extrinsic;
 use crate::extrinsic::{transfer};
+use node_runtime::UncheckedExtrinsic;
 
 // #[macro_use]
 use hex;
@@ -60,7 +61,7 @@ struct JsonBasic {
 
 pub struct Api {
     url : String,
-    genesis_hash : Hash,
+    pub genesis_hash : Hash,
 }
 
 impl Api {
@@ -79,9 +80,7 @@ impl Api {
             "id": "1",
         });
         let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
-        let mut gh: [u8; 32] = Default::default();
-        gh.copy_from_slice(&hexstr_to_vec(genesis_hash_str));
-        self.genesis_hash = Hash::from(gh);
+        self.genesis_hash = hexstr_to_hash(genesis_hash_str);
         println!("got genesis hash: {:?}", self.genesis_hash);
     }
 
@@ -125,6 +124,34 @@ impl Api {
         self.get_request(jsonreq.to_string())
 
     }
+
+    pub fn send_extrinsic(&self, xt: UncheckedExtrinsic) -> Result<Hash> {
+        println!("sending extrinsic: {:?}", xt);
+        let mut xthex = hex::encode(xt.encode());
+        xthex.insert_str(0, "0x");
+        let jsonreq = json!({
+            "method": "author_submitAndWatchExtrinsic", 
+            "params": [xthex], 
+            "jsonrpc": "2.0",
+            "id": REQUEST_TRANSFER.to_string(),
+        }).to_string();
+
+        let (result_in, result_out) = channel();
+        let _url = self.url.clone();
+        let _client = thread::Builder::new()
+            .name("client".to_owned())
+            .spawn(move || {
+                connect(_url, |out| {
+                    ExtrinsicHandler {
+                        out: out,
+                        request: jsonreq.clone(),
+                        result: result_in.clone(),
+                    }
+                }).unwrap()
+            })
+            .unwrap();
+        Ok(result_out.recv().unwrap())
+    }
 }
 
 struct Getter {
@@ -151,6 +178,61 @@ impl Handler for Getter {
     }
 }
 
+struct ExtrinsicHandler {
+    out: Sender,
+    request: String,
+    result: ThreadOut<Hash>,
+}
+
+impl Handler for ExtrinsicHandler {
+    fn on_open(&mut self, _: Handshake) -> Result<()> {
+        println!("sending request: {}", self.request);
+        self.out.send(self.request.clone()).unwrap();
+        Ok(())
+    }
+
+    fn on_message(&mut self, msg: Message) -> Result<()> {
+        println!("Got message: {}", msg);
+        let retstr = msg.as_text().unwrap();
+        let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
+        match value["id"].as_str() {
+            Some(idstr) => { match idstr.parse::<u32>() {
+                Ok(REQUEST_TRANSFER) => {
+                    match value.get("error") {
+                        Some(err) => println!("ERROR: {:?}", err),
+                        _ => println!("no error"),
+                    }
+                },
+                Ok(_) => println!("unknown request id"),
+                Err(_) => println!("error assigning request id"),
+            }},
+            _ => {
+                // subscriptions
+                println!("no id field found in response. must be subscription");
+                println!("method: {:?}", value["method"].as_str());
+                match value["method"].as_str() {
+                    Some("author_extrinsicUpdate") => {
+                        match value["params"]["result"].as_str() {
+                            Some(res) => println!("author_extrinsicUpdate: {}", res),
+                            _ => {
+                                println!("author_extrinsicUpdate: finalized: {}", value["params"]["result"]["finalized"].as_str().unwrap());
+                                // return result to calling thread
+                                self.result.send(hexstr_to_hash(value["params"]["result"]["finalized"].as_str().unwrap().to_string()));
+                                // we've reached the end of the flow. return
+                                self.out.close(CloseCode::Normal);
+                            },
+                        }
+                    }
+                    _ => println!("unsupported method"),
+                }
+            },
+        };
+        Ok(())
+    }
+}
+
+
+
 pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
     let mut _hexstr = hexstr.clone();
     if _hexstr.starts_with("0x") {
@@ -167,6 +249,15 @@ pub fn hexstr_to_u256(hexstr: String) -> U256 {
     let _unhex = hexstr_to_vec(hexstr);
     U256::from_little_endian(&mut &_unhex[..])
 }
+
+pub fn hexstr_to_hash(hexstr: String) -> Hash {
+    let _unhex = hexstr_to_vec(hexstr);
+    let mut gh: [u8; 32] = Default::default();
+    gh.copy_from_slice(&_unhex);
+    Hash::from(gh)
+}
+
+
 
 pub struct Client {
     out: Sender,
