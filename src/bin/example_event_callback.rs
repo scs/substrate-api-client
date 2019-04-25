@@ -31,17 +31,5 @@ fn main() {
     let mut api = Api::new("ws://127.0.0.1:9944".to_string());
     api.init();
 
-    // get Alice's AccountNonce
-    let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let nonce = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", nonce);
-
-    // generate extrinsic
-    let xt= transfer("//Alice", "//Bob", U256::from(42), nonce, api.genesis_hash.unwrap());
-    println!("extrinsic: {:?}", xt);
-
-    //send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    let result_str = api.subscribe_events();
 }

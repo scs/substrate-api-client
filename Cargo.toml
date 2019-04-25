@@ -22,7 +22,7 @@ runtime_primitives = { package = "sr-primitives", git = "https://github.com/pari
 inherents = { package = "substrate-inherents", git = "https://github.com/paritytech/substrate.git", default-features = false }
 transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/paritytech/substrate.git" }
 node-runtime = { git = "https://github.com/paritytech/substrate.git" }
-#srml_metadata = { package = "srml-metadata", git = "https://github.com/paritytech/substrate.git" }
+metadata = { package = "srml-metadata", git = "https://github.com/paritytech/substrate.git" }
 hex = "0.3"
 hex-literal = "0.1"
 regex = "*"
