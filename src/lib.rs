@@ -303,7 +303,7 @@ impl Handler for SubscriptionHandler {
                         let mut _er_enc2 = _unhex2.as_slice();
                         
                         //let _event = balances::RawEvent::decode(&mut _er_enc2);
-                        let _event = node_runtime::Event::decode(&mut _er_enc2);
+                        let _event = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc2);
                         println!(">>>> decoded: {:?}", _event);
 
                         //self.result.send(res.to_string()).unwrap();
