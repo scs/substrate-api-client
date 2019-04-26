@@ -70,10 +70,11 @@ struct JsonBasic {
     params: String,
 }
 
+#[derive(Debug)]
 pub struct Api {
     url : String,
     pub genesis_hash : Option<Hash>,
-    pub metadata : Option<RuntimeMetadataV4>,
+    //pub metadata : Option<RuntimeMetadataV4>,
 }
 
 impl Api {
@@ -81,7 +82,7 @@ impl Api {
         Api {   
             url : url,
             genesis_hash : None,
-            metadata : None,
+//            metadata : None,
         }
     }
 
@@ -112,12 +113,14 @@ impl Api {
         println!("decoded: {:?} ", _meta);
         match _meta.1 {
             RuntimeMetadata::V4(value) => {
-                self.metadata = Some(value);
+                //FIXME: storing metadata in self is problematic because it can't be cloned or synced among threads
+                //self.metadata = Some(value);
                 println!("successfully decoded metadata");
             },
             _ => panic!("unsupported metadata"),
         }
-                                
+
+
 /*                    match value.modules {
                         DecodeDifferent::Decoded(mods) => {
                             modules = mods;
@@ -206,7 +209,7 @@ impl Api {
         Ok(result_out.recv().unwrap())
     }
 
-    pub fn subscribe_events(&self) {
+    pub fn subscribe_events(&self, sender: ThreadOut<node_runtime::Event>) {
         println!("subscribing to events");
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json!({
@@ -230,8 +233,25 @@ impl Api {
                 }).unwrap()
             })
             .unwrap();
-        println!("got result: {:?}", result_out.recv().unwrap());
 
+        while let res = result_out.recv().unwrap() {
+            //println!("client >>>> got {}", res);
+            let _unhex = hexstr_to_vec(res);
+            let mut _er_enc = _unhex.as_slice();
+            //let _event = balances::RawEvent::decode(&mut _er_enc2);
+            let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
+            match _events {
+                Some(evts) => {
+                    for ev in &evts {
+                        println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
+                        sender.send(ev.event.clone()).unwrap();
+                    } 
+                }
+                None => println!("couldn't decode event record list")
+            }
+            //self.result.send(_events).unwrap();
+
+        }        
     }
 }
 
@@ -290,23 +310,8 @@ impl Handler for SubscriptionHandler {
                 match value["method"].as_str() {
                     Some("state_storage") => {
                         let _changes = &value["params"]["result"]["changes"]; 
-                        println!("state_storage changes: {:?}", _changes);
-                        let _first = _changes[0][0].as_str().unwrap().to_string();
-                        let _second = _changes[0][1].as_str().unwrap().to_string();
-                        println!("trying to decode: {} | {} ", _first, _second);
-                        let _unhex = hexstr_to_vec(_first);
-                        let mut _er_enc = _unhex.as_slice();
-                        
-                        let _er = system::Phase::decode(&mut _er_enc);
-                        println!(">>>> decoded: {:?}", _er);
-                        let _unhex2 = hexstr_to_vec(_second);
-                        let mut _er_enc2 = _unhex2.as_slice();
-                        
-                        //let _event = balances::RawEvent::decode(&mut _er_enc2);
-                        let _event = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc2);
-                        println!(">>>> decoded: {:?}", _event);
-
-                        //self.result.send(res.to_string()).unwrap();
+                        let _res_str = _changes[0][1].as_str().unwrap().to_string();
+                        self.result.send(_res_str).unwrap();
                     }
                     _ => println!("unsupported method"),
                 }

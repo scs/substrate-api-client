@@ -6,16 +6,18 @@ can watch events
 
 ## setup
 
-Run substrate node
+Run substrate node (examples use hardcoded url=localhost and ws-port=9944)
 
     substrate --dev
 
 Run examples
 
     git clone https://github.com/scs/substrate-api-client.git
-    cd substrate-api-client 
+    cd substrate-api-client
     cargo build --release
     ./target/release/example_get_storage
+
+
 
 ## reading storage
 
@@ -38,4 +40,5 @@ Run examples
 ## sending transactions
 See [example_transfer.rs](./src/bin/example_transfer.rs)
 
-
+## execute code upon events
+See [example_event_callback.rs](./src/bin/example_event_callback.rs)
