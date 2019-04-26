@@ -28,7 +28,8 @@ use parity_codec::{Encode, Decode};
 use primitive_types::U256;
 
 fn main() {
-    let mut api = Api::new("ws://127.0.0.1:9944".to_string());
+    //let mut api = Api::new("ws://127.0.0.1:9944".to_string());
+    let mut api = Api::new("ws://127.0.0.1:9979".to_string());
     api.init();
 
     let result_str = api.subscribe_events();

@@ -30,7 +30,8 @@ use keyring::AccountKeyring;
 use node_primitives::AccountId;
 pub mod extrinsic;
 use crate::extrinsic::{transfer};
-use node_runtime::UncheckedExtrinsic;
+use node_runtime::{UncheckedExtrinsic}; //, Event};
+//use balances::Event;
 
 // #[macro_use]
 use hex;
@@ -49,6 +50,7 @@ use metadata::{
 	ModuleMetadata, RuntimeMetadataV4,
 	DefaultByteGetter, RuntimeMetadataPrefixed,
 };
+//use system::{Event, Phase};
 
 
 use std::sync::mpsc::Sender as ThreadOut;
@@ -289,6 +291,21 @@ impl Handler for SubscriptionHandler {
                     Some("state_storage") => {
                         let _changes = &value["params"]["result"]["changes"]; 
                         println!("state_storage changes: {:?}", _changes);
+                        let _first = _changes[0][0].as_str().unwrap().to_string();
+                        let _second = _changes[0][1].as_str().unwrap().to_string();
+                        println!("trying to decode: {} | {} ", _first, _second);
+                        let _unhex = hexstr_to_vec(_first);
+                        let mut _er_enc = _unhex.as_slice();
+                        
+                        let _er = system::Phase::decode(&mut _er_enc);
+                        println!(">>>> decoded: {:?}", _er);
+                        let _unhex2 = hexstr_to_vec(_second);
+                        let mut _er_enc2 = _unhex2.as_slice();
+                        
+                        //let _event = balances::RawEvent::decode(&mut _er_enc2);
+                        let _event = node_runtime::Event::decode(&mut _er_enc2);
+                        println!(">>>> decoded: {:?}", _event);
+
                         //self.result.send(res.to_string()).unwrap();
                     }
                     _ => println!("unsupported method"),
