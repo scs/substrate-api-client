@@ -17,25 +17,19 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 
-use runtime_io;
-use keyring::{AuthorityKeyring, AccountKeyring};
-use primitives::{ed25519, sr25519, hexdisplay::HexDisplay, Pair, crypto::Ss58Codec, blake2_256, DeriveJunction};
-use runtime_primitives::{generic, generic::Era, ApplyOutcome, ApplyError, ApplyResult, Perbill};
-use node_runtime::{Header, Block, UncheckedExtrinsic, CheckedExtrinsic, Call, Runtime, Balances,
-		BuildStorage, GenesisConfig, BalancesConfig, SessionConfig, StakingConfig, System,
-		SystemConfig, GrandpaConfig, IndicesConfig, Event, Log,  BalancesCall};
-//use substratee_runtime::Substratee_proxy;
+
+use primitives::{ed25519, sr25519, hexdisplay::HexDisplay, Pair, crypto::Ss58Codec, blake2_256};
+use runtime_primitives::generic::Era;
+use node_runtime::{UncheckedExtrinsic, CheckedExtrinsic, Call, BalancesCall};
 
 use parity_codec::{Encode, Compact};
-//use {balances, indices, session, system, staking, consensus, timestamp, treasury, contract};
 use node_primitives::{Balance, Index, Hash};
-use hex;
+
 use substrate_bip39::mini_secret_from_entropy;
 use bip39::{Mnemonic, Language, MnemonicType};
 use rand::{RngCore, rngs::OsRng};
 use schnorrkel::keys::MiniSecretKey;
 use primitive_types::U256;
-const GENESIS_HASH: [u8; 32] = [69u8; 32];
 
 
 trait Crypto {
@@ -96,6 +90,7 @@ trait Crypto {
 	}
 }
 
+
 struct Ed25519;
 
 impl Crypto for Ed25519 {
@@ -145,7 +140,7 @@ impl Crypto for Sr25519 {
 	fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
 	fn public_from_pair(pair: &Self::Pair) -> Vec<u8> { (&pair.public().0[..]).to_owned() }
 }
-
+/*
 fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
 	use parity_codec::Encode;
 	//let genesis_hash: Hash = hex!["58afaad82f5a80ecdc8e974f5d88c4298947260fb05e34f84a9eed18ec5a78f9"].into();
@@ -172,7 +167,7 @@ fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> Unchec
 		},
 	}
 }
-
+*/
 
 // see https://wiki.parity.io/Extrinsic
 pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {

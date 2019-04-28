@@ -20,48 +20,28 @@ extern crate serde_derive;
 // #[macro_use]
 extern crate hex_literal;
 
-// use serde_json::{json, value};
 use serde_json::{json};
 
 use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
-use std::{i64, net::SocketAddr};
-// use regex::Regex;
-use keyring::AccountKeyring;
-use node_primitives::AccountId;
+
 pub mod extrinsic;
-use crate::extrinsic::{transfer};
 use node_runtime::{UncheckedExtrinsic}; //, Event};
-//use balances::Event;
 
 // #[macro_use]
 use hex;
 use parity_codec::{Encode, Decode};
-use transaction_pool::txpool::ChainApi as PoolChainApi;
-use runtime_primitives::{generic, traits};
 use node_primitives::Hash;
-//use twox_hash::{two};
 use primitives::twox_128;
 use primitive_types::U256;
 
-use primitives::OpaqueMetadata;
-
-use metadata::{
-	DecodeDifferent, DecodeDifferentArray, FnEncode, RuntimeMetadata,
-	ModuleMetadata, RuntimeMetadataV4,
-	DefaultByteGetter, RuntimeMetadataPrefixed,
-};
-//use system::{Event, Phase};
-
+use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
 
 use std::sync::mpsc::Sender as ThreadOut;
 use std::sync::mpsc::channel;
 use std::thread;
 
 
-const REQUEST_GENESIS_HASH: u32     = 1;
-const REQUEST_METADATA: u32         = 2;
 const REQUEST_TRANSFER: u32         = 3;
-const REQUEST_GET_STORAGE: u32      = 4;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonBasic {
@@ -234,7 +214,9 @@ impl Api {
             })
             .unwrap();
 
-        while let res = result_out.recv().unwrap() {
+        loop {
+            let res = result_out.recv().unwrap();
+
             //println!("client >>>> got {}", res);
             let _unhex = hexstr_to_vec(res);
             let mut _er_enc = _unhex.as_slice();
@@ -274,7 +256,7 @@ impl Handler for Getter {
         let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
         // FIXME: defaulting zo zero can be problematic. better to use Option<String>
-        let mut hexstr = match value["result"].as_str() {
+        let hexstr = match value["result"].as_str() {
                         Some(res) => res.to_string(),
                         _ => "0x00".to_string(),
         };
