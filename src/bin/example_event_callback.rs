@@ -14,44 +14,28 @@
    limitations under the License.
 
 */
-#![feature(type_alias_enum_variants)]
-
 extern crate substrate_api_client;
 
-use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
-use std::{i64, net::SocketAddr};
+use substrate_api_client::Api;
 
-use substrate_api_client::{Api, hexstr_to_u256, extrinsic::transfer};
-
-use keyring::AccountKeyring;
-use node_primitives::AccountId;
-use parity_codec::{Encode, Decode};
-use primitive_types::U256;
-
-use std::sync::mpsc::Sender as ThreadOut;
 use std::sync::mpsc::channel;
 use std::thread;
-use std::sync::Mutex;
 
 fn main() {
-    //let mut api = Api::new("ws://127.0.0.1:9944".to_string());
-    let mut api = Api::new("ws://127.0.0.1:9979".to_string());
+    let mut api = Api::new("ws://127.0.0.1:9944".to_string());
     api.init();
 
-    let apim = Mutex::new(api);
-
     let (events_in, events_out) = channel();
-
     
     let _eventsubscriber = thread::Builder::new()
             .name("eventsubscriber".to_owned())
             .spawn(move || {
-                let _api = apim.lock().unwrap();
-                _api.subscribe_events(events_in.clone());
+                api.subscribe_events(events_in.clone());
             })
             .unwrap();
     
-    while let event = events_out.recv().unwrap() {
+    loop {
+        let event = events_out.recv().unwrap();
         match &event {
             node_runtime::Event::balances(be) => {
                 println!(">>>>>>>>>> balances event: {:?}", be);
@@ -62,14 +46,13 @@ fn main() {
                         println!("Value: {:?}", value);
                         println!("Fee: {:?}", fee);
                         },
-                    _ => { },
+                    _ => { 
+                        println!("ignoring unsupported balances event");
+                        },
                 }},
             _ => {
-                println!("ignoring event: {:?}", event)
+                println!("ignoring unsupported module event: {:?}", event)
                 },
-            
         }
-
     }
-
 }

@@ -17,14 +17,11 @@
 
 extern crate substrate_api_client;
 
-use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
-use std::{i64, net::SocketAddr};
-
 use substrate_api_client::{Api, hexstr_to_u256, extrinsic::transfer};
 
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
-use parity_codec::{Encode, Decode};
+use parity_codec::Encode;
 use primitive_types::U256;
 
 fn main() {
@@ -32,6 +29,7 @@ fn main() {
     api.init();
 
     // get Alice's AccountNonce
+    // FIXME: "invalid transaction" since recent substrate update
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
     let nonce = hexstr_to_u256(result_str);
