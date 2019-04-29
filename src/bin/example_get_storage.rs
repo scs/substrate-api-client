@@ -34,7 +34,6 @@ fn main() {
     println!("[+] TransactionBaseFee is {}", result);
 
     // get Alice's AccountNonce
-    // FIXME: "invalid transaction" since recent substrate update
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
     let result = hexstr_to_u256(result_str);
