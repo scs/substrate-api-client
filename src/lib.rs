@@ -361,11 +361,16 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
         let mut key = module.as_bytes().to_vec();
         key.append(&mut vec!(' ' as u8));
         key.append(&mut storage_key_name.as_bytes().to_vec());
+        let mut keyhash;
         match param {
-            Some(par) => key.append(&mut par.clone()),
-            _ => println!("getStorage without params"),
+            Some(par) => {
+                key.append(&mut par.clone());
+                keyhash = hex::encode(blake2_256(&key));
+                },
+            _ => {
+                keyhash = hex::encode(twox_128(&key));
+                },
         }
-        let mut keyhash = hex::encode(blake2_256(&key));
         keyhash.insert_str(0, "0x");
         keyhash
 }

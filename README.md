@@ -1,8 +1,9 @@
 # substrate-api-client
 Library for connecting to substrate API over WebSockets
 
-Composes Extrinsics, sends them and subscribes to updates
-can watch events
+Composes Extrinsics, sends them and subscribes to updates.
+
+Can watch events and execute code upon events.
 
 ## setup
 
@@ -50,3 +51,7 @@ See [example_transfer.rs](./src/bin/example_transfer.rs)
 
 ## execute code upon events
 See [example_event_callback.rs](./src/bin/example_event_callback.rs)
+
+## TODO
+  * dynamic API from metadata
+  * compose custom runtime module extrinsics generically
