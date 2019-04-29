@@ -32,6 +32,7 @@ use hex;
 use parity_codec::{Encode, Decode};
 use node_primitives::Hash;
 use primitives::twox_128;
+use primitives::blake2_256;
 use primitive_types::U256;
 
 use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
@@ -364,7 +365,7 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
             Some(par) => key.append(&mut par.clone()),
             _ => println!("getStorage without params"),
         }
-        let mut keyhash = hex::encode(twox_128(&key));
+        let mut keyhash = hex::encode(blake2_256(&key));
         keyhash.insert_str(0, "0x");
         keyhash
 }
