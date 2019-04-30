@@ -15,25 +15,27 @@ tiny-bip39 = "0.6.0"
 substrate_bip39 = { package="substrate-bip39", git = "https://github.com/paritytech/substrate-bip39" }
 rand = "0.6"
 schnorrkel = "0.1"
+hex = "0.3"
+hex-literal = "0.1"
+regex = "*"
+primitive-types = { version = "0.2", default-features = false, features = ["codec"] }
+clap = { version = "2.33", features = ["yaml"] }
+#twox-hash = "1.1.0"
+
 primitives = { package = "substrate-primitives", git = "https://github.com/paritytech/substrate.git" }
 node-primitives = { git = "https://github.com/paritytech/substrate.git" }
 runtime_io = { package = "sr-io", git = "https://github.com/paritytech/substrate.git" }
 runtime_primitives = { package = "sr-primitives", git = "https://github.com/paritytech/substrate.git", default-features = false }
 inherents = { package = "substrate-inherents", git = "https://github.com/paritytech/substrate.git", default-features = false }
 transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/paritytech/substrate.git" }
-node-runtime = { git = "https://github.com/paritytech/substrate.git" }
-#substratee-runtime = { package = "node-runtime", git = "https://github.com/scs/substraTEE-node.git" }
 metadata = { package = "srml-metadata", git = "https://github.com/paritytech/substrate.git" }
-hex = "0.3"
 balances = { package = "srml-balances", git = "https://github.com/paritytech/substrate.git" }
-hex-literal = "0.1"
-regex = "*"
 keyring = { package = "substrate-keyring", git = "https://github.com/paritytech/substrate.git" }
-#test_client = { package = "substrate-test-client", git = "https://github.com/paritytech/substrate.git" }
-#twox-hash = "1.1.0"
-primitive-types = { version = "0.2", default-features = false, features = ["codec"] }
-clap = { version = "2.33", features = ["yaml"] }
 system = { package = "srml-system", git = "https://github.com/paritytech/substrate.git" }
+#test_client = { package = "substrate-test-client", git = "https://github.com/paritytech/substrate.git" }
+
+node-runtime = { git = "https://github.com/paritytech/substrate.git" }
+#node-runtime = { package = "substratee-node-runtime", git = "https://github.com/scs/substraTEE-node.git" }
 
 [features]
 default = ["std"]
