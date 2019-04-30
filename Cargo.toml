@@ -20,22 +20,19 @@ hex-literal = "0.1"
 regex = "*"
 primitive-types = { version = "0.2", default-features = false, features = ["codec"] }
 clap = { version = "2.33", features = ["yaml"] }
-#twox-hash = "1.1.0"
 
-primitives = { package = "substrate-primitives", git = "https://github.com/paritytech/substrate.git" }
-node-primitives = { git = "https://github.com/paritytech/substrate.git" }
-runtime_io = { package = "sr-io", git = "https://github.com/paritytech/substrate.git" }
-runtime_primitives = { package = "sr-primitives", git = "https://github.com/paritytech/substrate.git", default-features = false }
-inherents = { package = "substrate-inherents", git = "https://github.com/paritytech/substrate.git", default-features = false }
-transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/paritytech/substrate.git" }
-metadata = { package = "srml-metadata", git = "https://github.com/paritytech/substrate.git" }
-balances = { package = "srml-balances", git = "https://github.com/paritytech/substrate.git" }
-keyring = { package = "substrate-keyring", git = "https://github.com/paritytech/substrate.git" }
-system = { package = "srml-system", git = "https://github.com/paritytech/substrate.git" }
-#test_client = { package = "substrate-test-client", git = "https://github.com/paritytech/substrate.git" }
+primitives = { package = "substrate-primitives", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+node-primitives = { git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+runtime_io = { package = "sr-io", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+runtime_primitives = { package = "sr-primitives", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature", default-features = false }
+inherents = { package = "substrate-inherents", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature", default-features = false }
+transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature"}
+metadata = { package = "srml-metadata",git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+balances = { package = "srml-balances",git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+keyring = { package = "substrate-keyring",git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+system = { package = "srml-system", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
 
-node-runtime = { git = "https://github.com/paritytech/substrate.git" }
-#node-runtime = { package = "substratee-node-runtime", git = "https://github.com/scs/substraTEE-node.git" }
+node-runtime = { git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
 
 [features]
 default = ["std"]
