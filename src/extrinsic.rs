@@ -140,10 +140,9 @@ impl Crypto for Sr25519 {
 	fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
 	fn public_from_pair(pair: &Self::Pair) -> Vec<u8> { (&pair.public().0[..]).to_owned() }
 }
-/*
+
 fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
 	use parity_codec::Encode;
-	//let genesis_hash: Hash = hex!["58afaad82f5a80ecdc8e974f5d88c4298947260fb05e34f84a9eed18ec5a78f9"].into();
 	match xt.signed {
 		Some((signed, index)) => {
 			let era = Era::immortal();
@@ -167,7 +166,7 @@ fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> Unchec
 		},
 	}
 }
-*/
+
 
 // see https://wiki.parity.io/Extrinsic
 pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
