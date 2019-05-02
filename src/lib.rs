@@ -162,13 +162,12 @@ impl Api {
 
     }
 
-    pub fn send_extrinsic(&self, xt: UncheckedExtrinsic) -> Result<Hash> {
-        println!("sending extrinsic: {:?}", xt);
-        let mut xthex = hex::encode(xt.encode());
-        xthex.insert_str(0, "0x");
+    pub fn send_extrinsic(&self, xthex_prefixed: String) -> Result<Hash> {
+        println!("sending extrinsic: {:?}", xthex_prefixed);
+       
         let jsonreq = json!({
             "method": "author_submitAndWatchExtrinsic", 
-            "params": [xthex], 
+            "params": [xthex_prefixed], 
             "jsonrpc": "2.0",
             "id": REQUEST_TRANSFER.to_string(),
         }).to_string();
