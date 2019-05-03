@@ -16,8 +16,8 @@
 */
 extern crate substrate_api_client;
 
-use substrate_api_client::Api;
-
+use substrate_api_client::{Api, hexstr_to_u256, hexstr_to_vec};
+use parity_codec::{Encode, Decode};
 use std::sync::mpsc::channel;
 use std::thread;
 
@@ -35,24 +35,40 @@ fn main() {
             .unwrap();
     
     loop {
-        let event = events_out.recv().unwrap();
-        match &event {
-            node_runtime::Event::balances(be) => {
-                println!(">>>>>>>>>> balances event: {:?}", be);
-                match &be {
-                    balances::RawEvent::Transfer(transactor, dest, value, fee) => {
-                        println!("Transactor: {:?}", transactor);
-                        println!("Destination: {:?}", dest);
-                        println!("Value: {:?}", value);
-                        println!("Fee: {:?}", fee);
-                        },
-                    _ => { 
-                        println!("ignoring unsupported balances event");
-                        },
-                }},
-            _ => {
-                println!("ignoring unsupported module event: {:?}", event)
-                },
+        let event_str = events_out.recv().unwrap();
+
+        let _unhex = hexstr_to_vec(event_str);
+        let mut _er_enc = _unhex.as_slice();
+        let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
+        match _events {
+            Some(evts) => {
+                for ev in &evts {
+                    println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
+                    match &ev.event {
+                        node_runtime::Event::balances(be) => {
+                            println!(">>>>>>>>>> balances event: {:?}", be);
+                            match &be {
+                                balances::RawEvent::Transfer(transactor, dest, value, fee) => {
+                                    println!("Transactor: {:?}", transactor);
+                                    println!("Destination: {:?}", dest);
+                                    println!("Value: {:?}", value);
+                                    println!("Fee: {:?}", fee);
+                                    },
+                                _ => { 
+                                    println!("ignoring unsupported balances event");
+                                    },
+                            }},
+                        _ => {
+                            println!("ignoring unsupported module event: {:?}", ev.event)
+                            },
+                    }
+                    
+                } 
+            }
+            None => println!("couldn't decode event record list")
         }
+
+
+
     }
 }

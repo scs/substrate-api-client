@@ -24,8 +24,8 @@ use serde_json::{json};
 
 use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
 
-pub mod extrinsic;
-use node_runtime::{UncheckedExtrinsic}; //, Event};
+//pub mod extrinsic;
+//use node_runtime::{UncheckedExtrinsic}; //, Event};
 
 // #[macro_use]
 use hex;
@@ -189,7 +189,7 @@ impl Api {
         Ok(result_out.recv().unwrap())
     }
 
-    pub fn subscribe_events(&self, sender: ThreadOut<node_runtime::Event>) {
+    pub fn subscribe_events(&self, sender: ThreadOut<String>) {
         println!("subscribing to events");
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json!({
@@ -216,7 +216,9 @@ impl Api {
 
         loop {
             let res = result_out.recv().unwrap();
+            sender.send(res.clone()).unwrap();
 
+/*
             //println!("client >>>> got {}", res);
             let _unhex = hexstr_to_vec(res);
             let mut _er_enc = _unhex.as_slice();
@@ -232,7 +234,7 @@ impl Api {
                 None => println!("couldn't decode event record list")
             }
             //self.result.send(_events).unwrap();
-
+*/
         }        
     }
 }
