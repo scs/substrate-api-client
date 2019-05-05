@@ -16,6 +16,11 @@
 */
 extern crate substrate_api_client;
 
+// This module depends on node_runtime. 
+// To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
+// Replace this crate by your own if you run a custom substrate node to get your custom events
+use node_runtime::Event;
+
 use substrate_api_client::{Api, hexstr_to_u256, hexstr_to_vec};
 use parity_codec::{Encode, Decode};
 use std::sync::mpsc::channel;
@@ -39,13 +44,13 @@ fn main() {
 
         let _unhex = hexstr_to_vec(event_str);
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord::<Event>>::decode(&mut _er_enc);
         match _events {
             Some(evts) => {
-                for ev in &evts {
-                    println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
-                    match &ev.event {
-                        node_runtime::Event::balances(be) => {
+                for evr in &evts {
+                    println!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+                    match &evr.event {
+                        Event::balances(be) => {
                             println!(">>>>>>>>>> balances event: {:?}", be);
                             match &be {
                                 balances::RawEvent::Transfer(transactor, dest, value, fee) => {
@@ -59,7 +64,7 @@ fn main() {
                                     },
                             }},
                         _ => {
-                            println!("ignoring unsupported module event: {:?}", ev.event)
+                            println!("ignoring unsupported module event: {:?}", evr.event)
                             },
                     }
                     

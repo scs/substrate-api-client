@@ -24,9 +24,6 @@ use serde_json::{json};
 
 use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
 
-//pub mod extrinsic;
-//use node_runtime::{UncheckedExtrinsic}; //, Event};
-
 // #[macro_use]
 use hex;
 use parity_codec::{Encode, Decode};

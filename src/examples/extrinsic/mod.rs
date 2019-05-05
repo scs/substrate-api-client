@@ -1,61 +1,35 @@
-/*
-   Copyright 2019 Supercomputing Systems AG
+// Copyright 2019 Supercomputing Systems AG
+//
+// Partial Authorship Parity Technologies (UK) Ltd.
+// This file is derived from Substrate.
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+// Substrate is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 
-       http://www.apache.org/licenses/LICENSE-2.0
+// Substrate is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+// You should have received a copy of the GNU General Public License
+// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-*/
 
-extern crate substrate_api_client;
-
-use substrate_api_client::{Api, hexstr_to_u256};
-
-use keyring::AccountKeyring;
-use node_primitives::AccountId;
-use parity_codec::Encode;
-use primitive_types::U256;
-
-fn main() {
-    let mut api = Api::new("ws://127.0.0.1:9944".to_string());
-    api.init();
-
-    // get Alice's AccountNonce
-    let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let nonce = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", nonce);
-
-    // generate extrinsic
-    let xt= transfer("//Alice", "//Bob", U256::from(42), nonce, api.genesis_hash.unwrap());
-    println!("extrinsic: {:?}", xt);
-
-    let mut _xthex = hex::encode(xt.encode());
-    _xthex.insert_str(0, "0x");
-    //send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(_xthex).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
-}
-
-// TODO: move this stuff to a module of this example
+// This module depends on node_runtime. 
+// To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
+// 
+// Replace this crate by your own if you run a custom substrate node
+use node_runtime::{UncheckedExtrinsic, CheckedExtrinsic, Call, BalancesCall};
 
 use primitives::{ed25519, sr25519, hexdisplay::HexDisplay, Pair, crypto::Ss58Codec, blake2_256};
 use runtime_primitives::generic::Era;
 
-// Replace this crate by your own if you run a custom substrate node
-use node_runtime::{UncheckedExtrinsic, CheckedExtrinsic, Call, BalancesCall};
+use parity_codec::{Encode, Compact};
+use primitive_types::U256;
 
-use parity_codec::Compact;
 use node_primitives::{Balance, Index, Hash};
-
 use substrate_bip39::mini_secret_from_entropy;
 use bip39::{Mnemonic, Language, MnemonicType};
 use rand::{RngCore, rngs::OsRng};
@@ -172,7 +146,7 @@ impl Crypto for Sr25519 {
 	fn public_from_pair(pair: &Self::Pair) -> Vec<u8> { (&pair.public().0[..]).to_owned() }
 }
 
-fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
+pub fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
 	match xt.signed {
 		Some((signed, index)) => {
 			let era = Era::immortal();
@@ -207,24 +181,12 @@ pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: H
 		).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.");
 		let amount = Balance::from(amount.low_u128());
 		let index = Index::from(index.low_u64());
-		//let amount = str::parse::<Balance>("42")
-		//	.expect("Invalid 'amount' parameter; expecting an integer.");
-		//let index = str::parse::<Index>("0")
-		//	.expect("Invalid 'index' parameter; expecting an integer.");
 
 		let function = Call::Balances(BalancesCall::transfer(to.into(), amount));
 
 		let era = Era::immortal();
 
 		println!("using genesis hash: {:?}", genesis_hash);
-/*		let mut gh: [u8; 32] = Default::default();
-    	gh.copy_from_slice(hex::decode(genesis_hash).unwrap().as_ref());
-		let genesis_hash = Hash::from(gh);
-		println!("using genesis hash to Hash: {:?}", gh);
-*/
-		//let genesis_hash: Hash = hex::decode(genesis_hash).unwrap();
-		//let genesis_hash: Hash = hex!["61b81c075e1e54b17a2f2d685a3075d3e5f5c7934456dd95332e68dd751a4b40"].into();
-//			let genesis_hash: Hash = hex!["58afaad82f5a80ecdc8e974f5d88c4298947260fb05e34f84a9eed18ec5a78f9"].into();
 		let raw_payload = (Compact(index), function, era, genesis_hash);
 		let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 			signer.sign(&blake2_256(payload)[..])
@@ -240,4 +202,3 @@ pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: H
 			era,
 		)
 	}
-

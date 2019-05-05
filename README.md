@@ -15,10 +15,7 @@ Run examples
 
     git clone https://github.com/scs/substrate-api-client.git
     cd substrate-api-client
-    cargo build --release
-    ./target/release/example_get_storage
-
-
+    cargo run --example example-get-storage
 
 ## reading storage
 

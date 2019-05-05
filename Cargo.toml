@@ -32,6 +32,7 @@ balances = { package = "srml-balances",git = "https://github.com/brenzi/substrat
 keyring = { package = "substrate-keyring",git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
 system = { package = "srml-system", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
 
+[dev-dependencies]
 node-runtime = { git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
 
 [features]
@@ -42,3 +43,15 @@ std = [
     "runtime_primitives/std",
 	"node-runtime/std",
 ]
+
+[[example]]
+name = "example_get_storage"
+path = "src/examples/example_get_storage.rs"
+
+[[example]]
+name = "example_transfer"
+path = "src/examples/example_transfer.rs"
+
+[[example]]
+name = "example_event_callback"
+path = "src/examples/example_event_callback.rs"
