@@ -33,7 +33,7 @@ keyring = { package = "substrate-keyring",git = "https://github.com/brenzi/subst
 system = { package = "srml-system", git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
 
 [dev-dependencies]
-node-runtime = { git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature" }
+node-runtime = { git = "https://github.com/brenzi/substrate.git", branch="global-allocator-feature", features = [ "std" ] }
 
 [features]
 default = ["std"]
@@ -41,7 +41,6 @@ std = [
 	"primitives/std",
 	"parity-codec/std",
     "runtime_primitives/std",
-	"node-runtime/std",
 ]
 
 [[example]]
