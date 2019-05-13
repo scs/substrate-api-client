@@ -5,7 +5,7 @@ Composes Extrinsics, sends them and subscribes to updates.
 
 Can watch events and execute code upon events.
 
-## setup
+## Setup
 
 Run substrate node (examples use hardcoded url=localhost and ws-port=9944)
 
@@ -17,7 +17,9 @@ Run examples
     cd substrate-api-client
     cargo run --example example-get-storage
 
-## reading storage
+Set the output verbosity by adding `RUST_LOG=info` or `RUST_LOG=debug` in front of the command.
+
+## Reading storage
 
     extern crate substrate_api_client;
     use substrate_api_client::{Api, hexstr_to_u256};
@@ -43,10 +45,10 @@ Run examples
 
 See [example_get_storage.rs](./src/bin/example_get_storage.rs)
 
-## sending transactions
+## Sending transactions
 See [example_transfer.rs](./src/bin/example_transfer.rs)
 
-## execute code upon events
+## Execute code upon events
 See [example_event_callback.rs](./src/bin/example_event_callback.rs)
 
 ## TODO

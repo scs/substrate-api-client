@@ -17,6 +17,10 @@
 
 extern crate substrate_api_client;
 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
 use substrate_api_client::{Api, hexstr_to_u256};
 
 use keyring::AccountKeyring;
@@ -25,17 +29,19 @@ use parity_codec::Encode;
 
 
 fn main() {
+    env_logger::init();
+
     let mut api = Api::new("ws://127.0.0.1:9944".to_string());
     api.init();
 
     // get some plain storage value
     let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
     let result = hexstr_to_u256(result_str);
-    println!("[+] TransactionBaseFee is {}", result);
+    info!("[+] TransactionBaseFee is {}", result);
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
     let result = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", result);
+    info!("[+] Alice's Account Nonce is {}", result);
 }

@@ -16,29 +16,37 @@
 */
 extern crate substrate_api_client;
 
-// This module depends on node_runtime. 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
+// This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events
 use node_runtime::Event;
 
-use substrate_api_client::{Api, hexstr_to_u256, hexstr_to_vec};
-use parity_codec::{Encode, Decode};
+use substrate_api_client::{Api, hexstr_to_vec};
+use parity_codec::Decode;
 use std::sync::mpsc::channel;
 use std::thread;
 
 fn main() {
+    env_logger::init();
+
     let mut api = Api::new("ws://127.0.0.1:9944".to_string());
     api.init();
 
     let (events_in, events_out) = channel();
-    
+
+    info!("Subscribe to events");
+
     let _eventsubscriber = thread::Builder::new()
             .name("eventsubscriber".to_owned())
             .spawn(move || {
                 api.subscribe_events(events_in.clone());
             })
             .unwrap();
-    
+
     loop {
         let event_str = events_out.recv().unwrap();
 
@@ -48,32 +56,28 @@ fn main() {
         match _events {
             Some(evts) => {
                 for evr in &evts {
-                    println!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+                    debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
                     match &evr.event {
                         Event::balances(be) => {
-                            println!(">>>>>>>>>> balances event: {:?}", be);
+                            info!(">>>>>>>>>> balances event: {:?}", be);
                             match &be {
                                 balances::RawEvent::Transfer(transactor, dest, value, fee) => {
-                                    println!("Transactor: {:?}", transactor);
-                                    println!("Destination: {:?}", dest);
-                                    println!("Value: {:?}", value);
-                                    println!("Fee: {:?}", fee);
+                                    info!("Transactor: {:?}", transactor);
+                                    info!("Destination: {:?}", dest);
+                                    info!("Value: {:?}", value);
+                                    info!("Fee: {:?}", fee);
                                     },
-                                _ => { 
-                                    println!("ignoring unsupported balances event");
+                                _ => {
+                                    debug!("ignoring unsupported balances event");
                                     },
                             }},
                         _ => {
-                            println!("ignoring unsupported module event: {:?}", evr.event)
+                            debug!("ignoring unsupported module event: {:?}", evr.event)
                             },
                     }
-                    
-                } 
+                }
             }
-            None => println!("couldn't decode event record list")
+            None => error!("couldn't decode event record list")
         }
-
-
-
     }
 }
