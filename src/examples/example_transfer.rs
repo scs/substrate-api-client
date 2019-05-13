@@ -40,7 +40,7 @@ fn main() {
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
     let nonce = hexstr_to_u256(result_str);
-    info!("[+] Alice's Account Nonce is {}", nonce);
+    println!("[+] Alice's Account Nonce is {}", nonce);
 
     // generate extrinsic
     let xt= extrinsic::transfer("//Alice", "//Bob", U256::from(42), nonce, api.genesis_hash.unwrap());
@@ -50,5 +50,5 @@ fn main() {
     _xthex.insert_str(0, "0x");
     //send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(_xthex).unwrap();
-    info!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }

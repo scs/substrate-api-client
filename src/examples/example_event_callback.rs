@@ -38,7 +38,7 @@ fn main() {
 
     let (events_in, events_out) = channel();
 
-    info!("Subscribe to events");
+    println!("Subscribe to events");
 
     let _eventsubscriber = thread::Builder::new()
             .name("eventsubscriber".to_owned())
@@ -59,13 +59,13 @@ fn main() {
                     debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
                     match &evr.event {
                         Event::balances(be) => {
-                            info!(">>>>>>>>>> balances event: {:?}", be);
+                            println!(">>>>>>>>>> balances event: {:?}", be);
                             match &be {
                                 balances::RawEvent::Transfer(transactor, dest, value, fee) => {
-                                    info!("Transactor: {:?}", transactor);
-                                    info!("Destination: {:?}", dest);
-                                    info!("Value: {:?}", value);
-                                    info!("Fee: {:?}", fee);
+                                    println!("Transactor: {:?}", transactor);
+                                    println!("Destination: {:?}", dest);
+                                    println!("Value: {:?}", value);
+                                    println!("Fee: {:?}", fee);
                                     },
                                 _ => {
                                     debug!("ignoring unsupported balances event");

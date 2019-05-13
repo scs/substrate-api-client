@@ -37,11 +37,11 @@ fn main() {
     // get some plain storage value
     let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
     let result = hexstr_to_u256(result_str);
-    info!("[+] TransactionBaseFee is {}", result);
+    println!("[+] TransactionBaseFee is {}", result);
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
     let result = hexstr_to_u256(result_str);
-    info!("[+] Alice's Account Nonce is {}", result);
+    println!("[+] Alice's Account Nonce is {}", result);
 }
