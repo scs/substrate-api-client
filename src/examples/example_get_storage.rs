@@ -17,8 +17,8 @@
 
 extern crate substrate_api_client;
 
-#[macro_use]
-extern crate log;
+// #[macro_use]
+// extern crate log;
 extern crate env_logger;
 
 use substrate_api_client::{Api, hexstr_to_u256};

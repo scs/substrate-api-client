@@ -72,7 +72,7 @@ impl Api {
         });
         let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
         self.genesis_hash = Some(hexstr_to_hash(genesis_hash_str));
-        debug!("got genesis hash: {:?}", self.genesis_hash.unwrap());
+        info!("got genesis hash: {:?}", self.genesis_hash.unwrap());
 
         //get metadata
         let jsonreq = json!({
@@ -243,12 +243,13 @@ struct Getter {
 impl Handler for Getter {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
 
-        debug!("sending request: {}", self.request);
+        info!("sending request: {}", self.request);
         self.out.send(self.request.clone()).unwrap();
         Ok(())
     }
     fn on_message(&mut self, msg: Message) -> Result<()> {
-        debug!("Got message: {}", msg);
+        info!("got message");
+        debug!("{}", msg);
         let retstr = msg.as_text().unwrap();
         let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
@@ -272,12 +273,13 @@ struct SubscriptionHandler {
 impl Handler for SubscriptionHandler {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
 
-        debug!("sending request: {}", self.request);
+        info!("sending request: {}", self.request);
         self.out.send(self.request.clone()).unwrap();
         Ok(())
     }
     fn on_message(&mut self, msg: Message) -> Result<()> {
-        debug!("Got message: {}", msg);
+        info!("got message");
+        debug!("{}", msg);
         let retstr = msg.as_text().unwrap();
         let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
         match value["id"].as_str() {
@@ -308,13 +310,14 @@ struct ExtrinsicHandler {
 
 impl Handler for ExtrinsicHandler {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-        debug!("sending request: {}", self.request);
+        info!("sending request: {}", self.request);
         self.out.send(self.request.clone()).unwrap();
         Ok(())
     }
 
     fn on_message(&mut self, msg: Message) -> Result<()> {
-        debug!("Got message: {}", msg);
+        info!("got message");
+        debug!("{}", msg);
         let retstr = msg.as_text().unwrap();
         let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
         match value["id"].as_str() {
