@@ -24,6 +24,7 @@ extern crate env_logger;
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events
 use node_runtime::Event;
+use node_primitives::Hash;
 
 use substrate_api_client::{Api, hexstr_to_vec};
 use parity_codec::Decode;
@@ -52,7 +53,7 @@ fn main() {
 
         let _unhex = hexstr_to_vec(event_str);
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::<Event>>::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
         match _events {
             Some(evts) => {
                 for evr in &evts {

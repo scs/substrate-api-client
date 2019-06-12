@@ -18,9 +18,9 @@ tiny-bip39 = "0.6.0"
 serde_json = "1.0"
 hex-literal = "0.1"
 serde_derive = "1.0"
-parity-codec = { version = "3.0", default-features = false }
+parity-codec = { version = "3.3", default-features = false }
 primitive-types = { version = "0.2", default-features = false, features = ["codec"] }
-parity-codec-derive = { version = "3.0", default-features = false }
+parity-codec-derive = { version = "3.3", default-features = false }
 
 [dependencies.substrate_bip39]
 git = "https://github.com/paritytech/substrate-bip39"
