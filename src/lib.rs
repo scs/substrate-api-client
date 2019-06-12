@@ -88,7 +88,7 @@ impl Api {
                 .expect("runtime metadata decoding to RuntimeMetadataPrefixed failed.");
         debug!("decoded: {:?} ", _meta);
         match _meta.1 {
-            RuntimeMetadata::V4(_value) => {
+            RuntimeMetadata::V5(_value) => {
                 //FIXME: storing metadata in self is problematic because it can't be cloned or synced among threads
                 //self.metadata = Some(value);
                 debug!("successfully decoded metadata");
