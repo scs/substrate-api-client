@@ -28,56 +28,56 @@ package="substrate-bip39"
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "substrate-primitives"
 
 [dependencies.node-primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "sr-io"
 
 [dependencies.transaction_pool]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "substrate-transaction-pool"
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "srml-metadata"
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "srml-balances"
 
 [dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "substrate-keyring"
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "srml-system"
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "sr-primitives"
 
 [dependencies.inherents]
 git = 'https://github.com/paritytech/substrate'
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "substrate-inherents"
 
 [dev-dependencies.node-runtime]
 git = "https://github.com/paritytech/substrate"
-rev = '6e67eff0653677d3d01980ca822c4b8a227914a3'
+rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 features = [ "std" ]
 
 [features]
