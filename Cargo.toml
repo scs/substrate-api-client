@@ -80,6 +80,9 @@ git = "https://github.com/paritytech/substrate"
 rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 features = [ "std" ]
 
+[dev-dependencies.clap]
+version = "2.33.0"
+
 [features]
 default = ["std"]
 std = [

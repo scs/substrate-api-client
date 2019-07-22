@@ -1,0 +1,19 @@
+name: "substrate-ap-client-examples"
+version: "1.0.0"
+about: Example codes showing the api's capabilities
+authors: "Supercomputing Systems AG <info@scs.ch>"
+
+# AppSettings can be defined as a list and are **not** ascii case sensitive
+settings:
+  - ColoredHelp
+
+args:
+  - node-server:
+      long: ns
+      help: Set the node server IP address
+      takes_value: true
+  - node-port:
+      short: p
+      long: node-port
+      help: Set the websocket port to listen for substrate events
+      takes_value: true
