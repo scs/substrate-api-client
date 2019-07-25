@@ -20,31 +20,28 @@ pub fn state_get_metadata() -> Value {
         })
 }
 
-
-
-pub fn state_get_storage(key_hash: &str) -> Value {
-    json!({
-            "method": "state_getStorage",
-            "params": [key_hash.to_string()],
-            "jsonrpc": "2.0",
-            "id": "1",
-        })
-}
-
-pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
-    json!({
-            "method": "author_submitAndWatchExtrinsic",
-            "params": [xthex_prefixed],
-            "jsonrpc": "2.0",
-            "id": REQUEST_TRANSFER.to_string(),
-        })
-}
-
 pub fn state_subscribe_storage(key: &str) -> Value {
     json!({
             "method": "state_subscribeStorage",
             "params": [[key]],
             "jsonrpc": "2.0",
             "id": "1",
+        })
+}
+
+pub fn state_get_storage(key_hash: &str) -> Value {
+    json_req("state_getStorage", key_hash, 1 as u32)
+}
+
+pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
+    json_req("author_submitAndWatchExtrinsic", xthex_prefixed, REQUEST_TRANSFER)
+}
+
+fn json_req(method: &str, params: &str, id: u32) -> Value {
+    json!({
+            "method": method,
+            "params": [params],
+            "jsonrpc": "2.0",
+            "id": id.to_string(),
         })
 }

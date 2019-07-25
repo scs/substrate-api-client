@@ -26,7 +26,6 @@ use std::thread;
 use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
 use node_primitives::Hash;
 use parity_codec::Decode;
-use serde_json::json;
 use ws::{CloseCode, connect, Handler, Handshake, Message, Result, Sender};
 
 use json_req::REQUEST_TRANSFER;
