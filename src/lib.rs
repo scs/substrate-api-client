@@ -29,12 +29,13 @@ use parity_codec::Decode;
 use serde_json::json;
 use ws::{CloseCode, connect, Handler, Handshake, Message, Result, Sender};
 
+use json_req::REQUEST_TRANSFER;
 use utils::*;
 
 pub mod extrinsic;
 pub mod utils;
+pub mod json_req;
 
-const REQUEST_TRANSFER: u32         = 3;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonBasic {
@@ -61,23 +62,13 @@ impl Api {
 
     pub fn init(&mut self) {
         // get genesis hash
-        let jsonreq = json!({
-            "method": "chain_getBlockHash",
-            "params": [0],
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
+        let jsonreq = json_req::chain_get_block_hash();
         let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
         self.genesis_hash = Some(hexstr_to_hash(genesis_hash_str));
         info!("got genesis hash: {:?}", self.genesis_hash.unwrap());
 
         //get metadata
-        let jsonreq = json!({
-            "method": "state_getMetadata",
-            "params": null,
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
+        let jsonreq = json_req::state_get_metadata();
         let metadata_str = self.get_request(jsonreq.to_string()).unwrap();
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
@@ -144,25 +135,14 @@ impl Api {
         let keyhash = storage_key_hash(module, storage_key_name, param);
 
         debug!("with storage key: {}", keyhash);
-        let jsonreq = json!({
-            "method": "state_getStorage",
-            "params": [keyhash],
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
+        let jsonreq = json_req::state_get_storage(&keyhash);
         self.get_request(jsonreq.to_string())
-
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> Result<Hash> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
 
-        let jsonreq = json!({
-            "method": "author_submitAndWatchExtrinsic",
-            "params": [xthex_prefixed],
-            "jsonrpc": "2.0",
-            "id": REQUEST_TRANSFER.to_string(),
-        }).to_string();
+        let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
         let _url = self.url.clone();
@@ -184,12 +164,7 @@ impl Api {
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {
         debug!("subscribing to events");
         let key = storage_key_hash("System", "Events", None);
-        let jsonreq = json!({
-            "method": "state_subscribeStorage",
-            "params": [[key]],
-            "jsonrpc": "2.0",
-            "id": "1",
-        }).to_string();
+        let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
         let (result_in, result_out) = channel();
         let _url = self.url.clone();
