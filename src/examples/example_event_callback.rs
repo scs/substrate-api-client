@@ -29,7 +29,8 @@ use node_runtime::Event;
 use node_primitives::Hash;
 
 use clap::App;
-use substrate_api_client::{Api, hexstr_to_vec};
+use substrate_api_client::Api;
+use substrate_api_client::utils::hexstr_to_vec;
 use parity_codec::Decode;
 use std::sync::mpsc::channel;
 use std::thread;

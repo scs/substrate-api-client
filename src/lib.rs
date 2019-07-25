@@ -1,4 +1,3 @@
-
 /*
    Copyright 2019 Supercomputing Systems AG
 
@@ -22,20 +21,19 @@ extern crate serde_derive;
 extern crate log;
 
 use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
-use hex;
 use serde_json::{json};
 
 use parity_codec::Decode;
 use node_primitives::Hash;
-use primitives::twox_128;
-use primitives::blake2_256;
-use primitive_types::U256;
-
 use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
 
 use std::sync::mpsc::Sender as ThreadOut;
 use std::sync::mpsc::channel;
 use std::thread;
+use utils::*;
+
+pub mod extrinsic;
+pub mod utils;
 
 const REQUEST_TRANSFER: u32         = 3;
 
@@ -355,48 +353,3 @@ impl Handler for ExtrinsicHandler {
         Ok(())
     }
 }
-
-pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
-        let mut key = module.as_bytes().to_vec();
-        key.append(&mut vec!(' ' as u8));
-        key.append(&mut storage_key_name.as_bytes().to_vec());
-        let mut keyhash;
-        match param {
-            Some(par) => {
-                key.append(&mut par.clone());
-                keyhash = hex::encode(blake2_256(&key));
-                },
-            _ => {
-                keyhash = hex::encode(twox_128(&key));
-                },
-        }
-        keyhash.insert_str(0, "0x");
-        keyhash
-}
-
-pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
-    let mut _hexstr = hexstr.clone();
-    if _hexstr.starts_with("0x") {
-        _hexstr.remove(0);
-        _hexstr.remove(0);
-    }
-    else {
-        info!("converting non-prefixed hex string")
-    }
-    hex::decode(&_hexstr).unwrap()
-}
-
-pub fn hexstr_to_u256(hexstr: String) -> U256 {
-    let _unhex = hexstr_to_vec(hexstr);
-    U256::from_little_endian(&mut &_unhex[..])
-}
-
-pub fn hexstr_to_hash(hexstr: String) -> Hash {
-    let _unhex = hexstr_to_vec(hexstr);
-    let mut gh: [u8; 32] = Default::default();
-    gh.copy_from_slice(&_unhex);
-    Hash::from(gh)
-}
-
-
-

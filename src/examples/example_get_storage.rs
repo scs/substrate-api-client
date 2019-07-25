@@ -25,7 +25,8 @@ extern crate env_logger;
 
 use clap::App;
 
-use substrate_api_client::{Api, hexstr_to_u256};
+use substrate_api_client::Api;
+use substrate_api_client::utils::hexstr_to_u256;
 
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
