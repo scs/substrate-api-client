@@ -22,45 +22,16 @@
 //
 // Replace this crate by your own if you run a custom substrate node
 
-use node_runtime::{UncheckedExtrinsic, Call, BalancesCall};
-
-use primitives::{/*ed25519, */sr25519, hexdisplay::HexDisplay, Pair, crypto::Ss58Codec, blake2_256};
-use runtime_primitives::generic::Era;
-
-use parity_codec::{Encode, Compact};
+use node_primitives::{Balance, Hash, Index};
+use node_runtime::{BalancesCall, Call, UncheckedExtrinsic};
+use parity_codec::{Compact, Encode};
 use primitive_types::U256;
-
-use node_primitives::{Balance, Index, Hash};
+use primitives::{/*ed25519, */blake2_256, crypto::Ss58Codec, hexdisplay::HexDisplay, Pair, sr25519};
+use runtime_primitives::generic::Era;
 
 use crypto::{Crypto, Sr25519};
 
 mod crypto;
-
-// pub fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
-// 	match xt.signed {
-// 		Some((signed, index)) => {
-// 			let era = Era::immortal();
-// 			let payload = (index.into(), xt.function, era, genesis_hash);
-// 			assert_eq!(key.public(), signed);
-// 			let signature = payload.using_encoded(|b| {
-// 				if b.len() > 256 {
-// 					key.sign(&blake2_256(b))
-// 				} else {
-// 					key.sign(b)
-// 				}
-// 			}).into();
-// 			UncheckedExtrinsic {
-// 				signature: Some((signed.into(), signature, payload.0, era)),
-// 				function: payload.1,
-// 			}
-// 		}
-// 		None => UncheckedExtrinsic {
-// 			signature: None,
-// 			function: xt.function,
-// 		},
-// 	}
-// }
-
 
 // see https://wiki.parity.io/Extrinsic
 pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
@@ -92,3 +63,29 @@ pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: H
 			era,
 		)
 	}
+
+// pub fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
+// 	match xt.signed {
+// 		Some((signed, index)) => {
+// 			let era = Era::immortal();
+// 			let payload = (index.into(), xt.function, era, genesis_hash);
+// 			assert_eq!(key.public(), signed);
+// 			let signature = payload.using_encoded(|b| {
+// 				if b.len() > 256 {
+// 					key.sign(&blake2_256(b))
+// 				} else {
+// 					key.sign(b)
+// 				}
+// 			}).into();
+// 			UncheckedExtrinsic {
+// 				signature: Some((signed.into(), signature, payload.0, era)),
+// 				function: payload.1,
+// 			}
+// 		}
+// 		None => UncheckedExtrinsic {
+// 			signature: None,
+// 			function: xt.function,
+// 		},
+// 	}
+// }
+

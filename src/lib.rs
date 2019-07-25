@@ -15,21 +15,20 @@
 
 */
 #[macro_use]
+extern crate log;
+#[macro_use]
 extern crate serde_derive;
 
-#[macro_use]
-extern crate log;
-
-use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
-use serde_json::{json};
-
-use parity_codec::Decode;
-use node_primitives::Hash;
-use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
-
-use std::sync::mpsc::Sender as ThreadOut;
 use std::sync::mpsc::channel;
+use std::sync::mpsc::Sender as ThreadOut;
 use std::thread;
+
+use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
+use node_primitives::Hash;
+use parity_codec::Decode;
+use serde_json::json;
+use ws::{CloseCode, connect, Handler, Handshake, Message, Result, Sender};
+
 use utils::*;
 
 pub mod extrinsic;

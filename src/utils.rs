@@ -17,8 +17,8 @@
 
 use node_primitives::Hash;
 use primitive_types::U256;
-use primitives::twox_128;
 use primitives::blake2_256;
+use primitives::twox_128;
 
 pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
     let mut key = module.as_bytes().to_vec();

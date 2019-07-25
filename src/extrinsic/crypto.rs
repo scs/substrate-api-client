@@ -1,9 +1,8 @@
-use primitives::{/*ed25519, */sr25519, hexdisplay::HexDisplay, Pair, crypto::Ss58Codec};
-
-use substrate_bip39::mini_secret_from_entropy;
-use bip39::{Mnemonic, Language, MnemonicType};
+use bip39::{Language, Mnemonic, MnemonicType};
+use primitives::{/*ed25519, */crypto::Ss58Codec, hexdisplay::HexDisplay, Pair, sr25519};
 use rand::{RngCore, rngs::OsRng};
 use schnorrkel::keys::MiniSecretKey;
+use substrate_bip39::mini_secret_from_entropy;
 
 pub struct Sr25519;
 
