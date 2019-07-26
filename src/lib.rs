@@ -117,7 +117,7 @@ impl Api {
         start_rpc_getter_thread(self.url.clone(),
                                 jsonreq.clone(),
                                 result_in.clone(),
-                                on_generic_getter_msg);
+                                on_get_request_msg);
 
         Ok(result_out.recv().unwrap())
     }
@@ -223,7 +223,7 @@ impl Handler for GenericGetter {
     }
 }
 
-fn on_generic_getter_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
