@@ -181,10 +181,12 @@ impl Api {
     }
 }
 
+type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
+
 fn start_rpc_getter_thread(url: String,
                            jsonreq: String,
                            result_in: ThreadOut<String>,
-                           on_message_fn: fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>) {
+                           on_message_fn: OnMessageFn) {
 
     let _client = thread::Builder::new()
         .name("client".to_owned())
@@ -205,7 +207,7 @@ struct GenericGetter {
     out: Sender,
     request: String,
     result: ThreadOut<String>,
-    on_message_fn: fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>,
+    on_message_fn: OnMessageFn,
 }
 
 impl Handler for GenericGetter {
