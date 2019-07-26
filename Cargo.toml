@@ -75,7 +75,7 @@ git = 'https://github.com/paritytech/substrate'
 rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "substrate-inherents"
 
-[dependencies.node-runtime]
+[dev-dependencies.node-runtime]
 git = "https://github.com/paritytech/substrate"
 rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 features = [ "std" ]

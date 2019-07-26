@@ -30,7 +30,6 @@ use ws::Result;
 use json_rpc::json_req;
 use utils::*;
 
-pub mod extrinsic;
 pub mod utils;
 pub mod json_rpc;
 
