@@ -21,20 +21,18 @@ extern crate serde_derive;
 
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender as ThreadOut;
-use std::thread;
 
 use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
 use node_primitives::Hash;
 use parity_codec::Decode;
-use ws::{CloseCode, connect, Handler, Handshake, Message, Result, Sender};
+use ws::Result;
 
-use json_req::REQUEST_TRANSFER;
+use json_rpc::json_req;
 use utils::*;
 
 pub mod extrinsic;
 pub mod utils;
-pub mod json_req;
-
+pub mod json_rpc;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonBasic {
@@ -114,10 +112,7 @@ impl Api {
     // low level access
     pub fn get_request(&self, jsonreq: String) -> Result<String> {
         let (result_in, result_out) = channel();
-        start_rpc_getter_thread(self.url.clone(),
-                                jsonreq.clone(),
-                                result_in.clone(),
-                                on_get_request_msg);
+        json_rpc::get(self.url.clone(), jsonreq.clone(), result_in.clone());
 
         Ok(result_out.recv().unwrap())
     }
@@ -136,10 +131,9 @@ impl Api {
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        start_rpc_getter_thread(self.url.clone(),
-                                jsonreq.clone(),
-                                result_in.clone(),
-                                on_extrinsic_msg);
+        json_rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
+                                                          jsonreq.clone(),
+                                                          result_in.clone());
 
         Ok(hexstr_to_hash(result_out.recv().unwrap()))
     }
@@ -151,10 +145,9 @@ impl Api {
 
         let (result_in, result_out) = channel();
 
-        start_rpc_getter_thread(self.url.clone(),
-                                jsonreq.clone(),
-                                result_in.clone(),
-                                on_subscription_msg);
+        json_rpc::start_event_subscriber(self.url.clone(),
+                                         jsonreq.clone(),
+                                         result_in.clone());
 
         loop {
             let res = result_out.recv().unwrap();
@@ -179,123 +172,4 @@ impl Api {
 */
         }
     }
-}
-
-type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
-
-fn start_rpc_getter_thread(url: String,
-                           jsonreq: String,
-                           result_in: ThreadOut<String>,
-                           on_message_fn: OnMessageFn) {
-
-    let _client = thread::Builder::new()
-        .name("client".to_owned())
-        .spawn(move || {
-            connect(url, |out| {
-                GenericGetter {
-                    out: out,
-                    request: jsonreq.clone(),
-                    result: result_in.clone(),
-                    on_message_fn: on_message_fn,
-                }
-            }).unwrap()
-        })
-        .unwrap();
-}
-
-struct GenericGetter {
-    out: Sender,
-    request: String,
-    result: ThreadOut<String>,
-    on_message_fn: OnMessageFn,
-}
-
-impl Handler for GenericGetter {
-    fn on_open(&mut self, _: Handshake) -> Result<()> {
-
-        info!("sending request: {}", self.request);
-        self.out.send(self.request.clone()).unwrap();
-        Ok(())
-    }
-
-    fn on_message(&mut self, msg: Message) -> Result<()> {
-        info!("got message");
-        debug!("{}", msg);
-        (self.on_message_fn)(msg, self.out.clone(), self.result.clone())
-    }
-}
-
-fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
-    let retstr = msg.as_text().unwrap();
-    let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-
-    // FIXME: defaulting zo zero can be problematic. better to use Option<String>
-    let hexstr = match value["result"].as_str() {
-        Some(res) => res.to_string(),
-        _ => "0x00".to_string(),
-    };
-
-    result.send(hexstr).unwrap();
-    out.close(CloseCode::Normal).unwrap();
-    Ok(())
-}
-
-fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>) -> Result<()> {
-    let retstr = msg.as_text().unwrap();
-    let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-    match value["id"].as_str() {
-        Some(_idstr) => { },
-        _ => {
-            // subscriptions
-            debug!("no id field found in response. must be subscription");
-            debug!("method: {:?}", value["method"].as_str());
-            match value["method"].as_str() {
-                Some("state_storage") => {
-                    let _changes = &value["params"]["result"]["changes"];
-                    let _res_str = _changes[0][1].as_str().unwrap().to_string();
-                    result.send(_res_str).unwrap();
-                }
-                _ => error!("unsupported method"),
-            }
-        },
-    };
-    Ok(())
-}
-
-fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
-    let retstr = msg.as_text().unwrap();
-    let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-    match value["id"].as_str() {
-        Some(idstr) => { match idstr.parse::<u32>() {
-            Ok(REQUEST_TRANSFER) => {
-                match value.get("error") {
-                    Some(err) => error!("ERROR: {:?}", err),
-                    _ => debug!("no error"),
-                }
-            },
-            Ok(_) => debug!("unknown request id"),
-            Err(_) => error!("error assigning request id"),
-        }},
-        _ => {
-            // subscriptions
-            debug!("no id field found in response. must be subscription");
-            debug!("method: {:?}", value["method"].as_str());
-            match value["method"].as_str() {
-                Some("author_extrinsicUpdate") => {
-                    match value["params"]["result"].as_str() {
-                        Some(res) => debug!("author_extrinsicUpdate: {}", res),
-                        _ => {
-                            debug!("author_extrinsicUpdate: finalized: {}", value["params"]["result"]["finalized"].as_str().unwrap());
-                            // return result to calling thread
-                            result.send(value["params"]["result"]["finalized"].as_str().unwrap().to_string()).unwrap();
-                            // we've reached the end of the flow. return
-                            out.close(CloseCode::Normal).unwrap();
-                        },
-                    }
-                }
-                _ => error!("unsupported method"),
-            }
-        },
-    };
-    Ok(())
 }
