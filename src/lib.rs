@@ -114,20 +114,11 @@ impl Api {
     // low level access
     pub fn get_request(&self, jsonreq: String) -> Result<String> {
         let (result_in, result_out) = channel();
-        let _url = self.url.clone();
-        let _client = thread::Builder::new()
-            .name("client".to_owned())
-            .spawn(move || {
-                connect(_url, |out| {
-                    GenericGetter {
-                        out: out,
-                        request: jsonreq.clone(),
-                        result: result_in.clone(),
-                        on_message_fn: on_generic_getter_msg,
-                    }
-                }).unwrap()
-            })
-            .unwrap();
+        start_rpc_getter_thread(self.url.clone(),
+                                jsonreq.clone(),
+                                result_in.clone(),
+                                on_generic_getter_msg);
+
         Ok(result_out.recv().unwrap())
     }
 
@@ -145,20 +136,11 @@ impl Api {
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        let _url = self.url.clone();
-        let _client = thread::Builder::new()
-            .name("client".to_owned())
-            .spawn(move || {
-                connect(_url, |out| {
-                    GenericGetter {
-                        out: out,
-                        request: jsonreq.clone(),
-                        result: result_in.clone(),
-                        on_message_fn: on_extrinsic_msg,
-                    }
-                }).unwrap()
-            })
-            .unwrap();
+        start_rpc_getter_thread(self.url.clone(),
+                                jsonreq.clone(),
+                                result_in.clone(),
+                                on_extrinsic_msg);
+
         Ok(hexstr_to_hash(result_out.recv().unwrap()))
     }
 
@@ -168,20 +150,11 @@ impl Api {
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
         let (result_in, result_out) = channel();
-        let _url = self.url.clone();
-        let _client = thread::Builder::new()
-            .name("client".to_owned())
-            .spawn(move || {
-                connect(_url, |out| {
-                    GenericGetter {
-                        out: out,
-                        request: jsonreq.clone(),
-                        result: result_in.clone(),
-                        on_message_fn: on_subscription_msg,
-                    }
-                }).unwrap()
-            })
-            .unwrap();
+
+        start_rpc_getter_thread(self.url.clone(),
+                                jsonreq.clone(),
+                                result_in.clone(),
+                                on_subscription_msg);
 
         loop {
             let res = result_out.recv().unwrap();
@@ -206,6 +179,26 @@ impl Api {
 */
         }
     }
+}
+
+fn start_rpc_getter_thread(url: String,
+                           jsonreq: String,
+                           result_in: ThreadOut<String>,
+                           on_message_fn: fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>) {
+
+    let _client = thread::Builder::new()
+        .name("client".to_owned())
+        .spawn(move || {
+            connect(url, |out| {
+                GenericGetter {
+                    out: out,
+                    request: jsonreq.clone(),
+                    result: result_in.clone(),
+                    on_message_fn: on_message_fn,
+                }
+            }).unwrap()
+        })
+        .unwrap();
 }
 
 struct GenericGetter {
@@ -246,8 +239,6 @@ fn on_generic_getter_msg(msg: Message, out: Sender, result: ThreadOut<String>) -
 }
 
 fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>) -> Result<()> {
-    info!("got message");
-    debug!("{}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
