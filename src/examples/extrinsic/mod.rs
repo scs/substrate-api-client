@@ -22,47 +22,68 @@
 //
 // Replace this crate by your own if you run a custom substrate node
 
-use node_primitives::{Balance, Hash, Index};
-use node_runtime::{BalancesCall, Call, UncheckedExtrinsic};
+use indices::address::Address;
+use node_primitives::{Balance, Hash, Index, Signature};
 use parity_codec::{Compact, Encode};
 use primitive_types::U256;
 use primitives::{/*ed25519, */blake2_256, crypto::Ss58Codec, hexdisplay::HexDisplay, Pair, sr25519};
-use runtime_primitives::generic::Era;
+use runtime_primitives::generic::{Era, UncheckedMortalCompactExtrinsic};
 
 use crypto::{Crypto, Sr25519};
 
+type UncheckedExtrinsic = UncheckedMortalCompactExtrinsic<Address<sr25519::Public, u32>, Index, MyCall, Signature>;
+
 mod crypto;
+
+#[derive(Debug, Encode, PartialEq)]
+pub enum MyCall {
+	_Test(i16),
+	_Test2(u16),
+	_Test3(u32),
+	// In our current setup, the Balances module is the fourth  listed, which does expose calls.
+	// Hence it needs to be listed as fourth variant in an enum to be encoded correctly.
+	Balances(Balances),
+}
+
+#[derive(Debug, Encode, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum Balances {
+	transfer(Address<sr25519::Public, u32>, Compact<u128>),
+}
+
 
 // see https://wiki.parity.io/Extrinsic
 pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
-		let signer = Sr25519::pair_from_suri(from, Some(""));
+	let to = sr25519::Public::from_string(to).ok().or_else(||
+		sr25519::Pair::from_string(to, Some("")).ok().map(|p| p.public())
+	).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.");
 
-		let to = sr25519::Public::from_string(to).ok().or_else(||
-			sr25519::Pair::from_string(to, Some("")).ok().map(|p| p.public())
-		).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.");
-		let amount = Balance::from(amount.low_u128());
-		let index = Index::from(index.low_u64());
+	let amount = Balance::from(amount.low_u128());
+	let function = MyCall::Balances(Balances::transfer(to.into(), Compact(amount)));
+	compose_extrinsic(from, function, index, genesis_hash)
+}
 
-		let function = Call::Balances(BalancesCall::transfer(to.into(), amount));
+pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
+	debug!("using genesis hash: {:?}", genesis_hash);
 
-		let era = Era::immortal();
+	let signer = Sr25519::pair_from_suri(from, Some(""));
+	let era = Era::immortal();
 
-		debug!("using genesis hash: {:?}", genesis_hash);
-		let raw_payload = (Compact(index), function, era, genesis_hash);
-		let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-			signer.sign(&blake2_256(payload)[..])
-		} else {
-			debug!("signing {}", HexDisplay::from(&payload));
-			signer.sign(payload)
-		});
-		UncheckedExtrinsic::new_signed(
-			index,
-			raw_payload.1,
-			signer.public().into(),
-			signature.into(),
-			era,
-		)
+	let index = Index::from(index.low_u64());
+
+	let raw_payload = (Compact(index), function, era, genesis_hash);
+	let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
+		signer.sign(&blake2_256(payload)[..])
+	} else {
+		debug!("signing {}", HexDisplay::from(&payload));
+		signer.sign(payload)
+	});
+
+	UncheckedExtrinsic {
+		signature: Some((signer.public().into(), signature.into(), index.into(), era)),
+		function: raw_payload.1,
 	}
+}
 
 // pub fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
 // 	match xt.signed {
@@ -89,3 +110,23 @@ pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: H
 // 	}
 // }
 
+#[cfg(test)]
+mod tests {
+	use node_runtime::{BalancesCall, Call};
+	use primitive_types::U128;
+
+	use super::*;
+
+	#[test]
+	fn custom_call_encoded_equals_imported_call() {
+		let amount = Balance::from(42 as u128);
+
+		let to = sr25519::Pair::from_string("//Alice", Some("")).ok().map(|p| p.public())
+			.expect("Invalid URI; expecting either a secret URI or a public URI.");
+
+
+		let my_call = MyCall::Balances(balances::transfer(to.clone().into(), Compact(amount))).encode();
+		let balances_call = Call::Balances(BalancesCall::transfer(to.clone().into(), amount)).encode();
+		assert_eq!(my_call, balances_call);
+	}
+}

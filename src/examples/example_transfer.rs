@@ -22,7 +22,6 @@ extern crate env_logger;
 extern crate log;
 extern crate substrate_api_client;
 
-#[macro_use]
 use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
