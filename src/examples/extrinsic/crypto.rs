@@ -1,5 +1,5 @@
 use bip39::{Language, Mnemonic, MnemonicType};
-use primitives::{/*ed25519, */crypto::Ss58Codec, hexdisplay::HexDisplay, Pair, sr25519};
+use primitives::{crypto::Ss58Codec, ed25519,hexdisplay::HexDisplay, Pair, sr25519};
 use rand::{RngCore, rngs::OsRng};
 use schnorrkel::keys::MiniSecretKey;
 use substrate_bip39::mini_secret_from_entropy;
@@ -9,6 +9,8 @@ pub struct Sr25519;
 pub trait Crypto {
     type Seed: AsRef<[u8]> + AsMut<[u8]> + Sized + Default;
     type Pair: Pair;
+    type Public;
+
     fn generate_phrase() -> String {
         Mnemonic::new(MnemonicType::Words12, Language::English).phrase().to_owned()
     }
@@ -24,6 +26,7 @@ pub trait Crypto {
     }
     fn ss58_from_pair(pair: &Self::Pair) -> String;
     fn public_from_pair(pair: &Self::Pair) -> Vec<u8>;
+    fn public_from_suri(phrase: &str, password: Option<&str>) -> Self::Public;
     fn seed_from_pair(_pair: &Self::Pair) -> Option<&Self::Seed> { None }
     fn print_from_seed(seed: &Self::Seed) {
         let pair = Self::pair_from_seed(seed);
@@ -67,6 +70,7 @@ pub trait Crypto {
 impl Crypto for Sr25519 {
     type Seed = [u8; 32];
     type Pair = sr25519::Pair;
+    type Public = sr25519::Public;
 
     fn seed_from_phrase(phrase: &str, password: Option<&str>) -> Self::Seed {
         mini_secret_from_entropy(
@@ -85,6 +89,12 @@ impl Crypto for Sr25519 {
         sr25519::Pair::from_string(suri, password).expect("Invalid phrase")
     }
 
+    fn public_from_suri(suri: &str, password: Option<&str>) -> Self::Public {
+        sr25519::Public::from_string(suri).ok().or_else(||
+            sr25519::Pair::from_string(suri, password).ok().map(|p| p.public())
+        ).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
+    }
+
     fn pair_from_seed(seed: &Self::Seed) -> Self::Pair {
         MiniSecretKey::from_bytes(seed)
             .expect("32 bytes can always build a key; qed")
@@ -94,20 +104,26 @@ impl Crypto for Sr25519 {
     fn public_from_pair(pair: &Self::Pair) -> Vec<u8> { (&pair.public().0[..]).to_owned() }
 }
 
-// struct Ed25519;
+struct Ed25519;
 
-// impl Crypto for Ed25519 {
-// 	type Seed = [u8; 32];
-// 	type Pair = ed25519::Pair;
+impl Crypto for Ed25519 {
+    type Seed = [u8; 32];
+    type Pair = ed25519::Pair;
+    type Public = ed25519::Public;
 
-// 	fn seed_from_phrase(phrase: &str, password: Option<&str>) -> Self::Seed {
-// 		Sr25519::seed_from_phrase(phrase, password)
-// 	}
-// 	fn pair_from_suri(suri: &str, password_override: Option<&str>) -> Self::Pair {
-// 		ed25519::Pair::from_legacy_string(suri, password_override)
-// 	}
-// 	fn pair_from_seed(seed: &Self::Seed) -> Self::Pair { ed25519::Pair::from_seed(seed.clone()) }
-// 	fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
-// 	fn public_from_pair(pair: &Self::Pair) -> Vec<u8> { (&pair.public().0[..]).to_owned() }
-// 	fn seed_from_pair(pair: &Self::Pair) -> Option<&Self::Seed> { Some(pair.seed()) }
-// }
+    fn seed_from_phrase(phrase: &str, password: Option<&str>) -> Self::Seed {
+        Sr25519::seed_from_phrase(phrase, password)
+    }
+    fn pair_from_suri(suri: &str, password_override: Option<&str>) -> Self::Pair {
+        ed25519::Pair::from_legacy_string(suri, password_override)
+    }
+    fn public_from_suri(suri: &str, password_override: Option<&str>) -> Self::Public {
+        ed25519::Public::from_string(suri).ok()
+            .or_else(|| ed25519::Pair::from_string(suri, password_override).ok().map(|p| p.public()))
+            .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
+    }
+    fn pair_from_seed(seed: &Self::Seed) -> Self::Pair { ed25519::Pair::from_seed(seed.clone()) }
+    fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
+    fn public_from_pair(pair: &Self::Pair) -> Vec<u8> { (&pair.public().0[..]).to_owned() }
+    fn seed_from_pair(pair: &Self::Pair) -> Option<&Self::Seed> { Some(pair.seed()) }
+}

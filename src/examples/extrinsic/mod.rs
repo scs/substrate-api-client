@@ -26,12 +26,12 @@ use indices::address::Address;
 use node_primitives::{Balance, Hash, Index, Signature};
 use parity_codec::{Compact, Encode};
 use primitive_types::U256;
-use primitives::{/*ed25519, */blake2_256, crypto::Ss58Codec, hexdisplay::HexDisplay, Pair, sr25519};
+use primitives::{/*ed25519, */blake2_256, hexdisplay::HexDisplay, Pair};
 use runtime_primitives::generic::{Era, UncheckedMortalCompactExtrinsic};
 
 use crypto::{Crypto, Sr25519};
 
-type UncheckedExtrinsic = UncheckedMortalCompactExtrinsic<Address<sr25519::Public, u32>, Index, MyCall, Signature>;
+type UncheckedExtrinsic = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, MyCall, Signature>;
 
 mod crypto;
 
@@ -48,18 +48,16 @@ pub enum MyCall {
 #[derive(Debug, Encode, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum Balances {
-	transfer(Address<sr25519::Public, u32>, Compact<u128>),
+	transfer(Address<[u8; 32], u32>, Compact<u128>),
 }
 
 
 // see https://wiki.parity.io/Extrinsic
 pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
-	let to = sr25519::Public::from_string(to).ok().or_else(||
-		sr25519::Pair::from_string(to, Some("")).ok().map(|p| p.public())
-	).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.");
+	let to = Sr25519::public_from_suri(to, Some(""));
 
 	let amount = Balance::from(amount.low_u128());
-	let function = MyCall::Balances(Balances::transfer(to.into(), Compact(amount)));
+	let function = MyCall::Balances(Balances::transfer(Address::from(to.0), Compact(amount)));
 	compose_extrinsic(from, function, index, genesis_hash)
 }
 
@@ -80,7 +78,7 @@ pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash
 	});
 
 	UncheckedExtrinsic {
-		signature: Some((signer.public().into(), signature.into(), index.into(), era)),
+		signature: Some((Address::from(signer.public().0), signature.into(), index.into(), era)),
 		function: raw_payload.1,
 	}
 }
