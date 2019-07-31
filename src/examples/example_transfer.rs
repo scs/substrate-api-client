@@ -28,10 +28,8 @@ use node_primitives::AccountId;
 use parity_codec::Encode;
 use primitive_types::U256;
 
-use substrate_api_client::{Api};
+use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::utils::hexstr_to_u256;
-
-mod extrinsic;
 
 fn main() {
     env_logger::init();
