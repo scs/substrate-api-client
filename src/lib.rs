@@ -1,4 +1,3 @@
-
 /*
    Copyright 2019 Supercomputing Systems AG
 
@@ -15,29 +14,25 @@
    limitations under the License.
 
 */
-#[macro_use]
-extern crate serde_derive;
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate serde_derive;
 
-use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode};
-use hex;
-use serde_json::{json};
-
-use parity_codec::Decode;
-use node_primitives::Hash;
-use primitives::twox_128;
-use primitives::blake2_256;
-use primitive_types::U256;
+use std::sync::mpsc::channel;
+use std::sync::mpsc::Sender as ThreadOut;
 
 use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
+use node_primitives::Hash;
+use parity_codec::Decode;
+use ws::Result;
 
-use std::sync::mpsc::Sender as ThreadOut;
-use std::sync::mpsc::channel;
-use std::thread;
+use json_rpc::json_req;
+use utils::*;
 
-const REQUEST_TRANSFER: u32         = 3;
+pub mod utils;
+pub mod json_rpc;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonBasic {
@@ -64,23 +59,13 @@ impl Api {
 
     pub fn init(&mut self) {
         // get genesis hash
-        let jsonreq = json!({
-            "method": "chain_getBlockHash",
-            "params": [0],
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
+        let jsonreq = json_req::chain_get_block_hash();
         let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
         self.genesis_hash = Some(hexstr_to_hash(genesis_hash_str));
         info!("got genesis hash: {:?}", self.genesis_hash.unwrap());
 
         //get metadata
-        let jsonreq = json!({
-            "method": "state_getMetadata",
-            "params": null,
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
+        let jsonreq = json_req::state_get_metadata();
         let metadata_str = self.get_request(jsonreq.to_string()).unwrap();
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
@@ -127,19 +112,8 @@ impl Api {
     // low level access
     pub fn get_request(&self, jsonreq: String) -> Result<String> {
         let (result_in, result_out) = channel();
-        let _url = self.url.clone();
-        let _client = thread::Builder::new()
-            .name("client".to_owned())
-            .spawn(move || {
-                connect(_url, |out| {
-                    Getter {
-                        out: out,
-                        request: jsonreq.clone(),
-                        result: result_in.clone(),
-                    }
-                }).unwrap()
-            })
-            .unwrap();
+        json_rpc::get(self.url.clone(), jsonreq.clone(), result_in.clone());
+
         Ok(result_out.recv().unwrap())
     }
 
@@ -147,67 +121,33 @@ impl Api {
         let keyhash = storage_key_hash(module, storage_key_name, param);
 
         debug!("with storage key: {}", keyhash);
-        let jsonreq = json!({
-            "method": "state_getStorage",
-            "params": [keyhash],
-            "jsonrpc": "2.0",
-            "id": "1",
-        });
+        let jsonreq = json_req::state_get_storage(&keyhash);
         self.get_request(jsonreq.to_string())
-
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> Result<Hash> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
 
-        let jsonreq = json!({
-            "method": "author_submitAndWatchExtrinsic",
-            "params": [xthex_prefixed],
-            "jsonrpc": "2.0",
-            "id": REQUEST_TRANSFER.to_string(),
-        }).to_string();
+        let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        let _url = self.url.clone();
-        let _client = thread::Builder::new()
-            .name("client".to_owned())
-            .spawn(move || {
-                connect(_url, |out| {
-                    ExtrinsicHandler {
-                        out: out,
-                        request: jsonreq.clone(),
-                        result: result_in.clone(),
-                    }
-                }).unwrap()
-            })
-            .unwrap();
-        Ok(result_out.recv().unwrap())
+        json_rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
+                                                          jsonreq.clone(),
+                                                          result_in.clone());
+
+        Ok(hexstr_to_hash(result_out.recv().unwrap()))
     }
 
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {
         debug!("subscribing to events");
         let key = storage_key_hash("System", "Events", None);
-        let jsonreq = json!({
-            "method": "state_subscribeStorage",
-            "params": [[key]],
-            "jsonrpc": "2.0",
-            "id": "1",
-        }).to_string();
+        let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
         let (result_in, result_out) = channel();
-        let _url = self.url.clone();
-        let _client = thread::Builder::new()
-            .name("client".to_owned())
-            .spawn(move || {
-                connect(_url, |out| {
-                    SubscriptionHandler {
-                        out: out,
-                        request: jsonreq.clone(),
-                        result: result_in.clone(),
-                    }
-                }).unwrap()
-            })
-            .unwrap();
+
+        json_rpc::start_event_subscriber(self.url.clone(),
+                                         jsonreq.clone(),
+                                         result_in.clone());
 
         loop {
             let res = result_out.recv().unwrap();
@@ -233,170 +173,3 @@ impl Api {
         }
     }
 }
-
-struct Getter {
-    out: Sender,
-    request: String,
-    result: ThreadOut<String>,
-}
-
-impl Handler for Getter {
-    fn on_open(&mut self, _: Handshake) -> Result<()> {
-
-        info!("sending request: {}", self.request);
-        self.out.send(self.request.clone()).unwrap();
-        Ok(())
-    }
-    fn on_message(&mut self, msg: Message) -> Result<()> {
-        info!("got message");
-        debug!("{}", msg);
-        let retstr = msg.as_text().unwrap();
-        let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-
-        // FIXME: defaulting zo zero can be problematic. better to use Option<String>
-        let hexstr = match value["result"].as_str() {
-                        Some(res) => res.to_string(),
-                        _ => "0x00".to_string(),
-        };
-        self.result.send(hexstr).unwrap();
-        self.out.close(CloseCode::Normal).unwrap();
-        Ok(())
-    }
-}
-
-struct SubscriptionHandler {
-    out: Sender,
-    request: String,
-    result: ThreadOut<String>,
-}
-
-impl Handler for SubscriptionHandler {
-    fn on_open(&mut self, _: Handshake) -> Result<()> {
-
-        info!("sending request: {}", self.request);
-        self.out.send(self.request.clone()).unwrap();
-        Ok(())
-    }
-    fn on_message(&mut self, msg: Message) -> Result<()> {
-        info!("got message");
-        debug!("{}", msg);
-        let retstr = msg.as_text().unwrap();
-        let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-        match value["id"].as_str() {
-            Some(_idstr) => { },
-            _ => {
-                // subscriptions
-                debug!("no id field found in response. must be subscription");
-                debug!("method: {:?}", value["method"].as_str());
-                match value["method"].as_str() {
-                    Some("state_storage") => {
-                        let _changes = &value["params"]["result"]["changes"];
-                        let _res_str = _changes[0][1].as_str().unwrap().to_string();
-                        self.result.send(_res_str).unwrap();
-                    }
-                    _ => error!("unsupported method"),
-                }
-            },
-        };
-        Ok(())
-    }
-}
-
-struct ExtrinsicHandler {
-    out: Sender,
-    request: String,
-    result: ThreadOut<Hash>,
-}
-
-impl Handler for ExtrinsicHandler {
-    fn on_open(&mut self, _: Handshake) -> Result<()> {
-        info!("sending request: {}", self.request);
-        self.out.send(self.request.clone()).unwrap();
-        Ok(())
-    }
-
-    fn on_message(&mut self, msg: Message) -> Result<()> {
-        info!("got message");
-        debug!("{}", msg);
-        let retstr = msg.as_text().unwrap();
-        let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-        match value["id"].as_str() {
-            Some(idstr) => { match idstr.parse::<u32>() {
-                Ok(REQUEST_TRANSFER) => {
-                    match value.get("error") {
-                        Some(err) => error!("ERROR: {:?}", err),
-                        _ => debug!("no error"),
-                    }
-                },
-                Ok(_) => debug!("unknown request id"),
-                Err(_) => error!("error assigning request id"),
-            }},
-            _ => {
-                // subscriptions
-                debug!("no id field found in response. must be subscription");
-                debug!("method: {:?}", value["method"].as_str());
-                match value["method"].as_str() {
-                    Some("author_extrinsicUpdate") => {
-                        match value["params"]["result"].as_str() {
-                            Some(res) => debug!("author_extrinsicUpdate: {}", res),
-                            _ => {
-                                debug!("author_extrinsicUpdate: finalized: {}", value["params"]["result"]["finalized"].as_str().unwrap());
-                                // return result to calling thread
-                                self.result.send(hexstr_to_hash(value["params"]["result"]["finalized"].as_str().unwrap().to_string())).unwrap();
-                                // we've reached the end of the flow. return
-                                self.out.close(CloseCode::Normal).unwrap();
-                            },
-                        }
-                    }
-                    _ => error!("unsupported method"),
-                }
-            },
-        };
-        Ok(())
-    }
-}
-
-pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
-        let mut key = module.as_bytes().to_vec();
-        key.append(&mut vec!(' ' as u8));
-        key.append(&mut storage_key_name.as_bytes().to_vec());
-        let mut keyhash;
-        match param {
-            Some(par) => {
-                key.append(&mut par.clone());
-                keyhash = hex::encode(blake2_256(&key));
-                },
-            _ => {
-                keyhash = hex::encode(twox_128(&key));
-                },
-        }
-        keyhash.insert_str(0, "0x");
-        keyhash
-}
-
-pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
-    let mut _hexstr = hexstr.clone();
-    if _hexstr.starts_with("0x") {
-        _hexstr.remove(0);
-        _hexstr.remove(0);
-    }
-    else {
-        info!("converting non-prefixed hex string")
-    }
-    hex::decode(&_hexstr).unwrap()
-}
-
-pub fn hexstr_to_u256(hexstr: String) -> U256 {
-    let _unhex = hexstr_to_vec(hexstr);
-    U256::from_little_endian(&mut &_unhex[..])
-}
-
-pub fn hexstr_to_hash(hexstr: String) -> Hash {
-    let _unhex = hexstr_to_vec(hexstr);
-    let mut gh: [u8; 32] = Default::default();
-    gh.copy_from_slice(&_unhex);
-    Hash::from(gh)
-}
-
-
-

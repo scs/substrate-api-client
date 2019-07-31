@@ -15,22 +15,20 @@
 
 */
 
-extern crate substrate_api_client;
-
- #[macro_use]
- extern crate log;
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
+#[macro_use]
+extern crate log;
+extern crate substrate_api_client;
 
 use clap::App;
-
-use substrate_api_client::{Api, hexstr_to_u256};
-
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
 use parity_codec::Encode;
 
+use substrate_api_client::Api;
+use substrate_api_client::utils::hexstr_to_u256;
 
 fn main() {
     env_logger::init();
