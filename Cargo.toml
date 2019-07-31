@@ -9,22 +9,15 @@ env_logger = "0.6"
 ws = "0.7"
 hex = "0.3"
 log = "0.4"
-rand = "0.6"
 clap = { version = "2.33", features = ["yaml"] }
 serde = "1.0"
 regex = "1.1"
-schnorrkel = "0.1"
-tiny-bip39 = "0.6.0"
 serde_json = "1.0"
 hex-literal = "0.1"
 serde_derive = "1.0"
 parity-codec = { version = "3.3", default-features = false }
 primitive-types = { version = "0.2", default-features = false, features = ["codec"] }
 parity-codec-derive = { version = "3.3", default-features = false }
-
-[dependencies.substrate_bip39]
-git = "https://github.com/paritytech/substrate-bip39"
-package="substrate-bip39"
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
@@ -75,18 +68,13 @@ git = 'https://github.com/paritytech/substrate'
 rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
 package = "sr-primitives"
 
-[dependencies.inherents]
+[dev-dependencies.node_runtime]
 git = 'https://github.com/paritytech/substrate'
 rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
-package = "substrate-inherents"
+package = "node-runtime"
 
-[dev-dependencies.node-runtime]
-git = "https://github.com/paritytech/substrate"
-rev = '56b0273fd48b4e742e9da7317bc8e132a740b684'
-features = [ "std" ]
-
-[dev-dependencies.clap]
-version = "2.33.0"
+[patch."https://github.com/paritytech/substrate-bip39"]
+substrate-bip39 = { path = "substrate-bip39"}
 
 [features]
 default = ["std"]

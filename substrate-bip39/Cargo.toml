@@ -1,0 +1,19 @@
+[package]
+name = "substrate-bip39"
+version = "0.3.1"
+authors = ["Parity Technologies <admin@parity.io>"]
+license = "GPL-3.0"
+edition = "2018"
+description = "Converting BIP39 entropy to valid Substrate (sr25519) SecretKeys"
+documentation = "https://docs.rs/substrate-bip39"
+repository = "https://github.com/paritytech/substrate-bip39"
+
+[dependencies]
+pbkdf2 = { version = "0.3.0", default-features = false }
+sha2 = "0.8.0"
+hmac = "0.7.0"
+schnorrkel = "0.1.0"
+
+[dev-dependencies]
+tiny-bip39 = "0.6.0"
+rustc-hex = "2.0.1"
