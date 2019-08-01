@@ -16,19 +16,20 @@
 */
 
 use indices::address::Address;
-use node_primitives::{Balance, Hash, Index, Signature};
+use node_primitives::{Hash, Index, Signature};
 use parity_codec::{Compact, Encode};
 use primitive_types::U256;
-use primitives::{/*ed25519, */blake2_256, hexdisplay::HexDisplay, Pair};
+use primitives::{blake2_256, hexdisplay::HexDisplay};
+use primitives::offchain::CryptoKind;
 use runtime_primitives::generic::{Era, UncheckedMortalCompactExtrinsic};
 
-use crypto::{Crypto, Sr25519};
+use crypto::AccountKey;
 
 type UncheckedExtrinsic = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, MyCall, Signature>;
 
 mod crypto;
 
-#[derive(Debug, Encode, PartialEq)]
+#[derive(Clone, Debug, Encode, PartialEq)]
 pub enum MyCall {
 	_Test(i16),
 	_Test2(u16),
@@ -38,7 +39,7 @@ pub enum MyCall {
 	Balances(Balances),
 }
 
-#[derive(Debug, Encode, PartialEq)]
+#[derive(Clone, Debug, Encode, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum Balances {
 	transfer(Address<[u8; 32], u32>, Compact<u128>),
@@ -46,23 +47,19 @@ pub enum Balances {
 
 
 // see https://wiki.parity.io/Extrinsic
-pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
-	let to = Sr25519::public_from_suri(to, Some(""));
-
-	let amount = Balance::from(amount.low_u128());
-	let function = MyCall::Balances(Balances::transfer(Address::from(to.0), Compact(amount)));
-	compose_extrinsic(from, function, index, genesis_hash)
+pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind) -> UncheckedExtrinsic {
+	let to = AccountKey::public_from_suri(to, Some(""), crypto_kind);
+	let function = MyCall::Balances(Balances::transfer(Address::from(to), Compact(amount.low_u128())));
+	compose_extrinsic(from, function, index, genesis_hash, crypto_kind)
 }
 
-pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash: Hash) -> UncheckedExtrinsic {
+pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind) -> UncheckedExtrinsic {
 	debug!("using genesis hash: {:?}", genesis_hash);
 
-	let signer = Sr25519::pair_from_suri(from, Some(""));
+	let signer = AccountKey::new(from, Some(""), crypto_kind);
 	let era = Era::immortal();
 
-	let index = Index::from(index.low_u64());
-
-	let raw_payload = (Compact(index), function, era, genesis_hash);
+	let raw_payload = (Compact(index.low_u64()), function, era, genesis_hash);
 	let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 		signer.sign(&blake2_256(payload)[..])
 	} else {
@@ -71,7 +68,7 @@ pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash
 	});
 
 	UncheckedExtrinsic {
-		signature: Some((Address::from(signer.public().0), signature.into(), index.into(), era)),
+		signature: Some((Address::from(signer.public()), signature, index.low_u64().into(), era)),
 		function: raw_payload.1,
 	}
 }
@@ -103,8 +100,9 @@ pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash
 
 #[cfg(test)]
 mod tests {
+	use node_primitives::Balance;
 	use node_runtime::{BalancesCall, Call};
-	use primitive_types::U128;
+	use primitives::{Pair, sr25519};
 
 	use super::*;
 
@@ -112,12 +110,12 @@ mod tests {
 	fn custom_call_encoded_equals_imported_call() {
 		let amount = Balance::from(42 as u128);
 
-		let to = sr25519::Pair::from_string("//Alice", Some("")).ok().map(|p| p.public())
+		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+		let to2 = sr25519::Pair::from_string("//Alice", Some("")).ok().map(|p| p.public())
 			.expect("Invalid URI; expecting either a secret URI or a public URI.");
 
-
-		let my_call = MyCall::Balances(balances::transfer(to.clone().into(), Compact(amount))).encode();
-		let balances_call = Call::Balances(BalancesCall::transfer(to.clone().into(), amount)).encode();
+		let my_call = MyCall::Balances(Balances::transfer(Address::from(to.clone()), Compact(amount))).encode();
+		let balances_call = Call::Balances(BalancesCall::transfer(to2.clone().into(), amount)).encode();
 		assert_eq!(my_call, balances_call);
 	}
 }

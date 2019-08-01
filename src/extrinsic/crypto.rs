@@ -15,14 +15,57 @@
 
 */
 
-use primitives::{crypto::Ss58Codec, ed25519, hexdisplay::HexDisplay, Pair, sr25519};
+use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
+use node_primitives::Signature;
+use primitives::offchain::CryptoKind;
+
+pub enum AccountKey {
+    Ed(ed25519::Pair),
+    Sr(sr25519::Pair),
+}
+
+impl AccountKey {
+    pub fn new(phrase: &str, password: Option<&str>, kind: CryptoKind) -> AccountKey {
+        match kind {
+            CryptoKind::Ed25519 => {
+                let pair = Ed25519::pair_from_suri(phrase, password);
+                AccountKey::Ed(pair)
+            },
+            CryptoKind::Sr25519 => {
+                let pair = Sr25519::pair_from_suri(phrase, password);
+                AccountKey::Sr(pair)
+            }
+        }
+    }
+
+    pub fn public(&self) -> [u8; 32] {
+        match self {
+            AccountKey::Ed(pair) => pair.public().0,
+            AccountKey::Sr(pair) => pair.public().0,
+        }
+    }
+
+    pub fn public_from_suri(phrase: &str, password: Option<&str>, kind: CryptoKind) -> [u8; 32] {
+        match kind {
+            CryptoKind::Ed25519 => Ed25519::public_from_suri(phrase, password).0,
+            CryptoKind::Sr25519 => Sr25519::public_from_suri(phrase, password).0,
+        }
+    }
+
+    pub fn sign(&self, raw_payload: &[u8]) -> Signature {
+        match self {
+            AccountKey::Ed(pair) => pair.sign(raw_payload).into(),
+            AccountKey::Sr(pair) => pair.sign(raw_payload).into(),
+        }
+    }
+}
 
 pub struct Sr25519;
 
 pub trait Crypto {
     type Seed: AsRef<[u8]> + AsMut<[u8]> + Sized + Default;
     type Pair: Pair;
-    type Public;
+    type Public: Ss58Codec + AsRef<[u8]> + std::hash::Hash;
 
     fn pair_from_suri(phrase: &str, password: Option<&str>) -> Self::Pair;
     fn public_from_suri(phrase: &str, password: Option<&str>) -> Self::Public;
