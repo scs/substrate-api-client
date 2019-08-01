@@ -118,4 +118,20 @@ mod tests {
 		let balances_call = Call::Balances(BalancesCall::transfer(to2.clone().into(), amount)).encode();
 		assert_eq!(my_call, balances_call);
 	}
+
+	#[test]
+	fn call_from_meta_data_index_equals_imported_call() {
+		let amount = Balance::from(42 as u128);
+		let balance_module_index = 3u8;
+		let balance_transfer_index = 0u8;
+		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+        let to2 = sr25519::Pair::from_string("//Alice", Some("")).ok().map(|p| p.public())
+            .expect("Invalid URI; expecting either a secret URI or a public URI.");
+
+		let my_call = ([balance_module_index, balance_transfer_index], Address::<[u8; 32], u32>::from(to.clone()), Compact(amount)).encode();
+
+		let balances_call = Call::Balances(BalancesCall::transfer(to2.clone().into(), amount)).encode();
+		assert_eq!(my_call, balances_call);
+	}
+
 }
