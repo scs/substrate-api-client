@@ -22,17 +22,15 @@ extern crate env_logger;
 extern crate log;
 extern crate substrate_api_client;
 
-#[macro_use]
 use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
 use parity_codec::Encode;
 use primitive_types::U256;
+use primitives::offchain::CryptoKind;
 
-use substrate_api_client::{Api};
+use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::utils::hexstr_to_u256;
-
-mod extrinsic;
 
 fn main() {
     env_logger::init();
@@ -55,7 +53,13 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", nonce);
 
     // generate extrinsic
-    let xt= extrinsic::transfer("//Alice", "//Bob", U256::from(42), nonce, api.genesis_hash.unwrap());
+    let xt= extrinsic::transfer("//Alice",
+                                "//Bob",
+                                U256::from(42),
+                                nonce,
+                                api.genesis_hash.unwrap(),
+                                CryptoKind::Sr25519);
+
     debug!("extrinsic: {:?}", xt);
 
     let mut _xthex = hex::encode(xt.encode());
