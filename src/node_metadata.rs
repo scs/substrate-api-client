@@ -26,10 +26,12 @@ pub fn pretty_print(metadata: &RuntimeMetadataPrefixed) {
     println!("{}", String::from_utf8(ser.into_inner()).unwrap());
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+pub type NodeMetadata = Vec<Module>;
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Module {
-    name: String,
-    calls: Vec<Call>,
+    pub name: String,
+    pub calls: Vec<Call>,
 }
 
 impl Module {
@@ -38,10 +40,10 @@ impl Module {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Call {
-    name: String,
-    args: Vec<Arg>,
+    pub name: String,
+    pub args: Vec<Arg>,
 }
 
 impl Call {
@@ -52,8 +54,8 @@ impl Call {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Arg {
-    name: String,
-    ty: String,
+    pub name: String,
+    pub ty: String,
 }
 
 impl Arg {
@@ -76,6 +78,13 @@ pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -
                         match &module.calls {
                             Some(DecodeDifferent::Decoded(calls)) => {
                                 debug!("-------------------- calls ----------------");
+
+                                if calls.is_empty() {
+                                    // indices modules does for some reason list `Some([])' as calls and is thus counted in the call enum
+                                    // there might be others doing the same.
+                                    _mod.calls.push(Default::default())
+                                }
+
                                 for call in calls {
                                     let mut _call = Call::new(&call.name);
                                     match &call.arguments {
@@ -92,9 +101,9 @@ pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -
                             _ => debug!("No calls for this module"),
                         }
                         mod_vec.push(_mod);
-                        for m in &mod_vec {
-                            debug!("{:?}", m);
-                        }
+                    }
+                    for m in &mod_vec {
+                        info!("{:?}", m);
                     }
                     debug!("successfully decoded metadata");
                 },

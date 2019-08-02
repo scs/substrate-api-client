@@ -29,7 +29,7 @@ use node_primitives::Hash;
 use parity_codec::Decode;
 use ws::Result;
 
-use node_metadata::Module;
+use node_metadata::NodeMetadata;
 use json_rpc::json_req;
 use utils::*;
 
@@ -49,7 +49,7 @@ struct JsonBasic {
 pub struct Api {
     url : String,
     pub genesis_hash : Option<Hash>,
-    pub metadata : Vec<Module>,
+    pub metadata : NodeMetadata,
 }
 
 impl Api {
@@ -57,7 +57,7 @@ impl Api {
         Api {
             url : url,
             genesis_hash : None,
-            metadata: Vec::<Module>::new()
+            metadata: Default::default(),
         }
     }
 
