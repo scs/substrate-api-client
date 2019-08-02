@@ -17,21 +17,24 @@
 
 #[macro_use]
 extern crate log;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender as ThreadOut;
 
-use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
+use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
 use parity_codec::Decode;
 use ws::Result;
 
+use node_metadata::Module;
 use json_rpc::json_req;
 use utils::*;
 
 pub mod extrinsic;
+pub mod node_metadata;
 pub mod utils;
 pub mod json_rpc;
 
@@ -46,7 +49,7 @@ struct JsonBasic {
 pub struct Api {
     url : String,
     pub genesis_hash : Option<Hash>,
-    //pub metadata : Option<RuntimeMetadataV4>,
+    pub metadata : Vec<Module>,
 }
 
 impl Api {
@@ -54,7 +57,7 @@ impl Api {
         Api {
             url : url,
             genesis_hash : None,
-//            metadata : None,
+            metadata: Vec::<Module>::new()
         }
     }
 
@@ -72,42 +75,9 @@ impl Api {
         let mut _om = _unhex.as_slice();
         let _meta = RuntimeMetadataPrefixed::decode(&mut _om)
                 .expect("runtime metadata decoding to RuntimeMetadataPrefixed failed.");
-        debug!("decoded: {:?} ", _meta);
-        match _meta.1 {
-            RuntimeMetadata::V5(_value) => {
-                //FIXME: storing metadata in self is problematic because it can't be cloned or synced among threads
-                //self.metadata = Some(value);
-                debug!("successfully decoded metadata");
-            },
-            _ => panic!("unsupported metadata"),
-        }
 
-
-/*                    match value.modules {
-                        DecodeDifferent::Decoded(mods) => {
-                            modules = mods;
-                            println!("module0 {:?}", modules[0]);
-                        },
-                        _ => panic!("unsupported metadata"),
-                    }
-
-            println!("-------------------- modules ----------------");
-            for module in modules {
-                println!("module: {:?}", module.name);
-                match module.name {
-                    DecodeDifferent::Decoded(name) => {
-                        match module.calls {
-                            Some(DecodeDifferent::Decoded(calls)) => {
-                                println!("calls: {:?}", calls);
-                            },
-                            _ => println!("ignoring"),
-                        }
-                        println!("storage: {:?}", module.storage)
-                    },
-                    _ => println!("ignoring"),
-                }
-            }
-            */
+//        configure::pretty_print(&_meta);
+        self.metadata = node_metadata::parse_metadata_into_module_and_call(&_meta)
     }
 
     // low level access
