@@ -58,7 +58,8 @@ fn main() {
                                 U256::from(42),
                                 nonce,
                                 api.genesis_hash.unwrap(),
-                                CryptoKind::Sr25519);
+                                CryptoKind::Sr25519,
+                                api.metadata.clone());
 
     debug!("extrinsic: {:?}", xt);
 

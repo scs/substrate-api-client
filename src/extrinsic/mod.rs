@@ -23,37 +23,25 @@ use primitives::{blake2_256, hexdisplay::HexDisplay};
 use primitives::offchain::CryptoKind;
 use runtime_primitives::generic::{Era, UncheckedMortalCompactExtrinsic};
 
+use calls::{BalanceTransfer, balance_transfer_fn};
 use crypto::AccountKey;
 
-type UncheckedExtrinsic = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, MyCall, Signature>;
+use crate::node_metadata::NodeMetadata;
 
+type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, F, Signature>;
+
+pub mod calls;
 mod crypto;
-
-#[derive(Clone, Debug, Encode, PartialEq)]
-pub enum MyCall {
-	_Test(i16),
-	_Test2(u16),
-	_Test3(u32),
-	// In our current setup, the Balances module is the fourth  listed, which does expose calls.
-	// Hence it needs to be listed as fourth variant in an enum to be encoded correctly.
-	Balances(Balances),
-}
-
-#[derive(Clone, Debug, Encode, PartialEq)]
-#[allow(non_camel_case_types)]
-pub enum Balances {
-	transfer(Address<[u8; 32], u32>, Compact<u128>),
-}
 
 
 // see https://wiki.parity.io/Extrinsic
-pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind) -> UncheckedExtrinsic {
+pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
 	let to = AccountKey::public_from_suri(to, Some(""), crypto_kind);
-	let function = MyCall::Balances(Balances::transfer(Address::from(to), Compact(amount.low_u128())));
-	compose_extrinsic(from, function, index, genesis_hash, crypto_kind)
+	let function = balance_transfer_fn(Address::from(to), amount.low_u128(), node_metadata);
+	compose_extrinsic::<BalanceTransfer>(from, function, index, genesis_hash, crypto_kind)
 }
 
-pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind) -> UncheckedExtrinsic {
+pub fn compose_extrinsic<F: Encode>(from: &str, function: F, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind) -> UncheckedExtrinsic<F> {
 	debug!("using genesis hash: {:?}", genesis_hash);
 
 	let signer = AccountKey::new(from, Some(""), crypto_kind);
@@ -73,65 +61,31 @@ pub fn compose_extrinsic(from: &str, function: MyCall, index: U256, genesis_hash
 	}
 }
 
-// pub fn sign(xt: CheckedExtrinsic, key: &sr25519::Pair, genesis_hash: Hash) -> UncheckedExtrinsic {
-// 	match xt.signed {
-// 		Some((signed, index)) => {
-// 			let era = Era::immortal();
-// 			let payload = (index.into(), xt.function, era, genesis_hash);
-// 			assert_eq!(key.public(), signed);
-// 			let signature = payload.using_encoded(|b| {
-// 				if b.len() > 256 {
-// 					key.sign(&blake2_256(b))
-// 				} else {
-// 					key.sign(b)
-// 				}
-// 			}).into();
-// 			UncheckedExtrinsic {
-// 				signature: Some((signed.into(), signature, payload.0, era)),
-// 				function: payload.1,
-// 			}
-// 		}
-// 		None => UncheckedExtrinsic {
-// 			signature: None,
-// 			function: xt.function,
-// 		},
-// 	}
-// }
-
 #[cfg(test)]
 mod tests {
 	use node_primitives::Balance;
-	use node_runtime::{BalancesCall, Call};
-	use primitives::{Pair, sr25519};
+
+	use crate::Api;
 
 	use super::*;
 
 	#[test]
-	fn custom_call_encoded_equals_imported_call() {
-		let amount = Balance::from(42 as u128);
-
-		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
-		let to2 = sr25519::Pair::from_string("//Alice", Some("")).ok().map(|p| p.public())
-			.expect("Invalid URI; expecting either a secret URI or a public URI.");
-
-		let my_call = MyCall::Balances(Balances::transfer(Address::from(to.clone()), Compact(amount))).encode();
-		let balances_call = Call::Balances(BalancesCall::transfer(to2.clone().into(), amount)).encode();
-		assert_eq!(my_call, balances_call);
-	}
-
-	#[test]
 	fn call_from_meta_data_index_equals_imported_call() {
-		let amount = Balance::from(42 as u128);
+		let node_ip = "127.0.0.1";
+		let node_port = "9500";
+		let url = format!("{}:{}", node_ip, node_port);
 		let balance_module_index = 3u8;
 		let balance_transfer_index = 0u8;
+		println!("Interacting with node on {}", url);
+
+		let mut api = Api::new(format!("ws://{}", url));
+		api.init();
+
+		let amount = Balance::from(42 as u128);
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
-        let to2 = sr25519::Pair::from_string("//Alice", Some("")).ok().map(|p| p.public())
-            .expect("Invalid URI; expecting either a secret URI or a public URI.");
 
 		let my_call = ([balance_module_index, balance_transfer_index], Address::<[u8; 32], u32>::from(to.clone()), Compact(amount)).encode();
-
-		let balances_call = Call::Balances(BalancesCall::transfer(to2.clone().into(), amount)).encode();
-		assert_eq!(my_call, balances_call);
+		let transfer_fn = balance_transfer_fn(Address::<[u8; 32], u32>::from(to.clone()), amount, api.metadata.clone()).encode();
+		assert_eq!(my_call, transfer_fn);
 	}
-
 }
