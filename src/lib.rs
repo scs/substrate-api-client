@@ -34,6 +34,7 @@ use node_metadata::NodeMetadata;
 use json_rpc::json_req;
 use utils::*;
 
+#[macro_use]
 pub mod extrinsic;
 pub mod node_metadata;
 pub mod utils;
@@ -46,7 +47,7 @@ struct JsonBasic {
     params: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Api {
     url : String,
     pub genesis_hash : Option<Hash>,

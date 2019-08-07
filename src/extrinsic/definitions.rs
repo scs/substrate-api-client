@@ -16,35 +16,13 @@
 */
 
 use indices::address::Address;
+use node_primitives::{Index, Signature};
 use parity_codec::Compact;
-
-use crate::node_metadata::NodeMetadata;
+use runtime_primitives::generic::UncheckedMortalCompactExtrinsic;
 
 pub const BALANCES_MODULE_NAME: &str = "balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 
 pub type GenericAddress = Address<[u8; 32], u32>;
 pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
-
-
-#[macro_export]
-macro_rules! compose_call {
-    ( $ node_metadata: expr, $ module: expr, $ call_name: expr, $ ($args: expr), + ) => {
-        {
-            let mut metad = $node_metadata;
-            metad.retain(|m| !m.calls.is_empty());
-
-            let module_index = metad
-            .iter().position( | m | m.name == $module).unwrap();
-
-            let call_index = metad[module_index].calls
-            .iter().position( | c| c.name == $call_name).unwrap();
-
-            ([module_index as u8, call_index as u8], $( ($args)), +)
-        }
-    };
-}
-
-pub fn balance_transfer_fn(to: GenericAddress, amount: u128, metadata: NodeMetadata) -> BalanceTransfer {
-    compose_call!(metadata, BALANCES_MODULE_NAME, BALANCES_TRANSFER, to, Compact(amount))
-}
+pub type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<GenericAddress, Index, F, Signature>;

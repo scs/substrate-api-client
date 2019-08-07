@@ -15,51 +15,34 @@
 
 */
 
-use indices::address::Address;
-use node_primitives::{Hash, Index, Signature};
-use parity_codec::{Compact, Encode};
+use node_primitives::Hash;
 use primitive_types::U256;
-use primitives::{blake2_256, hexdisplay::HexDisplay};
 use primitives::offchain::CryptoKind;
-use runtime_primitives::generic::{Era, UncheckedMortalCompactExtrinsic};
 
-use calls::{balance_transfer_fn, BalanceTransfer};
+use definitions::*;
 use crypto::AccountKey;
 
 use crate::node_metadata::NodeMetadata;
 
-pub type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, F, Signature>;
-
-#[macro_use]
-pub mod calls;
+pub mod definitions;
 pub mod crypto;
 
+#[macro_export]
+macro_rules! compose_call {
+    ($node_metadata: expr, $module: expr, $call_name: expr, $($args: expr),+ ) => {
+        {
+            let mut metad = $node_metadata;
+            metad.retain(|m| !m.calls.is_empty());
 
-// see https://wiki.parity.io/Extrinsic
-pub fn transfer(from: &str, to: &str, amount: U256, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
-	let to = AccountKey::public_from_suri(to, Some(""), crypto_kind);
-	let function = balance_transfer_fn(Address::from(to), amount.low_u128(), node_metadata);
-	compose_extrinsic::<BalanceTransfer>(from, function, index, genesis_hash, crypto_kind)
-}
+            let module_index = metad
+            .iter().position( | m | m.name == $module).unwrap();
 
-pub fn compose_extrinsic<F: Encode>(from: &str, function: F, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind) -> UncheckedExtrinsic<F> {
-	debug!("using genesis hash: {:?}", genesis_hash);
+            let call_index = metad[module_index].calls
+            .iter().position( | c| c.name == $call_name).unwrap();
 
-	let signer = AccountKey::new(from, Some(""), crypto_kind);
-	let era = Era::immortal();
-
-	let raw_payload = (Compact(index.low_u64()), function, era, genesis_hash);
-	let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-		signer.sign(&blake2_256(payload)[..])
-	} else {
-		debug!("signing {}", HexDisplay::from(&payload));
-		signer.sign(payload)
-	});
-
-	UncheckedExtrinsic {
-		signature: Some((Address::from(signer.public()), signature, index.low_u64().into(), era)),
-		function: raw_payload.1,
-	}
+            ([module_index as u8, call_index as u8], $( ($args)), +)
+        }
+    };
 }
 
 #[macro_export]
@@ -76,14 +59,12 @@ macro_rules! compose {
 			use parity_codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
 			use indices::address::Address;
-			use node_primitives::{Hash, Index, Signature};
 			use runtime_primitives::generic::Era;
-			use substrate_api_client::extrinsic::{crypto::AccountKey, UncheckedExtrinsic};
-			use substrate_api_client::compose_call;
+			use crate::extrinsic::{crypto::AccountKey, definitions::UncheckedExtrinsic};
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let call = compose_call!($node_metadata, $module, $call, $( ($args)), +);
+			let call = $crate::compose_call!($node_metadata, $module, $call, $( ($args)), +);
 			let signer = AccountKey::new($from, Some(""), $crypto_kind);
 			let era = Era::immortal();
 
@@ -101,6 +82,11 @@ macro_rules! compose {
 			}
 		}
     };
+}
+
+pub fn transfer(from: &str, to: &str, amount: u128, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
+	let to = AccountKey::public_from_suri(to, Some(""), crypto_kind);
+	compose!(node_metadata, genesis_hash, crypto_kind, BALANCES_MODULE_NAME, BALANCES_TRANSFER, index, from, Address::from(to), Compact(amount))
 }
 
 #[cfg(test)]
