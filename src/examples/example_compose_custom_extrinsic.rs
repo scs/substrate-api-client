@@ -26,9 +26,7 @@ use clap::App;
 use indices::address::Address;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
-use parity_codec::Compact;
 use parity_codec::Encode;
-use primitive_types::U256;
 use primitives::offchain::CryptoKind;
 use node_primitives::Balance;
 
@@ -71,15 +69,17 @@ fn main() {
 
     let to = extrinsic::crypto::AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
     let to = Address::<[u8; 32], u32>::from(to);
-    let xt = compose!(api.metadata.clone(),
-                                 api.genesis_hash.unwrap(),
-                                CryptoKind::Sr25519,
-                                "balances",
-                                "transfer",
-                                nonce,
-                                "//Alice",
-                                to,
-                                Compact(Balance::from(42 as u128)));
+    let xt = compose!(
+        api.metadata.clone(),
+        api.genesis_hash.unwrap(),
+        CryptoKind::Sr25519,
+        "balances",
+        "transfer",
+        nonce,
+        "//Alice",
+        to,
+        Compact(Balance::from(42 as u128))
+    );
 
     let mut _xthex = hex::encode(xt.encode());
     _xthex.insert_str(0, "0x");

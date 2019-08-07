@@ -64,43 +64,42 @@ pub fn compose_extrinsic<F: Encode>(from: &str, function: F, index: U256, genesi
 
 #[macro_export]
 macro_rules! compose {
-    ($node_metadata: expr,
-    $genesis_hash: expr,
-    $crypto_kind: expr,
-    $module: expr,
-    $call_name: expr,
-    $nonce: expr,
-    $from: expr,
-    $($args: expr), + ) => {
-        {
-               use parity_codec::{Compact, Encode};
-               use primitives::{blake2_256, hexdisplay::HexDisplay};
-               use indices::address::Address;
-               use node_primitives::{Hash, Index, Signature};
-               use runtime_primitives::generic::Era;
-               use substrate_api_client::extrinsic::crypto::AccountKey;
-               use substrate_api_client::extrinsic::UncheckedExtrinsic;
-               use substrate_api_client::compose_call;
+	($node_metadata: expr,
+	$genesis_hash: expr,
+	$crypto_kind: expr,
+	$module: expr,
+	$call: expr,
+	$nonce: expr,
+	$from: expr,
+	$($args: expr), + ) => {
+		{
+			use parity_codec::{Compact, Encode};
+			use primitives::{blake2_256, hexdisplay::HexDisplay};
+			use indices::address::Address;
+			use node_primitives::{Hash, Index, Signature};
+			use runtime_primitives::generic::Era;
+			use substrate_api_client::extrinsic::{crypto::AccountKey, UncheckedExtrinsic};
+			use substrate_api_client::compose_call;
 
-				println!("Module: {:?}", $module);
-				println!("Call: {:?}", $call_name);
-               let call = compose_call!($node_metadata, $module, $call_name, $( ($args)), +);
-			   let signer = AccountKey::new($from, Some(""), $crypto_kind);
-			   let era = Era::immortal();
+			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			   let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
-			   let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-					   signer.sign(&blake2_256(payload)[..])
-			   } else {
-					   debug!("signing {}", HexDisplay::from(&payload));
-					   signer.sign(payload)
-			   });
+			let call = compose_call!($node_metadata, $module, $call, $( ($args)), +);
+			let signer = AccountKey::new($from, Some(""), $crypto_kind);
+			let era = Era::immortal();
 
-			   UncheckedExtrinsic {
-					   signature: Some((Address::from(signer.public()), signature, $nonce.low_u64().into(), era)),
-					   function: raw_payload.1,
-			   }
-        }
+			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
+				signer.sign(&blake2_256(payload)[..])
+			} else {
+				debug!("signing {}", HexDisplay::from(&payload));
+				signer.sign(payload)
+			});
+
+			UncheckedExtrinsic {
+				signature: Some((Address::from(signer.public()), signature, $nonce.low_u64().into(), era)),
+				function: raw_payload.1,
+			}
+		}
     };
 }
 
