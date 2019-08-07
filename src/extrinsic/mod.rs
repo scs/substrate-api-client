@@ -30,6 +30,7 @@ use crate::node_metadata::NodeMetadata;
 
 type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, F, Signature>;
 
+#[macro_use]
 pub mod calls;
 mod crypto;
 

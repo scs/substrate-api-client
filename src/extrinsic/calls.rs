@@ -17,23 +17,33 @@
 
 use indices::address::Address;
 use parity_codec::Compact;
+
 use crate::node_metadata::NodeMetadata;
 
 pub const BALANCES_MODULE_NAME: &str = "balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 
-pub type BalanceTransfer = ([u8; 2], Address::<[u8; 32], u32>, Compact<u128>);
+pub type GenericAddress = Address<[u8; 32], u32>;
+pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
 
-pub fn balance_transfer_fn(to: Address::<[u8; 32], u32>, amount: u128, mut metadata: NodeMetadata) -> BalanceTransfer {
-    metadata.retain(|m| !m.calls.is_empty());
 
-    let balance_module_index = metadata
-    .iter().position(|m| m.name == BALANCES_MODULE_NAME)
-        .unwrap();
+#[macro_export]
+macro_rules! compose_call {
+    ( $ node_metadata: expr, $ module: expr, $ call_name: expr, $ ($args: expr), + ) => {
+        {
+            $node_metadata.retain(|m| !m.calls.is_empty());
 
-    let balance_transfer_index = metadata[balance_module_index].calls
-        .iter().position(|c| c.name == BALANCES_TRANSFER)
-        .unwrap();
+            let module_index = $node_metadata
+            .iter().position( | m | m.name == $module).unwrap();
 
-    ([balance_module_index as u8, balance_transfer_index as u8], to, Compact(amount))
+            let call_index = $node_metadata[module_index].calls
+            .iter().position( | c| c.name == $call_name).unwrap();
+
+            ([module_index as u8, call_index as u8], $( ($args)), +)
+        }
+    };
+}
+
+pub fn balance_transfer_fn(to: GenericAddress, amount: u128, mut metadata: NodeMetadata) -> BalanceTransfer {
+    compose_call!(metadata, BALANCES_MODULE_NAME, BALANCES_TRANSFER, to, Compact(amount))
 }
