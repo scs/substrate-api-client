@@ -46,7 +46,7 @@ macro_rules! compose_call {
 }
 
 #[macro_export]
-macro_rules! compose {
+macro_rules! compose_extrinsic {
 	($node_metadata: expr,
 	$genesis_hash: expr,
 	$crypto_kind: expr,
@@ -86,7 +86,7 @@ macro_rules! compose {
 
 pub fn transfer(from: &str, to: &str, amount: u128, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
 	let to = AccountKey::public_from_suri(to, Some(""), crypto_kind);
-	compose!(node_metadata, genesis_hash, crypto_kind, BALANCES_MODULE_NAME, BALANCES_TRANSFER, index, from, Address::from(to), Compact(amount))
+	compose_extrinsic!(node_metadata, genesis_hash, crypto_kind, BALANCES_MODULE_NAME, BALANCES_TRANSFER, index, from, Address::from(to), Compact(amount))
 }
 
 #[cfg(test)]

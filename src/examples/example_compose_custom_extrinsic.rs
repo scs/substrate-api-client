@@ -32,7 +32,7 @@ use node_primitives::Balance;
 
 
 use substrate_api_client::{Api, extrinsic};
-use substrate_api_client::compose;
+use substrate_api_client::compose_extrinsic;
 use substrate_api_client::utils::hexstr_to_u256;
 
 fn main() {
@@ -69,7 +69,7 @@ fn main() {
 
     let to = extrinsic::crypto::AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
     let to = Address::<[u8; 32], u32>::from(to);
-    let xt = compose!(
+    let xt = compose_extrinsic!(
         api.metadata.clone(),
         api.genesis_hash.unwrap(),
         CryptoKind::Sr25519,
