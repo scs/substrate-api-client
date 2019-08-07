@@ -23,16 +23,16 @@ use primitives::{blake2_256, hexdisplay::HexDisplay};
 use primitives::offchain::CryptoKind;
 use runtime_primitives::generic::{Era, UncheckedMortalCompactExtrinsic};
 
-use calls::{BalanceTransfer, balance_transfer_fn};
+use calls::{balance_transfer_fn, BalanceTransfer};
 use crypto::AccountKey;
 
 use crate::node_metadata::NodeMetadata;
 
-type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, F, Signature>;
+pub type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<Address<[u8; 32], u32>, Index, F, Signature>;
 
 #[macro_use]
 pub mod calls;
-mod crypto;
+pub mod crypto;
 
 
 // see https://wiki.parity.io/Extrinsic
@@ -60,6 +60,48 @@ pub fn compose_extrinsic<F: Encode>(from: &str, function: F, index: U256, genesi
 		signature: Some((Address::from(signer.public()), signature, index.low_u64().into(), era)),
 		function: raw_payload.1,
 	}
+}
+
+#[macro_export]
+macro_rules! compose {
+    ($node_metadata: expr,
+    $genesis_hash: expr,
+    $crypto_kind: expr,
+    $module: expr,
+    $call_name: expr,
+    $nonce: expr,
+    $from: expr,
+    $($args: expr), + ) => {
+        {
+               use parity_codec::{Compact, Encode};
+               use primitives::{blake2_256, hexdisplay::HexDisplay};
+               use indices::address::Address;
+               use node_primitives::{Hash, Index, Signature};
+               use runtime_primitives::generic::Era;
+               use substrate_api_client::extrinsic::crypto::AccountKey;
+               use substrate_api_client::extrinsic::UncheckedExtrinsic;
+               use substrate_api_client::compose_call;
+
+				println!("Module: {:?}", $module);
+				println!("Call: {:?}", $call_name);
+               let call = compose_call!($node_metadata, $module, $call_name, $( ($args)), +);
+			   let signer = AccountKey::new($from, Some(""), $crypto_kind);
+			   let era = Era::immortal();
+
+			   let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+			   let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
+					   signer.sign(&blake2_256(payload)[..])
+			   } else {
+					   debug!("signing {}", HexDisplay::from(&payload));
+					   signer.sign(payload)
+			   });
+
+			   UncheckedExtrinsic {
+					   signature: Some((Address::from(signer.public()), signature, $nonce.low_u64().into(), era)),
+					   function: raw_payload.1,
+			   }
+        }
+    };
 }
 
 #[cfg(test)]

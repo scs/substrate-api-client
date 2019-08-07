@@ -31,12 +31,13 @@ pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
 macro_rules! compose_call {
     ( $ node_metadata: expr, $ module: expr, $ call_name: expr, $ ($args: expr), + ) => {
         {
-            $node_metadata.retain(|m| !m.calls.is_empty());
+            let mut metad = $node_metadata;
+            metad.retain(|m| !m.calls.is_empty());
 
-            let module_index = $node_metadata
+            let module_index = metad
             .iter().position( | m | m.name == $module).unwrap();
 
-            let call_index = $node_metadata[module_index].calls
+            let call_index = metad[module_index].calls
             .iter().position( | c| c.name == $call_name).unwrap();
 
             ([module_index as u8, call_index as u8], $( ($args)), +)
@@ -44,6 +45,6 @@ macro_rules! compose_call {
     };
 }
 
-pub fn balance_transfer_fn(to: GenericAddress, amount: u128, mut metadata: NodeMetadata) -> BalanceTransfer {
+pub fn balance_transfer_fn(to: GenericAddress, amount: u128, metadata: NodeMetadata) -> BalanceTransfer {
     compose_call!(metadata, BALANCES_MODULE_NAME, BALANCES_TRANSFER, to, Compact(amount))
 }

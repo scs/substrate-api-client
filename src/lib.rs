@@ -14,6 +14,7 @@
    limitations under the License.
 
 */
+#![macro_use]
 
 #[macro_use]
 extern crate log;
