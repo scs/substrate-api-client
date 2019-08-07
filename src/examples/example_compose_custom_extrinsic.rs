@@ -55,31 +55,15 @@ fn main() {
     let nonce = hexstr_to_u256(result_str);
     println!("[+] Alice's Account Nonce is {}", nonce);
 
-    // generate extrinsic
-//    let xt: Vec<u8> = compose!(api.metadata.clone(),
-//                                 api.genesis_hash.unwrap(),
-//                                CryptoKind::Sr25519,
-//                                "substratee_registry",
-//                                "confirm_call",
-//                                nonce,
-//                                "//Alice",
-//                               vec![9u8; 2],
-//                               vec![2u8; 2]);
-
-
-    let to = extrinsic::crypto::AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
-    let to = Address::<[u8; 32], u32>::from(to);
-    let xt = compose_extrinsic!(
-        api.metadata.clone(),
-        api.genesis_hash.unwrap(),
-        CryptoKind::Sr25519,
-        "balances",
-        "transfer",
-        nonce,
-        "//Alice",
-        to,
-        Compact(Balance::from(42 as u128))
-    );
+    let xt = compose_extrinsic!(api.metadata.clone(),
+                                 api.genesis_hash.unwrap(),
+                                CryptoKind::Sr25519,
+                                "substratee_registry",
+                                "confirm_call",
+                                nonce,
+                                "//Alice",
+                               vec![9u8; 2],
+                               vec![2u8; 2]);
 
     let mut _xthex = hex::encode(xt.encode());
     _xthex.insert_str(0, "0x");
