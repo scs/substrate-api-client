@@ -1,3 +1,8 @@
+# Note: This version is of bip39 differs from the original one in the schnorrkel dependency.
+# Reason for this change was that in the substrate revision that was worked with during the
+# development of the substrate-api-client, substrate did not tag the bip39 dependency to a fixed
+# version, which in turn gave a dependency collision when bip39 updated schnorrkel.
+
 [package]
 name = "substrate-bip39"
 version = "0.3.1"
