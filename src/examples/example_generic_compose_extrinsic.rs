@@ -23,7 +23,6 @@ extern crate log;
 extern crate substrate_api_client;
 
 use clap::App;
-use indices::address::Address;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
 use node_primitives::Balance;
@@ -31,9 +30,10 @@ use parity_codec::Encode;
 use primitives::offchain::CryptoKind;
 
 use substrate_api_client::{Api, extrinsic};
+// compose_extrinsic is only found if extrinsic is imported as well ?!?
 use substrate_api_client::compose_extrinsic;
+use substrate_api_client::extrinsic::{crypto::AccountKey, definitions::GenericAddress};
 use substrate_api_client::utils::hexstr_to_u256;
-use substrate_api_client::extrinsic::crypto::AccountKey;
 
 fn main() {
     env_logger::init();
@@ -56,15 +56,17 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", nonce);
 
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
     let xt = compose_extrinsic!(api.metadata.clone(),
                                 api.genesis_hash.unwrap(),
-                                "substratee_registry",
-                                "confirm_call",
+                                "balances",
+                                "transfer",
                                 nonce,
                                 from,
-                                vec![9u8; 2],
-                                vec![2u8; 2]);
+                                GenericAddress::from(to),
+                                Compact(Balance::from(42 as u128))
+                                );
 
     let mut _xthex = hex::encode(xt.encode());
     _xthex.insert_str(0, "0x");

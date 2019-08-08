@@ -97,5 +97,5 @@ name = "example_event_callback"
 path = "src/examples/example_event_callback.rs"
 
 [[example]]
-name = "example_compose_custom_extrinsic"
-path = "src/examples/example_compose_custom_extrinsic.rs"
+name = "example_generic_compose_extrinsic"
+path = "src/examples/example_generic_compose_extrinsic.rs"
