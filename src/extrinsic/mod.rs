@@ -34,12 +34,12 @@ macro_rules! compose_call {
             meta.retain(|m| !m.calls.is_empty());
 
             let module_index = meta
-            .iter().position(|m| m.name == $module).unwrap();
+            .iter().position(|m| m.name == $module).expect("Module not found in Metadata");
 
             let call_index = meta[module_index].calls
-            .iter().position(|c| c.name == $call_name).unwrap();
+            .iter().position(|c| c.name == $call_name).expect("Call not found in Module");
 
-            ([module_index as u8, call_index as u8], $( ($args)), +)
+            ([module_index as u8, call_index as u8], $(($args)), +)
         }
     };
 }
@@ -63,7 +63,7 @@ macro_rules! compose_extrinsic {
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let call = $crate::compose_call!($node_metadata, $module, $call, $( ($args)), +);
+			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
 			let era = Era::immortal();
 
 			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
@@ -91,11 +91,14 @@ mod tests {
 	use node_primitives::Balance;
 
 	use crate::Api;
+	use crypto::AccountKey;
+	use primitives::offchain::CryptoKind;
+	use parity_codec::{Compact, Encode};
 
 	use super::*;
 
 	#[test]
-	fn call_from_meta_data_index_equals_imported_call() {
+	fn call_from_meta_data_works() {
 		let node_ip = "127.0.0.1";
 		let node_port = "9500";
 		let url = format!("{}:{}", node_ip, node_port);
@@ -106,11 +109,12 @@ mod tests {
 		let mut api = Api::new(format!("ws://{}", url));
 		api.init();
 
+
 		let amount = Balance::from(42 as u128);
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
 
-		let my_call = ([balance_module_index, balance_transfer_index], Address::<[u8; 32], u32>::from(to.clone()), Compact(amount)).encode();
-		let transfer_fn = balance_transfer_fn(Address::<[u8; 32], u32>::from(to.clone()), amount, api.metadata.clone()).encode();
+		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+		let transfer_fn = compose_call!(api.metadata.clone(), "balances", "transfer", GenericAddress::from(to), Compact(amount)).encode();
 		assert_eq!(my_call, transfer_fn);
 	}
 }
