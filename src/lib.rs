@@ -126,24 +126,6 @@ impl Api {
         loop {
             let res = result_out.recv().unwrap();
             sender.send(res.clone()).unwrap();
-
-            /*
-                        //println!("client >>>> got {}", res);
-                        let _unhex = hexstr_to_vec(res);
-                        let mut _er_enc = _unhex.as_slice();
-                        //let _event = balances::RawEvent::decode(&mut _er_enc2);
-                        let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
-                        match _events {
-                            Some(evts) => {
-                                for ev in &evts {
-                                    println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
-                                    sender.send(ev.event.clone()).unwrap();
-                                }
-                            }
-                            None => println!("couldn't decode event record list")
-                        }
-                        //self.result.send(_events).unwrap();
-            */
         }
     }
 }
