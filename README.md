@@ -47,9 +47,14 @@ See [example_get_storage.rs](./src/bin/example_get_storage.rs)
 ## Sending transactions
 See [example_transfer.rs](./src/bin/example_transfer.rs)
 
+## Sending generic extrinsics
+See [example_generic_extrinsic.rs](./src/bin/example_generic_extrinsic.rs)
+
 ## Execute code upon events
 See [example_event_callback.rs](./src/bin/example_event_callback.rs)
 
+## Pretty print metadata
+See [example_print_metadata.rs](./src/bin/example_print_metadata.rs)
+
 ## TODO
-  * dynamic API from metadata
-  * compose custom runtime module extrinsics generically
+  * ink! contract helper
