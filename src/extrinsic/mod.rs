@@ -30,13 +30,13 @@ pub mod crypto;
 macro_rules! compose_call {
     ($node_metadata: expr, $module: expr, $call_name: expr, $($args: expr),+ ) => {
         {
-            let mut metad = $node_metadata;
-            metad.retain(|m| !m.calls.is_empty());
+            let mut meta = $node_metadata;
+            meta.retain(|m| !m.calls.is_empty());
 
-            let module_index = metad
+            let module_index = meta
             .iter().position(|m| m.name == $module).unwrap();
 
-            let call_index = metad[module_index].calls
+            let call_index = meta[module_index].calls
             .iter().position(|c| c.name == $call_name).unwrap();
 
             ([module_index as u8, call_index as u8], $( ($args)), +)
@@ -44,6 +44,7 @@ macro_rules! compose_call {
     };
 }
 
+/// Macro that generates a Unchecked extrinsic for a given module and call passed as a String.
 #[macro_export]
 macro_rules! compose_extrinsic {
 	($node_metadata: expr,
@@ -81,8 +82,8 @@ macro_rules! compose_extrinsic {
     };
 }
 
-pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, index: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
-	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, index, from, to, Compact(amount))
+pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
+	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, nonce, from, to, Compact(amount))
 }
 
 #[cfg(test)]
