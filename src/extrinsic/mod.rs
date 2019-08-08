@@ -17,7 +17,6 @@
 
 use node_primitives::Hash;
 use primitive_types::U256;
-use primitives::offchain::CryptoKind;
 
 use definitions::*;
 use crypto::AccountKey;
@@ -49,7 +48,6 @@ macro_rules! compose_call {
 macro_rules! compose_extrinsic {
 	($node_metadata: expr,
 	$genesis_hash: expr,
-	$crypto_kind: expr,
 	$module: expr,
 	$call: expr,
 	$nonce: expr,
@@ -60,33 +58,31 @@ macro_rules! compose_extrinsic {
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
 			use indices::address::Address;
 			use runtime_primitives::generic::Era;
-			use crate::extrinsic::{crypto::AccountKey, definitions::UncheckedExtrinsic};
+			use crate::extrinsic::definitions::UncheckedExtrinsic;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
 			let call = $crate::compose_call!($node_metadata, $module, $call, $( ($args)), +);
-			let signer = AccountKey::new($from, Some(""), $crypto_kind);
 			let era = Era::immortal();
 
 			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-				signer.sign(&blake2_256(payload)[..])
+				$from.sign(&blake2_256(payload)[..])
 			} else {
 				debug!("signing {}", HexDisplay::from(&payload));
-				signer.sign(payload)
+				$from.sign(payload)
 			});
 
 			UncheckedExtrinsic {
-				signature: Some((Address::from(signer.public()), signature, $nonce.low_u64().into(), era)),
+				signature: Some((Address::from($from.public()), signature, $nonce.low_u64().into(), era)),
 				function: raw_payload.1,
 			}
 		}
     };
 }
 
-pub fn transfer(from: &str, to: &str, amount: u128, index: U256, genesis_hash: Hash, crypto_kind: CryptoKind, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
-	let to = AccountKey::public_from_suri(to, Some(""), crypto_kind);
-	compose_extrinsic!(node_metadata, genesis_hash, crypto_kind, BALANCES_MODULE_NAME, BALANCES_TRANSFER, index, from, Address::from(to), Compact(amount))
+pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, index: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
+	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, index, from, to, Compact(amount))
 }
 
 #[cfg(test)]

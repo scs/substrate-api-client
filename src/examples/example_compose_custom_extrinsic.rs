@@ -33,6 +33,7 @@ use primitives::offchain::CryptoKind;
 use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::compose_extrinsic;
 use substrate_api_client::utils::hexstr_to_u256;
+use substrate_api_client::extrinsic::crypto::AccountKey;
 
 fn main() {
     env_logger::init();
@@ -54,13 +55,14 @@ fn main() {
     let nonce = hexstr_to_u256(result_str);
     println!("[+] Alice's Account Nonce is {}", nonce);
 
+    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+
     let xt = compose_extrinsic!(api.metadata.clone(),
                                 api.genesis_hash.unwrap(),
-                                CryptoKind::Sr25519,
                                 "substratee_registry",
                                 "confirm_call",
                                 nonce,
-                                "//Alice",
+                                from,
                                 vec![9u8; 2],
                                 vec![2u8; 2]);
 
