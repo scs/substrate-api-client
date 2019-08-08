@@ -56,27 +56,28 @@ pub struct Api {
 
 impl Api {
     pub fn new(url: String) -> Api {
-        Api {
-            url: url,
-            genesis_hash: Default::default(),
-            metadata: Default::default(),
-        }
+        Api::_init(url)
     }
 
-    pub fn init(&mut self) {
-        // get genesis hash
+    fn _init(url: String) -> Api{
+        let genesis_hash = Api::_get_genesis_hash(url.clone());
+        info!("Got genesis hash: {:?}", genesis_hash);
+
+        let meta = Api::_get_metadata(url.clone()).expect("Fetching Metadata from node failed");
+        let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
+
+        Api { url, genesis_hash, metadata }
+    }
+
+    fn _get_genesis_hash(url: String) -> Hash {
         let jsonreq = json_req::chain_get_block_hash();
-        let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
-        self.genesis_hash = hexstr_to_hash(genesis_hash_str);
-        info!("got genesis hash: {:?}", self.genesis_hash);
-
-        let meta = self.get_metadata().expect("Fetching Metadata from node failed");
-        self.metadata = node_metadata::parse_metadata_into_module_and_call(&meta)
+        let genesis_hash_str = Api::_get_request(url.clone() ,jsonreq.to_string()).expect("Fetching genesis hash from node failed");
+        hexstr_to_hash(genesis_hash_str)
     }
 
-    pub fn get_metadata(&self) -> Option<RuntimeMetadataPrefixed> {
+    fn _get_metadata(url: String) -> Option<RuntimeMetadataPrefixed>{
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = self.get_request(jsonreq.to_string()).unwrap();
+        let metadata_str = Api::_get_request(url,jsonreq.to_string()).unwrap();
 
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
@@ -84,11 +85,19 @@ impl Api {
     }
 
     // low level access
-    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
+    fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
-        json_rpc::get(self.url.clone(), jsonreq.clone(), result_in.clone());
+        json_rpc::get(url, jsonreq.clone(), result_in.clone());
 
         Ok(result_out.recv().unwrap())
+    }
+
+    pub fn get_metadata(&self) -> Option<RuntimeMetadataPrefixed> {
+        Api::_get_metadata(self.url.clone())
+    }
+
+    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
+        Api::_get_request(self.url.clone(), jsonreq)
     }
 
     pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {

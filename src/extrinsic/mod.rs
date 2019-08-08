@@ -106,9 +106,7 @@ mod tests {
 		let balance_transfer_index = 0u8;
 		println!("Interacting with node on {}", url);
 
-		let mut api = Api::new(format!("ws://{}", url));
-		api.init();
-
+		let api = Api::new(format!("ws://{}", url));
 
 		let amount = Balance::from(42 as u128);
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);

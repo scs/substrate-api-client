@@ -46,8 +46,7 @@ fn main() {
     let url = format!("{}:{}", node_ip, node_port);
     info!("Interacting with node on {}", url);
 
-    let mut api = Api::new(format!("ws://{}", url));
-    api.init();
+    let api = Api::new(format!("ws://{}", url));
 
     let (events_in, events_out) = channel();
 

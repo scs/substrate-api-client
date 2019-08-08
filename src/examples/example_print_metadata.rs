@@ -36,8 +36,7 @@ fn main() {
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);
 
-    let mut api = Api::new(format!("ws://{}", url));
-    api.init();
+    let api = Api::new(format!("ws://{}", url));
 
     let meta = api.get_metadata().unwrap();
     println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());

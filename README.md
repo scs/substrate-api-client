@@ -28,8 +28,7 @@ Set the output verbosity by adding `RUST_LOG=info` or `RUST_LOG=debug` in front 
     use parity_codec::Encode;
 
     fn main() {
-        let mut api = Api::new("ws://127.0.0.1:9944".to_string());
-        api.init();
+        let api = Api::new("ws://127.0.0.1:9944".to_string());
 
         // get some plain storage value
         let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();

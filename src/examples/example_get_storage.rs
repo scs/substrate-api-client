@@ -41,8 +41,7 @@ fn main() {
     let url = format!("{}:{}", node_ip, node_port);
     info!("Interacting with node on {}", url);
 
-    let mut api = Api::new(format!("ws://{}", url));
-    api.init();
+    let api = Api::new(format!("ws://{}", url));
 
     // get some plain storage value
     let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
