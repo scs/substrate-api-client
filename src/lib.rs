@@ -28,7 +28,7 @@ use std::sync::mpsc::Sender as ThreadOut;
 use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
 use parity_codec::Decode;
-use ws::Result;
+use ws::Result as WsResult;
 
 use json_rpc::json_req;
 use node_metadata::NodeMetadata;
@@ -70,27 +70,28 @@ impl Api {
         self.genesis_hash = Some(hexstr_to_hash(genesis_hash_str));
         info!("got genesis hash: {:?}", self.genesis_hash.unwrap());
 
-        //get metadata
+        let meta = self.get_metadata().expect("Fetching Metadata from node failed");
+        self.metadata = node_metadata::parse_metadata_into_module_and_call(&meta)
+    }
+
+    pub fn get_metadata(&self) -> Option<RuntimeMetadataPrefixed> {
         let jsonreq = json_req::state_get_metadata();
         let metadata_str = self.get_request(jsonreq.to_string()).unwrap();
+
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
-        let _meta = RuntimeMetadataPrefixed::decode(&mut _om)
-            .expect("runtime metadata decoding to RuntimeMetadataPrefixed failed.");
-
-//        configure::pretty_print(&_meta);
-        self.metadata = node_metadata::parse_metadata_into_module_and_call(&_meta)
+        RuntimeMetadataPrefixed::decode(&mut _om)
     }
 
     // low level access
-    pub fn get_request(&self, jsonreq: String) -> Result<String> {
+    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
         json_rpc::get(self.url.clone(), jsonreq.clone(), result_in.clone());
 
         Ok(result_out.recv().unwrap())
     }
 
-    pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Result<String> {
+    pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
         let keyhash = storage_key_hash(module, storage_key_name, param);
 
         debug!("with storage key: {}", keyhash);
@@ -98,7 +99,7 @@ impl Api {
         self.get_request(jsonreq.to_string())
     }
 
-    pub fn send_extrinsic(&self, xthex_prefixed: String) -> Result<Hash> {
+    pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
 
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
