@@ -17,13 +17,14 @@
 
 use metadata::{DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed};
 use serde::{Deserialize, Serialize};
+use parity_codec::alloc::string::FromUtf8Error;
 
-pub fn pretty_print(metadata: &RuntimeMetadataPrefixed) {
+pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Result<String, FromUtf8Error> {
     let buf = Vec::new();
     let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
     let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
     metadata.serialize(&mut ser).unwrap();
-    println!("{}", String::from_utf8(ser.into_inner()).unwrap());
+    String::from_utf8(ser.into_inner())
 }
 
 pub type NodeMetadata = Vec<Module>;
