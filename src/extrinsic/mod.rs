@@ -52,7 +52,7 @@ macro_rules! compose_extrinsic {
 	$call: expr,
 	$nonce: expr,
 	$from: expr,
-	$($args: expr), + ) => {
+	$($args: expr), * ) => {
 		{
 			use parity_codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
