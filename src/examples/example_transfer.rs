@@ -61,7 +61,7 @@ fn main() {
                                  GenericAddress::from(to),
                                  42,
                                  nonce,
-                                 api.genesis_hash.unwrap(),
+                                 api.genesis_hash,
                                  api.metadata.clone());
 
     debug!("extrinsic: {:?}", xt);

@@ -50,7 +50,7 @@ struct JsonBasic {
 #[derive(Debug, Clone)]
 pub struct Api {
     url: String,
-    pub genesis_hash: Option<Hash>,
+    pub genesis_hash: Hash,
     pub metadata: NodeMetadata,
 }
 
@@ -58,7 +58,7 @@ impl Api {
     pub fn new(url: String) -> Api {
         Api {
             url: url,
-            genesis_hash: None,
+            genesis_hash: Default::default(),
             metadata: Default::default(),
         }
     }
@@ -67,8 +67,8 @@ impl Api {
         // get genesis hash
         let jsonreq = json_req::chain_get_block_hash();
         let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
-        self.genesis_hash = Some(hexstr_to_hash(genesis_hash_str));
-        info!("got genesis hash: {:?}", self.genesis_hash.unwrap());
+        self.genesis_hash = hexstr_to_hash(genesis_hash_str);
+        info!("got genesis hash: {:?}", self.genesis_hash);
 
         let meta = self.get_metadata().expect("Fetching Metadata from node failed");
         self.metadata = node_metadata::parse_metadata_into_module_and_call(&meta)
