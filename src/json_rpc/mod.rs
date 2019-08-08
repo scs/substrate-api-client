@@ -41,7 +41,6 @@ fn start_rpc_client_thread(url: String,
                            jsonreq: String,
                            result_in: ThreadOut<String>,
                            on_message_fn: OnMessageFn) {
-
     let _client = thread::Builder::new()
         .name("client".to_owned())
         .spawn(move || {

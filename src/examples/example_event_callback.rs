@@ -54,18 +54,18 @@ fn main() {
     println!("Subscribe to events");
 
     let _eventsubscriber = thread::Builder::new()
-            .name("eventsubscriber".to_owned())
-            .spawn(move || {
-                api.subscribe_events(events_in.clone());
-            })
-            .unwrap();
+        .name("eventsubscriber".to_owned())
+        .spawn(move || {
+            api.subscribe_events(events_in.clone());
+        })
+        .unwrap();
 
     loop {
         let event_str = events_out.recv().unwrap();
 
         let _unhex = hexstr_to_vec(event_str);
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord::< Event, Hash >> ::decode(&mut _er_enc);
         match _events {
             Some(evts) => {
                 for evr in &evts {
@@ -79,14 +79,15 @@ fn main() {
                                     println!("Destination: {:?}", dest);
                                     println!("Value: {:?}", value);
                                     println!("Fee: {:?}", fee);
-                                    },
+                                },
                                 _ => {
                                     debug!("ignoring unsupported balances event");
-                                    },
-                            }},
+                                },
+                            }
+                        },
                         _ => {
                             debug!("ignoring unsupported module event: {:?}", evr.event)
-                            },
+                        },
                     }
                 }
             }

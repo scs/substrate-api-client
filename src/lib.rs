@@ -30,8 +30,8 @@ use node_primitives::Hash;
 use parity_codec::Decode;
 use ws::Result;
 
-use node_metadata::NodeMetadata;
 use json_rpc::json_req;
+use node_metadata::NodeMetadata;
 use utils::*;
 
 #[macro_use]
@@ -49,16 +49,16 @@ struct JsonBasic {
 
 #[derive(Debug, Clone)]
 pub struct Api {
-    url : String,
-    pub genesis_hash : Option<Hash>,
-    pub metadata : NodeMetadata,
+    url: String,
+    pub genesis_hash: Option<Hash>,
+    pub metadata: NodeMetadata,
 }
 
 impl Api {
     pub fn new(url: String) -> Api {
         Api {
-            url : url,
-            genesis_hash : None,
+            url: url,
+            genesis_hash: None,
             metadata: Default::default(),
         }
     }
@@ -76,7 +76,7 @@ impl Api {
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
         let _meta = RuntimeMetadataPrefixed::decode(&mut _om)
-                .expect("runtime metadata decoding to RuntimeMetadataPrefixed failed.");
+            .expect("runtime metadata decoding to RuntimeMetadataPrefixed failed.");
 
 //        configure::pretty_print(&_meta);
         self.metadata = node_metadata::parse_metadata_into_module_and_call(&_meta)
@@ -126,23 +126,23 @@ impl Api {
             let res = result_out.recv().unwrap();
             sender.send(res.clone()).unwrap();
 
-/*
-            //println!("client >>>> got {}", res);
-            let _unhex = hexstr_to_vec(res);
-            let mut _er_enc = _unhex.as_slice();
-            //let _event = balances::RawEvent::decode(&mut _er_enc2);
-            let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
-            match _events {
-                Some(evts) => {
-                    for ev in &evts {
-                        println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
-                        sender.send(ev.event.clone()).unwrap();
-                    }
-                }
-                None => println!("couldn't decode event record list")
-            }
-            //self.result.send(_events).unwrap();
-*/
+            /*
+                        //println!("client >>>> got {}", res);
+                        let _unhex = hexstr_to_vec(res);
+                        let mut _er_enc = _unhex.as_slice();
+                        //let _event = balances::RawEvent::decode(&mut _er_enc2);
+                        let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
+                        match _events {
+                            Some(evts) => {
+                                for ev in &evts {
+                                    println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
+                                    sender.send(ev.event.clone()).unwrap();
+                                }
+                            }
+                            None => println!("couldn't decode event record list")
+                        }
+                        //self.result.send(_events).unwrap();
+            */
         }
     }
 }

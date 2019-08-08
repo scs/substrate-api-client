@@ -52,13 +52,13 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", nonce);
 
     // generate extrinsic
-    let xt= extrinsic::transfer("//Alice",
-                                "//Bob",
-                                42,
-                                nonce,
-                                api.genesis_hash.unwrap(),
-                                CryptoKind::Sr25519,
-                                api.metadata.clone());
+    let xt = extrinsic::transfer("//Alice",
+                                 "//Bob",
+                                 42,
+                                 nonce,
+                                 api.genesis_hash.unwrap(),
+                                 CryptoKind::Sr25519,
+                                 api.metadata.clone());
 
     debug!("extrinsic: {:?}", xt);
 

@@ -43,8 +43,7 @@ pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
     if _hexstr.starts_with("0x") {
         _hexstr.remove(0);
         _hexstr.remove(0);
-    }
-    else {
+    } else {
         info!("converting non-prefixed hex string")
     }
     hex::decode(&_hexstr).unwrap()

@@ -26,10 +26,9 @@ use clap::App;
 use indices::address::Address;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
+use node_primitives::Balance;
 use parity_codec::Encode;
 use primitives::offchain::CryptoKind;
-use node_primitives::Balance;
-
 
 use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::compose_extrinsic;
@@ -56,14 +55,14 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", nonce);
 
     let xt = compose_extrinsic!(api.metadata.clone(),
-                                 api.genesis_hash.unwrap(),
+                                api.genesis_hash.unwrap(),
                                 CryptoKind::Sr25519,
                                 "substratee_registry",
                                 "confirm_call",
                                 nonce,
                                 "//Alice",
-                               vec![9u8; 2],
-                               vec![2u8; 2]);
+                                vec![9u8; 2],
+                                vec![2u8; 2]);
 
     let mut _xthex = hex::encode(xt.encode());
     _xthex.insert_str(0, "0x");

@@ -35,10 +35,10 @@ macro_rules! compose_call {
             metad.retain(|m| !m.calls.is_empty());
 
             let module_index = metad
-            .iter().position( | m | m.name == $module).unwrap();
+            .iter().position(|m| m.name == $module).unwrap();
 
             let call_index = metad[module_index].calls
-            .iter().position( | c| c.name == $call_name).unwrap();
+            .iter().position(|c| c.name == $call_name).unwrap();
 
             ([module_index as u8, call_index as u8], $( ($args)), +)
         }

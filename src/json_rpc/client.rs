@@ -15,8 +15,9 @@
 
 */
 
-use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 use std::sync::mpsc::Sender as ThreadOut;
+
+use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
 
@@ -29,7 +30,6 @@ pub struct RpcClient {
 
 impl Handler for RpcClient {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-
         info!("sending request: {}", self.request);
         self.out.send(self.request.clone()).unwrap();
         Ok(())
@@ -61,7 +61,7 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
-        Some(_idstr) => { },
+        Some(_idstr) => {},
         _ => {
             // subscriptions
             debug!("no id field found in response. must be subscription");
@@ -83,16 +83,18 @@ pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) ->
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
-        Some(idstr) => { match idstr.parse::<u32>() {
-            Ok(REQUEST_TRANSFER) => {
-                match value.get("error") {
-                    Some(err) => error!("ERROR: {:?}", err),
-                    _ => debug!("no error"),
-                }
-            },
-            Ok(_) => debug!("unknown request id"),
-            Err(_) => error!("error assigning request id"),
-        }},
+        Some(idstr) => {
+            match idstr.parse::<u32>() {
+                Ok(REQUEST_TRANSFER) => {
+                    match value.get("error") {
+                        Some(err) => error!("ERROR: {:?}", err),
+                        _ => debug!("no error"),
+                    }
+                },
+                Ok(_) => debug!("unknown request id"),
+                Err(_) => error!("error assigning request id"),
+            }
+        },
         _ => {
             // subscriptions
             debug!("no id field found in response. must be subscription");
