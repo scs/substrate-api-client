@@ -27,7 +27,7 @@ use std::sync::mpsc::Sender as ThreadOut;
 
 use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
-use parity_codec::Decode;
+use codec::Decode;
 use ws::Result as WsResult;
 
 use json_rpc::json_req;
@@ -63,7 +63,8 @@ impl Api {
         let genesis_hash = Api::_get_genesis_hash(url.clone());
         info!("Got genesis hash: {:?}", genesis_hash);
 
-        let meta = Api::_get_metadata(url.clone()).expect("Fetching Metadata from node failed");
+        let meta = Api::_get_metadata(url.clone());
+//        let meta = Api::_get_metadata(url.clone()).expect("Fetching Metadata from node failed");
         let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
 
         Api { url, genesis_hash, metadata }
@@ -75,13 +76,13 @@ impl Api {
         hexstr_to_hash(genesis_hash_str)
     }
 
-    fn _get_metadata(url: String) -> Option<RuntimeMetadataPrefixed>{
+    fn _get_metadata(url: String) -> RuntimeMetadataPrefixed{
         let jsonreq = json_req::state_get_metadata();
         let metadata_str = Api::_get_request(url,jsonreq.to_string()).unwrap();
 
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
-        RuntimeMetadataPrefixed::decode(&mut _om)
+        RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
     }
 
     // low level access
@@ -92,7 +93,7 @@ impl Api {
         Ok(result_out.recv().unwrap())
     }
 
-    pub fn get_metadata(&self) -> Option<RuntimeMetadataPrefixed> {
+    pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
         Api::_get_metadata(self.url.clone())
     }
 

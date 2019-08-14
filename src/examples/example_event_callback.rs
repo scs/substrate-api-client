@@ -30,7 +30,7 @@ use node_primitives::Hash;
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events
 use node_runtime::Event;
-use parity_codec::Decode;
+use codec::Decode;
 
 use substrate_api_client::Api;
 use substrate_api_client::utils::hexstr_to_vec;

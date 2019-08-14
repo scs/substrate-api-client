@@ -25,7 +25,7 @@ extern crate substrate_api_client;
 use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
-use parity_codec::Encode;
+use codec::Encode;
 
 use substrate_api_client::Api;
 use substrate_api_client::utils::hexstr_to_u256;

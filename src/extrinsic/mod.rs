@@ -55,18 +55,20 @@ macro_rules! compose_extrinsic {
 	$from: expr,
 	$($args: expr), * ) => {
 		{
-			use parity_codec::{Compact, Encode};
+			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
 			use indices::address::Address;
 			use runtime_primitives::generic::Era;
-			use crate::extrinsic::definitions::UncheckedExtrinsic;
+			use crate::extrinsic::definitions::UncheckedExtrinsicV7;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
 			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
 			let era = Era::immortal();
+			let extra = (era, $nonce.low_u64());
 
-			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+			let raw_payload = (call, extra, $genesis_hash);
+//			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 				$from.sign(&blake2_256(payload)[..])
 			} else {
@@ -74,28 +76,43 @@ macro_rules! compose_extrinsic {
 				$from.sign(payload)
 			});
 
-			UncheckedExtrinsic {
-				signature: Some((Address::from($from.public()), signature, $nonce.low_u64().into(), era)),
-				function: raw_payload.1,
+			UncheckedExtrinsicV7 {
+				signature: Some((Address::from($from.public()), signature, extra)),
+				function: raw_payload.0,
 			}
 		}
     };
 }
 
-pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
+pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceExtrinsic {
 	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, nonce, from, to, Compact(amount))
 }
 
 #[cfg(test)]
 mod tests {
-	use node_primitives::Balance;
+	use node_primitives::{Balance, Index};
 
 	use crate::Api;
 	use crypto::AccountKey;
 	use primitives::offchain::CryptoKind;
-	use parity_codec::{Compact, Encode};
+	use codec::{Compact, Encode};
+	use runtime_primitives::generic::Era;
+	use node_runtime::UncheckedExtrinsic;
 
 	use super::*;
+
+//	#[derive(Encode)]
+//	struct CustomUncheckedExtrinsic {
+//		address: GenericAddress,
+//		signature: [u8; 64],
+//		era: Era,
+//		nonce: Index,
+//		tip: u128,
+//		call:
+//	}
+
+	struct Extra;
+
 
 	#[test]
 	fn call_from_meta_data_works() {
@@ -114,5 +131,25 @@ mod tests {
 		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
 		let transfer_fn = compose_call!(api.metadata.clone(), "balances", "transfer", GenericAddress::from(to), Compact(amount)).encode();
 		assert_eq!(my_call, transfer_fn);
+	}
+
+	#[test]
+	fn custom_extrinsic_works() {
+		let node_ip = "127.0.0.1";
+		let node_port = "9500";
+		let url = format!("{}:{}", node_ip, node_port);
+		let balance_module_index = 3u8;
+		let balance_transfer_index = 0u8;
+		println!("Interacting with node on {}", url);
+
+		let api = Api::new(format!("ws://{}", url));
+
+		let amount = Balance::from(42 as u128);
+		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+
+		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+
+		let ux = UncheckedExtrinsic::new_signed(Call, GenericAddress::from(to), )
+
 	}
 }

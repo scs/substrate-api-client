@@ -25,12 +25,11 @@ extern crate substrate_api_client;
 use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
-use parity_codec::Encode;
-use primitives::offchain::CryptoKind;
+use codec::Encode;
 
 use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::utils::hexstr_to_u256;
-use substrate_api_client::extrinsic::crypto::AccountKey;
+use substrate_api_client::extrinsic::crypto::{AccountKey, CryptoKind};
 use substrate_api_client::extrinsic::definitions::*;
 
 fn main() {

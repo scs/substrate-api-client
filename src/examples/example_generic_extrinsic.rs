@@ -26,13 +26,12 @@ use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
 use node_primitives::Balance;
-use parity_codec::Encode;
-use primitives::offchain::CryptoKind;
+use codec::Encode;
 
 use substrate_api_client::{Api, extrinsic};
 // compose_extrinsic is only found if extrinsic is imported as well ?!?
 use substrate_api_client::compose_extrinsic;
-use substrate_api_client::extrinsic::{crypto::AccountKey, definitions::GenericAddress};
+use substrate_api_client::extrinsic::{crypto::{AccountKey, CryptoKind}, definitions::GenericAddress};
 use substrate_api_client::utils::hexstr_to_u256;
 
 fn main() {
