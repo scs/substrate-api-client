@@ -39,6 +39,7 @@ pub mod extrinsic;
 pub mod node_metadata;
 pub mod utils;
 pub mod json_rpc;
+pub mod srml;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonBasic {
@@ -66,7 +67,7 @@ impl Api {
         let meta = Api::_get_metadata(url.clone());
 //        let meta = Api::_get_metadata(url.clone()).expect("Fetching Metadata from node failed");
         let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
-
+        info!("Metadata: {:?}", metadata);
         Api { url, genesis_hash, metadata }
     }
 

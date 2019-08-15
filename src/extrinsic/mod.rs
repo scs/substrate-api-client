@@ -59,15 +59,15 @@ macro_rules! compose_extrinsic {
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
 			use indices::address::Address;
 			use runtime_primitives::generic::Era;
-			use crate::extrinsic::definitions::UncheckedExtrinsicV7;
+			use crate::extrinsic::definitions::*;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
 			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
 			let era = Era::immortal();
-			let extra = (era, $nonce.low_u64());
+			let extra = GenericExtra { era: era, nonce: $nonce.low_u64(), tip: 0};
 
-			let raw_payload = (call, extra, $genesis_hash);
+			let raw_payload = (call, extra.clone(), ($genesis_hash, $genesis_hash));
 //			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 				$from.sign(&blake2_256(payload)[..])
@@ -76,7 +76,7 @@ macro_rules! compose_extrinsic {
 				$from.sign(payload)
 			});
 
-			UncheckedExtrinsicV7 {
+			UncheckedExtrinsicV3 {
 				signature: Some((Address::from($from.public()), signature, extra)),
 				function: raw_payload.0,
 			}
@@ -90,48 +90,77 @@ pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256,
 
 #[cfg(test)]
 mod tests {
-	use node_primitives::{Balance, Index};
+	use node_primitives::Balance;
 
 	use crate::Api;
-	use crypto::AccountKey;
-	use primitives::offchain::CryptoKind;
-	use codec::{Compact, Encode};
-	use runtime_primitives::generic::Era;
-	use node_runtime::UncheckedExtrinsic;
+	use crate::srml::system::System;
+	use crypto::*;
+	use codec::{Compact, Decode, Encode};
+	use runtime_primitives::generic::{Era, UncheckedExtrinsic,};
+	use runtime_primitives::traits::StaticLookup;
+	use node_primitives::Signature;
+	use crate::utils::*;
+	use primitives::blake2_256;
+	use keyring::AccountKeyring;
+	use system as srml_system;
+	use balances as srml_balances;
 
 	use super::*;
 
-//	#[derive(Encode)]
-//	struct CustomUncheckedExtrinsic {
-//		address: GenericAddress,
-//		signature: [u8; 64],
-//		era: Era,
-//		nonce: Index,
-//		tip: u128,
-//		call:
-//	}
+	struct Runtime;
 
-	struct Extra;
+	impl System for Runtime {
+		type Index = <node_runtime::Runtime as srml_system::Trait>::Index;
+		type BlockNumber = <node_runtime::Runtime as srml_system::Trait>::BlockNumber;
+		type Hash = <node_runtime::Runtime as srml_system::Trait>::Hash;
+		type Hashing = <node_runtime::Runtime as srml_system::Trait>::Hashing;
+		type AccountId = <node_runtime::Runtime as srml_system::Trait>::AccountId;
+		type Lookup = <node_runtime::Runtime as srml_system::Trait>::Lookup;
+		type Header = <node_runtime::Runtime as srml_system::Trait>::Header;
+		type Event = <node_runtime::Runtime as srml_system::Trait>::Event;
 
-
-	#[test]
-	fn call_from_meta_data_works() {
-		let node_ip = "127.0.0.1";
-		let node_port = "9500";
-		let url = format!("{}:{}", node_ip, node_port);
-		let balance_module_index = 3u8;
-		let balance_transfer_index = 0u8;
-		println!("Interacting with node on {}", url);
-
-		let api = Api::new(format!("ws://{}", url));
-
-		let amount = Balance::from(42 as u128);
-		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
-
-		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
-		let transfer_fn = compose_call!(api.metadata.clone(), "balances", "transfer", GenericAddress::from(to), Compact(amount)).encode();
-		assert_eq!(my_call, transfer_fn);
+		type SignedExtra = (
+			srml_system::CheckGenesis<node_runtime::Runtime>,
+			srml_system::CheckEra<node_runtime::Runtime>,
+			srml_system::CheckNonce<node_runtime::Runtime>,
+			srml_system::CheckWeight<node_runtime::Runtime>,
+			srml_balances::TakeFees<node_runtime::Runtime>,
+		);
+		fn extra(nonce: Self::Index) -> Self::SignedExtra {
+			(
+				srml_system::CheckGenesis::<node_runtime::Runtime>::new(),
+				srml_system::CheckEra::<node_runtime::Runtime>::from(Era::Immortal),
+				srml_system::CheckNonce::<node_runtime::Runtime>::from(nonce),
+				srml_system::CheckWeight::<node_runtime::Runtime>::new(),
+				srml_balances::TakeFees::<node_runtime::Runtime>::from(0),
+			)
+		}
 	}
+
+	type Index = <Runtime as System>::Index;
+	type AccountId = <Runtime as System>::AccountId;
+	type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
+	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
+
+
+//	#[test]
+//	fn call_from_meta_data_works() {
+//		let node_ip = "127.0.0.1";
+//		let node_port = "9500";
+//		let url = format!("{}:{}", node_ip, node_port);
+//		let balance_module_index = 3u8;
+//		let balance_transfer_index = 0u8;
+//		println!("Interacting with node on {}", url);
+//
+//		let api = Api::new(format!("ws://{}", url));
+//
+//		let amount = Balance::from(42 as u128);
+//		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+//
+//		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+//		let transfer_fn = compose_call!(api.metadata.clone(), "balances", "transfer", GenericAddress::from(to), Compact(amount)).encode();
+//		assert_eq!(my_call, transfer_fn);
+//	}
 
 	#[test]
 	fn custom_extrinsic_works() {
@@ -144,12 +173,42 @@ mod tests {
 
 		let api = Api::new(format!("ws://{}", url));
 
+		let accountid = AccountId::from(AccountKeyring::Alice);
+		let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
+		let nonce = hexstr_to_u256(result_str);
+		println!("[+] Alice's Account Nonce is {}", nonce);
+
 		let amount = Balance::from(42 as u128);
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+		let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
 
-		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount));
+		let extra = Runtime::extra(nonce.low_u32());
 
-		let ux = UncheckedExtrinsic::new_signed(Call, GenericAddress::from(to), )
+		let raw_payload = (my_call.clone(), extra.clone(), (api.genesis_hash.clone(), api.genesis_hash.clone()));
+//			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+		let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
+			from.sign(&blake2_256(payload)[..])
+		} else {
+//			debug!("signing {}", HexDisplay::from(&payload));
+			from.sign(payload)
+		});
 
+	 	let ux = TestExtrinsic::new_signed(
+			my_call,from.public().into(), signature, extra
+		);
+
+		let mut _xthex = hex::encode(ux.encode());
+		_xthex.insert_str(0, "0x");
+
+
+		api.send_extrinsic(_xthex);
+
+		println!("{:?}", ux);
+		let my_ux = transfer(from, GenericAddress::from(to), amount, nonce, api.genesis_hash, api.metadata);
+		println!("{:?}", my_ux);
+
+
+		assert_eq!(ux.encode(), my_ux.encode());
 	}
 }

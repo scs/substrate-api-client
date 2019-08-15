@@ -20,7 +20,6 @@ parity-codec-derive = { version = "3.3", default-features = false }
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "substrate-primitives"
 
 [dependencies.codec]
@@ -31,51 +30,48 @@ version = "1.0.0"
 
 [dependencies.indices]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "srml-indices"
 
 [dependencies.node-primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
-
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "sr-io"
 
 [dependencies.transaction_pool]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "substrate-transaction-pool"
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "srml-metadata"
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "srml-balances"
 
 [dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "substrate-keyring"
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "srml-system"
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "sr-primitives"
+
+[dependencies.runtime_support]
+git = 'https://github.com/paritytech/substrate'
+package = "srml-support"
+
+[dev-dependencies.rstd]
+git = 'https://github.com/paritytech/substrate'
+package = "sr-std"
 
 [dev-dependencies.node_runtime]
 git = 'https://github.com/paritytech/substrate'
-rev = '8b96ce62da9c88afbd13405396d1cc8588be67a5'
 package = "node-runtime"
 
 [patch."https://github.com/paritytech/substrate-bip39"]

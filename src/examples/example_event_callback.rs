@@ -66,7 +66,7 @@ fn main() {
         let mut _er_enc = _unhex.as_slice();
         let _events = Vec::<system::EventRecord::< Event, Hash >> ::decode(&mut _er_enc);
         match _events {
-            Some(evts) => {
+            Ok(evts) => {
                 for evr in &evts {
                     debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
                     match &evr.event {
@@ -90,7 +90,7 @@ fn main() {
                     }
                 }
             }
-            None => error!("couldn't decode event record list")
+            Err(_) => error!("couldn't decode event record list")
         }
     }
 }

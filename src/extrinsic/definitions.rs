@@ -16,14 +16,13 @@
 */
 
 use indices::address::Address;
-use node_primitives::{Index, Signature};
+use node_primitives::Signature;
 use codec::{Compact, Encode, Decode};
-use runtime_primitives::generic::UncheckedExtrinsic;
 use runtime_primitives::traits::SignedExtension;
 use runtime_primitives::generic::Era;
+use std::fmt;
 
-
-pub const BALANCES_MODULE_NAME: &str = "balances";
+pub const BALANCES_MODULE_NAME: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 
 pub type GenericAddress = Address<[u8; 32], u32>;
@@ -32,19 +31,49 @@ pub type GenericAddress = Address<[u8; 32], u32>;
 pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
 
 #[derive(Decode, Encode, Clone, Debug, Eq, PartialEq)]
-struct GenericExtra {
-    era: Era,
-    nonce: u64,
-    tip: u128,
+pub struct GenericExtra {
+    pub era: Era,
+    pub nonce: u64,
+    pub tip: u128,
 }
-//pub type BalanceExtrinsic = UncheckedExtrinsicV3<BalanceTransfer, BalanceExtra>;
+//
+//#[derive(Debug, Encode, Decode, Clone, Eq, PartialEq, Ord, PartialOrd)]
+//pub struct GenericExtra;
+impl SignedExtension for GenericExtra {
+    type AccountId = u64;
+    type Call = ();
+    type AdditionalSigned = ();
+    type Pre = ();
 
-struct UncheckedExtrinsicV3<Call: Encode, Extra: Encode> {
-    signature: Option<(GenericAddress, Signature, Extra)>,
-    call: Call,
+    fn additional_signed(&self) -> std::result::Result<(), &'static str> { Ok(()) }
 }
 
-impl<Call: Encode, Extra: Encode> Encode for UncheckedExtrinsicV3<Call, Extra> {
+pub type BalanceExtrinsic = UncheckedExtrinsicV3<BalanceTransfer, GenericExtra>;
+
+pub struct UncheckedExtrinsicV3<Call, Extra>
+where
+    Call: Encode + fmt::Debug,
+    Extra: Encode + fmt::Debug,
+{
+    pub signature: Option<(GenericAddress, Signature, Extra)>,
+    pub function: Call,
+}
+
+impl<Call, Extra> fmt::Debug for UncheckedExtrinsicV3<Call, Extra>
+    where
+        Call: fmt::Debug + Encode,
+        Extra: fmt::Debug + Encode,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "UncheckedExtrinsic({:?}, {:?})", self.signature.as_ref().map(|x| (&x.0, &x.2)), self.function)
+    }
+}
+
+impl<Call, Extra> Encode for UncheckedExtrinsicV3<Call, Extra>
+where
+    Call: Encode + fmt::Debug,
+    Extra: SignedExtension,
+{
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>( |v| {
             match self.signature.as_ref() {
@@ -61,15 +90,8 @@ impl<Call: Encode, Extra: Encode> Encode for UncheckedExtrinsicV3<Call, Extra> {
     }
 }
 
-#[derive(Encode)]
-struct SignaturePayload<Call: Encode, Extra: Encode> {
-    call: Call,
-    extra: Extra,
-    hash: [u8; 32],
-}
-
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
-    let size = ::rstd::mem::size_of::<T>();
+    let size = std::mem::size_of::<T>();
     let reserve = match size {
         0..=0b00111111 => 1,
         0..=0b00111111_11111111 => 2,
