@@ -91,7 +91,7 @@ pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256,
 #[cfg(test)]
 mod tests {
 	use balances as srml_balances;
-	use codec::{Compact, Decode, Encode};
+	use codec::{Compact, Encode};
 	use keyring::AccountKeyring;
 	use node_primitives::Balance;
 	use node_primitives::Signature;
@@ -138,9 +138,9 @@ mod tests {
 		}
 	}
 
-	type Index = <Runtime as System>::Index;
+//	type Index = <Runtime as System>::Index;
 	type AccountId = <Runtime as System>::AccountId;
-	type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
+//	type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
 	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
 
 	fn test_api() -> Api {

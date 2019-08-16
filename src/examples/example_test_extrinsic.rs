@@ -1,11 +1,30 @@
+/*
+   Copyright 2019 Supercomputing Systems AG
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+// NOTE: Used for debugging purposes. TO BE REMOVED
+
 use balances as srml_balances;
-use codec::{Compact, Decode, Encode};
+use codec::{Compact, Encode};
 use keyring::AccountKeyring;
 use node_primitives::Balance;
 use node_primitives::Signature;
-use primitives::{blake2_256, sr25519};
-use runtime_primitives::generic::{Era, UncheckedExtrinsic, };
-use runtime_primitives::traits::StaticLookup;
+use primitives::blake2_256;
+use runtime_primitives::generic::{Era, UncheckedExtrinsic};
+//use runtime_primitives::traits::StaticLookup;
 use system as srml_system;
 
 use substrate_api_client::Api;
@@ -45,9 +64,10 @@ impl System for Runtime {
     }
 }
 
-type Index = <Runtime as System>::Index;
+// use our own generic data types instead of these
+//type Index = <Runtime as System>::Index;
+//type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
 type AccountId = <Runtime as System>::AccountId;
-type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
 type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
 
 fn main() {

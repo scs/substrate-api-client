@@ -23,10 +23,10 @@ extern crate log;
 extern crate substrate_api_client;
 
 use clap::App;
+use codec::Encode;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
 use node_primitives::Balance;
-use codec::Encode;
 
 use substrate_api_client::{Api, extrinsic};
 // compose_extrinsic is only found if extrinsic is imported as well ?!?
