@@ -143,24 +143,24 @@ mod tests {
 	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
 
 
-//	#[test]
-//	fn call_from_meta_data_works() {
-//		let node_ip = "127.0.0.1";
-//		let node_port = "9500";
-//		let url = format!("{}:{}", node_ip, node_port);
-//		let balance_module_index = 3u8;
-//		let balance_transfer_index = 0u8;
-//		println!("Interacting with node on {}", url);
-//
-//		let api = Api::new(format!("ws://{}", url));
-//
-//		let amount = Balance::from(42 as u128);
-//		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
-//
-//		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
-//		let transfer_fn = compose_call!(api.metadata.clone(), "balances", "transfer", GenericAddress::from(to), Compact(amount)).encode();
-//		assert_eq!(my_call, transfer_fn);
-//	}
+	#[test]
+	fn call_from_meta_data_works() {
+		let node_ip = "127.0.0.1";
+		let node_port = "9500";
+		let url = format!("{}:{}", node_ip, node_port);
+		let balance_module_index = 3u8;
+		let balance_transfer_index = 0u8;
+		println!("Interacting with node on {}", url);
+
+		let api = Api::new(format!("ws://{}", url));
+
+		let amount = Balance::from(42 as u128);
+		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+
+		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+		let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
+		assert_eq!(my_call, transfer_fn);
+	}
 
 	#[test]
 	fn custom_extrinsic_works() {
@@ -181,11 +181,12 @@ mod tests {
 		let amount = Balance::from(42 as u128);
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
 		let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+		let hash = <Runtime as System>::Hash::from(api.genesis_hash.clone());
 
-		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount));
-		let extra = Runtime::extra(nonce.low_u32());
+		let my_call = compose_call!(api.metadata.clone(), BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericAddress::from(to.clone()), Compact(amount));
+		let extra = <Runtime as System>::extra(0);
 
-		let raw_payload = (my_call.clone(), extra.clone(), (api.genesis_hash.clone(), api.genesis_hash.clone()));
+		let raw_payload = (my_call.clone(), extra.clone(), (&hash, &hash.clone()));
 //			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
 		let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 			from.sign(&blake2_256(payload)[..])
@@ -195,14 +196,15 @@ mod tests {
 		});
 
 	 	let ux = TestExtrinsic::new_signed(
-			my_call,from.public().into(), signature, extra
+			my_call,from.public().into(), signature.into(), extra
 		);
 
 		let mut _xthex = hex::encode(ux.encode());
 		_xthex.insert_str(0, "0x");
 
 
-		api.send_extrinsic(_xthex);
+		let tx_hash = api.send_extrinsic(_xthex).unwrap();
+		println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 
 		println!("{:?}", ux);
 		let my_ux = transfer(from, GenericAddress::from(to), amount, nonce, api.genesis_hash, api.metadata);

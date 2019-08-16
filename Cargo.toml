@@ -74,8 +74,8 @@ package = "sr-std"
 git = 'https://github.com/paritytech/substrate'
 package = "node-runtime"
 
-[patch."https://github.com/paritytech/substrate-bip39"]
-substrate-bip39 = { path = "substrate-bip39"}
+#[patch."https://github.com/paritytech/substrate-bip39"]
+#substrate-bip39 = { path = "substrate-bip39"}
 
 [features]
 default = ["std"]
@@ -104,3 +104,7 @@ path = "src/examples/example_generic_extrinsic.rs"
 [[example]]
 name = "example_print_metadata"
 path = "src/examples/example_print_metadata.rs"
+
+[[example]]
+name = "test_extrinsic"
+path = "src/examples/example_test_extrinsic.rs"
