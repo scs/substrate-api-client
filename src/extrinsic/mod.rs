@@ -51,24 +51,22 @@ macro_rules! compose_extrinsic {
 	$genesis_hash: expr,
 	$module: expr,
 	$call: expr,
-	$nonce: expr,
+	$extra: expr,
 	$from: expr,
 	$($args: expr), * ) => {
 		{
 			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
 			use indices::address::Address;
-			use runtime_primitives::generic::Era;
+			use runtime_primitives::generic::{Era, UncheckedExtrinsic};
 			use crate::extrinsic::definitions::*;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
 			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
 			let era = Era::immortal();
-			let extra = GenericExtra { era: era, nonce: $nonce.low_u64(), tip: 0};
 
-			let raw_payload = (call, extra.clone(), ($genesis_hash, $genesis_hash));
-//			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+			let raw_payload = (call, $extra, ($genesis_hash, $genesis_hash));
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 				$from.sign(&blake2_256(payload)[..])
 			} else {
@@ -76,16 +74,15 @@ macro_rules! compose_extrinsic {
 				$from.sign(payload)
 			});
 
-			UncheckedExtrinsicV3 {
-				signature: Some((Address::from($from.public()), signature, extra)),
-				function: raw_payload.0,
-			}
+			UncheckedExtrinsicV3::new_signed(
+				raw_payload.0, GenericAddress::from($from.public()), signature, $extra
+			)
 		}
     };
 }
 
 pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceExtrinsic {
-	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, nonce, from, to, Compact(amount))
+	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericExtra::new(nonce.low_u32()), from, to, Compact(amount))
 }
 
 #[cfg(test)]
@@ -181,19 +178,20 @@ mod tests {
 		let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 		let hash = <Runtime as System>::Hash::from(api.genesis_hash.clone());
 
-		let my_call = compose_call!(api.metadata.clone(), BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericAddress::from(to.clone()), Compact(amount));
 		let extra = <Runtime as System>::extra(nonce.low_u32());
+		let gen_extra = GenericExtra::new(nonce.low_u32());
 
-		let raw_payload = (my_call, extra.clone(), (&hash, &hash));
-		let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-			from.sign(&blake2_256(payload)[..])
-		} else {
-			debug!("signing {}", HexDisplay::from(&payload));
-			from.sign(payload)
-		});
+		assert_eq!(extra.encode(), gen_extra.encode());
 
-		let ux = TestExtrinsic::new_signed(
-			raw_payload.0, GenericAddress::from(from.public()), signature.into(), extra
+		let ux = compose_extrinsic!(
+			api.metadata.clone(),
+			api.genesis_hash.clone(),
+			BALANCES_MODULE_NAME,
+			BALANCES_TRANSFER,
+			gen_extra.clone(),
+			from,
+			GenericAddress::from(to),
+			Compact(amount)
 		);
 
 		let mut _xthex = hex::encode(ux.encode());

@@ -58,9 +58,9 @@ fn main() {
 
     let xt = compose_extrinsic!(api.metadata.clone(),
                                 api.genesis_hash,
-                                "balances",
+                                "Balances",
                                 "transfer",
-                                nonce,
+                                GenericExtra::new(nonce.low_u32()),
                                 from,
                                 GenericAddress::from(to),
                                 Compact(Balance::from(42 as u128))

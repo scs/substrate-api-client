@@ -15,67 +15,80 @@
 
 */
 
+use std::fmt;
+
+use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use node_primitives::Signature;
-use codec::{Compact, Encode, Decode};
-use runtime_primitives::traits::SignedExtension;
 use runtime_primitives::generic::Era;
-use std::fmt;
+use runtime_primitives::traits::SignedExtension;
 
 pub const BALANCES_MODULE_NAME: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 
 pub type GenericAddress = Address<[u8; 32], u32>;
-//pub type UncheckedExtrinsicV3<F, E> = UncheckedExtrinsic<GenericAddress, F, Signature, E>;
-
 pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
 
+/// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
+/// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra.
 #[derive(Decode, Encode, Clone, Debug, Eq, PartialEq)]
-pub struct GenericExtra {
-    pub era: Era,
-    pub nonce: u64,
-    pub tip: u128,
-}
-//
-//#[derive(Debug, Encode, Decode, Clone, Eq, PartialEq, Ord, PartialOrd)]
-//pub struct GenericExtra;
-impl SignedExtension for GenericExtra {
-    type AccountId = u64;
-    type Call = ();
-    type AdditionalSigned = ();
-    type Pre = ();
+pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
 
-    fn additional_signed(&self) -> std::result::Result<(), &'static str> { Ok(()) }
+impl GenericExtra {
+    pub fn new(nonce: u32) -> GenericExtra {
+        GenericExtra(
+            Era::Immortal,
+            Compact(nonce),
+            Compact(0 as u128),
+        )
+    }
 }
 
-pub type BalanceExtrinsic = UncheckedExtrinsicV3<BalanceTransfer, GenericExtra>;
+pub type BalanceExtrinsic = UncheckedExtrinsicV3<BalanceTransfer>;
 
-pub struct UncheckedExtrinsicV3<Call, Extra>
-where
-    Call: Encode + fmt::Debug,
-    Extra: Encode + fmt::Debug,
+/// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
+/// The extra used does not need to implement SingedExtension here. A trade-off that was chosen for simpler
+/// code. Depending on future usage of SingedExtension in substrate this needs to be changed.
+pub struct UncheckedExtrinsicV3<Call>
+    where
+        Call: Encode + fmt::Debug,
 {
-    pub signature: Option<(GenericAddress, Signature, Extra)>,
+    pub signature: Option<(GenericAddress, Signature, GenericExtra)>,
     pub function: Call,
 }
 
-impl<Call, Extra> fmt::Debug for UncheckedExtrinsicV3<Call, Extra>
+impl<Call> UncheckedExtrinsicV3<Call>
+    where
+        Call: Encode + fmt::Debug,
+{
+    pub fn new_signed(
+        function: Call,
+        signed: GenericAddress,
+        signature: Signature,
+        extra: GenericExtra,
+    ) -> Self {
+        UncheckedExtrinsicV3 {
+            signature: Some((signed, signature, extra)),
+            function,
+        }
+    }
+}
+
+impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
     where
         Call: fmt::Debug + Encode,
-        Extra: fmt::Debug + Encode,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "UncheckedExtrinsic({:?}, {:?})", self.signature.as_ref().map(|x| (&x.0, &x.2)), self.function)
     }
 }
 
-impl<Call, Extra> Encode for UncheckedExtrinsicV3<Call, Extra>
-where
-    Call: Encode + fmt::Debug,
-    Extra: SignedExtension,
+impl<Call> Encode for UncheckedExtrinsicV3<Call>
+    where
+        Call: Encode + fmt::Debug,
 {
     fn encode(&self) -> Vec<u8> {
-        encode_with_vec_prefix::<Self, _>( |v| {
+        encode_with_vec_prefix::<Self, _>(|v| {
             match self.signature.as_ref() {
                 Some(s) => {
                     v.push(3 as u8 | 0b1000_0000);
@@ -90,6 +103,7 @@ where
     }
 }
 
+/// Same function as in primitives::generic. Needed to be copied as it is private there.
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
     let size = std::mem::size_of::<T>();
     let reserve = match size {
