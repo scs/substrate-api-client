@@ -18,8 +18,8 @@
 use node_primitives::Hash;
 use primitive_types::U256;
 
-use definitions::*;
 use crypto::AccountKey;
+use definitions::*;
 
 use crate::node_metadata::NodeMetadata;
 
@@ -90,20 +90,21 @@ pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256,
 
 #[cfg(test)]
 mod tests {
+	use balances as srml_balances;
+	use codec::{Compact, Decode, Encode};
+	use keyring::AccountKeyring;
 	use node_primitives::Balance;
+	use node_primitives::Signature;
+	use primitives::{blake2_256, hexdisplay::HexDisplay};
+	use runtime_primitives::generic::{Era, UncheckedExtrinsic,};
+	use runtime_primitives::traits::StaticLookup;
+	use system as srml_system;
+
+	use crypto::*;
 
 	use crate::Api;
 	use crate::srml::system::System;
-	use crypto::*;
-	use codec::{Compact, Decode, Encode};
-	use runtime_primitives::generic::{Era, UncheckedExtrinsic,};
-	use runtime_primitives::traits::StaticLookup;
-	use node_primitives::Signature;
 	use crate::utils::*;
-	use primitives::blake2_256;
-	use keyring::AccountKeyring;
-	use system as srml_system;
-	use balances as srml_balances;
 
 	use super::*;
 
@@ -142,17 +143,21 @@ mod tests {
 	type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
 	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
 
-
-	#[test]
-	fn call_from_meta_data_works() {
+	fn test_api() -> Api {
 		let node_ip = "127.0.0.1";
 		let node_port = "9500";
 		let url = format!("{}:{}", node_ip, node_port);
+		println!("Interacting with node on {}", url);
+		Api::new(format!("ws://{}", url))
+	}
+
+
+	#[test]
+	fn call_from_meta_data_works() {
+		let api = test_api();
+
 		let balance_module_index = 3u8;
 		let balance_transfer_index = 0u8;
-		println!("Interacting with node on {}", url);
-
-		let api = Api::new(format!("ws://{}", url));
 
 		let amount = Balance::from(42 as u128);
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
@@ -164,14 +169,7 @@ mod tests {
 
 	#[test]
 	fn custom_extrinsic_works() {
-		let node_ip = "127.0.0.1";
-		let node_port = "9500";
-		let url = format!("{}:{}", node_ip, node_port);
-		let balance_module_index = 3u8;
-		let balance_transfer_index = 0u8;
-		println!("Interacting with node on {}", url);
-
-		let api = Api::new(format!("ws://{}", url));
+		let api = test_api();
 
 		let accountid = AccountId::from(AccountKeyring::Alice);
 		let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
@@ -179,38 +177,29 @@ mod tests {
 		println!("[+] Alice's Account Nonce is {}", nonce);
 
 		let amount = Balance::from(42 as u128);
-		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
 		let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+		let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 		let hash = <Runtime as System>::Hash::from(api.genesis_hash.clone());
 
 		let my_call = compose_call!(api.metadata.clone(), BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericAddress::from(to.clone()), Compact(amount));
-		let extra = <Runtime as System>::extra(0);
+		let extra = <Runtime as System>::extra(nonce.low_u32());
 
-		let raw_payload = (my_call.clone(), extra.clone(), (&hash, &hash.clone()));
-//			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+		let raw_payload = (my_call, extra.clone(), (&hash, &hash));
 		let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
 			from.sign(&blake2_256(payload)[..])
 		} else {
-//			debug!("signing {}", HexDisplay::from(&payload));
+			debug!("signing {}", HexDisplay::from(&payload));
 			from.sign(payload)
 		});
 
-	 	let ux = TestExtrinsic::new_signed(
-			my_call,from.public().into(), signature.into(), extra
+		let ux = TestExtrinsic::new_signed(
+			raw_payload.0, GenericAddress::from(from.public()), signature.into(), extra
 		);
 
 		let mut _xthex = hex::encode(ux.encode());
 		_xthex.insert_str(0, "0x");
 
-
 		let tx_hash = api.send_extrinsic(_xthex).unwrap();
 		println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
-
-		println!("{:?}", ux);
-		let my_ux = transfer(from, GenericAddress::from(to), amount, nonce, api.genesis_hash, api.metadata);
-		println!("{:?}", my_ux);
-
-
-		assert_eq!(ux.encode(), my_ux.encode());
 	}
 }
