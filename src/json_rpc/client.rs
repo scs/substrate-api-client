@@ -18,6 +18,7 @@
 use std::sync::mpsc::Sender as ThreadOut;
 
 use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
+use crate::json_rpc::json_req::REQUEST_TRANSFER;
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
 
@@ -85,13 +86,17 @@ pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) ->
     match value["id"].as_str() {
         Some(idstr) => {
             match idstr.parse::<u32>() {
-                Ok(REQUEST_TRANSFER) => {
-                    match value.get("error") {
-                        Some(err) => error!("ERROR: {:?}", err),
-                        _ => debug!("no error"),
+                Ok(req_id) => {
+                    match req_id {
+                        REQUEST_TRANSFER => {
+                            match value.get("error") {
+                                Some(err) => error!("ERROR: {:?}", err),
+                                _ => debug!("no error"),
+                            }
+                        },
+                        _ => debug!("Unknown request id"),
                     }
                 },
-                Ok(_) => debug!("unknown request id"),
                 Err(_) => error!("error assigning request id"),
             }
         },
