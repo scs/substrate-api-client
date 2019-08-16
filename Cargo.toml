@@ -74,8 +74,6 @@ package = "sr-std"
 git = 'https://github.com/paritytech/substrate'
 package = "node-runtime"
 
-#[patch."https://github.com/paritytech/substrate-bip39"]
-#substrate-bip39 = { path = "substrate-bip39"}
 
 [features]
 default = ["std"]
