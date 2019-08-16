@@ -26,11 +26,12 @@ use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
 use parity_codec::Encode;
-use primitive_types::U256;
 use primitives::offchain::CryptoKind;
 
 use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::utils::hexstr_to_u256;
+use substrate_api_client::extrinsic::crypto::AccountKey;
+use substrate_api_client::extrinsic::definitions::*;
 
 fn main() {
     env_logger::init();
@@ -43,8 +44,7 @@ fn main() {
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);
 
-    let mut api = Api::new(format!("ws://{}", url));
-    api.init();
+    let api = Api::new(format!("ws://{}", url));
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);
@@ -52,13 +52,16 @@ fn main() {
     let nonce = hexstr_to_u256(result_str);
     println!("[+] Alice's Account Nonce is {}", nonce);
 
+    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
+
     // generate extrinsic
-    let xt= extrinsic::transfer("//Alice",
-                                "//Bob",
-                                U256::from(42),
-                                nonce,
-                                api.genesis_hash.unwrap(),
-                                CryptoKind::Sr25519);
+    let xt = extrinsic::transfer(from,
+                                 GenericAddress::from(to),
+                                 42,
+                                 nonce,
+                                 api.genesis_hash,
+                                 api.metadata.clone());
 
     debug!("extrinsic: {:?}", xt);
 

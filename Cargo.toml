@@ -95,3 +95,11 @@ path = "src/examples/example_transfer.rs"
 [[example]]
 name = "example_event_callback"
 path = "src/examples/example_event_callback.rs"
+
+[[example]]
+name = "example_generic_extrinsic"
+path = "src/examples/example_generic_extrinsic.rs"
+
+[[example]]
+name = "example_print_metadata"
+path = "src/examples/example_print_metadata.rs"

@@ -14,24 +14,29 @@
    limitations under the License.
 
 */
+#![macro_use]
 
 #[macro_use]
 extern crate log;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender as ThreadOut;
 
-use metadata::{RuntimeMetadata, RuntimeMetadataPrefixed};
+use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
 use parity_codec::Decode;
-use ws::Result;
+use ws::Result as WsResult;
 
 use json_rpc::json_req;
+use node_metadata::NodeMetadata;
 use utils::*;
 
+#[macro_use]
 pub mod extrinsic;
+pub mod node_metadata;
 pub mod utils;
 pub mod json_rpc;
 
@@ -42,83 +47,60 @@ struct JsonBasic {
     params: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Api {
-    url : String,
-    pub genesis_hash : Option<Hash>,
-    //pub metadata : Option<RuntimeMetadataV4>,
+    url: String,
+    pub genesis_hash: Hash,
+    pub metadata: NodeMetadata,
 }
 
 impl Api {
     pub fn new(url: String) -> Api {
-        Api {
-            url : url,
-            genesis_hash : None,
-//            metadata : None,
-        }
+        Api::_init(url)
     }
 
-    pub fn init(&mut self) {
-        // get genesis hash
-        let jsonreq = json_req::chain_get_block_hash();
-        let genesis_hash_str = self.get_request(jsonreq.to_string()).unwrap();
-        self.genesis_hash = Some(hexstr_to_hash(genesis_hash_str));
-        info!("got genesis hash: {:?}", self.genesis_hash.unwrap());
+    fn _init(url: String) -> Api{
+        let genesis_hash = Api::_get_genesis_hash(url.clone());
+        info!("Got genesis hash: {:?}", genesis_hash);
 
-        //get metadata
+        let meta = Api::_get_metadata(url.clone()).expect("Fetching Metadata from node failed");
+        let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
+
+        Api { url, genesis_hash, metadata }
+    }
+
+    fn _get_genesis_hash(url: String) -> Hash {
+        let jsonreq = json_req::chain_get_block_hash();
+        let genesis_hash_str = Api::_get_request(url.clone() ,jsonreq.to_string()).expect("Fetching genesis hash from node failed");
+        hexstr_to_hash(genesis_hash_str)
+    }
+
+    fn _get_metadata(url: String) -> Option<RuntimeMetadataPrefixed>{
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = self.get_request(jsonreq.to_string()).unwrap();
+        let metadata_str = Api::_get_request(url,jsonreq.to_string()).unwrap();
+
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
-        let _meta = RuntimeMetadataPrefixed::decode(&mut _om)
-                .expect("runtime metadata decoding to RuntimeMetadataPrefixed failed.");
-        debug!("decoded: {:?} ", _meta);
-        match _meta.1 {
-            RuntimeMetadata::V5(_value) => {
-                //FIXME: storing metadata in self is problematic because it can't be cloned or synced among threads
-                //self.metadata = Some(value);
-                debug!("successfully decoded metadata");
-            },
-            _ => panic!("unsupported metadata"),
-        }
-
-
-/*                    match value.modules {
-                        DecodeDifferent::Decoded(mods) => {
-                            modules = mods;
-                            println!("module0 {:?}", modules[0]);
-                        },
-                        _ => panic!("unsupported metadata"),
-                    }
-
-            println!("-------------------- modules ----------------");
-            for module in modules {
-                println!("module: {:?}", module.name);
-                match module.name {
-                    DecodeDifferent::Decoded(name) => {
-                        match module.calls {
-                            Some(DecodeDifferent::Decoded(calls)) => {
-                                println!("calls: {:?}", calls);
-                            },
-                            _ => println!("ignoring"),
-                        }
-                        println!("storage: {:?}", module.storage)
-                    },
-                    _ => println!("ignoring"),
-                }
-            }
-            */
+        RuntimeMetadataPrefixed::decode(&mut _om)
     }
 
     // low level access
-    pub fn get_request(&self, jsonreq: String) -> Result<String> {
+    fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
-        json_rpc::get(self.url.clone(), jsonreq.clone(), result_in.clone());
+        json_rpc::get(url, jsonreq.clone(), result_in.clone());
 
         Ok(result_out.recv().unwrap())
     }
 
-    pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Result<String> {
+    pub fn get_metadata(&self) -> Option<RuntimeMetadataPrefixed> {
+        Api::_get_metadata(self.url.clone())
+    }
+
+    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
+        Api::_get_request(self.url.clone(), jsonreq)
+    }
+
+    pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
         let keyhash = storage_key_hash(module, storage_key_name, param);
 
         debug!("with storage key: {}", keyhash);
@@ -126,7 +108,7 @@ impl Api {
         self.get_request(jsonreq.to_string())
     }
 
-    pub fn send_extrinsic(&self, xthex_prefixed: String) -> Result<Hash> {
+    pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
 
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
@@ -153,24 +135,6 @@ impl Api {
         loop {
             let res = result_out.recv().unwrap();
             sender.send(res.clone()).unwrap();
-
-/*
-            //println!("client >>>> got {}", res);
-            let _unhex = hexstr_to_vec(res);
-            let mut _er_enc = _unhex.as_slice();
-            //let _event = balances::RawEvent::decode(&mut _er_enc2);
-            let _events = Vec::<system::EventRecord::<node_runtime::Event>>::decode(&mut _er_enc);
-            match _events {
-                Some(evts) => {
-                    for ev in &evts {
-                        println!("decoded: phase {:?} event {:?}", ev.phase, ev.event);
-                        sender.send(ev.event.clone()).unwrap();
-                    }
-                }
-                None => println!("couldn't decode event record list")
-            }
-            //self.result.send(_events).unwrap();
-*/
         }
     }
 }

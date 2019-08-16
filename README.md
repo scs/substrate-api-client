@@ -28,8 +28,7 @@ Set the output verbosity by adding `RUST_LOG=info` or `RUST_LOG=debug` in front 
     use parity_codec::Encode;
 
     fn main() {
-        let mut api = Api::new("ws://127.0.0.1:9944".to_string());
-        api.init();
+        let api = Api::new("ws://127.0.0.1:9944".to_string());
 
         // get some plain storage value
         let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
@@ -48,9 +47,14 @@ See [example_get_storage.rs](./src/bin/example_get_storage.rs)
 ## Sending transactions
 See [example_transfer.rs](./src/bin/example_transfer.rs)
 
+## Sending generic extrinsics
+See [example_generic_extrinsic.rs](./src/bin/example_generic_extrinsic.rs)
+
 ## Execute code upon events
 See [example_event_callback.rs](./src/bin/example_event_callback.rs)
 
+## Pretty print metadata
+See [example_print_metadata.rs](./src/bin/example_print_metadata.rs)
+
 ## TODO
-  * dynamic API from metadata
-  * compose custom runtime module extrinsics generically
+  * ink! contract helper

@@ -25,9 +25,14 @@ extern crate substrate_api_client;
 use clap::App;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
+use node_primitives::Balance;
 use parity_codec::Encode;
+use primitives::offchain::CryptoKind;
 
-use substrate_api_client::Api;
+use substrate_api_client::{Api, extrinsic};
+// compose_extrinsic is only found if extrinsic is imported as well ?!?
+use substrate_api_client::compose_extrinsic;
+use substrate_api_client::extrinsic::{crypto::AccountKey, definitions::GenericAddress};
 use substrate_api_client::utils::hexstr_to_u256;
 
 fn main() {
@@ -39,18 +44,34 @@ fn main() {
     let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
-    info!("Interacting with node on {}", url);
+    println!("Interacting with node on {}", url);
 
     let api = Api::new(format!("ws://{}", url));
-
-    // get some plain storage value
-    let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
-    let result = hexstr_to_u256(result_str);
-    println!("[+] TransactionBaseFee is {}", result);
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let result = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", result);
+    let nonce = hexstr_to_u256(result_str);
+    println!("[+] Alice's Account Nonce is {}", nonce);
+
+    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
+
+    let xt = compose_extrinsic!(api.metadata.clone(),
+                                api.genesis_hash,
+                                "balances",
+                                "transfer",
+                                nonce,
+                                from,
+                                GenericAddress::from(to),
+                                Compact(Balance::from(42 as u128))
+                                );
+
+    println!("[+] Composed Extrinsic:\n {:?}", xt);
+
+    let mut _xthex = hex::encode(xt.encode());
+    _xthex.insert_str(0, "0x");
+    //send and watch extrinsic until finalized
+    let tx_hash = api.send_extrinsic(_xthex).unwrap();
+    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }

@@ -15,8 +15,8 @@
 
 */
 
-use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
 use node_primitives::Signature;
+use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
 use primitives::offchain::CryptoKind;
 
 pub enum AccountKey {

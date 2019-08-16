@@ -17,7 +17,7 @@
 
 use serde_json::{json, Value};
 
-pub const REQUEST_TRANSFER: u32         = 3;
+pub const REQUEST_TRANSFER: u32 = 3;
 
 pub fn chain_get_block_hash() -> Value {
     json!({
