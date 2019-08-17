@@ -57,14 +57,11 @@ macro_rules! compose_extrinsic {
 		{
 			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
-			use indices::address::Address;
-			use runtime_primitives::generic::{Era, UncheckedExtrinsic};
 			use crate::extrinsic::definitions::*;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
 			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
-			let era = Era::immortal();
 
 			let raw_payload = (call, $extra, ($genesis_hash, $genesis_hash));
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
@@ -81,8 +78,60 @@ macro_rules! compose_extrinsic {
     };
 }
 
-pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceExtrinsic {
-	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericExtra::new(nonce.low_u32()), from, to, Compact(amount))
+pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceTransferXt {
+	compose_extrinsic!(
+		node_metadata,
+		genesis_hash,
+		BALANCES_MODULE,
+		BALANCES_TRANSFER,
+		GenericExtra::new(nonce.low_u32()),
+		from,
+		to,
+		Compact(amount)
+	)
+}
+
+pub fn contract_put_code(from: AccountKey, gas_limit: u64, code: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractPutCodeXt {
+	compose_extrinsic!(
+		node_metadata,
+		genesis_hash,
+		CONTRACTS_MODULE,
+		CONTRACTS_PUT_CODE,
+		GenericExtra::new(nonce.low_u32()),
+		from,
+		Compact(gas_limit),
+		code
+	)
+}
+
+pub fn contract_create(from: AccountKey, endowment: u128, gas_limit: u64, data: Vec<u8>, code_hash: Hash, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
+    compose_extrinsic!(
+		node_metadata,
+		genesis_hash,
+		CONTRACTS_MODULE,
+		CONTRACTS_CREATE,
+		GenericExtra::new(nonce.low_u32()),
+		from,
+		Compact(endowment),
+		Compact(gas_limit),
+		code_hash,
+		data
+	)
+}
+
+pub fn contract_call(from: AccountKey, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCallXt {
+	compose_extrinsic!(
+		node_metadata,
+		genesis_hash,
+		CONTRACTS_MODULE,
+		CONTRACTS_CALL,
+		GenericExtra::new(nonce.low_u32()),
+		from,
+		dest,
+		Compact(value),
+		Compact(gas_limit),
+		data
+	)
 }
 
 #[cfg(test)]
@@ -138,7 +187,7 @@ mod tests {
 //	type Index = <Runtime as System>::Index;
 	type AccountId = <Runtime as System>::AccountId;
 //	type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
-	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
+	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransferFn, Signature, <Runtime as System>::SignedExtra>;
 
 	fn test_api() -> Api {
 		let node_ip = "127.0.0.1";
@@ -160,7 +209,7 @@ mod tests {
 		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
 
 		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
-		let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
+		let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
 		assert_eq!(my_call, transfer_fn);
 	}
 
@@ -186,7 +235,7 @@ mod tests {
 		let ux = compose_extrinsic!(
 			api.metadata.clone(),
 			api.genesis_hash.clone(),
-			BALANCES_MODULE_NAME,
+			BALANCES_MODULE,
 			BALANCES_TRANSFER,
 			gen_extra.clone(),
 			from,
@@ -195,6 +244,33 @@ mod tests {
 		);
 
 		let mut _xthex = hex::encode(ux.encode());
+		_xthex.insert_str(0, "0x");
+
+		let tx_hash = api.send_extrinsic(_xthex).unwrap();
+		println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+	}
+
+	#[test]
+	fn tests_contract_put_code() {
+		let api = test_api();
+
+		let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+		let accountid = AccountId::from(AccountKeyring::Alice);
+		let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
+		let nonce = hexstr_to_u256(result_str);
+		println!("[+] Alice's Account Nonce is {}", nonce);
+
+
+		const CONTRACT: &str = r#"
+(module
+    (func (export "call"))
+    (func (export "deploy"))
+)
+"#;
+		let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
+		let xt = contract_put_code(from, 500_000, wasm, nonce, api.genesis_hash.clone(), api.metadata.clone());
+
+		let mut _xthex = hex::encode(xt.encode());
 		_xthex.insert_str(0, "0x");
 
 		let tx_hash = api.send_extrinsic(_xthex).unwrap();

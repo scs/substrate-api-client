@@ -68,7 +68,7 @@ impl System for Runtime {
 //type Index = <Runtime as System>::Index;
 //type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
 type AccountId = <Runtime as System>::AccountId;
-type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransfer, Signature, <Runtime as System>::SignedExtra>;
+type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransferFn, Signature, <Runtime as System>::SignedExtra>;
 
 fn main() {
     let node_ip = "127.0.0.1";
@@ -88,7 +88,7 @@ fn main() {
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
     let hash = <Runtime as System>::Hash::from(api.genesis_hash.clone());
 
-    let my_call = compose_call!(api.metadata.clone(), BALANCES_MODULE_NAME, BALANCES_TRANSFER, GenericAddress::from(to.clone()), Compact(amount));
+    let my_call = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to.clone()), Compact(amount));
     let extra = <Runtime as System>::extra(nonce.low_u32());
 
     let raw_payload = (my_call, extra.clone(), (&hash, &hash));

@@ -18,6 +18,9 @@ serde_derive = "1.0"
 primitive-types = { version = "0.2", default-features = false, features = ["codec"] }
 parity-codec-derive = { version = "3.3", default-features = false }
 
+[dev-dependencies]
+wabt = "0.9.0"
+
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
 package = "substrate-primitives"
@@ -106,3 +109,7 @@ path = "src/examples/example_print_metadata.rs"
 [[example]]
 name = "test_extrinsic"
 path = "src/examples/example_test_extrinsic.rs"
+
+[[example]]
+name = "example_contract"
+path = "src/examples/example_contract.rs"

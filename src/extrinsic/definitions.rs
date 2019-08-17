@@ -20,14 +20,12 @@ use std::fmt;
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use node_primitives::Signature;
+use node_primitives::Hash;
 use runtime_primitives::generic::Era;
-use runtime_primitives::traits::SignedExtension;
 
-pub const BALANCES_MODULE_NAME: &str = "Balances";
-pub const BALANCES_TRANSFER: &str = "transfer";
+// -------------- Generic Definitions --------------------
 
 pub type GenericAddress = Address<[u8; 32], u32>;
-pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra.
@@ -44,11 +42,32 @@ impl GenericExtra {
     }
 }
 
-pub type BalanceExtrinsic = UncheckedExtrinsicV3<BalanceTransfer>;
+// -------------- Balances Module --------------------
+
+pub const BALANCES_MODULE: &str = "Balances";
+pub const BALANCES_TRANSFER: &str = "transfer";
+
+pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
+
+pub type BalanceTransferXt = UncheckedExtrinsicV3<BalanceTransferFn>;
+
+// -------------- Contracts Module --------------------
+
+pub const CONTRACTS_MODULE: &str = "Contract";
+pub const CONTRACTS_PUT_CODE: &str = "put_code";
+pub const CONTRACTS_CREATE: &str = "create";
+pub const CONTRACTS_CALL: &str = "call";
+
+pub type ContractPutCodeFn = ([u8; 2], Compact<u64>, Vec<u8>);
+pub type ContractCreateFn = ([u8; 2], Compact<u128>, Compact<u64>, Hash, Vec<u8>);
+pub type ContractCallFn = ([u8; 2], GenericAddress, Compact<u128>, Compact<u64>, Vec<u8>);
+
+pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
+pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
+pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
 
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
-/// The extra used does not need to implement SingedExtension here. A trade-off that was chosen for simpler
-/// code. Depending on future usage of SingedExtension in substrate this needs to be changed.
+/// The SingedExtra used does not need to implement SingedExtension here.
 pub struct UncheckedExtrinsicV3<Call>
     where
         Call: Encode + fmt::Debug,
@@ -107,8 +126,8 @@ impl<Call> Encode for UncheckedExtrinsicV3<Call>
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
     let size = std::mem::size_of::<T>();
     let reserve = match size {
-        0..=0b00111111 => 1,
-        0..=0b00111111_11111111 => 2,
+        0..=0b0011_1111 => 1,
+        0..=0b0011_1111_1111_1111 => 2,
         _ => 4,
     };
     let mut v = Vec::with_capacity(reserve + size);
