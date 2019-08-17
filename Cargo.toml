@@ -74,9 +74,13 @@ git = 'https://github.com/paritytech/substrate'
 package = "sr-std"
 
 [dev-dependencies.node_runtime]
-git = 'https://github.com/paritytech/substrate'
-package = "node-runtime"
+git = 'https://github.com/scs/substrate-test-nodes.git'
+package = "test-node-runtime"
 
+[dev-dependencies.contracts]
+git = 'https://github.com/paritytech/substrate'
+rev = "6d47fd919b4d86e4348c6c19d99c80372587d215"
+package = "srml-contracts"
 
 [features]
 default = ["std"]
@@ -94,9 +98,9 @@ path = "src/examples/example_get_storage.rs"
 name = "example_transfer"
 path = "src/examples/example_transfer.rs"
 
-[[example]]
-name = "example_event_callback"
-path = "src/examples/example_event_callback.rs"
+#[[example]]
+#name = "example_event_callback"
+#path = "src/examples/example_event_callback.rs"
 
 [[example]]
 name = "example_generic_extrinsic"
@@ -106,9 +110,9 @@ path = "src/examples/example_generic_extrinsic.rs"
 name = "example_print_metadata"
 path = "src/examples/example_print_metadata.rs"
 
-[[example]]
-name = "test_extrinsic"
-path = "src/examples/example_test_extrinsic.rs"
+#[[example]]
+#name = "test_extrinsic"
+#path = "src/examples/example_test_extrinsic.rs"
 
 [[example]]
 name = "example_contract"

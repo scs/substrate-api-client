@@ -1,12 +1,17 @@
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
+extern crate log;
+
+use std::sync::mpsc::channel;
+use std::thread;
 
 use clap::App;
-
-use codec::Encode;
+use codec::{Decode, Encode};
 use keyring::AccountKeyring;
-use node_primitives::AccountId;
+use log::*;
+use node_primitives::{AccountId, Hash};
+use node_runtime::Event;
 
 use substrate_api_client::Api;
 use substrate_api_client::extrinsic::contract_put_code;
@@ -46,4 +51,38 @@ fn main() {
 
     let tx_hash = api.send_extrinsic(_xthex).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+
+    let code_hash = subcribe_to_code_stored_event(api.clone());
+    println!("[+] Got code hash: {:?}", code_hash);
 }
+
+fn subcribe_to_code_stored_event(api: Api) -> Hash {
+    let (events_in, events_out) = channel();
+
+    thread::Builder::new()
+        .spawn(move || {
+            api.subscribe_events(events_in.clone());
+        })
+        .unwrap();
+
+    loop {
+        let event_str = events_out.recv().unwrap();
+
+        let _unhex = hexstr_to_vec(event_str);
+        let mut _er_enc = _unhex.as_slice();
+        let _events = Vec::<system::EventRecord::< Event, Hash >> ::decode(&mut _er_enc);
+        if let Ok(evts) = _events {
+            for evr in &evts {
+                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+                if let Event::contracts(ce) = &evr.event {
+                    if let contracts::RawEvent::CodeStored(code_hash) = &ce {
+                        println!("Received CodeStored event");
+                        println!("Codehash: {:?}", code_hash);
+                        return code_hash.to_owned();
+                    }
+                }
+            }
+        }
+    }
+}
+
