@@ -53,9 +53,7 @@ fn main() {
         api.metadata.clone()
     );
 
-    let mut _xthex = hex::encode(xt.encode());
-    _xthex.insert_str(0, "0x");
-
+    let mut _xthex = xt.hex_encode();
     println!("[+] Sending Extrinsic. Hash: {}", _xthex);
     let tx_hash = api.send_extrinsic(_xthex).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
@@ -77,9 +75,7 @@ fn main() {
         api.metadata.clone()
     );
 
-    let mut _xthex = hex::encode(xt.encode());
-    _xthex.insert_str(0, "0x");
-
+    let _xthex = xt.hex_encode();
     println!("[+] Sending Extrinsic. Hash: {}", _xthex);
     let tx_hash = api.send_extrinsic(_xthex).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
@@ -87,7 +83,7 @@ fn main() {
     // Now if the contract has been instantiated successfully, the following events are fired:
     // - indices.NewAccountIndex, balances.NewAccount -> generic events when an account is created
     // - contract.Transfer(from, to, balance) -> Transfer from caller of contract.create/call to the contract account
-    // - contract.Instantiated(from, deployedAt) -> successful deployment at address.
+    // - contract.Instantiated(from, deployedAt) -> successful deployment at address. We Want this one.
     let deployed_at = subscribe_to_code_instantiated_event(&events_out);
     println!("[+] Contract deployed at: {:?}\n", deployed_at);
 
@@ -102,9 +98,7 @@ fn main() {
         api.metadata.clone()
     );
 
-    let mut _xthex = hex::encode(xt.encode());
-    _xthex.insert_str(0, "0x");
-
+    let _xthex = xt.hex_encode();
     println!("[+] Sending Extrinsic. Hash: {}", _xthex);
     let tx_hash = api.send_extrinsic(_xthex).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);

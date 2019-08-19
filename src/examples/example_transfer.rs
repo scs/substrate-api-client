@@ -64,9 +64,7 @@ fn main() {
 
     debug!("extrinsic: {:?}", xt);
 
-    let mut _xthex = hex::encode(xt.encode());
-    _xthex.insert_str(0, "0x");
     //send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(_xthex).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }

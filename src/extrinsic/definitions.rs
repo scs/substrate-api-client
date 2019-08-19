@@ -91,6 +91,12 @@ impl<Call> UncheckedExtrinsicV3<Call>
             function,
         }
     }
+
+    pub fn hex_encode(&self) -> String {
+        let mut hex_str = hex::encode(self.encode());
+        hex_str.insert_str(0,"0x");
+        hex_str
+    }
 }
 
 impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
