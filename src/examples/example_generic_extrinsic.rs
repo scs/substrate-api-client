@@ -33,7 +33,7 @@ use substrate_api_client::{
     Api,
     extrinsic,
     compose_extrinsic,
-    extrinsic::definitions::GenericAddress,
+    extrinsic::xt_primitives::GenericAddress,
     crypto::{AccountKey, CryptoKind},
     utils::hexstr_to_u256,
 };

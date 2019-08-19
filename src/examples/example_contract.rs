@@ -16,7 +16,7 @@ use substrate_api_client::{
     Api,
     crypto::*,
     extrinsic::{
-        definitions::GenericAddress,
+        xt_primitives::GenericAddress,
         contract_put_code,
         contract_create,
         contract_call

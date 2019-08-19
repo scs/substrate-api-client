@@ -30,7 +30,7 @@ use codec::Encode;
 use substrate_api_client::{Api, extrinsic};
 use substrate_api_client::utils::hexstr_to_u256;
 use substrate_api_client::crypto::{AccountKey, CryptoKind};
-use substrate_api_client::extrinsic::definitions::*;
+use substrate_api_client::extrinsic::xt_primitives::*;
 
 fn main() {
     env_logger::init();

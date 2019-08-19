@@ -19,12 +19,12 @@ use node_primitives::Hash;
 use primitive_types::U256;
 
 use crypto::AccountKey;
-use definitions::*;
+use xt_primitives::*;
 
 use crate::node_metadata::NodeMetadata;
 use crate::crypto;
 
-pub mod definitions;
+pub mod xt_primitives;
 
 #[macro_export]
 macro_rules! compose_call {
@@ -57,7 +57,7 @@ macro_rules! compose_extrinsic {
 		{
 			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
-			use crate::extrinsic::definitions::*;
+			use crate::extrinsic::xt_primitives::*;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
