@@ -17,7 +17,6 @@
 
 use codec::Compact;
 use node_primitives::Hash;
-use primitive_types::U256;
 
 use crate::crypto::AccountKey;
 use crate::node_metadata::NodeMetadata;
@@ -38,26 +37,26 @@ pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
 pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
 pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
 
-pub fn put_code(from: AccountKey, gas_limit: u64, code: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractPutCodeXt {
+pub fn put_code(from: AccountKey, gas_limit: u64, code: Vec<u8>, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractPutCodeXt {
     compose_extrinsic!(
 		node_metadata,
 		genesis_hash,
 		CONTRACTS_MODULE,
 		CONTRACTS_PUT_CODE,
-		GenericExtra::new(nonce.low_u32()),
+		GenericExtra::new(nonce),
 		from,
 		Compact(gas_limit),
 		code
 	)
 }
 
-pub fn create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
+pub fn create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
     compose_extrinsic!(
 		node_metadata,
 		genesis_hash,
 		CONTRACTS_MODULE,
 		CONTRACTS_CREATE,
-		GenericExtra::new(nonce.low_u32()),
+		GenericExtra::new(nonce),
 		from,
 		Compact(endowment),
 		Compact(gas_limit),
@@ -66,13 +65,13 @@ pub fn create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash
 	)
 }
 
-pub fn call(from: AccountKey, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCallXt {
+pub fn call(from: AccountKey, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCallXt {
     compose_extrinsic!(
 		node_metadata,
 		genesis_hash,
 		CONTRACTS_MODULE,
 		CONTRACTS_CALL,
-		GenericExtra::new(nonce.low_u32()),
+		GenericExtra::new(nonce),
 		from,
 		dest,
 		Compact(value),

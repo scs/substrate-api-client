@@ -17,7 +17,6 @@
 
 use codec::Compact;
 use node_primitives::Hash;
-use primitive_types::U256;
 
 use crate::crypto::AccountKey;
 use crate::node_metadata::NodeMetadata;
@@ -31,13 +30,13 @@ pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
 
 pub type BalanceTransferXt = UncheckedExtrinsicV3<BalanceTransferFn>;
 
-pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceTransferXt {
+pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceTransferXt {
     compose_extrinsic!(
 		node_metadata,
 		genesis_hash,
 		BALANCES_MODULE,
 		BALANCES_TRANSFER,
-		GenericExtra::new(nonce.low_u32()),
+		GenericExtra::new(nonce),
 		from,
 		to,
 		Compact(amount)

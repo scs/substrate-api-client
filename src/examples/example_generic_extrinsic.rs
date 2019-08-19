@@ -23,19 +23,14 @@ extern crate log;
 extern crate substrate_api_client;
 
 use clap::App;
-use codec::Encode;
-use keyring::AccountKeyring;
-use node_primitives::AccountId;
 use node_primitives::Balance;
 
 // compose_extrinsic is only found if extrinsic is imported as well ?!?
 use substrate_api_client::{
     Api,
-    extrinsic,
     compose_extrinsic,
-    extrinsic::xt_primitives::GenericAddress,
     crypto::{AccountKey, CryptoKind},
-    utils::hexstr_to_u256,
+    extrinsic,
 };
 
 fn main() {
@@ -49,23 +44,21 @@ fn main() {
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);
 
-    let api = Api::new(format!("ws://{}", url));
+    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let api = Api::new(format!("ws://{}", url))
+        .set_signer(from);
 
     // get Alice's AccountNonce
-    let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let nonce = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", nonce);
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
     let xt = compose_extrinsic!(api.metadata.clone(),
                                 api.genesis_hash,
                                 "Balances",
                                 "transfer",
-                                GenericExtra::new(nonce.low_u32()),
-                                from,
+                                GenericExtra::new(api.get_nonce()),
+                                api.signer.clone().unwrap(),
                                 GenericAddress::from(to),
                                 Compact(Balance::from(42 as u128))
                                 );

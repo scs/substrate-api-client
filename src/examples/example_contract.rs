@@ -6,10 +6,9 @@ extern crate log;
 use std::sync::mpsc::{channel, Receiver};
 
 use clap::App;
-use codec::{Decode, Encode};
-use keyring::AccountKeyring;
+use codec::Decode;
 use log::*;
-use node_primitives::{AccountId, Hash};
+use node_primitives::Hash;
 use node_runtime::Event;
 
 use substrate_api_client::{
@@ -32,13 +31,11 @@ fn main() {
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);
-    let api = Api::new(format!("ws://{}", url));
 
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
-    let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let nonce = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", nonce);
+    let api = Api::new(format!("ws://{}", url))
+        .set_signer(from);
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 
 
     const CONTRACT: &str = r#"
@@ -49,10 +46,10 @@ fn main() {
 "#;
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
     let xt = contract::put_code(
-        from.clone(),
+        api.signer.clone().unwrap(),
         500_000,
         wasm,
-        nonce,
+        api.get_nonce(),
         api.genesis_hash.clone(),
         api.metadata.clone()
     );
@@ -69,12 +66,12 @@ fn main() {
     println!("[+] Got code hash: {:?}\n", code_hash);
 
     let xt = contract::create(
-        from.clone(),
+        api.signer.clone().unwrap(),
         500_000,
         500_000,
         code_hash,
         vec![1u8],
-        nonce + 1,
+        api.get_nonce(),
         api.genesis_hash.clone(),
         api.metadata.clone()
     );
@@ -92,12 +89,12 @@ fn main() {
     println!("[+] Contract deployed at: {:?}\n", deployed_at);
 
     let xt = contract::call(
-        from,
+        api.signer.clone().unwrap(),
         deployed_at,
         500_000,
         500_000,
         vec![1u8],
-        nonce + 2,
+        api.get_nonce(),
         api.genesis_hash.clone(),
         api.metadata.clone()
     );
@@ -153,17 +150,3 @@ fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> Generi
     }
 }
 
-fn subscribe_to_contract_call_event(events_out: &Receiver<String>) -> GenericAddress {
-    loop {
-        let event_str = events_out.recv().unwrap();
-
-        let _unhex = hexstr_to_vec(event_str);
-        let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
-        if let Ok(evts) = _events {
-            for evr in &evts {
-                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
-            }
-        }
-    }
-}
