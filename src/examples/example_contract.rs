@@ -3,8 +3,7 @@ extern crate clap;
 extern crate env_logger;
 extern crate log;
 
-use std::sync::mpsc::channel;
-use std::thread;
+use std::sync::mpsc::{channel, Receiver};
 
 use clap::App;
 use codec::{Decode, Encode};
@@ -14,9 +13,10 @@ use node_primitives::{AccountId, Hash};
 use node_runtime::Event;
 
 use substrate_api_client::Api;
-use substrate_api_client::extrinsic::contract_put_code;
+use substrate_api_client::extrinsic::{contract_put_code, contract_create, contract_call};
 use substrate_api_client::extrinsic::crypto::*;
 use substrate_api_client::utils::*;
+use substrate_api_client::extrinsic::definitions::GenericAddress;
 
 fn main() {
     env_logger::init();
@@ -44,40 +44,86 @@ fn main() {
 )
 "#;
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
-    let xt = contract_put_code(from, 500_000, wasm, nonce, api.genesis_hash.clone(), api.metadata.clone());
+    let xt = contract_put_code(
+        from.clone(),
+        500_000,
+        wasm,
+        nonce,
+        api.genesis_hash.clone(),
+        api.metadata.clone()
+    );
 
     let mut _xthex = hex::encode(xt.encode());
     _xthex.insert_str(0, "0x");
 
+    println!("[+] Sending Extrinsic. Hash: {}", _xthex);
     let tx_hash = api.send_extrinsic(_xthex).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 
-    let code_hash = subcribe_to_code_stored_event(api.clone());
-    println!("[+] Got code hash: {:?}", code_hash);
+    let (events_in, events_out) = channel();
+    api.subscribe_events(events_in.clone());
+
+    let code_hash = subcribe_to_code_stored_event(&events_out);
+    println!("[+] Got code hash: {:?}\n", code_hash);
+
+    let xt = contract_create(
+        from.clone(),
+        500_000,
+        500_000,
+        code_hash,
+        vec![1u8],
+        nonce + 1,
+        api.genesis_hash.clone(),
+        api.metadata.clone()
+    );
+
+    let mut _xthex = hex::encode(xt.encode());
+    _xthex.insert_str(0, "0x");
+
+    println!("[+] Sending Extrinsic. Hash: {}", _xthex);
+    let tx_hash = api.send_extrinsic(_xthex).unwrap();
+    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+
+    // Now if the contract has been instantiated successfully, the following events are fired:
+    // - indices.NewAccountIndex, balances.NewAccount -> generic events when an account is created
+    // - contract.Transfer(from, to, balance) -> Transfer from caller of contract.create/call to the contract account
+    // - contract.Instantiated(from, deployedAt) -> successful deployment at address.
+    let deployed_at = subscribe_to_code_instantiated_event(&events_out);
+    println!("[+] Contract deployed at: {:?}\n", deployed_at);
+
+    let xt = contract_call(
+        from,
+        deployed_at,
+        500_000,
+        500_000,
+        vec![1u8],
+        nonce + 2,
+        api.genesis_hash.clone(),
+        api.metadata.clone()
+    );
+
+    let mut _xthex = hex::encode(xt.encode());
+    _xthex.insert_str(0, "0x");
+
+    println!("[+] Sending Extrinsic. Hash: {}", _xthex);
+    let tx_hash = api.send_extrinsic(_xthex).unwrap();
+    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
 
-fn subcribe_to_code_stored_event(api: Api) -> Hash {
-    let (events_in, events_out) = channel();
-
-    thread::Builder::new()
-        .spawn(move || {
-            api.subscribe_events(events_in.clone());
-        })
-        .unwrap();
-
+fn subcribe_to_code_stored_event(events_out: &Receiver<String>) -> Hash {
     loop {
         let event_str = events_out.recv().unwrap();
 
         let _unhex = hexstr_to_vec(event_str);
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::< Event, Hash >> ::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
         if let Ok(evts) = _events {
             for evr in &evts {
                 debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
                 if let Event::contracts(ce) = &evr.event {
                     if let contracts::RawEvent::CodeStored(code_hash) = &ce {
-                        println!("Received CodeStored event");
-                        println!("Codehash: {:?}", code_hash);
+                        info!("Received Contract.CodeStored event");
+                        info!("Codehash: {:?}", code_hash);
                         return code_hash.to_owned();
                     }
                 }
@@ -86,3 +132,40 @@ fn subcribe_to_code_stored_event(api: Api) -> Hash {
     }
 }
 
+fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> GenericAddress {
+    loop {
+        let event_str = events_out.recv().unwrap();
+
+        let _unhex = hexstr_to_vec(event_str);
+        let mut _er_enc = _unhex.as_slice();
+        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
+        if let Ok(evts) = _events {
+            for evr in &evts {
+                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+                if let Event::contracts(ce) = &evr.event {
+                    if let contracts::RawEvent::Instantiated(from, deployed_at) = &ce {
+                        info!("Received Contract.Instantiated Event");
+                        info!("From: {:?}", from);
+                        info!("Deployed at: {:?}", deployed_at);
+                        return GenericAddress::from(deployed_at.to_owned().0);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn subscribe_to_contract_call_event(events_out: &Receiver<String>) -> GenericAddress {
+    loop {
+        let event_str = events_out.recv().unwrap();
+
+        let _unhex = hexstr_to_vec(event_str);
+        let mut _er_enc = _unhex.as_slice();
+        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
+        if let Ok(evts) = _events {
+            for evr in &evts {
+                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+            }
+        }
+    }
+}
