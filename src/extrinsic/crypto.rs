@@ -23,6 +23,7 @@ pub enum CryptoKind {
     Sr25519,
 }
 
+#[derive(Clone)]
 pub enum AccountKey {
     Ed(ed25519::Pair),
     Sr(sr25519::Pair),

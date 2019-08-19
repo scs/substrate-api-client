@@ -104,7 +104,7 @@ pub fn contract_put_code(from: AccountKey, gas_limit: u64, code: Vec<u8>, nonce:
 	)
 }
 
-pub fn contract_create(from: AccountKey, endowment: u128, gas_limit: u64, data: Vec<u8>, code_hash: Hash, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
+pub fn contract_create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
     compose_extrinsic!(
 		node_metadata,
 		genesis_hash,

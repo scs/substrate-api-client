@@ -1,5 +1,4 @@
 //! Implements support for the srml_system module.
-use codec::Codec;
 use runtime_primitives::traits::{
     Bounded,
     CheckEqual,
@@ -17,7 +16,6 @@ use runtime_primitives::traits::{
 use runtime_support::Parameter;
 use serde::de::DeserializeOwned;
 use system::Event;
-use primitives::Pair;
 
 /// The subset of the `srml_system::Trait` that a client must implement.
 pub trait System {

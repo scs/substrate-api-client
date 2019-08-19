@@ -128,15 +128,8 @@ impl Api {
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
-        let (result_in, result_out) = channel();
-
         json_rpc::start_event_subscriber(self.url.clone(),
                                          jsonreq.clone(),
-                                         result_in.clone());
-
-        loop {
-            let res = result_out.recv().unwrap();
-            sender.send(res.clone()).unwrap();
-        }
+                                         sender.clone());
     }
 }
