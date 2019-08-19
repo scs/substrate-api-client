@@ -15,17 +15,9 @@
 
 */
 
-use node_primitives::Hash;
-use primitive_types::U256;
-
-use crypto::AccountKey;
-use xt_primitives::*;
-
-use crate::node_metadata::NodeMetadata;
-use crate::crypto;
-
 pub mod xt_primitives;
 pub mod contract;
+pub mod balances;
 
 #[macro_export]
 macro_rules! compose_call {
@@ -77,19 +69,6 @@ macro_rules! compose_extrinsic {
 			)
 		}
     };
-}
-
-pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> BalanceTransferXt {
-	compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
-		BALANCES_MODULE,
-		BALANCES_TRANSFER,
-		GenericExtra::new(nonce.low_u32()),
-		from,
-		to,
-		Compact(amount)
-	)
 }
 
 #[cfg(test)]

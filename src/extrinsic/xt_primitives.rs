@@ -22,8 +22,6 @@ use indices::address::Address;
 use node_primitives::Signature;
 use runtime_primitives::generic::Era;
 
-// -------------- Generic Definitions --------------------
-
 pub type GenericAddress = Address<[u8; 32], u32>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
@@ -40,15 +38,6 @@ impl GenericExtra {
         )
     }
 }
-
-// -------------- Balances Module --------------------
-
-pub const BALANCES_MODULE: &str = "Balances";
-pub const BALANCES_TRANSFER: &str = "transfer";
-
-pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
-
-pub type BalanceTransferXt = UncheckedExtrinsicV3<BalanceTransferFn>;
 
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.

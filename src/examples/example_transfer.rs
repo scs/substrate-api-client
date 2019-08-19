@@ -23,14 +23,17 @@ extern crate log;
 extern crate substrate_api_client;
 
 use clap::App;
+use codec::Encode;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
-use codec::Encode;
 
-use substrate_api_client::{Api, extrinsic};
-use substrate_api_client::utils::hexstr_to_u256;
-use substrate_api_client::crypto::{AccountKey, CryptoKind};
-use substrate_api_client::extrinsic::xt_primitives::*;
+use substrate_api_client::{
+    Api,
+    crypto::{AccountKey, CryptoKind},
+    extrinsic,
+    extrinsic::xt_primitives::*,
+    utils::hexstr_to_u256,
+};
 
 fn main() {
     env_logger::init();
@@ -55,12 +58,12 @@ fn main() {
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
     // generate extrinsic
-    let xt = extrinsic::transfer(from,
-                                 GenericAddress::from(to),
-                                 42,
-                                 nonce,
-                                 api.genesis_hash,
-                                 api.metadata.clone());
+    let xt = extrinsic::balances::transfer(from,
+                                           GenericAddress::from(to),
+                                           42,
+                                           nonce,
+                                           api.genesis_hash,
+                                           api.metadata.clone());
 
     debug!("extrinsic: {:?}", xt);
 
