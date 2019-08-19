@@ -36,6 +36,7 @@ use utils::*;
 
 #[macro_use]
 pub mod extrinsic;
+pub mod crypto;
 pub mod node_metadata;
 pub mod utils;
 pub mod json_rpc;

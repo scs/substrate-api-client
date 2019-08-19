@@ -12,11 +12,17 @@ use log::*;
 use node_primitives::{AccountId, Hash};
 use node_runtime::Event;
 
-use substrate_api_client::Api;
-use substrate_api_client::extrinsic::{contract_put_code, contract_create, contract_call};
-use substrate_api_client::extrinsic::crypto::*;
-use substrate_api_client::utils::*;
-use substrate_api_client::extrinsic::definitions::GenericAddress;
+use substrate_api_client::{
+    Api,
+    crypto::*,
+    extrinsic::{
+        definitions::GenericAddress,
+        contract_put_code,
+        contract_create,
+        contract_call
+    },
+    utils::*,
+};
 
 fn main() {
     env_logger::init();

@@ -29,7 +29,7 @@ use system as srml_system;
 
 use substrate_api_client::Api;
 use substrate_api_client::compose_call;
-use substrate_api_client::extrinsic::crypto::*;
+use substrate_api_client::crypto::*;
 use substrate_api_client::extrinsic::definitions::*;
 use substrate_api_client::srml::system::System;
 use substrate_api_client::utils::*;

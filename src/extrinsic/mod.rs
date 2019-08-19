@@ -22,9 +22,9 @@ use crypto::AccountKey;
 use definitions::*;
 
 use crate::node_metadata::NodeMetadata;
+use crate::crypto;
 
 pub mod definitions;
-pub mod crypto;
 
 #[macro_export]
 macro_rules! compose_call {
