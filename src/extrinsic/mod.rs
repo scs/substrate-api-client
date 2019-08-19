@@ -25,6 +25,7 @@ use crate::node_metadata::NodeMetadata;
 use crate::crypto;
 
 pub mod xt_primitives;
+pub mod contract;
 
 #[macro_export]
 macro_rules! compose_call {
@@ -88,49 +89,6 @@ pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256,
 		from,
 		to,
 		Compact(amount)
-	)
-}
-
-pub fn contract_put_code(from: AccountKey, gas_limit: u64, code: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractPutCodeXt {
-	compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
-		CONTRACTS_MODULE,
-		CONTRACTS_PUT_CODE,
-		GenericExtra::new(nonce.low_u32()),
-		from,
-		Compact(gas_limit),
-		code
-	)
-}
-
-pub fn contract_create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
-    compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
-		CONTRACTS_MODULE,
-		CONTRACTS_CREATE,
-		GenericExtra::new(nonce.low_u32()),
-		from,
-		Compact(endowment),
-		Compact(gas_limit),
-		code_hash,
-		data
-	)
-}
-
-pub fn contract_call(from: AccountKey, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCallXt {
-	compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
-		CONTRACTS_MODULE,
-		CONTRACTS_CALL,
-		GenericExtra::new(nonce.low_u32()),
-		from,
-		dest,
-		Compact(value),
-		Compact(gas_limit),
-		data
 	)
 }
 

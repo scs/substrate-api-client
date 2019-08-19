@@ -17,9 +17,7 @@ use substrate_api_client::{
     crypto::*,
     extrinsic::{
         xt_primitives::GenericAddress,
-        contract_put_code,
-        contract_create,
-        contract_call
+        contract,
     },
     utils::*,
 };
@@ -50,7 +48,7 @@ fn main() {
 )
 "#;
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
-    let xt = contract_put_code(
+    let xt = contract::put_code(
         from.clone(),
         500_000,
         wasm,
@@ -70,7 +68,7 @@ fn main() {
     let code_hash = subcribe_to_code_stored_event(&events_out);
     println!("[+] Got code hash: {:?}\n", code_hash);
 
-    let xt = contract_create(
+    let xt = contract::create(
         from.clone(),
         500_000,
         500_000,
@@ -93,7 +91,7 @@ fn main() {
     let deployed_at = subscribe_to_code_instantiated_event(&events_out);
     println!("[+] Contract deployed at: {:?}\n", deployed_at);
 
-    let xt = contract_call(
+    let xt = contract::call(
         from,
         deployed_at,
         500_000,

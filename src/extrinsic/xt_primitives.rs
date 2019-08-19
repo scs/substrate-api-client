@@ -20,7 +20,6 @@ use std::fmt;
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use node_primitives::Signature;
-use node_primitives::Hash;
 use runtime_primitives::generic::Era;
 
 // -------------- Generic Definitions --------------------
@@ -50,21 +49,6 @@ pub const BALANCES_TRANSFER: &str = "transfer";
 pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
 
 pub type BalanceTransferXt = UncheckedExtrinsicV3<BalanceTransferFn>;
-
-// -------------- Contracts Module --------------------
-
-pub const CONTRACTS_MODULE: &str = "Contract";
-pub const CONTRACTS_PUT_CODE: &str = "put_code";
-pub const CONTRACTS_CREATE: &str = "create";
-pub const CONTRACTS_CALL: &str = "call";
-
-pub type ContractPutCodeFn = ([u8; 2], Compact<u64>, Vec<u8>);
-pub type ContractCreateFn = ([u8; 2], Compact<u128>, Compact<u64>, Hash, Vec<u8>);
-pub type ContractCallFn = ([u8; 2], GenericAddress, Compact<u128>, Compact<u64>, Vec<u8>);
-
-pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
-pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
-pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
 
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
