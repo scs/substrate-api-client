@@ -73,18 +73,14 @@ macro_rules! compose_extrinsic {
 
 #[cfg(test)]
 mod tests {
-	use balances as srml_balances;
 	use codec::{Compact, Encode};
-	use keyring::AccountKeyring;
 	use node_primitives::Balance;
-	use node_primitives::Signature;
-	use primitives::{blake2_256, hexdisplay::HexDisplay};
-	use runtime_primitives::generic::{Era, UncheckedExtrinsic,};
-	use runtime_primitives::traits::StaticLookup;
+
+	use xt_primitives::*;
 
 	use crate::Api;
 	use crate::crypto::*;
-	use crate::utils::*;
+	use crate::extrinsic::balances::{BALANCES_MODULE, BALANCES_TRANSFER};
 
 	use super::*;
 
@@ -95,7 +91,6 @@ mod tests {
 		println!("Interacting with node on {}", url);
 		Api::new(format!("ws://{}", url))
 	}
-
 
 	#[test]
 	fn call_from_meta_data_works() {
