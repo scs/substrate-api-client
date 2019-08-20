@@ -17,8 +17,13 @@
 
 use node_primitives::Signature;
 use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
-use primitives::offchain::CryptoKind;
 
+pub enum CryptoKind {
+    Ed25519,
+    Sr25519,
+}
+
+#[derive(Clone)]
 pub enum AccountKey {
     Ed(ed25519::Pair),
     Sr(sr25519::Pair),

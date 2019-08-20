@@ -19,54 +19,52 @@
 #[macro_use]
 extern crate log;
 extern crate serde;
-#[macro_use]
 extern crate serde_derive;
 
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender as ThreadOut;
 
+use codec::{Decode, Encode};
 use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
-use parity_codec::Decode;
 use ws::Result as WsResult;
 
-use json_rpc::json_req;
+use crypto::AccountKey;
+use extrinsic::xt_primitives::GenericAddress;
 use node_metadata::NodeMetadata;
+use rpc::json_req;
 use utils::*;
 
 #[macro_use]
 pub mod extrinsic;
+pub mod crypto;
 pub mod node_metadata;
 pub mod utils;
-pub mod json_rpc;
+pub mod rpc;
 
-#[derive(Serialize, Deserialize, Debug)]
-struct JsonBasic {
-    jsonrpc: String,
-    method: String,
-    params: String,
-}
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Api {
     url: String,
+    pub signer: Option<AccountKey>,
     pub genesis_hash: Hash,
     pub metadata: NodeMetadata,
 }
 
 impl Api {
-    pub fn new(url: String) -> Api {
-        Api::_init(url)
-    }
-
-    fn _init(url: String) -> Api{
+    pub fn new(url: String) -> Self {
         let genesis_hash = Api::_get_genesis_hash(url.clone());
         info!("Got genesis hash: {:?}", genesis_hash);
 
-        let meta = Api::_get_metadata(url.clone()).expect("Fetching Metadata from node failed");
+        let meta = Api::_get_metadata(url.clone());
         let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
+        info!("Metadata: {:?}", metadata);
 
-        Api { url, genesis_hash, metadata }
+        Self { url, signer: None, genesis_hash, metadata }
+    }
+
+    pub fn set_signer(mut self, signer: AccountKey) -> Self {
+        self.signer = Some(signer);
+        self
     }
 
     fn _get_genesis_hash(url: String) -> Hash {
@@ -75,25 +73,46 @@ impl Api {
         hexstr_to_hash(genesis_hash_str)
     }
 
-    fn _get_metadata(url: String) -> Option<RuntimeMetadataPrefixed>{
+    fn _get_metadata(url: String) -> RuntimeMetadataPrefixed{
         let jsonreq = json_req::state_get_metadata();
         let metadata_str = Api::_get_request(url,jsonreq.to_string()).unwrap();
 
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();
-        RuntimeMetadataPrefixed::decode(&mut _om)
+        RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
+    }
+
+    fn _get_nonce(url: String, signer: AccountKey) -> u32 {
+        let result_str = Api::_get_storage(url, "System", "AccountNonce", Some(signer.public().encode())).unwrap();
+        let nonce = hexstr_to_u256(result_str);
+        nonce.low_u32()
+    }
+
+    fn _get_storage(url: String, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
+        let keyhash = storage_key_hash(module, storage_key_name, param);
+
+        debug!("with storage key: {}", keyhash);
+        let jsonreq = json_req::state_get_storage(&keyhash);
+        Api::_get_request(url, jsonreq.to_string())
     }
 
     // low level access
     fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
-        json_rpc::get(url, jsonreq.clone(), result_in.clone());
+        rpc::get(url, jsonreq.clone(), result_in.clone());
 
         Ok(result_out.recv().unwrap())
     }
 
-    pub fn get_metadata(&self) -> Option<RuntimeMetadataPrefixed> {
+    pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
         Api::_get_metadata(self.url.clone())
+    }
+
+    pub fn get_nonce(&self) -> u32 {
+        match &self.signer {
+            Some(key) =>  Api::_get_nonce(self.url.clone(), key.to_owned()),
+            None => panic!("Can't get nonce when no signer is set"),
+        }
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
@@ -101,11 +120,7 @@ impl Api {
     }
 
     pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
-        let keyhash = storage_key_hash(module, storage_key_name, param);
-
-        debug!("with storage key: {}", keyhash);
-        let jsonreq = json_req::state_get_storage(&keyhash);
-        self.get_request(jsonreq.to_string())
+        Api::_get_storage(self.url.clone(), module, storage_key_name, param)
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {
@@ -114,7 +129,7 @@ impl Api {
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        json_rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
+        rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
                                                           jsonreq.clone(),
                                                           result_in.clone());
 
@@ -126,15 +141,8 @@ impl Api {
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
-        let (result_in, result_out) = channel();
-
-        json_rpc::start_event_subscriber(self.url.clone(),
+        rpc::start_event_subscriber(self.url.clone(),
                                          jsonreq.clone(),
-                                         result_in.clone());
-
-        loop {
-            let res = result_out.recv().unwrap();
-            sender.send(res.clone()).unwrap();
-        }
+                                         sender.clone());
     }
 }

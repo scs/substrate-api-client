@@ -15,16 +15,9 @@
 
 */
 
-use node_primitives::Hash;
-use primitive_types::U256;
-
-use definitions::*;
-use crypto::AccountKey;
-
-use crate::node_metadata::NodeMetadata;
-
-pub mod definitions;
-pub mod crypto;
+pub mod xt_primitives;
+pub mod contract;
+pub mod balances;
 
 #[macro_export]
 macro_rules! compose_call {
@@ -47,72 +40,69 @@ macro_rules! compose_call {
 /// Macro that generates a Unchecked extrinsic for a given module and call passed as a String.
 #[macro_export]
 macro_rules! compose_extrinsic {
-	($node_metadata: expr,
-	$genesis_hash: expr,
+	($api: expr,
 	$module: expr,
 	$call: expr,
-	$nonce: expr,
-	$from: expr,
 	$($args: expr), * ) => {
 		{
-			use parity_codec::{Compact, Encode};
+			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
-			use indices::address::Address;
-			use runtime_primitives::generic::Era;
-			use crate::extrinsic::definitions::UncheckedExtrinsic;
+			use crate::extrinsic::xt_primitives::*;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
-			let era = Era::immortal();
+			let call = $crate::compose_call!($api.metadata.clone(), $module, $call, $(($args)), +);
+			let extra = GenericExtra::new($api.get_nonce());
 
-			let raw_payload = (Compact($nonce.low_u64()), call, era, $genesis_hash);
+			let raw_payload = (call, extra.clone(), ($api.genesis_hash, $api.genesis_hash));
+			let from = $api.signer.unwrap();
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-				$from.sign(&blake2_256(payload)[..])
+				from.sign(&blake2_256(payload)[..])
 			} else {
 				debug!("signing {}", HexDisplay::from(&payload));
-				$from.sign(payload)
+				from.sign(payload)
 			});
 
-			UncheckedExtrinsic {
-				signature: Some((Address::from($from.public()), signature, $nonce.low_u64().into(), era)),
-				function: raw_payload.1,
-			}
+			UncheckedExtrinsicV3::new_signed(
+				raw_payload.0, GenericAddress::from(from.public()), signature, extra
+			)
 		}
     };
 }
 
-pub fn transfer(from: AccountKey, to: GenericAddress, amount: u128, nonce: U256, genesis_hash: Hash, node_metadata: NodeMetadata) -> UncheckedExtrinsic<BalanceTransfer> {
-	compose_extrinsic!(node_metadata, genesis_hash, BALANCES_MODULE_NAME, BALANCES_TRANSFER, nonce, from, to, Compact(amount))
-}
-
 #[cfg(test)]
 mod tests {
+	use codec::{Compact, Encode};
 	use node_primitives::Balance;
 
+	use xt_primitives::*;
+
 	use crate::Api;
-	use crypto::AccountKey;
-	use primitives::offchain::CryptoKind;
-	use parity_codec::{Compact, Encode};
+	use crate::crypto::*;
+	use crate::extrinsic::balances::{BALANCES_MODULE, BALANCES_TRANSFER};
 
 	use super::*;
 
-	#[test]
-	fn call_from_meta_data_works() {
-		let node_ip = "127.0.0.1";
-		let node_port = "9500";
-		let url = format!("{}:{}", node_ip, node_port);
-		let balance_module_index = 3u8;
-		let balance_transfer_index = 0u8;
-		println!("Interacting with node on {}", url);
+	fn test_api() -> Api {
+        let node_ip = "127.0.0.1";
+        let node_port = "9500";
+        let url = format!("{}:{}", node_ip, node_port);
+        println!("Interacting with node on {}", url);
+        Api::new(format!("ws://{}", url))
+    }
 
-		let api = Api::new(format!("ws://{}", url));
+    #[test]
+    fn call_from_meta_data_works() {
+        let api = test_api();
 
-		let amount = Balance::from(42 as u128);
-		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+        let balance_module_index = 3u8;
+        let balance_transfer_index = 0u8;
 
-		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
-		let transfer_fn = compose_call!(api.metadata.clone(), "balances", "transfer", GenericAddress::from(to), Compact(amount)).encode();
-		assert_eq!(my_call, transfer_fn);
-	}
+        let amount = Balance::from(42 as u128);
+        let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+
+        let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+        let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
+        assert_eq!(my_call, transfer_fn);
+    }
 }

@@ -38,6 +38,6 @@ fn main() {
 
     let api = Api::new(format!("ws://{}", url));
 
-    let meta = api.get_metadata().unwrap();
+    let meta = api.get_metadata();
     println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());
 }

@@ -15,9 +15,9 @@
 
 */
 
+use codec::alloc::string::FromUtf8Error;
 use metadata::{DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed};
 use serde::{Deserialize, Serialize};
-use parity_codec::alloc::string::FromUtf8Error;
 
 pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Result<String, FromUtf8Error> {
     let buf = Vec::new();
@@ -68,7 +68,7 @@ impl Arg {
 pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -> Vec<Module> {
     let mut mod_vec = Vec::<Module>::new();
     match &metadata.1 {
-        RuntimeMetadata::V5(value) => {
+        RuntimeMetadata::V7(value) => {
             match &value.modules {
                 DecodeDifferent::Decoded(mods) => {
                     let modules = mods;

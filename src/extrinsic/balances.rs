@@ -15,14 +15,31 @@
 
 */
 
-use indices::address::Address;
-use node_primitives::{Index, Signature};
-use parity_codec::Compact;
-use runtime_primitives::generic::UncheckedMortalCompactExtrinsic;
+use codec::Compact;
+use node_primitives::Hash;
 
-pub const BALANCES_MODULE_NAME: &str = "balances";
+use crate::{
+    Api,
+    compose_extrinsic,
+    crypto::AccountKey,
+    node_metadata::NodeMetadata
+};
+
+use super::xt_primitives::*;
+
+pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 
-pub type GenericAddress = Address<[u8; 32], u32>;
-pub type BalanceTransfer = ([u8; 2], GenericAddress, Compact<u128>);
-pub type UncheckedExtrinsic<F> = UncheckedMortalCompactExtrinsic<GenericAddress, Index, F, Signature>;
+pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
+
+pub type BalanceTransferXt = UncheckedExtrinsicV3<BalanceTransferFn>;
+
+pub fn transfer(api: Api, to: GenericAddress, amount: u128) -> BalanceTransferXt {
+    compose_extrinsic!(
+		api,
+		BALANCES_MODULE,
+		BALANCES_TRANSFER,
+		to,
+		Compact(amount)
+	)
+}

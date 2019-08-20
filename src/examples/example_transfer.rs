@@ -23,15 +23,13 @@ extern crate log;
 extern crate substrate_api_client;
 
 use clap::App;
-use keyring::AccountKeyring;
-use node_primitives::AccountId;
-use parity_codec::Encode;
-use primitives::offchain::CryptoKind;
 
-use substrate_api_client::{Api, extrinsic};
-use substrate_api_client::utils::hexstr_to_u256;
-use substrate_api_client::extrinsic::crypto::AccountKey;
-use substrate_api_client::extrinsic::definitions::*;
+use substrate_api_client::{
+    Api,
+    crypto::{AccountKey, CryptoKind},
+    extrinsic,
+    extrinsic::xt_primitives::*,
+};
 
 fn main() {
     env_logger::init();
@@ -44,30 +42,24 @@ fn main() {
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);
 
-    let api = Api::new(format!("ws://{}", url));
-
-    // get Alice's AccountNonce
-    let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let nonce = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", nonce);
-
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let api = Api::new(format!("ws://{}", url))
+        .set_signer(from.clone());
+
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
+
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
     // generate extrinsic
-    let xt = extrinsic::transfer(from,
-                                 GenericAddress::from(to),
-                                 42,
-                                 nonce,
-                                 api.genesis_hash,
-                                 api.metadata.clone());
+    let xt = extrinsic::balances::transfer(
+        api.clone(),
+        GenericAddress::from(to),
+        42,
+    );
 
     debug!("extrinsic: {:?}", xt);
 
-    let mut _xthex = hex::encode(xt.encode());
-    _xthex.insert_str(0, "0x");
     //send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(_xthex).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }

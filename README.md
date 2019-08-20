@@ -25,7 +25,7 @@ Set the output verbosity by adding `RUST_LOG=info` or `RUST_LOG=debug` in front 
     use substrate_api_client::{Api, hexstr_to_u256};
     use keyring::AccountKeyring;
     use node_primitives::AccountId;
-    use parity_codec::Encode;
+    use codec::Encode;
 
     fn main() {
         let api = Api::new("ws://127.0.0.1:9944".to_string());
