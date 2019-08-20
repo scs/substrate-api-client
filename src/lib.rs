@@ -24,14 +24,15 @@ extern crate serde_derive;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender as ThreadOut;
 
+use codec::{Decode, Encode};
 use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
-use codec::{Decode, Encode};
 use ws::Result as WsResult;
 
-use rpc::json_req;
-use node_metadata::NodeMetadata;
 use crypto::AccountKey;
+use extrinsic::xt_primitives::GenericAddress;
+use node_metadata::NodeMetadata;
+use rpc::json_req;
 use utils::*;
 
 #[macro_use]

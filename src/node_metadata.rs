@@ -15,9 +15,9 @@
 
 */
 
+use codec::alloc::string::FromUtf8Error;
 use metadata::{DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed};
 use serde::{Deserialize, Serialize};
-use codec::alloc::string::FromUtf8Error;
 
 pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Result<String, FromUtf8Error> {
     let buf = Vec::new();

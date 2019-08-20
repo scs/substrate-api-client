@@ -84,25 +84,25 @@ mod tests {
 	use super::*;
 
 	fn test_api() -> Api {
-		let node_ip = "127.0.0.1";
-		let node_port = "9500";
-		let url = format!("{}:{}", node_ip, node_port);
-		println!("Interacting with node on {}", url);
-		Api::new(format!("ws://{}", url))
-	}
+        let node_ip = "127.0.0.1";
+        let node_port = "9500";
+        let url = format!("{}:{}", node_ip, node_port);
+        println!("Interacting with node on {}", url);
+        Api::new(format!("ws://{}", url))
+    }
 
-	#[test]
-	fn call_from_meta_data_works() {
-		let api = test_api();
+    #[test]
+    fn call_from_meta_data_works() {
+        let api = test_api();
 
-		let balance_module_index = 3u8;
-		let balance_transfer_index = 0u8;
+        let balance_module_index = 3u8;
+        let balance_transfer_index = 0u8;
 
-		let amount = Balance::from(42 as u128);
-		let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+        let amount = Balance::from(42 as u128);
+        let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
 
-		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
-		let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
-		assert_eq!(my_call, transfer_fn);
-	}
+        let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
+        let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
+        assert_eq!(my_call, transfer_fn);
+    }
 }

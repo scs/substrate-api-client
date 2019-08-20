@@ -67,7 +67,7 @@ impl<Call> UncheckedExtrinsicV3<Call>
 
     pub fn hex_encode(&self) -> String {
         let mut hex_str = hex::encode(self.encode());
-        hex_str.insert_str(0,"0x");
+        hex_str.insert_str(0, "0x");
         hex_str
     }
 }

@@ -25,12 +25,12 @@ use std::sync::mpsc::channel;
 use std::thread;
 
 use clap::App;
+use codec::Decode;
 use node_primitives::Hash;
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events
 use node_runtime::Event;
-use codec::Decode;
 
 use substrate_api_client::Api;
 use substrate_api_client::utils::hexstr_to_vec;
@@ -64,7 +64,7 @@ fn main() {
 
         let _unhex = hexstr_to_vec(event_str);
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::< Event, Hash >> ::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
         match _events {
             Ok(evts) => {
                 for evr in &evts {
