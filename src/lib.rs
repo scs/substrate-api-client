@@ -29,7 +29,7 @@ use node_primitives::Hash;
 use codec::{Decode, Encode};
 use ws::Result as WsResult;
 
-use json_rpc::json_req;
+use rpc::json_req;
 use node_metadata::NodeMetadata;
 use crypto::AccountKey;
 use utils::*;
@@ -39,7 +39,7 @@ pub mod extrinsic;
 pub mod crypto;
 pub mod node_metadata;
 pub mod utils;
-pub mod json_rpc;
+pub mod rpc;
 
 #[derive(Clone)]
 pub struct Api {
@@ -98,7 +98,7 @@ impl Api {
     // low level access
     fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
-        json_rpc::get(url, jsonreq.clone(), result_in.clone());
+        rpc::get(url, jsonreq.clone(), result_in.clone());
 
         Ok(result_out.recv().unwrap())
     }
@@ -128,7 +128,7 @@ impl Api {
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        json_rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
+        rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
                                                           jsonreq.clone(),
                                                           result_in.clone());
 
@@ -140,7 +140,7 @@ impl Api {
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
-        json_rpc::start_event_subscriber(self.url.clone(),
+        rpc::start_event_subscriber(self.url.clone(),
                                          jsonreq.clone(),
                                          sender.clone());
     }

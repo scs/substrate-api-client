@@ -18,7 +18,7 @@
 use std::sync::mpsc::Sender as ThreadOut;
 
 use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
-use crate::json_rpc::json_req::REQUEST_TRANSFER;
+use crate::rpc::json_req::REQUEST_TRANSFER;
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
 
