@@ -81,50 +81,12 @@ mod tests {
 	use primitives::{blake2_256, hexdisplay::HexDisplay};
 	use runtime_primitives::generic::{Era, UncheckedExtrinsic,};
 	use runtime_primitives::traits::StaticLookup;
-	use system as srml_system;
-
-	use crypto::*;
 
 	use crate::Api;
-	use crate::srml::system::System;
+	use crate::crypto::*;
 	use crate::utils::*;
 
 	use super::*;
-
-	struct Runtime;
-
-	impl System for Runtime {
-		type Index = <node_runtime::Runtime as srml_system::Trait>::Index;
-		type BlockNumber = <node_runtime::Runtime as srml_system::Trait>::BlockNumber;
-		type Hash = <node_runtime::Runtime as srml_system::Trait>::Hash;
-		type Hashing = <node_runtime::Runtime as srml_system::Trait>::Hashing;
-		type AccountId = <node_runtime::Runtime as srml_system::Trait>::AccountId;
-		type Lookup = <node_runtime::Runtime as srml_system::Trait>::Lookup;
-		type Header = <node_runtime::Runtime as srml_system::Trait>::Header;
-		type Event = <node_runtime::Runtime as srml_system::Trait>::Event;
-
-		type SignedExtra = (
-			srml_system::CheckGenesis<node_runtime::Runtime>,
-			srml_system::CheckEra<node_runtime::Runtime>,
-			srml_system::CheckNonce<node_runtime::Runtime>,
-			srml_system::CheckWeight<node_runtime::Runtime>,
-			srml_balances::TakeFees<node_runtime::Runtime>,
-		);
-		fn extra(nonce: Self::Index) -> Self::SignedExtra {
-			(
-				srml_system::CheckGenesis::<node_runtime::Runtime>::new(),
-				srml_system::CheckEra::<node_runtime::Runtime>::from(Era::Immortal),
-				srml_system::CheckNonce::<node_runtime::Runtime>::from(nonce),
-				srml_system::CheckWeight::<node_runtime::Runtime>::new(),
-				srml_balances::TakeFees::<node_runtime::Runtime>::from(0),
-			)
-		}
-	}
-
-//	type Index = <Runtime as System>::Index;
-	type AccountId = <Runtime as System>::AccountId;
-//	type Address = <<Runtime as System>::Lookup as StaticLookup>::Source;
-	type TestExtrinsic = UncheckedExtrinsic<GenericAddress, BalanceTransferFn, Signature, <Runtime as System>::SignedExtra>;
 
 	fn test_api() -> Api {
 		let node_ip = "127.0.0.1";
@@ -148,69 +110,5 @@ mod tests {
 		let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
 		let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
 		assert_eq!(my_call, transfer_fn);
-	}
-
-	#[test]
-	fn custom_extrinsic_works() {
-		let api = test_api();
-
-		let accountid = AccountId::from(AccountKeyring::Alice);
-		let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-		let nonce = hexstr_to_u256(result_str);
-		println!("[+] Alice's Account Nonce is {}", nonce);
-
-		let amount = Balance::from(42 as u128);
-		let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
-		let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
-		let hash = <Runtime as System>::Hash::from(api.genesis_hash.clone());
-
-		let extra = <Runtime as System>::extra(nonce.low_u32());
-		let gen_extra = GenericExtra::new(nonce.low_u32());
-
-		assert_eq!(extra.encode(), gen_extra.encode());
-
-		let ux = compose_extrinsic!(
-			api.metadata.clone(),
-			api.genesis_hash.clone(),
-			BALANCES_MODULE,
-			BALANCES_TRANSFER,
-			gen_extra.clone(),
-			from,
-			GenericAddress::from(to),
-			Compact(amount)
-		);
-
-		let mut _xthex = hex::encode(ux.encode());
-		_xthex.insert_str(0, "0x");
-
-		let tx_hash = api.send_extrinsic(_xthex).unwrap();
-		println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
-	}
-
-	#[test]
-	fn tests_contract_put_code() {
-		let api = test_api();
-
-		let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
-		let accountid = AccountId::from(AccountKeyring::Alice);
-		let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-		let nonce = hexstr_to_u256(result_str);
-		println!("[+] Alice's Account Nonce is {}", nonce);
-
-
-		const CONTRACT: &str = r#"
-(module
-    (func (export "call"))
-    (func (export "deploy"))
-)
-"#;
-		let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
-		let xt = contract_put_code(from, 500_000, wasm, nonce, api.genesis_hash.clone(), api.metadata.clone());
-
-		let mut _xthex = hex::encode(xt.encode());
-		_xthex.insert_str(0, "0x");
-
-		let tx_hash = api.send_extrinsic(_xthex).unwrap();
-		println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 	}
 }

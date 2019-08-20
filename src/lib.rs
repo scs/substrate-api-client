@@ -19,7 +19,6 @@
 #[macro_use]
 extern crate log;
 extern crate serde;
-#[macro_use]
 extern crate serde_derive;
 
 use std::sync::mpsc::channel;
@@ -41,14 +40,6 @@ pub mod crypto;
 pub mod node_metadata;
 pub mod utils;
 pub mod json_rpc;
-pub mod srml;
-
-#[derive(Serialize, Deserialize, Debug)]
-struct JsonBasic {
-    jsonrpc: String,
-    method: String,
-    params: String,
-}
 
 #[derive(Clone)]
 pub struct Api {

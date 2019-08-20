@@ -9,7 +9,7 @@ use clap::App;
 use codec::Decode;
 use log::*;
 use node_primitives::Hash;
-use node_runtime::Event;
+use test_node_runtime::Event;
 
 use substrate_api_client::{
     Api,

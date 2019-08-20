@@ -23,6 +23,7 @@ wabt = "0.9.0"
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "substrate-primitives"
 
 [dependencies.codec]
@@ -33,52 +34,70 @@ version = "1.0.0"
 
 [dependencies.indices]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "srml-indices"
 
 [dependencies.node-primitives]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "sr-io"
 
 [dependencies.transaction_pool]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "substrate-transaction-pool"
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "srml-metadata"
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "srml-balances"
 
 [dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "substrate-keyring"
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "srml-system"
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "sr-primitives"
 
 [dependencies.runtime_support]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "srml-support"
 
 [dev-dependencies.rstd]
 git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
 package = "sr-std"
 
 [dev-dependencies.node_runtime]
+git = 'https://github.com/paritytech/substrate'
+rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+package = "node-runtime"
+
+[dev-dependencies.test_node_runtime]
 git = 'https://github.com/scs/substrate-test-nodes.git'
 package = "test-node-runtime"
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
+# rev needs to be same commit as the testnode-runtime.
 rev = "6d47fd919b4d86e4348c6c19d99c80372587d215"
 package = "srml-contracts"
 
@@ -98,9 +117,9 @@ path = "src/examples/example_get_storage.rs"
 name = "example_transfer"
 path = "src/examples/example_transfer.rs"
 
-#[[example]]
-#name = "example_event_callback"
-#path = "src/examples/example_event_callback.rs"
+[[example]]
+name = "example_event_callback"
+path = "src/examples/example_event_callback.rs"
 
 [[example]]
 name = "example_generic_extrinsic"
@@ -109,10 +128,6 @@ path = "src/examples/example_generic_extrinsic.rs"
 [[example]]
 name = "example_print_metadata"
 path = "src/examples/example_print_metadata.rs"
-
-#[[example]]
-#name = "test_extrinsic"
-#path = "src/examples/example_test_extrinsic.rs"
 
 [[example]]
 name = "example_contract"
