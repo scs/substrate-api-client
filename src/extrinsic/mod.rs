@@ -40,12 +40,9 @@ macro_rules! compose_call {
 /// Macro that generates a Unchecked extrinsic for a given module and call passed as a String.
 #[macro_export]
 macro_rules! compose_extrinsic {
-	($node_metadata: expr,
-	$genesis_hash: expr,
+	($api: expr,
 	$module: expr,
 	$call: expr,
-	$extra: expr,
-	$from: expr,
 	$($args: expr), * ) => {
 		{
 			use codec::{Compact, Encode};
@@ -54,18 +51,20 @@ macro_rules! compose_extrinsic {
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let call = $crate::compose_call!($node_metadata, $module, $call, $(($args)), +);
+			let call = $crate::compose_call!($api.metadata.clone(), $module, $call, $(($args)), +);
+			let extra = GenericExtra::new($api.get_nonce());
 
-			let raw_payload = (call, $extra, ($genesis_hash, $genesis_hash));
+			let raw_payload = (call, extra.clone(), ($api.genesis_hash, $api.genesis_hash));
+			let from = $api.signer.unwrap();
 			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-				$from.sign(&blake2_256(payload)[..])
+				from.sign(&blake2_256(payload)[..])
 			} else {
 				debug!("signing {}", HexDisplay::from(&payload));
-				$from.sign(payload)
+				from.sign(payload)
 			});
 
 			UncheckedExtrinsicV3::new_signed(
-				raw_payload.0, GenericAddress::from($from.public()), signature, $extra
+				raw_payload.0, GenericAddress::from(from.public()), signature, extra
 			)
 		}
     };

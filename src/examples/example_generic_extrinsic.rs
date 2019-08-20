@@ -53,15 +53,13 @@ fn main() {
 
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
-    let xt = compose_extrinsic!(api.metadata.clone(),
-                                api.genesis_hash,
-                                "Balances",
-                                "transfer",
-                                GenericExtra::new(api.get_nonce()),
-                                api.signer.clone().unwrap(),
-                                GenericAddress::from(to),
-                                Compact(Balance::from(42 as u128))
-                                );
+    let xt = compose_extrinsic!(
+        api.clone(),
+        "Balances",
+        "transfer",
+        GenericAddress::from(to),
+        Compact(Balance::from(42 as u128))
+    );
 
     println!("[+] Composed Extrinsic:\n {:?}", xt);
 

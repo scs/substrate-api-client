@@ -18,6 +18,7 @@
 use codec::Compact;
 use node_primitives::Hash;
 
+use crate::Api;
 use crate::crypto::AccountKey;
 use crate::node_metadata::NodeMetadata;
 use crate::compose_extrinsic;
@@ -37,27 +38,21 @@ pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
 pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
 pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
 
-pub fn put_code(from: AccountKey, gas_limit: u64, code: Vec<u8>, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractPutCodeXt {
+pub fn put_code(api: Api, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt {
     compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
+		api,
 		CONTRACTS_MODULE,
 		CONTRACTS_PUT_CODE,
-		GenericExtra::new(nonce),
-		from,
 		Compact(gas_limit),
 		code
 	)
 }
 
-pub fn create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCreateXt {
+pub fn create(api: Api, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>) -> ContractCreateXt {
     compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
+		api,
 		CONTRACTS_MODULE,
 		CONTRACTS_CREATE,
-		GenericExtra::new(nonce),
-		from,
 		Compact(endowment),
 		Compact(gas_limit),
 		code_hash,
@@ -65,14 +60,11 @@ pub fn create(from: AccountKey, endowment: u128, gas_limit: u64, code_hash: Hash
 	)
 }
 
-pub fn call(from: AccountKey, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>, nonce: u32, genesis_hash: Hash, node_metadata: NodeMetadata) -> ContractCallXt {
+pub fn call(api: Api, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>) -> ContractCallXt {
     compose_extrinsic!(
-		node_metadata,
-		genesis_hash,
+		api,
 		CONTRACTS_MODULE,
 		CONTRACTS_CALL,
-		GenericExtra::new(nonce),
-		from,
 		dest,
 		Compact(value),
 		Compact(gas_limit),

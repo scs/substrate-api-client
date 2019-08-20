@@ -52,12 +52,9 @@ fn main() {
 
     // generate extrinsic
     let xt = extrinsic::balances::transfer(
-        api.signer.clone().unwrap(),
+        api.clone(),
         GenericAddress::from(to),
         42,
-        api.get_nonce(),
-        api.genesis_hash,
-        api.metadata.clone()
     );
 
     debug!("extrinsic: {:?}", xt);

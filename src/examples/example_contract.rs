@@ -46,12 +46,9 @@ fn main() {
 "#;
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
     let xt = contract::put_code(
-        api.signer.clone().unwrap(),
+        api.clone(),
         500_000,
         wasm,
-        api.get_nonce(),
-        api.genesis_hash.clone(),
-        api.metadata.clone()
     );
 
     let mut _xthex = xt.hex_encode();
@@ -66,14 +63,11 @@ fn main() {
     println!("[+] Got code hash: {:?}\n", code_hash);
 
     let xt = contract::create(
-        api.signer.clone().unwrap(),
+        api.clone(),
         500_000,
         500_000,
         code_hash,
         vec![1u8],
-        api.get_nonce(),
-        api.genesis_hash.clone(),
-        api.metadata.clone()
     );
 
     let _xthex = xt.hex_encode();
@@ -89,14 +83,11 @@ fn main() {
     println!("[+] Contract deployed at: {:?}\n", deployed_at);
 
     let xt = contract::call(
-        api.signer.clone().unwrap(),
+        api.clone(),
         deployed_at,
         500_000,
         500_000,
         vec![1u8],
-        api.get_nonce(),
-        api.genesis_hash.clone(),
-        api.metadata.clone()
     );
 
     let _xthex = xt.hex_encode();
