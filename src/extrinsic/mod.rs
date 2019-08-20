@@ -21,7 +21,7 @@ pub mod balances;
 
 #[macro_export]
 macro_rules! compose_call {
-    ($node_metadata: expr, $module: expr, $call_name: expr, $($args: expr),+ ) => {
+($node_metadata: expr, $module: expr, $call_name: expr $(, $args: expr) *) => {
         {
             let mut meta = $node_metadata;
             meta.retain(|m| !m.calls.is_empty());
@@ -32,7 +32,7 @@ macro_rules! compose_call {
             let call_index = meta[module_index].calls
             .iter().position(|c| c.name == $call_name).expect("Call not found in Module");
 
-            ([module_index as u8, call_index as u8], $(($args)), +)
+            ([module_index as u8, call_index as u8] $(, ($args)) *)
         }
     };
 }
@@ -42,8 +42,8 @@ macro_rules! compose_call {
 macro_rules! compose_extrinsic {
 	($api: expr,
 	$module: expr,
-	$call: expr,
-	$($args: expr), * ) => {
+	$call: expr
+	$(, $args: expr) *) => {
 		{
 			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
@@ -51,7 +51,7 @@ macro_rules! compose_extrinsic {
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let call = $crate::compose_call!($api.metadata.clone(), $module, $call, $(($args)), +);
+			let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
 			let extra = GenericExtra::new($api.get_nonce());
 
 			let raw_payload = (call, extra.clone(), ($api.genesis_hash, $api.genesis_hash));
