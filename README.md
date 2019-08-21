@@ -1,60 +1,124 @@
 # substrate-api-client
-Library for connecting to substrate API over WebSockets
+Library for connecting to the substrate's rpc interface via WebSockets
 
-Composes Extrinsics, sends them and subscribes to updates.
-
-Can watch events and execute code upon events.
+* Composes Extrinsics, sends them and subscribes to updates.
+* Can watch events and execute code upon events.
+* Can parse and print the note metadata.
 
 ## Setup
 
-Run substrate node (examples use hardcoded url=localhost and ws-port=9944)
+Setup a substrate node. With the fast pace of substrate commits it cannot be guaranteed that the client always works with the latest substrate master (supports master until commit 6d47fd919b4d86e4348c6c19d99c80372587d215). Alternatively, the node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
 
-    substrate --dev
-
-Run examples
+    git clone https://github.com/scs/substrate-test-nodes
+    cd substrate-test-nodes/
+    // --release flag needed as block production time is too long otherwise.
+    cargo build --release
+    
+Run the node (examples use by default hardcoded url=localhost and ws-port=9944):    
+   
+    ./target/release/substrate-test-node --dev
+    
+    
+Run examples (optionally adjust url and port if wanted, not needed if the node is run with default arguments)
 
     git clone https://github.com/scs/substrate-api-client.git
     cd substrate-api-client
-    cargo run --example example-get-storage
+    cargo run --example example_get_storage (-ns <custom url> -p <custom port>)
 
 Set the output verbosity by adding `RUST_LOG=info` or `RUST_LOG=debug` in front of the command.
 
-## Reading storage
+## Reading storage example
+Shows hot to read some storage values.
 
-    extern crate substrate_api_client;
-    use substrate_api_client::{Api, hexstr_to_u256};
-    use keyring::AccountKeyring;
-    use node_primitives::AccountId;
-    use codec::Encode;
+    // get some plain storage value
+    let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
+    let result = hexstr_to_u256(result_str);
+    println!("[+] TransactionBaseFee is {}", result);
 
-    fn main() {
-        let api = Api::new("ws://127.0.0.1:9944".to_string());
+    // get Alice's AccountNonce
+    let accountid = AccountId::from(AccountKeyring::Alice);
+    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
+    let result = hexstr_to_u256(result_str);
+    println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
-        // get some plain storage value
-        let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
-        let result = hexstr_to_u256(result_str);
-        println!("[+] TransactionBaseFee is {}", result);
+    // get Alice's AccountNonce with api.get_nonce()
+    api.signer = Some(AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519));
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 
-        // get Alice's AccountNonce
-        let accountid = AccountId::from(AccountKeyring::Alice);
-        let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-        let result = hexstr_to_u256(result_str);
-        println!("[+] Alice's Account Nonce is {}", result);
-    }
 
-See [example_get_storage.rs](./src/bin/example_get_storage.rs)
+See [example_get_storage.rs](/src/examples/example_get_storage.rs)
 
-## Sending transactions
-See [example_transfer.rs](./src/bin/example_transfer.rs)
+## Sending transactions example
+Shows how to use one of the predefined extrinsics to send transactions.
+
+See [example_transfer.rs](/src/examples/example_transfer.rs)
 
 ## Sending generic extrinsics
-See [example_generic_extrinsic.rs](./src/bin/example_generic_extrinsic.rs)
+Shows how to use the compose_extrinsic! macro that is able to create an extrinsic for any kind of call, even for custom runtime modules.
 
-## Execute code upon events
-See [example_event_callback.rs](./src/bin/example_event_callback.rs)
+    // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
+    // used here to be able to run the examples against a generic substrate node with standard modules.
+    let xt = compose_extrinsic!(
+        api.clone(),
+        "Balances",
+        "transfer",
+        GenericAddress::from(to),
+        Compact(42 as u128)
+    );
+
+
+See [example_generic_extrinsic.rs](/examples/examples/example_generic_extrinsic.rs)
+
+## Callback example
+Shows how to listen to events fired by a substrate node.
+
+See [example_event_callback.rs](/src/examples/example_event_callback.rs)
 
 ## Pretty print metadata
-See [example_print_metadata.rs](./src/bin/example_print_metadata.rs)
+Shows how to print a substrate node's metadata in pretty json format. Has been proven a useful debugging tool.
 
-## TODO
-  * ink! contract helper
+    let api = Api::new(format!("ws://{}", url));
+
+    let meta = api.get_metadata();
+    println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());
+
+See [example_print_metadata.rs](/src/examples/example_print_metadata.rs)
+
+## ink! contract example
+Shows how to setup an ink! contract with the predefined contract extrinsics:
+* put_code: Stores a contract wasm blob on the chain
+* create: Create an instance of the contract
+* call: Calls a contract.
+
+See [example_contract.rs](/src/examples/example_contract.rs)
+
+*Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes as the contract module is not included by default in a substrate node.
+
+## Read custom storage struct
+Shows how to fetch and decode a custom storage struct.
+
+    // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
+    // be looked up from the node metadata and printed with the `example_print_metadata`.
+    #[derive(Encode, Decode, Debug)]
+    struct Kitty {
+        id: H256,
+        price: u128,
+    }
+
+
+...
+
+    // Get the Kitty
+    let res_str = api.get_storage("Kitty",
+                                  "Kitties",
+                                  Some(index.encode())).unwrap();
+
+    let res_vec = hexstr_to_vec(res_str);
+
+    // Type annotations are needed here to know that to decode into.
+    let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
+    println!("[+] Cute decoded Kitty: {:?}\n", kitty);
+
+See [example_custom_storage_struct.rs](/src/examples/example_custom_storage_struct.rs)
+
+*Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes for obvious reasons.
