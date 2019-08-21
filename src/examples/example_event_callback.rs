@@ -37,13 +37,7 @@ use substrate_api_client::utils::hexstr_to_vec;
 
 fn main() {
     env_logger::init();
-
-    let yml = load_yaml!("../../src/examples/cli.yml");
-    let matches = App::from_yaml(yml).get_matches();
-
-    let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9944");
-    let url = format!("{}:{}", node_ip, node_port);
+    let url = get_node_url_from_cli();
     info!("Interacting with node on {}", url);
 
     let api = Api::new(format!("ws://{}", url));
@@ -93,4 +87,15 @@ fn main() {
             Err(_) => error!("couldn't decode event record list")
         }
     }
+}
+
+pub fn get_node_url_from_cli() -> String {
+    let yml = load_yaml!("../../src/examples/cli.yml");
+    let matches = App::from_yaml(yml).get_matches();
+
+    let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
+    let node_port = matches.value_of("node-port").unwrap_or("9944");
+    let url = format!("{}:{}", node_ip, node_port);
+    println!("Interacting with node on {}", url);
+    url
 }

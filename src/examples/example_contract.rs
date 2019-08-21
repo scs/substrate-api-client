@@ -23,13 +23,7 @@ use substrate_api_client::{
 
 fn main() {
     env_logger::init();
-
-    let yml = load_yaml!("../../src/examples/cli.yml");
-    let matches = App::from_yaml(yml).get_matches();
-
-    let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9944");
-    let url = format!("{}:{}", node_ip, node_port);
+    let url = get_node_url_from_cli();
     println!("Interacting with node on {}", url);
 
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
@@ -141,3 +135,13 @@ fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> Generi
     }
 }
 
+pub fn get_node_url_from_cli() -> String {
+    let yml = load_yaml!("../../src/examples/cli.yml");
+    let matches = App::from_yaml(yml).get_matches();
+
+    let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
+    let node_port = matches.value_of("node-port").unwrap_or("9944");
+    let url = format!("{}:{}", node_ip, node_port);
+    println!("Interacting with node on {}", url);
+    url
+}

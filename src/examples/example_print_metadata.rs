@@ -27,7 +27,16 @@ use substrate_api_client::node_metadata;
 
 fn main() {
     env_logger::init();
+    let url = get_node_url_from_cli();
+    println!("Interacting with node on {}", url);
 
+    let api = Api::new(format!("ws://{}", url));
+
+    let meta = api.get_metadata();
+    println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());
+}
+
+pub fn get_node_url_from_cli() -> String {
     let yml = load_yaml!("../../src/examples/cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
@@ -35,9 +44,5 @@ fn main() {
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);
-
-    let api = Api::new(format!("ws://{}", url));
-
-    let meta = api.get_metadata();
-    println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());
+    url
 }
