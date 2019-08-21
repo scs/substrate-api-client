@@ -39,8 +39,8 @@ use substrate_api_client::{
     utils::*,
 };
 
-// The custom struct that is to be decoded. The user must know the structure for this to work.
-// The struct's information is found in the node metadata.
+// The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
+// be looked up from the node metadata and printed with the `example_print_metadata`.
 #[derive(Encode, Decode, Debug)]
 struct Kitty {
     id: H256,
@@ -81,10 +81,10 @@ fn main() {
                                   "Kitties",
                                   Some(index.encode())).unwrap();
 
-    let res_slice = hexstr_to_vec(res_str);
+    let res_vec = hexstr_to_vec(res_str);
 
     // Type annotations are needed here to know that to decode into.
-    let kitty: Kitty = Decode::decode(&mut res_slice.as_slice()).unwrap();
+    let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
     println!("[+] Cute decoded Kitty: {:?}\n", kitty);
 }
 

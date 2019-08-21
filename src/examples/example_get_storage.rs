@@ -57,7 +57,7 @@ fn main() {
     let result = hexstr_to_u256(result_str);
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
-    // getAlice's AccountNonce with api.get_nonce()
+    // get Alice's AccountNonce with api.get_nonce()
     api.signer = Some(key);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 }
