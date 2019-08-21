@@ -15,6 +15,8 @@
 
 */
 
+///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
@@ -31,18 +33,16 @@ use substrate_api_client::{
     extrinsic::xt_primitives::*,
 };
 
-/// Very simple example that shows how
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
-    println!("Interacting with node on {}", url);
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from.clone());
 
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
+    println!("[+] Alice's Account Nonce is {}\n", api.get_nonce());
 
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
@@ -53,7 +53,7 @@ fn main() {
         42,
     );
 
-    debug!("extrinsic: {:?}", xt);
+    println!("[+] Composed extrinsic:\n{:?}\n", xt);
 
     //send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
@@ -67,7 +67,7 @@ pub fn get_node_url_from_cli() -> String {
     let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}", url);
+    println!("Interacting with node on {}\n", url);
     url
 }
 

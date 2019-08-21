@@ -1,3 +1,28 @@
+/*
+   Copyright 2019 Supercomputing Systems AG
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+//! This example shows how to use the predefined contract extrinsics found in the extrinsic module.
+//! General (slightly outdated) background on how to deploy ink! contract is found here:
+//! `https://substrate.dev/docs/en/contracts/deploying-a-contract`
+//!
+//!
+//! *Note*: The runtime module here is not in the generic substrate node. Hence, this example
+//! must run against the customized node found in `https://github.com/scs/substrate-test-nodes`.
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
@@ -31,7 +56,7 @@ fn main() {
         .set_signer(from);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 
-
+    // contract to be deployed on the chain
     const CONTRACT: &str = r#"
 (module
     (func (export "call"))
@@ -39,43 +64,52 @@ fn main() {
 )
 "#;
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
+
+    // 1. Put the contract code as a wasm blob on the chain
     let xt = contract::put_code(
         api.clone(),
         500_000,
         wasm,
     );
 
-    let mut _xthex = xt.hex_encode();
-    println!("[+] Sending Extrinsic. Hash: {}", _xthex);
-    let tx_hash = api.send_extrinsic(_xthex).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    println!("[+] Sending Extrinsic:\n{:?}\n", xt);
+    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
+    // setup the events listener for our chain.
     let (events_in, events_out) = channel();
     api.subscribe_events(events_in.clone());
 
+    // Wait for the `contract.CodeStored(code_hash)` event, which returns code hash that is needed
+    // to define what contract shall be instantiated afterwards.
+    println!("[+] Waiting for the contract.Stored event");
     let code_hash = subcribe_to_code_stored_event(&events_out);
-    println!("[+] Got code hash: {:?}\n", code_hash);
+    println!("[+] Event was received. Got code hash: {:?}\n", code_hash);
 
+    // 2. Create an actual instance of the contract
     let xt = contract::create(
         api.clone(),
-        500_000,
+        1_000,
         500_000,
         code_hash,
         vec![1u8],
     );
 
-    let _xthex = xt.hex_encode();
-    println!("[+] Sending Extrinsic. Hash: {}", _xthex);
-    let tx_hash = api.send_extrinsic(_xthex).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    println!("[+] Sending Extrinsic: {:?}", xt);
+    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Now if the contract has been instantiated successfully, the following events are fired:
     // - indices.NewAccountIndex, balances.NewAccount -> generic events when an account is created
     // - contract.Transfer(from, to, balance) -> Transfer from caller of contract.create/call to the contract account
     // - contract.Instantiated(from, deployedAt) -> successful deployment at address. We Want this one.
+    // Note: Trying to instantiate the same contract with the same data twice does not work. No event is
+    // fired correspondingly.
+    println!("[+] Waiting for the contract.Instantiated event");
     let deployed_at = subscribe_to_code_instantiated_event(&events_out);
-    println!("[+] Contract deployed at: {:?}\n", deployed_at);
+    println!("[+] Event was received. Contract deployed at: {:?}\n", deployed_at);
 
+    // 3. Call the contract instance
     let xt = contract::call(
         api.clone(),
         deployed_at,
@@ -84,9 +118,11 @@ fn main() {
         vec![1u8],
     );
 
-    let _xthex = xt.hex_encode();
-    println!("[+] Sending Extrinsic. Hash: {}", _xthex);
-    let tx_hash = api.send_extrinsic(_xthex).unwrap();
+    // Currently, a contract call does not fire any events nor interact in any other fashion with
+    // the outside world. Only node logs can supply information on the consequences of a contract
+    // call. Still, it can be checked if the transaction was successful.
+    println!("[+] Sending Extrinsic:\n{:?}\n", xt);
+    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
 

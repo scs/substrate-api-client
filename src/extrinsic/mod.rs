@@ -15,10 +15,22 @@
 
 */
 
+//! Offers macros that build extrinsics for custom runtime modules based on the metadata.
+//! Additionally, some predefined extrinsics for common runtime modules are implemented.
+
+
 pub mod xt_primitives;
 pub mod contract;
 pub mod balances;
 
+/// Generates the extrinsic's call field for a given module and call passed as &str
+/// # Arguments
+///
+/// * 'node_metadata' - This crate's parsed not metadata as field of the API.
+/// * 'module' - Module name as &str for which the call is composed.
+/// * 'call' - Call name as &str
+/// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
+/// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_call {
 ($node_metadata: expr, $module: expr, $call_name: expr $(, $args: expr) *) => {
@@ -37,7 +49,14 @@ macro_rules! compose_call {
     };
 }
 
-/// Macro that generates a Unchecked extrinsic for a given module and call passed as a String.
+/// Generates an Unchecked extrinsic for a given module and call passed as a &str.
+/// # Arguments
+///
+/// * 'api' - This instance of API. The signer field **must** be set, else an error will be thrown.
+/// * 'module' - Module name as &str for which the call is composed.
+/// * 'call' - Call name as &str
+/// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
+/// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_extrinsic {
 	($api: expr,

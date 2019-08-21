@@ -15,6 +15,9 @@
 
 */
 
+//! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
+//! module, whereas the wished module and call are supplied as a string.
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
@@ -36,26 +39,26 @@ use substrate_api_client::{
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
-    println!("Interacting with node on {}", url);
 
+    // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from);
 
-    // get Alice's AccountNonce
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
-
+    println!("[+] Alice's Account Nonce is {}\n", api.get_nonce());
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
+    // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
+    // used here to be able to run the examples against a generic substrate node with standard modules.
     let xt = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
         GenericAddress::from(to),
-        Compact(Balance::from(42 as u128))
+        Compact(42 as u128)
     );
 
-    println!("[+] Composed Extrinsic:\n {:?}", xt);
+    println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
     //send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
@@ -69,6 +72,6 @@ pub fn get_node_url_from_cli() -> String {
     let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}", url);
+    println!("Interacting with node on {}\n", url);
     url
 }
