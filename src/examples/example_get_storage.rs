@@ -15,6 +15,8 @@
 
 */
 
+///! Very simple example that shows how to get some simple storage values.
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
@@ -28,6 +30,7 @@ use keyring::AccountKeyring;
 use node_primitives::AccountId;
 
 use substrate_api_client::Api;
+use substrate_api_client::crypto::{AccountKey, CryptoKind};
 use substrate_api_client::utils::hexstr_to_u256;
 
 fn main() {
@@ -35,7 +38,7 @@ fn main() {
     let url = get_node_url_from_cli();
     info!("Interacting with node on {}", url);
 
-    let api = Api::new(format!("ws://{}", url));
+    let mut api = Api::new(format!("ws://{}", url));
 
     // get some plain storage value
     let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
@@ -46,7 +49,17 @@ fn main() {
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
     let result = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", result);
+    println!("[+] Alice's Account Nonce is {}", result.low_u32());
+
+    // get Alice's AccountNonce with the AccountKey
+    let key = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let result_str = api.get_storage("System", "AccountNonce", Some(key.public().encode())).unwrap();
+    let result = hexstr_to_u256(result_str);
+    println!("[+] Alice's Account Nonce is {}", result.low_u32());
+
+    // getAlice's AccountNonce with api.get_nonce()
+    api.signer = Some(key);
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 }
 
 pub fn get_node_url_from_cli() -> String {
@@ -56,6 +69,6 @@ pub fn get_node_url_from_cli() -> String {
     let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}", url);
+    println!("Interacting with node on {}\n", url);
     url
 }

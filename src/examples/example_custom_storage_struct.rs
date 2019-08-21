@@ -1,3 +1,26 @@
+/*
+   Copyright 2019 Supercomputing Systems AG
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+//! This example shows how to decode a runtime value that is a custom struct.
+//!
+//! *Note*: The runtime module here is not in the generic substrate node. Hence, this example
+//! must run against the customized node found in `https://github.com/scs/substrate-test-nodes`.
+//!
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
@@ -16,6 +39,8 @@ use substrate_api_client::{
     utils::*,
 };
 
+// The custom struct that is to be decoded. The user must know the structure for this to work.
+// The struct's information is found in the node metadata.
 #[derive(Encode, Decode, Debug)]
 struct Kitty {
     id: H256,
@@ -25,7 +50,6 @@ struct Kitty {
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
-    println!("Interacting with node on {}", url);
 
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let api = Api::new(format!("ws://{}", url))
@@ -43,21 +67,25 @@ fn main() {
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 
+    // Get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
+    // event similar to what we do in the example_contract.
     let res_str = api.get_storage("Kitty",
                                   "KittyIndex",
                                   Some(from.public().encode())).unwrap();
+
     let index = hexstr_to_u64(res_str);
-    println!("[+] Created Kitty is at: {}", index);
+    println!("[+] Alice's Kitty is at index : {}\n", index);
 
-
+    // Get the Kitty
     let res_str = api.get_storage("Kitty",
                                   "Kitties",
                                   Some(index.encode())).unwrap();
-    println!("[+] Got kitty result str: {}", res_str);
-    let res_slice = hexstr_to_vec(res_str);
-    let kitty: Kitty = Decode::decode(&mut res_slice.as_slice()).unwrap();
 
-    println!("Decoded Kitty: {:?}", kitty);
+    let res_slice = hexstr_to_vec(res_str);
+
+    // Type annotations are needed here to know that to decode into.
+    let kitty: Kitty = Decode::decode(&mut res_slice.as_slice()).unwrap();
+    println!("[+] Cute decoded Kitty: {:?}\n", kitty);
 }
 
 pub fn get_node_url_from_cli() -> String {
@@ -67,6 +95,6 @@ pub fn get_node_url_from_cli() -> String {
     let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}", url);
+    println!("Interacting with node on {}\n", url);
     url
 }

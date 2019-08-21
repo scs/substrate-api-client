@@ -14,6 +14,9 @@
    limitations under the License.
 
 */
+
+///! Very simple example that shows how to subscribe to events.
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
@@ -22,14 +25,13 @@ extern crate log;
 extern crate substrate_api_client;
 
 use std::sync::mpsc::channel;
-use std::thread;
 
 use clap::App;
 use codec::Decode;
 use node_primitives::Hash;
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
-// Replace this crate by your own if you run a custom substrate node to get your custom events
+// Replace this crate by your own if you run a custom substrate node to get your custom events.
 use node_runtime::Event;
 
 use substrate_api_client::Api;
@@ -42,16 +44,9 @@ fn main() {
 
     let api = Api::new(format!("ws://{}", url));
 
-    let (events_in, events_out) = channel();
-
     println!("Subscribe to events");
-
-    let _eventsubscriber = thread::Builder::new()
-        .name("eventsubscriber".to_owned())
-        .spawn(move || {
-            api.subscribe_events(events_in.clone());
-        })
-        .unwrap();
+    let (events_in, events_out) = channel();
+    api.subscribe_events(events_in.clone());
 
     loop {
         let event_str = events_out.recv().unwrap();
