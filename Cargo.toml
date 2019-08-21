@@ -132,3 +132,7 @@ path = "src/examples/example_print_metadata.rs"
 [[example]]
 name = "example_contract"
 path = "src/examples/example_contract.rs"
+
+[[example]]
+name = "example_custom_storage_struct"
+path = "src/examples/example_custom_storage_struct.rs"

@@ -49,6 +49,14 @@ pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
     hex::decode(&_hexstr).unwrap()
 }
 
+pub fn hexstr_to_u64(hexstr: String) -> u64 {
+    let unhex = hexstr_to_vec(hexstr);
+    let mut h: [u8; 8] = Default::default();
+    h.copy_from_slice(&unhex);
+
+    u64::from_le_bytes(h)
+}
+
 pub fn hexstr_to_u256(hexstr: String) -> U256 {
     let _unhex = hexstr_to_vec(hexstr);
     U256::from_little_endian(&mut &_unhex[..])
