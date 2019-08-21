@@ -46,10 +46,10 @@ fn start_rpc_client_thread(url: String,
         .spawn(move || {
             connect(url, |out| {
                 RpcClient {
-                    out: out,
+                    out,
                     request: jsonreq.clone(),
                     result: result_in.clone(),
-                    on_message_fn: on_message_fn,
+                    on_message_fn,
                 }
             }).unwrap()
         }).unwrap();

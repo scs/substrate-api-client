@@ -18,12 +18,7 @@
 use codec::Compact;
 use node_primitives::Hash;
 
-use crate::{
-    Api,
-    compose_extrinsic,
-    crypto::AccountKey,
-    node_metadata::NodeMetadata
-};
+use crate::{Api,compose_extrinsic};
 
 use super::xt_primitives::*;
 

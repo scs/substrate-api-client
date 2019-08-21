@@ -21,10 +21,9 @@ use primitives::blake2_256;
 use primitives::twox_128;
 
 pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
-    let mut key = module.as_bytes().to_vec();
-    key.append(&mut vec!(' ' as u8));
-    key.append(&mut storage_key_name.as_bytes().to_vec());
+    let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
     let mut keyhash;
+
     match param {
         Some(par) => {
             key.append(&mut par.clone());
@@ -38,28 +37,25 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
     keyhash
 }
 
-pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
-    let mut _hexstr = hexstr.clone();
-    if _hexstr.starts_with("0x") {
-        _hexstr.remove(0);
-        _hexstr.remove(0);
+pub fn hexstr_to_vec(mut hexstr: String) -> Vec<u8> {
+    if hexstr.starts_with("0x") {
+        hex::decode(hexstr.split_off(2)).unwrap()
     } else {
-        info!("converting non-prefixed hex string")
+        info!("converting non-prefixed hex string");
+        hex::decode(&hexstr).unwrap()
     }
-    hex::decode(&_hexstr).unwrap()
 }
 
 pub fn hexstr_to_u64(hexstr: String) -> u64 {
     let unhex = hexstr_to_vec(hexstr);
     let mut h: [u8; 8] = Default::default();
     h.copy_from_slice(&unhex);
-
     u64::from_le_bytes(h)
 }
 
 pub fn hexstr_to_u256(hexstr: String) -> U256 {
     let _unhex = hexstr_to_vec(hexstr);
-    U256::from_little_endian(&mut &_unhex[..])
+    U256::from_little_endian(&_unhex[..])
 }
 
 pub fn hexstr_to_hash(hexstr: String) -> Hash {

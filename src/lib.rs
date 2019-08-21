@@ -30,7 +30,6 @@ use node_primitives::Hash;
 use ws::Result as WsResult;
 
 use crypto::AccountKey;
-use extrinsic::xt_primitives::GenericAddress;
 use node_metadata::NodeMetadata;
 use rpc::json_req;
 use utils::*;
@@ -119,8 +118,8 @@ impl Api {
         Api::_get_request(self.url.clone(), jsonreq)
     }
 
-    pub fn get_storage(&self, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
-        Api::_get_storage(self.url.clone(), module, storage_key_name, param)
+    pub fn get_storage(&self, storage_prefix: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
+        Api::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {
