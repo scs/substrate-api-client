@@ -34,7 +34,6 @@ use substrate_api_client::utils::hexstr_to_vec;
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
-    info!("Interacting with node on {}", url);
 
     let api = Api::new(format!("ws://{}", url));
 

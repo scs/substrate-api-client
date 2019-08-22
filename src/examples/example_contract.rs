@@ -44,7 +44,6 @@ use substrate_api_client::{
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
-    println!("Interacting with node on {}", url);
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
@@ -67,8 +66,7 @@ fn main() {
         500_000,
         wasm,
     );
-
-    println!("[+] Sending Extrinsic:\n{:?}\n", xt);
+    println!("[+] Putting contract code on chain with extrinsic:\n\n{:?}\n", xt);
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
@@ -91,7 +89,7 @@ fn main() {
         vec![1u8],
     );
 
-    println!("[+] Sending Extrinsic: {:?}", xt);
+    println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
@@ -117,7 +115,7 @@ fn main() {
     // Currently, a contract call does not fire any events nor interact in any other fashion with
     // the outside world. Only node logs can supply information on the consequences of a contract
     // call. Still, it can be checked if the transaction was successful.
-    println!("[+] Sending Extrinsic:\n{:?}\n", xt);
+    println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }

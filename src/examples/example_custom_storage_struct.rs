@@ -58,10 +58,10 @@ fn main() {
         10 as u128
     );
 
-    println!("[+] Composed Extrinsic:\n {:?}", xt);
+    println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
     //send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
     // event similar to what we do in the example_contract.
