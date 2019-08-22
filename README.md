@@ -122,3 +122,11 @@ Shows how to fetch and decode a custom storage struct.
 See [example_custom_storage_struct.rs](/src/examples/example_custom_storage_struct.rs)
 
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes for obvious reasons.
+
+## Acknowledgements
+
+The development of substraTEE is financed by [web3 foundation](https://web3.foundation/)'s grant programme.
+
+We also thank the teams at
+
+* [Parity Technologies](https://www.parity.io/) for building [substrate](https://github.com/paritytech/substrate) and supporting us during development.
