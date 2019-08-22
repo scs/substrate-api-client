@@ -65,14 +65,14 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-			use codec::{Compact, Encode};
-			use primitives::{blake2_256, hexdisplay::HexDisplay};
-			use log::{info, debug};
-			use crate::extrinsic::xt_primitives::*;
+            use codec::{Compact, Encode};
+            use primitives::{blake2_256, hexdisplay::HexDisplay};
+            use log::{info, debug};
+            use crate::extrinsic::xt_primitives::*;
 
-			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
+            info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
+            let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
             let mut signature_tuple = None;
 
             if let Some(signer) = &$api.signer {
@@ -91,28 +91,28 @@ macro_rules! compose_extrinsic {
 
             UncheckedExtrinsicV3 {
                 signature: signature_tuple,
-				function: call
-			}
+                function: call
+            }
 		}
     };
 }
 
 #[cfg(test)]
 mod tests {
-	use codec::{Compact, Encode};
-	use node_primitives::Balance;
+    use codec::{Compact, Encode};
+    use node_primitives::Balance;
 
-	use xt_primitives::*;
+    use xt_primitives::*;
 
-	use crate::Api;
-	use crate::crypto::*;
-	use crate::extrinsic::balances::{BALANCES_MODULE, BALANCES_TRANSFER};
+    use crate::Api;
+    use crate::crypto::*;
+    use crate::extrinsic::balances::{BALANCES_MODULE, BALANCES_TRANSFER};
 
-	use super::*;
+    use super::*;
 
-	fn test_api() -> Api {
+    fn test_api() -> Api {
         let node_ip = "127.0.0.1";
-        let node_port = "9500";
+        let node_port = "9944";
         let url = format!("{}:{}", node_ip, node_port);
         println!("Interacting with node on {}", url);
         Api::new(format!("ws://{}", url))
