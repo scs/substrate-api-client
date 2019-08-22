@@ -18,14 +18,7 @@
 //! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
 //! module, whereas the wished module and call are supplied as a string.
 
-#[macro_use]
-extern crate clap;
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-extern crate substrate_api_client;
-
-use clap::App;
+use clap::{App, load_yaml};
 
 // compose_extrinsic is only found if extrinsic is imported as well ?!?
 use substrate_api_client::{
@@ -44,7 +37,7 @@ fn main() {
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from);
 
-    println!("[+] Alice's Account Nonce is {}\n", api.get_nonce());
+    println!("[+] Alice's Account Nonce is {}\n", api.get_nonce().unwrap());
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
 
     // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only

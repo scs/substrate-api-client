@@ -16,15 +16,11 @@
 */
 #![macro_use]
 
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate serde_derive;
-
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Sender as ThreadOut;
 
 use codec::{Decode, Encode};
+use log::{info, debug};
 use metadata::RuntimeMetadataPrefixed;
 use node_primitives::Hash;
 use ws::Result as WsResult;
@@ -33,7 +29,6 @@ use crypto::AccountKey;
 use node_metadata::NodeMetadata;
 use rpc::json_req;
 use utils::*;
-use crate::extrinsic::xt_primitives::GenericAddress;
 use primitive_types::U256;
 
 #[macro_use]
@@ -109,10 +104,10 @@ impl Api {
         Api::_get_metadata(self.url.clone())
     }
 
-    pub fn get_nonce(&self) -> u32 {
+    pub fn get_nonce(&self) -> Result<u32, &str> {
         match &self.signer {
-            Some(key) =>  Api::_get_nonce(self.url.clone(), key.to_owned()),
-            None => panic!("Can't get nonce when no signer is set"),
+            Some(key) => Ok(Api::_get_nonce(self.url.clone(), key.to_owned())),
+            None => Err("Can't get nonce when no signer is set"),
         }
     }
 

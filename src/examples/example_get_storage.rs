@@ -17,14 +17,7 @@
 
 ///! Very simple example that shows how to get some simple storage values.
 
-#[macro_use]
-extern crate clap;
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-extern crate substrate_api_client;
-
-use clap::App;
+use clap::{App, load_yaml};
 use codec::Encode;
 use keyring::AccountKeyring;
 use node_primitives::AccountId;
@@ -36,7 +29,6 @@ use substrate_api_client::utils::hexstr_to_u256;
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
-    info!("Interacting with node on {}", url);
 
     let mut api = Api::new(format!("ws://{}", url));
 
@@ -59,7 +51,7 @@ fn main() {
 
     // get Alice's AccountNonce with api.get_nonce()
     api.signer = Some(key);
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 }
 
 pub fn get_node_url_from_cli() -> String {

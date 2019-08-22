@@ -20,8 +20,6 @@
 
 #[macro_use]
 extern crate clap;
-extern crate env_logger;
-extern crate substrate_api_client;
 
 use clap::App;
 

@@ -15,6 +15,7 @@
 
 */
 
+use log::info;
 use node_primitives::Hash;
 use primitive_types::U256;
 use primitives::blake2_256;

@@ -23,14 +23,9 @@
 //! *Note*: The runtime module here is not in the generic substrate node. Hence, this example
 //! must run against the customized node found in `https://github.com/scs/substrate-test-nodes`.
 
-#[macro_use]
-extern crate clap;
-extern crate env_logger;
-extern crate log;
-
 use std::sync::mpsc::{channel, Receiver};
 
-use clap::App;
+use clap::{App, load_yaml};
 use codec::Decode;
 use log::*;
 use node_primitives::Hash;
@@ -55,7 +50,7 @@ fn main() {
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from);
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
     // contract to be deployed on the chain
     const CONTRACT: &str = r#"

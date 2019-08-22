@@ -17,17 +17,11 @@
 
 ///! Very simple example that shows how to subscribe to events.
 
-#[macro_use]
-extern crate clap;
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-extern crate substrate_api_client;
-
 use std::sync::mpsc::channel;
 
-use clap::App;
+use clap::{App, load_yaml};
 use codec::Decode;
+use log::{info, debug, error};
 use node_primitives::Hash;
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.

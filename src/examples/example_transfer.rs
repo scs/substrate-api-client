@@ -17,13 +17,7 @@
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
 
-#[macro_use]
-extern crate clap;
-extern crate env_logger;
-extern crate log;
-extern crate substrate_api_client;
-
-use clap::App;
+use clap::{App, load_yaml};
 
 use substrate_api_client::{
     Api,

@@ -21,12 +21,7 @@
 //! must run against the customized node found in `https://github.com/scs/substrate-test-nodes`.
 //!
 
-#[macro_use]
-extern crate clap;
-extern crate env_logger;
-extern crate log;
-
-use clap::App;
+use clap::{App, load_yaml};
 use codec::{Decode, Encode};
 use log::*;
 use primitives::H256;
