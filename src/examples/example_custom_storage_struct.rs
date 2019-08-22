@@ -51,6 +51,7 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
+    // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from.clone());

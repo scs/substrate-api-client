@@ -93,6 +93,7 @@ package = "node-runtime"
 
 [dev-dependencies.test_node_runtime]
 git = 'https://github.com/scs/substrate-test-nodes.git'
+tag = "M1.Api"
 package = "test-node-runtime"
 
 [dev-dependencies.contracts]

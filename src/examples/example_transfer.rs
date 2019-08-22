@@ -59,7 +59,7 @@ fn main() {
 
     //send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Verify that Bob's free Balance increased
     let result = api.get_free_balance(to);

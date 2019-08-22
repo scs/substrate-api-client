@@ -51,6 +51,7 @@ fn main() {
     let url = get_node_url_from_cli();
     println!("Interacting with node on {}", url);
 
+    // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from);
