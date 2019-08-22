@@ -33,6 +33,8 @@ use crypto::AccountKey;
 use node_metadata::NodeMetadata;
 use rpc::json_req;
 use utils::*;
+use crate::extrinsic::xt_primitives::GenericAddress;
+use primitive_types::U256;
 
 #[macro_use]
 pub mod extrinsic;
@@ -112,6 +114,11 @@ impl Api {
             Some(key) =>  Api::_get_nonce(self.url.clone(), key.to_owned()),
             None => panic!("Can't get nonce when no signer is set"),
         }
+    }
+
+    pub fn get_free_balance(&self, address: [u8; 32]) -> U256 {
+        let result_str= self.get_storage("Balances", "FreeBalance", Some(address.encode())).unwrap();
+        hexstr_to_u256(result_str)
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {

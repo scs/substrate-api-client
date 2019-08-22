@@ -1,4 +1,4 @@
-name: "substrate-ap-client-examples"
+name: "substrate-api-client-examples"
 version: "1.0.0"
 about: Example codes showing the api's capabilities
 authors: "Supercomputing Systems AG <info@scs.ch>"

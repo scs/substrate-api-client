@@ -7,7 +7,7 @@ Library for connecting to the substrate's rpc interface via WebSockets
 
 ## Setup
 
-Setup a substrate node. With the fast pace of substrate commits it cannot be guaranteed that the client always works with the latest substrate master (supports master until commit 6d47fd919b4d86e4348c6c19d99c80372587d215). Alternatively, the node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
+Setup a substrate node. Tested with substrate master [6d47fd919b4d86e4348c6c19d99c80372587d215](https://github.com/paritytech/substrate/commit/6d47fd919b4d86e4348c6c19d99c80372587d215). Alternatively, the test node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
 
     git clone https://github.com/scs/substrate-test-nodes
     cd substrate-test-nodes/
@@ -67,7 +67,7 @@ Shows how to use the compose_extrinsic! macro that is able to create an extrinsi
     );
 
 
-See [example_generic_extrinsic.rs](/examples/examples/example_generic_extrinsic.rs)
+See [example_generic_extrinsic.rs](/src/examples/examples/example_generic_extrinsic.rs)
 
 ## Callback example
 Shows how to listen to events fired by a substrate node.

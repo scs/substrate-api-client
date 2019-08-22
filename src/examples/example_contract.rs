@@ -101,7 +101,7 @@ fn main() {
 
     // Now if the contract has been instantiated successfully, the following events are fired:
     // - indices.NewAccountIndex, balances.NewAccount -> generic events when an account is created
-    // - contract.Transfer(from, to, balance) -> Transfer from caller of contract.create/call to the contract account
+    // - balances.Transfer(from, to, balance) -> Transfer from caller of contract.create/call to the contract account
     // - contract.Instantiated(from, deployedAt) -> successful deployment at address. We Want this one.
     // Note: Trying to instantiate the same contract with the same data twice does not work. No event is
     // fired correspondingly.

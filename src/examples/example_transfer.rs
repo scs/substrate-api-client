@@ -20,7 +20,6 @@
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
-#[macro_use]
 extern crate log;
 extern crate substrate_api_client;
 
@@ -42,22 +41,29 @@ fn main() {
     let api = Api::new(format!("ws://{}", url))
         .set_signer(from.clone());
 
-    println!("[+] Alice's Account Nonce is {}\n", api.get_nonce());
-
     let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
+
+    let result = api.get_free_balance(to);
+    println!("[+] Bob's Free Balance is is {}\n", result);
 
     // generate extrinsic
     let xt = extrinsic::balances::transfer(
         api.clone(),
         GenericAddress::from(to),
-        42,
+        1000,
     );
 
-    println!("[+] Composed extrinsic:\n{:?}\n", xt);
+    println!("Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n", from.public(), to);
+
+    println!("[+] Composed extrinsic: {:?}\n", xt);
 
     //send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+
+    // Verify that Bob's free Balance increased
+    let result = api.get_free_balance(to);
+    println!("[+] Bob's Free Balance is now {}\n", result);
 }
 
 pub fn get_node_url_from_cli() -> String {

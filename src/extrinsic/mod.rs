@@ -26,7 +26,7 @@ pub mod balances;
 /// Generates the extrinsic's call field for a given module and call passed as &str
 /// # Arguments
 ///
-/// * 'node_metadata' - This crate's parsed not metadata as field of the API.
+/// * 'node_metadata' - This crate's parsed node metadata as field of the API.
 /// * 'module' - Module name as &str for which the call is composed.
 /// * 'call' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.

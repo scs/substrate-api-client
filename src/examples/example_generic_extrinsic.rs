@@ -26,7 +26,6 @@ extern crate log;
 extern crate substrate_api_client;
 
 use clap::App;
-use node_primitives::Balance;
 
 // compose_extrinsic is only found if extrinsic is imported as well ?!?
 use substrate_api_client::{

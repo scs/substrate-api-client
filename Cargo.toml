@@ -97,7 +97,6 @@ package = "test-node-runtime"
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
-# rev needs to be same commit as the testnode-runtime.
 rev = "6d47fd919b4d86e4348c6c19d99c80372587d215"
 package = "srml-contracts"
 
