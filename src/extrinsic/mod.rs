@@ -52,11 +52,12 @@ macro_rules! compose_call {
 /// Generates an Unchecked extrinsic for a given module and call passed as a &str.
 /// # Arguments
 ///
-/// * 'api' - This instance of API. The signer field **must** be set, else an error will be thrown.
+/// * 'api' - This instance of API. If the *signer* field is not set, an unsigned extrinsic will be generated.
 /// * 'module' - Module name as &str for which the call is composed.
 /// * 'call' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
+
 #[macro_export]
 macro_rules! compose_extrinsic {
 	($api: expr,
@@ -66,25 +67,32 @@ macro_rules! compose_extrinsic {
 		{
 			use codec::{Compact, Encode};
 			use primitives::{blake2_256, hexdisplay::HexDisplay};
+			use log::{info, debug};
 			use crate::extrinsic::xt_primitives::*;
 
 			info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
 			let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
-			let extra = GenericExtra::new($api.get_nonce());
+            let mut signature_tuple = None;
 
-			let raw_payload = (call, extra.clone(), ($api.genesis_hash, $api.genesis_hash));
-			let from = $api.signer.unwrap();
-			let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-				from.sign(&blake2_256(payload)[..])
-			} else {
-				debug!("signing {}", HexDisplay::from(&payload));
-				from.sign(payload)
-			});
+            if let Some(signer) = &$api.signer {
+                let extra = GenericExtra::new($api.get_nonce().unwrap());
+                let raw_payload = (call.clone(), extra.clone(), ($api.genesis_hash, $api.genesis_hash));
 
-			UncheckedExtrinsicV3::new_signed(
-				raw_payload.0, GenericAddress::from(from.public()), signature, extra
-			)
+                let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
+                    signer.sign(&blake2_256(payload)[..])
+                } else {
+                    debug!("signing {}", HexDisplay::from(&payload));
+                    signer.sign(payload)
+                });
+
+                signature_tuple = Some((GenericAddress::from(signer.public()), signature, extra));
+            }
+
+            UncheckedExtrinsicV3 {
+                signature: signature_tuple,
+				function: call
+			}
 		}
     };
 }
