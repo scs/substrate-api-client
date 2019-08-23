@@ -123,6 +123,10 @@ See [example_custom_storage_struct.rs](/src/examples/example_custom_storage_stru
 
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes for obvious reasons.
 
+## Alternatives
+
+Parity offers a Rust client with similar functionality: https://github.com/paritytech/substrate-subxt
+
 ## Acknowledgements
 
 The development of substraTEE is financed by [web3 foundation](https://web3.foundation/)'s grant programme.
