@@ -22,6 +22,7 @@ Setup a substrate node. Tested with [revision 6d47fd91 of substrate](https://git
 
     git clone https://github.com/scs/substrate-test-nodes
     cd substrate-test-nodes/
+    git checkout api-M1.1
     // --release flag needed as block production time is too long otherwise.
     cargo build --release
     
