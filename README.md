@@ -1,34 +1,45 @@
 # substrate-api-client
-Library for connecting to the substrate's rpc interface via WebSockets
+Library for connecting to the substrate's RPC interface via WebSockets allowing to
 
-* Composes Extrinsics, sends them and subscribes to updates.
-* Can watch events and execute code upon events.
-* Can parse and print the note metadata.
+* Compose extrinsics, send them and subscribe to updates.
+* Watch events and execute code upon events.
+* Parse and print the note metadata.
+
+## Prerequisites
+In order to build the substrate-api-client and the examples, Rust and the wasm target are needed. For Linux:
+
+    curl https://sh.rustup.rs -sSf | sh
+
+    rustup default nightly
+    rustup target add wasm32-unknown-unknown --toolchain nightly
+    cargo install --git https://github.com/alexcrichton/wasm-gc
+
+For more information, please refer to the [substrate](https://github.com/paritytech/substrate) repository.
 
 ## Setup
 
-Setup a substrate node. Tested with substrate master [6d47fd919b4d86e4348c6c19d99c80372587d215](https://github.com/paritytech/substrate/commit/6d47fd919b4d86e4348c6c19d99c80372587d215). Alternatively, the test node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
+Setup a substrate node. Tested with [revision 6d47fd91 of substrate](https://github.com/paritytech/substrate/commit/6d47fd919b4d86e4348c6c19d99c80372587d215). Alternatively, the test node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
 
     git clone https://github.com/scs/substrate-test-nodes
     cd substrate-test-nodes/
     // --release flag needed as block production time is too long otherwise.
     cargo build --release
     
-Run the node (examples use by default hardcoded url=localhost and ws-port=9944):    
+Run the node (examples use by default `url=localhost` and `ws-port=9944`):    
    
     ./target/release/substrate-test-node --dev
     
-    
-Run examples (optionally adjust url and port if wanted, not needed if the node is run with default arguments)
+Run the examples (optionally adjust url and port if wanted, not needed if the node is run with default arguments)
 
     git clone https://github.com/scs/substrate-api-client.git
     cd substrate-api-client
     cargo run --example example_get_storage (-ns <custom url> -p <custom port>)
 
-Set the output verbosity by adding `RUST_LOG=info` or `RUST_LOG=debug` in front of the command.
+Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
-## Reading storage example
-Shows hot to read some storage values.
+## Examples
+### Reading storage
+Shows how to read some storage values.
 
     // get some plain storage value
     let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
@@ -48,12 +59,12 @@ Shows hot to read some storage values.
 
 See [example_get_storage.rs](/src/examples/example_get_storage.rs)
 
-## Sending transactions example
+### Sending transactions
 Shows how to use one of the predefined extrinsics to send transactions.
 
 See [example_transfer.rs](/src/examples/example_transfer.rs)
 
-## Sending generic extrinsics
+### Sending generic extrinsics
 Shows how to use the compose_extrinsic! macro that is able to create an extrinsic for any kind of call, even for custom runtime modules.
 
     // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
@@ -69,12 +80,12 @@ Shows how to use the compose_extrinsic! macro that is able to create an extrinsi
 
 See [example_generic_extrinsic.rs](/src/examples/examples/example_generic_extrinsic.rs)
 
-## Callback example
+### Callback
 Shows how to listen to events fired by a substrate node.
 
 See [example_event_callback.rs](/src/examples/example_event_callback.rs)
 
-## Pretty print metadata
+### Pretty print metadata
 Shows how to print a substrate node's metadata in pretty json format. Has been proven a useful debugging tool.
 
     let api = Api::new(format!("ws://{}", url));
@@ -84,7 +95,7 @@ Shows how to print a substrate node's metadata in pretty json format. Has been p
 
 See [example_print_metadata.rs](/src/examples/example_print_metadata.rs)
 
-## ink! contract example
+### ink! contract
 Shows how to setup an ink! contract with the predefined contract extrinsics:
 * put_code: Stores a contract wasm blob on the chain
 * create: Create an instance of the contract
@@ -94,7 +105,7 @@ See [example_contract.rs](/src/examples/example_contract.rs)
 
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes as the contract module is not included by default in a substrate node.
 
-## Read custom storage struct
+### Read custom storage struct
 Shows how to fetch and decode a custom storage struct.
 
     // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
@@ -104,7 +115,6 @@ Shows how to fetch and decode a custom storage struct.
         id: H256,
         price: u128,
     }
-
 
 ...
 
@@ -129,7 +139,7 @@ Parity offers a Rust client with similar functionality: https://github.com/parit
 
 ## Acknowledgements
 
-The development of substraTEE is financed by [web3 foundation](https://web3.foundation/)'s grant programme.
+The development of substrate-api-client is financed by [web3 foundation](https://web3.foundation/)'s grant programme.
 
 We also thank the teams at
 
