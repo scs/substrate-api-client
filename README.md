@@ -39,6 +39,12 @@ Run the examples (optionally adjust url and port if wanted, not needed if the no
 Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
 ## Examples
+To run an example, you can use i.e.
+```
+cargo run --example example_transfer -- --ns 192.168.1.4 --node-port 9944
+```
+
+
 ### Reading storage
 Shows how to read some storage values.
 
