@@ -23,7 +23,7 @@ wabt = "0.9.0"
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "substrate-primitives"
 
 [dependencies.codec]
@@ -34,71 +34,71 @@ version = "1.0.0"
 
 [dependencies.indices]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-indices"
 
 [dependencies.node-primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-io"
 
 [dependencies.transaction_pool]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "substrate-transaction-pool"
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-metadata"
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-balances"
 
 [dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "substrate-keyring"
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-system"
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-primitives"
 
 [dependencies.runtime_support]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-support"
 
 [dev-dependencies.rstd]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-std"
 
 [dev-dependencies.node_runtime]
 git = 'https://github.com/paritytech/substrate'
-rev = '6d47fd919b4d86e4348c6c19d99c80372587d215'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "node-runtime"
 
 [dev-dependencies.test_node_runtime]
 git = 'https://github.com/scs/substrate-test-nodes.git'
-tag = "M1.Api"
+branch = "brenzi-upstream-sync"
 package = "test-node-runtime"
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
-rev = "6d47fd919b4d86e4348c6c19d99c80372587d215"
+rev = "9b08e7ff938a45dbec7fcdb854063202e2b0cb48"
 package = "srml-contracts"
 
 [features]
