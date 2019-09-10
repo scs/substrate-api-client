@@ -20,6 +20,8 @@ use std::fmt;
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use node_primitives::Signature;
+use primitive_types::H256;
+use primitives::blake2_256;
 use runtime_primitives::generic::Era;
 
 pub type GenericAddress = Address<[u8; 32], u32>;
@@ -36,6 +38,32 @@ impl GenericExtra {
             Compact(nonce),
             Compact(0 as u128),
         )
+    }
+}
+
+pub type AdditionalSigned = (u32, H256, H256, (), (), ());
+
+#[derive(Encode)]
+pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
+
+impl<Call> SignedPayload<Call> where
+    Call: Encode + fmt::Debug,
+{
+    pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
+        Self((call, extra, additional_signed))
+    }
+
+    /// Get an encoded version of this payload.
+    ///
+    /// Payloads longer than 256 bytes are going to be `blake2_256`-hashed.
+    pub fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
+        self.0.using_encoded(|payload| {
+            if payload.len() > 256 {
+                f(&blake2_256(payload)[..])
+            } else {
+                f(payload)
+            }
+        })
     }
 }
 
