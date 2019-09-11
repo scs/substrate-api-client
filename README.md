@@ -18,7 +18,7 @@ For more information, please refer to the [substrate](https://github.com/parityt
 
 ## Setup
 
-Setup a substrate node. Tested with [revision 6d47fd91 of substrate](https://github.com/paritytech/substrate/commit/6d47fd919b4d86e4348c6c19d99c80372587d215). Alternatively, the test node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
+Setup a substrate node. Tested with [revision 9b08e7ff of substrate](https://github.com/paritytech/substrate/commit/9b08e7ff938a45dbec7fcdb854063202e2b0cb48). Alternatively, the test node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
 
     git clone https://github.com/scs/substrate-test-nodes
     cd substrate-test-nodes/
