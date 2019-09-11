@@ -33,9 +33,9 @@ fn main() {
     let mut api = Api::new(format!("ws://{}", url));
 
     // get some plain storage value
-    let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
+    let result_str = api.get_storage("Balances", "TotalIssuance", None).unwrap();
     let result = hexstr_to_u256(result_str);
-    println!("[+] TransactionBaseFee is {}", result);
+    println!("[+] TotalIssuance is {}", result);
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);

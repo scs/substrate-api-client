@@ -48,13 +48,7 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
-    // FIXME: defaulting zo zero can be problematic. better to use Option<String>
-    let hexstr = match value["result"].as_str() {
-        Some(res) => res.to_string(),
-        _ => "0x00".to_string(),
-    };
-
-    result.send(hexstr).unwrap();
+    result.send(value["result"].to_string()).unwrap();
     out.close(CloseCode::Normal).unwrap();
     Ok(())
 }

@@ -65,9 +65,8 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            use codec::{Compact, Encode};
-            use primitives::{blake2_256, hexdisplay::HexDisplay};
-            use log::{info, debug};
+            use codec::Compact;
+            use log::info;
             use crate::extrinsic::xt_primitives::*;
 
             info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
@@ -77,12 +76,13 @@ macro_rules! compose_extrinsic {
 
             if let Some(signer) = &$api.signer {
                 let extra = GenericExtra::new($api.get_nonce().unwrap());
-                let raw_payload = (call.clone(), extra.clone(), ($api.genesis_hash, $api.genesis_hash));
+                let raw_payload = SignedPayload::from_raw(
+                    call.clone(),
+                    extra.clone(),
+                    ($api.runtime_version.spec_version, $api.genesis_hash, $api.genesis_hash, (), (), ())
+                );
 
-                let signature = raw_payload.using_encoded(|payload| if payload.len() > 256 {
-                    signer.sign(&blake2_256(payload)[..])
-                } else {
-                    debug!("signing {}", HexDisplay::from(&payload));
+                let signature = raw_payload.using_encoded(|payload|  {
                     signer.sign(payload)
                 });
 

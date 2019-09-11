@@ -15,7 +15,6 @@
 
 */
 
-use log::info;
 use node_primitives::Hash;
 use primitive_types::U256;
 use primitives::blake2_256;
@@ -38,13 +37,13 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
     keyhash
 }
 
-pub fn hexstr_to_vec(mut hexstr: String) -> Vec<u8> {
-    if hexstr.starts_with("0x") {
-        hex::decode(hexstr.split_off(2)).unwrap()
-    } else {
-        info!("converting non-prefixed hex string");
-        hex::decode(&hexstr).unwrap()
-    }
+pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
+    let hexstr = hexstr.trim_matches('\"')
+        .to_string()
+        .trim_start_matches("0x")
+        .to_string();
+
+    hex::decode(&hexstr).unwrap()
 }
 
 pub fn hexstr_to_u64(hexstr: String) -> u64 {
