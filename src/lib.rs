@@ -22,6 +22,7 @@ use std::sync::mpsc::Sender as ThreadOut;
 use codec::{Decode, Encode};
 use log::{info, debug};
 use metadata::RuntimeMetadataPrefixed;
+use runtime_version::RuntimeVersion;
 use node_primitives::Hash;
 use ws::Result as WsResult;
 
@@ -44,6 +45,7 @@ pub struct Api {
     pub signer: Option<AccountKey>,
     pub genesis_hash: Hash,
     pub metadata: NodeMetadata,
+    pub runtime_version: RuntimeVersion,
 }
 
 impl Api {
@@ -55,7 +57,10 @@ impl Api {
         let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
         info!("Metadata: {:?}", metadata);
 
-        Self { url, signer: None, genesis_hash, metadata }
+        let runtime_version = Api::_get_runtime_version(url.clone());
+        info!("Runtime Version: {:?}", runtime_version);
+
+        Self { url, signer: None, genesis_hash, metadata, runtime_version }
     }
 
     pub fn set_signer(mut self, signer: AccountKey) -> Self {
@@ -65,13 +70,20 @@ impl Api {
 
     fn _get_genesis_hash(url: String) -> Hash {
         let jsonreq = json_req::chain_get_block_hash();
-        let genesis_hash_str = Api::_get_request(url.clone() ,jsonreq.to_string()).expect("Fetching genesis hash from node failed");
+        let genesis_hash_str = Api::_get_request(url, jsonreq.to_string()).expect("Fetching genesis hash from node failed");
         hexstr_to_hash(genesis_hash_str)
+    }
+
+    fn _get_runtime_version(url: String) -> RuntimeVersion {
+        let jsonreq = json_req::state_get_runtime_version();
+        let version_str = Api::_get_request(url, jsonreq.to_string()).unwrap(); //expect("Fetching runtime version from node failed");
+        debug!("got the following runtime version (raw): {}", version_str);
+        serde_json::from_str(&version_str).unwrap()
     }
 
     fn _get_metadata(url: String) -> RuntimeMetadataPrefixed{
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = Api::_get_request(url,jsonreq.to_string()).unwrap();
+        let metadata_str = Api::_get_request(url ,jsonreq.to_string()).unwrap();
 
         let _unhex = hexstr_to_vec(metadata_str);
         let mut _om = _unhex.as_slice();

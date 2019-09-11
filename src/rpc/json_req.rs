@@ -37,6 +37,15 @@ pub fn state_get_metadata() -> Value {
         })
 }
 
+pub fn state_get_runtime_version() -> Value {
+    json!({
+            "method": "state_getRuntimeVersion",
+            "params": null,
+            "jsonrpc": "2.0",
+            "id": "1",
+        })
+}
+
 pub fn state_subscribe_storage(key: &str) -> Value {
     json!({
             "method": "state_subscribeStorage",

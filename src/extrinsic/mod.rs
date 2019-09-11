@@ -65,7 +65,7 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            use codec::{Compact, Encode};
+            use codec::Compact;
             use log::info;
             use crate::extrinsic::xt_primitives::*;
 
@@ -79,7 +79,7 @@ macro_rules! compose_extrinsic {
                 let raw_payload = SignedPayload::from_raw(
                     call.clone(),
                     extra.clone(),
-                    (4 as u32, $api.genesis_hash, $api.genesis_hash, (), (), ())
+                    ($api.runtime_version.spec_version, $api.genesis_hash, $api.genesis_hash, (), (), ())
                 );
 
                 let signature = raw_payload.using_encoded(|payload|  {

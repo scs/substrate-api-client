@@ -56,6 +56,11 @@ git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-metadata"
 
+[dependencies.runtime_version]
+git = 'https://github.com/paritytech/substrate'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
+package = "sr-version"
+
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
