@@ -98,7 +98,6 @@ package = "node-runtime"
 
 [dev-dependencies.test_node_runtime]
 git = 'https://github.com/scs/substrate-test-nodes.git'
-branch = "brenzi-upstream-sync"
 package = "test-node-runtime"
 
 [dev-dependencies.contracts]
