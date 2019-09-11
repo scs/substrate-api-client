@@ -27,9 +27,9 @@ use runtime_primitives::generic::Era;
 pub type GenericAddress = Address<[u8; 32], u32>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
-/// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra.
-/// Order  is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, TakeFees). This can
-///  be locked up in the System module. Fields that are merely PhantomData are not encoded, and are
+/// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
+/// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, TakeFees). This can
+/// be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
 #[derive(Decode, Encode, Clone, Debug, Eq, PartialEq)]
 pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
@@ -45,7 +45,7 @@ impl GenericExtra {
 }
 
 /// additionalSigned fields of the respective SignedExtra fields.
-/// Order is the same as the declared in the extra.
+/// Order is the same as declared in the extra.
 pub type AdditionalSigned = (u32, H256, H256, (), (), ());
 
 #[derive(Encode)]
