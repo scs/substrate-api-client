@@ -16,7 +16,7 @@
 */
 
 use codec::Compact;
-use node_primitives::Hash;
+use primitives::H256 as Hash;
 
 use crate::{Api,compose_extrinsic};
 

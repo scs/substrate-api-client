@@ -19,7 +19,7 @@ use std::fmt;
 
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
-use node_primitives::Signature;
+use runtime_primitives::AnySignature as Signature;
 use primitive_types::H256;
 use primitives::blake2_256;
 use runtime_primitives::generic::Era;

@@ -28,7 +28,7 @@ use std::sync::mpsc::{channel, Receiver};
 use clap::{App, load_yaml};
 use codec::Decode;
 use log::*;
-use node_primitives::Hash;
+use primitives::H256 as Hash;
 use test_node_runtime::Event;
 
 use substrate_api_client::{

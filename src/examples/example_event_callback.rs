@@ -22,7 +22,7 @@ use std::sync::mpsc::channel;
 use clap::{App, load_yaml};
 use codec::Decode;
 use log::{debug, error};
-use node_primitives::Hash;
+use primitives::H256 as Hash;
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.

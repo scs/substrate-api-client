@@ -23,7 +23,7 @@ use codec::{Decode, Encode};
 use log::{info, debug};
 use metadata::RuntimeMetadataPrefixed;
 use runtime_version::RuntimeVersion;
-use node_primitives::Hash;
+use primitives::H256 as Hash;
 use ws::Result as WsResult;
 
 use crypto::AccountKey;
