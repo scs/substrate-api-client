@@ -49,6 +49,44 @@ macro_rules! compose_call {
     };
 }
 
+
+/// Generates an Unchecked extrinsic for a given call
+/// # Arguments
+///
+/// * 'signer' - AccountKey that is used to sign the extrinsic.
+/// * 'call' - call as returned by the compose_call! macro or via substrate's call enums.
+/// * 'nonce' - signer's account nonce: u32
+/// * 'genesis_hash' - sr-primitives::Hash256/[u8; 32].
+/// * 'runtime_spec_version' - RuntimeVersion.spec_version/u32
+#[macro_export]
+macro_rules! compose_extrinsic_offline {
+    ($signer: expr,
+    $call: expr,
+    $nonce: expr,
+    $genesis_hash: expr,
+    $runtime_spec_version: expr) => {
+        {
+            use crate::extrinsic::xt_primitives::*;
+
+            let extra = GenericExtra::new($nonce);
+            let raw_payload = SignedPayload::from_raw(
+                $call,
+                extra.clone(),
+                ($runtime_spec_version, $genesis_hash, $genesis_hash, (), (), ())
+            );
+
+            let signature = raw_payload.using_encoded(|payload|  {
+                    $signer.sign(payload)
+            });
+
+            UncheckedExtrinsicV3 {
+                signature: Some((GenericAddress::from($signer.public()), signature, extra)),
+                function: $call,
+            }
+        }
+    }
+}
+
 /// Generates an Unchecked extrinsic for a given module and call passed as a &str.
 /// # Arguments
 ///
@@ -70,28 +108,21 @@ macro_rules! compose_extrinsic {
             use crate::extrinsic::xt_primitives::*;
 
             info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
-
             let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
-            let mut signature_tuple = None;
 
-            if let Some(signer) = &$api.signer {
-                let extra = GenericExtra::new($api.get_nonce().unwrap());
-                let raw_payload = SignedPayload::from_raw(
+            if let Some(signer) = $api.signer.clone() {
+                $crate::compose_extrinsic_offline!(
+                    signer,
                     call.clone(),
-                    extra.clone(),
-                    ($api.runtime_version.spec_version, $api.genesis_hash, $api.genesis_hash, (), (), ())
-                );
-
-                let signature = raw_payload.using_encoded(|payload|  {
-                    signer.sign(payload)
-                });
-
-                signature_tuple = Some((GenericAddress::from(signer.public()), signature, extra));
-            }
-
-            UncheckedExtrinsicV3 {
-                signature: signature_tuple,
-                function: call
+                    $api.get_nonce().unwrap(),
+                    $api.genesis_hash,
+                    $api.runtime_version.spec_version
+                )
+            } else {
+                UncheckedExtrinsicV3 {
+                    signature: None,
+                    function: call.clone(),
+                }
             }
 		}
     };
