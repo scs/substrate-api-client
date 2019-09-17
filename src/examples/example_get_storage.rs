@@ -34,19 +34,19 @@ fn main() {
 
     // get some plain storage value
     let result_str = api.get_storage("Balances", "TotalIssuance", None).unwrap();
-    let result = hexstr_to_u256(result_str);
+    let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] TotalIssuance is {}", result);
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);
     let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let result = hexstr_to_u256(result_str);
+    let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with the AccountKey
     let key = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
     let result_str = api.get_storage("System", "AccountNonce", Some(key.public().encode())).unwrap();
-    let result = hexstr_to_u256(result_str);
+    let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with api.get_nonce()

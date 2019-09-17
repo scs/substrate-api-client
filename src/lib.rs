@@ -71,7 +71,7 @@ impl Api {
     fn _get_genesis_hash(url: String) -> Hash {
         let jsonreq = json_req::chain_get_block_hash();
         let genesis_hash_str = Api::_get_request(url, jsonreq.to_string()).expect("Fetching genesis hash from node failed");
-        hexstr_to_hash(genesis_hash_str)
+        hexstr_to_hash(genesis_hash_str).unwrap()
     }
 
     fn _get_runtime_version(url: String) -> RuntimeVersion {
@@ -85,14 +85,14 @@ impl Api {
         let jsonreq = json_req::state_get_metadata();
         let metadata_str = Api::_get_request(url ,jsonreq.to_string()).unwrap();
 
-        let _unhex = hexstr_to_vec(metadata_str);
+        let _unhex = hexstr_to_vec(metadata_str).unwrap();
         let mut _om = _unhex.as_slice();
         RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
     }
 
     fn _get_nonce(url: String, signer: AccountKey) -> u32 {
         let result_str = Api::_get_storage(url, "System", "AccountNonce", Some(signer.public().encode())).unwrap();
-        let nonce = hexstr_to_u256(result_str);
+        let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
         nonce.low_u32()
     }
 
@@ -125,7 +125,7 @@ impl Api {
 
     pub fn get_free_balance(&self, address: [u8; 32]) -> U256 {
         let result_str= self.get_storage("Balances", "FreeBalance", Some(address.encode())).unwrap();
-        hexstr_to_u256(result_str)
+        hexstr_to_u256(result_str).unwrap()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
@@ -146,7 +146,7 @@ impl Api {
                                                           jsonreq.clone(),
                                                           result_in.clone());
 
-        Ok(hexstr_to_hash(result_out.recv().unwrap()))
+        Ok(hexstr_to_hash(result_out.recv().unwrap()).unwrap())
     }
 
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {

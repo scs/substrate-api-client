@@ -19,6 +19,7 @@ use node_primitives::Hash;
 use primitive_types::U256;
 use primitives::blake2_256;
 use primitives::twox_128;
+use hex::FromHexError;
 
 pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
@@ -37,30 +38,30 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
     keyhash
 }
 
-pub fn hexstr_to_vec(hexstr: String) -> Vec<u8> {
+pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
     let hexstr = hexstr.trim_matches('\"')
         .to_string()
         .trim_start_matches("0x")
         .to_string();
 
-    hex::decode(&hexstr).unwrap()
+    hex::decode(&hexstr)
 }
 
-pub fn hexstr_to_u64(hexstr: String) -> u64 {
-    let unhex = hexstr_to_vec(hexstr);
+pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
+    let unhex = hexstr_to_vec(hexstr)?;
     let mut h: [u8; 8] = Default::default();
     h.copy_from_slice(&unhex);
-    u64::from_le_bytes(h)
+    Ok(u64::from_le_bytes(h))
 }
 
-pub fn hexstr_to_u256(hexstr: String) -> U256 {
-    let _unhex = hexstr_to_vec(hexstr);
-    U256::from_little_endian(&_unhex[..])
+pub fn hexstr_to_u256(hexstr: String) -> Result<U256, FromHexError> {
+    let _unhex = hexstr_to_vec(hexstr)?;
+    Ok(U256::from_little_endian(&_unhex[..]))
 }
 
-pub fn hexstr_to_hash(hexstr: String) -> Hash {
-    let _unhex = hexstr_to_vec(hexstr);
+pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
+    let _unhex = hexstr_to_vec(hexstr)?;
     let mut gh: [u8; 32] = Default::default();
     gh.copy_from_slice(&_unhex);
-    Hash::from(gh)
+    Ok(Hash::from(gh))
 }

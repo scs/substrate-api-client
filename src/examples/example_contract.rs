@@ -124,7 +124,7 @@ fn subcribe_to_code_stored_event(events_out: &Receiver<String>) -> Hash {
     loop {
         let event_str = events_out.recv().unwrap();
 
-        let _unhex = hexstr_to_vec(event_str);
+        let _unhex = hexstr_to_vec(event_str).unwrap();
         let mut _er_enc = _unhex.as_slice();
         let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
         if let Ok(evts) = _events {
@@ -146,7 +146,7 @@ fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> Generi
     loop {
         let event_str = events_out.recv().unwrap();
 
-        let _unhex = hexstr_to_vec(event_str);
+        let _unhex = hexstr_to_vec(event_str).unwrap();
         let mut _er_enc = _unhex.as_slice();
         let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
         if let Ok(evts) = _events {

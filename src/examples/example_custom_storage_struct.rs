@@ -69,7 +69,7 @@ fn main() {
                                   "KittyIndex",
                                   Some(from.public().encode())).unwrap();
 
-    let index = hexstr_to_u64(res_str);
+    let index = hexstr_to_u64(res_str).unwrap();
     println!("[+] Alice's Kitty is at index : {}\n", index);
 
     // Get the Kitty
@@ -77,7 +77,7 @@ fn main() {
                                   "Kitties",
                                   Some(index.encode())).unwrap();
 
-    let res_vec = hexstr_to_vec(res_str);
+    let res_vec = hexstr_to_vec(res_str).unwrap();
 
     // Type annotations are needed here to know that to decode into.
     let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
