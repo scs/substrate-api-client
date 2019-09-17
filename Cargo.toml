@@ -37,19 +37,10 @@ git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-indices"
 
-[dependencies.node-primitives]
-git = 'https://github.com/paritytech/substrate'
-rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
-
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-io"
-
-[dependencies.transaction_pool]
-git = 'https://github.com/paritytech/substrate'
-rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
-package = "substrate-transaction-pool"
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'

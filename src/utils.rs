@@ -15,7 +15,7 @@
 
 */
 
-use node_primitives::Hash;
+use primitives::H256 as Hash;
 use primitive_types::U256;
 use primitives::blake2_256;
 use primitives::twox_128;

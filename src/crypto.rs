@@ -15,7 +15,7 @@
 
 */
 
-use node_primitives::Signature;
+use runtime_primitives::AnySignature as Signature;
 use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
 
 pub enum CryptoKind {
