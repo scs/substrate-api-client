@@ -23,6 +23,9 @@ pub mod xt_primitives;
 pub mod contract;
 pub mod balances;
 
+pub extern crate codec;
+pub extern crate log;
+
 /// Generates the extrinsic's call field for a given module and call passed as &str
 /// # Arguments
 ///
@@ -103,8 +106,8 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            use codec::Compact;
-            use log::info;
+            use crate::extrinsic::codec::Compact;
+            use crate::extrinsic::log::info;
             use crate::extrinsic::xt_primitives::*;
 
             info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
