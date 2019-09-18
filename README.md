@@ -85,7 +85,7 @@ Shows how to use the compose_extrinsic! macro that is able to create an extrinsi
     );
 
 
-See [example_generic_extrinsic.rs](/src/examples/examples/example_generic_extrinsic.rs)
+See [example_generic_extrinsic.rs](/src/examples/example_generic_extrinsic.rs)
 
 ### Callback
 Shows how to listen to events fired by a substrate node.
