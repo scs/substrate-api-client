@@ -20,7 +20,7 @@
 use clap::{App, load_yaml};
 use codec::Encode;
 use keyring::AccountKeyring;
-use node_primitives::AccountId;
+use test_node_runtime::AccountId;
 
 use substrate_api_client::Api;
 use substrate_api_client::crypto::{AccountKey, CryptoKind};

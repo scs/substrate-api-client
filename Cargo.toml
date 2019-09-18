@@ -18,12 +18,10 @@ serde_derive = "1.0"
 primitive-types = { version = "0.5", default-features = false, features = ["codec"] }
 parity-codec-derive = { version = "3.3", default-features = false }
 
-[dev-dependencies]
-wabt = "0.9.0"
-
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
+default-features=false
 package = "substrate-primitives"
 
 [dependencies.codec]
@@ -36,46 +34,49 @@ version = "1.0.0"
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-indices"
+default-features=false
 
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-io"
+default-features=false
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-metadata"
+default-features=false
 
 [dependencies.runtime_version]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-version"
+default-features=false
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-balances"
-
-[dependencies.keyring]
-git = 'https://github.com/paritytech/substrate'
-rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
-package = "substrate-keyring"
+default-features=false
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-system"
+default-features=false
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-primitives"
+default-features=false
 
 [dependencies.runtime_support]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-support"
+default-features=false
 
 [dev-dependencies.rstd]
 git = 'https://github.com/paritytech/substrate'
@@ -96,12 +97,30 @@ git = 'https://github.com/paritytech/substrate'
 rev = "9b08e7ff938a45dbec7fcdb854063202e2b0cb48"
 package = "srml-contracts"
 
+[dev-dependencies]
+wabt = "0.9.0"
+
+[dev-dependencies.keyring]
+git = 'https://github.com/paritytech/substrate'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
+package = "substrate-keyring"
+
+
 [features]
 default = ["std"]
 std = [
 	"primitives/std",
 	"codec/std",
     "runtime_primitives/std",
+	"runtime_support/std",
+	"runtime_primitives/std",
+	"system/std",
+	"balances/std",
+	"runtime_version/std",
+	"metadata/std",
+	"runtime_io/std",
+	"indices/std",
+	"primitives/std",
 ]
 
 [[example]]
