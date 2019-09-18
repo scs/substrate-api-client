@@ -14,16 +14,19 @@
    limitations under the License.
 
 */
+#![cfg_attr(any(not(feature = "std"),
+                all(feature = "mesalock_sgx", not(target_env = "sgx"))),
+            no_std)]
 
-#![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(not(target_env = "sgx"), no_std)]
-
-
-#[cfg(not(target_env = "sgx"))]
+#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
 
+#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
 use std::prelude::v1::*;
+
+#[cfg(not(feature = "std"))]
+extern crate core as std;
 
 #[cfg(feature = "std")]
 use std::sync::mpsc::channel;

@@ -16,7 +16,7 @@ primitive-types = { version = "0.5", default-features = false, features = ["code
 parity-codec-derive = { version = "3.3", default-features = false }
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_tstd      = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk", features = ["untrusted_fs","net","backtrace"] }
+sgx_tstd      = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk", features = ["untrusted_fs","net","backtrace"], optional=true }
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
@@ -116,8 +116,9 @@ features = ["yaml"]
 
 
 [features]
-default = ["std"]
+default = ["std", "mesalock_sgx"]
 std = [
+	"mesalock_sgx",
 	"primitives/std",
 	"codec/std",
     "runtime_primitives/std",
@@ -133,6 +134,7 @@ std = [
 	"ws",
 	"serde_json",
 ]
+mesalock_sgx = ["sgx_tstd"]
 
 [[example]]
 name = "example_get_storage"
