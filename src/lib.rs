@@ -16,10 +16,18 @@
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(not(target_env = "sgx"), no_std)]
 
-#![macro_use]
 
+#[cfg(not(target_env = "sgx"))]
+#[macro_use]
+extern crate sgx_tstd as std;
+
+use std::prelude::v1::*;
+
+#[cfg(feature = "std")]
 use std::sync::mpsc::channel;
+#[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
 use codec::{Decode, Encode};
@@ -27,21 +35,34 @@ use log::{info, debug};
 use metadata::RuntimeMetadataPrefixed;
 use runtime_version::RuntimeVersion;
 use primitives::H256 as Hash;
+
+#[cfg(feature = "std")]
 use ws::Result as WsResult;
 
 use crypto::AccountKey;
+
+#[cfg(feature = "std")]
 use node_metadata::NodeMetadata;
+
+#[cfg(feature = "std")]
 use rpc::json_req;
+
+#[cfg(feature = "std")]
 use utils::*;
+
 use primitive_types::U256;
 
 #[macro_use]
 pub mod extrinsic;
 pub mod crypto;
+#[cfg(feature = "std")]
 pub mod node_metadata;
+#[cfg(feature = "std")]
 pub mod utils;
+#[cfg(feature = "std")]
 pub mod rpc;
 
+#[cfg(feature = "std")]
 #[derive(Clone)]
 pub struct Api {
     url: String,
@@ -51,6 +72,7 @@ pub struct Api {
     pub runtime_version: RuntimeVersion,
 }
 
+#[cfg(feature = "std")]
 impl Api {
     pub fn new(url: String) -> Self {
         let genesis_hash = Api::_get_genesis_hash(url.clone());

@@ -15,9 +15,13 @@
 
 */
 
+use std::prelude::v1::*;
+use std::vec::Vec;
+
 use codec::Compact;
 use primitives::H256 as Hash;
 
+#[cfg(feature = "std")]
 use crate::{Api,compose_extrinsic};
 
 use super::xt_primitives::*;
@@ -35,6 +39,7 @@ pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
 pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
 pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
 
+#[cfg(feature = "std")]
 pub fn put_code(api: Api, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt {
     compose_extrinsic!(
 		api,
@@ -45,6 +50,7 @@ pub fn put_code(api: Api, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt {
 	)
 }
 
+#[cfg(feature = "std")]
 pub fn create(api: Api, endowment: u128, gas_limit: u64, code_hash: Hash, data: Vec<u8>) -> ContractCreateXt {
     compose_extrinsic!(
 		api,
@@ -57,6 +63,7 @@ pub fn create(api: Api, endowment: u128, gas_limit: u64, code_hash: Hash, data: 
 	)
 }
 
+#[cfg(feature = "std")]
 pub fn call(api: Api, dest: GenericAddress, value: u128, gas_limit: u64, data: Vec<u8>) -> ContractCallXt {
     compose_extrinsic!(
 		api,

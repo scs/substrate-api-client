@@ -15,6 +15,9 @@
 
 */
 
+use std::prelude::v1::*;
+use std::vec::Vec;
+
 use std::fmt;
 
 use codec::{Compact, Decode, Encode};
@@ -97,7 +100,8 @@ impl<Call> UncheckedExtrinsicV3<Call>
             function,
         }
     }
-
+    
+    #[cfg(feature = "std")]
     pub fn hex_encode(&self) -> String {
         let mut hex_str = hex::encode(self.encode());
         hex_str.insert_str(0, "0x");

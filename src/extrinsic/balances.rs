@@ -15,8 +15,12 @@
 
 */
 
+use std::prelude::v1::*;
+use std::vec::Vec;
+
 use codec::Compact;
 
+#[cfg(feature = "std")]
 use crate::{Api, compose_extrinsic};
 
 use super::xt_primitives::*;
@@ -28,6 +32,7 @@ pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
 
 pub type BalanceTransferXt = UncheckedExtrinsicV3<BalanceTransferFn>;
 
+#[cfg(feature = "std")]
 pub fn transfer(api: Api, to: GenericAddress, amount: u128) -> BalanceTransferXt {
     compose_extrinsic!(
 		api,

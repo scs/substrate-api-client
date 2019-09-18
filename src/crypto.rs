@@ -14,6 +14,8 @@
    limitations under the License.
 
 */
+use std::prelude::v1::*;
+use std::vec::Vec;
 
 use runtime_primitives::AnySignature as Signature;
 use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
