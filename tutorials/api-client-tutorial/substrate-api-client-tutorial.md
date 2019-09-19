@@ -1,5 +1,3 @@
-substrate-api-client turial
-
 # substrate-api-client tutorial
 
 This little guide elaborates on the usage of the client we wrote to interact with  [substrate](https://github.com/paritytech/substrate) based blockchains. We will show from scratch how to setup interaction with a substrate blockchain.
