@@ -38,6 +38,9 @@ Run the examples (optionally adjust url and port if wanted, not needed if the no
 
 Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
+## Tutorials
+There are detailed tutorials in the [tutorials](/tutorials) folder of the `substrate-api-client`.
+
 ## Examples
 To run an example, you can use i.e.
 ```
