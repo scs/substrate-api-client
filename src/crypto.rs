@@ -14,9 +14,8 @@
    limitations under the License.
 
 */
-use std::prelude::v1::*;
-use std::vec::Vec;
 
+use rstd::prelude::*;
 use runtime_primitives::AnySignature as Signature;
 use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
 
@@ -31,7 +30,9 @@ pub enum AccountKey {
     Sr(sr25519::Pair),
 }
 
+
 impl AccountKey {
+    #[cfg(feature = "std")]
     pub fn new(phrase: &str, password: Option<&str>, kind: CryptoKind) -> AccountKey {
         match kind {
             CryptoKind::Ed25519 => {
@@ -44,14 +45,14 @@ impl AccountKey {
             }
         }
     }
-
+    #[cfg(feature = "std")]
     pub fn public(&self) -> [u8; 32] {
         match self {
             AccountKey::Ed(pair) => pair.public().0,
             AccountKey::Sr(pair) => pair.public().0,
         }
     }
-
+    #[cfg(feature = "std")]
     pub fn public_from_suri(phrase: &str, password: Option<&str>, kind: CryptoKind) -> [u8; 32] {
         match kind {
             CryptoKind::Ed25519 => Ed25519::public_from_suri(phrase, password).0,
@@ -72,10 +73,12 @@ pub struct Sr25519;
 pub trait Crypto {
     type Seed: AsRef<[u8]> + AsMut<[u8]> + Sized + Default;
     type Pair: Pair;
-    type Public: Ss58Codec + AsRef<[u8]> + std::hash::Hash;
-
+    type Public: Ss58Codec + AsRef<[u8]> + rstd::hash::Hash;
+    #[cfg(feature = "std")]
     fn pair_from_suri(phrase: &str, password: Option<&str>) -> Self::Pair;
+    #[cfg(feature = "std")]
     fn public_from_suri(phrase: &str, password: Option<&str>) -> Self::Public;
+    #[cfg(feature = "std")]
     fn ss58_from_pair(pair: &Self::Pair) -> String;
 }
 
@@ -84,15 +87,18 @@ impl Crypto for Sr25519 {
     type Pair = sr25519::Pair;
     type Public = sr25519::Public;
 
+    #[cfg(feature = "std")]
     fn pair_from_suri(suri: &str, password: Option<&str>) -> Self::Pair {
         sr25519::Pair::from_string(suri, password).expect("Invalid phrase")
     }
 
+    #[cfg(feature = "std")]
     fn public_from_suri(suri: &str, password: Option<&str>) -> Self::Public {
         sr25519::Public::from_string(suri).ok().or_else(||
             sr25519::Pair::from_string(suri, password).ok().map(|p| p.public())
         ).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
+    #[cfg(feature = "std")]
     fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
 }
 
@@ -103,14 +109,17 @@ impl Crypto for Ed25519 {
     type Pair = ed25519::Pair;
     type Public = ed25519::Public;
 
+    #[cfg(feature = "std")]
     fn pair_from_suri(suri: &str, password_override: Option<&str>) -> Self::Pair {
         ed25519::Pair::from_string(suri, password_override)
             .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
+    #[cfg(feature = "std")]
     fn public_from_suri(suri: &str, password_override: Option<&str>) -> Self::Public {
         ed25519::Public::from_string(suri).ok()
             .or_else(|| ed25519::Pair::from_string(suri, password_override).ok().map(|p| p.public()))
             .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
+    #[cfg(feature = "std")]
     fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
 }

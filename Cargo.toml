@@ -5,18 +5,14 @@ authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
 [dependencies]
-env_logger        = { version = "0.6.2", git = "https://github.com/mesalock-linux/env_logger-sgx", default-features=false }
-ws = { version = "0.7", optional = true }
-hex = { version = "0.3", default-features=false, optional = true }
-log = { git = "https://github.com/mesalock-linux/log-sgx", default-features=false }
-serde        	= { version = "1.0.97", git = "https://github.com/mesalock-linux/serde-sgx", default-features=false, features = ["derive"]}
-serde_derive    = { version = "1.0.97", git = "https://github.com/mesalock-linux/serde-sgx", default-features=false }
-serde_json      = { version = "1.0.36", git = "https://github.com/mesalock-linux/serde-json-sgx", default-features=false}
+env_logger 		= { version = "0.6", optional = true }
+ws 				= { version = "0.7", optional = true }
+hex 			= { version = "0.3", default-features=false, optional = true }
+log 			= { version = "0.4", optional = true }
+serde 			= { version = "1.0", optional = true, features = ["derive"] }
+serde_json 		= { version = "1.0", optional = true }
 primitive-types = { version = "0.5", default-features = false, features = ["codec"] }
 parity-codec-derive = { version = "3.3", default-features = false }
-
-[target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_tstd      = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk", features = ["untrusted_fs","net","backtrace"], optional=true }
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
@@ -78,10 +74,11 @@ rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "srml-support"
 default-features=false
 
-[dev-dependencies.rstd]
+[dependencies.rstd]
 git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "sr-std"
+default-features = false
 
 [dev-dependencies.node_runtime]
 git = 'https://github.com/paritytech/substrate'
@@ -125,10 +122,12 @@ std = [
 	"indices/std",
 	"primitives/std",
 	"serde/std",
+	"serde_json",
+	"env_logger",
+	"log",
 	"ws",
 	"hex",
 ]
-mesalock_sgx = ["sgx_tstd"]
 
 [[example]]
 name = "example_get_storage"

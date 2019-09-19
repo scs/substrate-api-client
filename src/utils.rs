@@ -15,9 +15,6 @@
 
 */
 
-use std::prelude::v1::*;
-use std::vec::Vec;
-
 use primitives::H256 as Hash;
 use primitive_types::U256;
 use primitives::blake2_256;

@@ -18,9 +18,6 @@
 //! Offers macros that build extrinsics for custom runtime modules based on the metadata.
 //! Additionally, some predefined extrinsics for common runtime modules are implemented.
 
-use std::prelude::v1::*;
-use std::vec::Vec;
-
 pub mod xt_primitives;
 pub mod contract;
 pub mod balances;

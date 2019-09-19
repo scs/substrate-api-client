@@ -15,9 +15,7 @@
 
 */
 
-use std::prelude::v1::*;
-use std::vec::Vec;
-
+use rstd::prelude::*;
 use codec::Compact;
 use primitives::H256 as Hash;
 

@@ -15,10 +15,8 @@
 
 */
 
-use std::prelude::v1::*;
-use std::vec::Vec;
-
-use std::fmt;
+use rstd::prelude::*;
+use rstd::fmt;
 
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
@@ -140,7 +138,7 @@ impl<Call> Encode for UncheckedExtrinsicV3<Call>
 
 /// Same function as in primitives::generic. Needed to be copied as it is private there.
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
-    let size = std::mem::size_of::<T>();
+    let size = rstd::mem::size_of::<T>();
     let reserve = match size {
         0..=0b0011_1111 => 1,
         0..=0b0011_1111_1111_1111 => 2,

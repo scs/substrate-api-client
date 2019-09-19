@@ -15,9 +15,6 @@
 
 */
 
-use std::prelude::v1::*;
-use std::vec::Vec;
-
 use codec::Compact;
 
 #[cfg(feature = "std")]

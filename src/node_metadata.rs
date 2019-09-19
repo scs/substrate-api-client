@@ -15,15 +15,12 @@
 
 */
 
-use std::prelude::v1::*;
-use std::vec::Vec;
 
 use codec::alloc::string::FromUtf8Error;
 use log::{info, debug};
 use metadata::{DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed};
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "std")]
 pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Result<String, FromUtf8Error> {
     let buf = Vec::new();
     let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");

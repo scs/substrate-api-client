@@ -14,32 +14,21 @@
    limitations under the License.
 
 */
-#![cfg_attr(any(not(feature = "std"),
-                all(feature = "mesalock_sgx", not(target_env = "sgx"))),
-            no_std)]
 
-#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
-#[macro_use]
-extern crate sgx_tstd as std;
+#![cfg_attr(not(feature = "std"), no_std)]
 
-#[macro_use]
-extern crate serde_derive;
-
-#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
-use std::prelude::v1::*;
-
-#[cfg(not(feature = "std"))]
-extern crate core as std;
+use rstd::prelude::*;
 
 #[cfg(feature = "std")]
 use std::sync::mpsc::channel;
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
-
-
 use codec::{Decode, Encode};
+
+#[cfg(feature = "std")]
 use log::{info, debug};
+
 use metadata::RuntimeMetadataPrefixed;
 use runtime_version::RuntimeVersion;
 use primitives::H256 as Hash;
