@@ -158,7 +158,7 @@ let xt = compose_extrinsic!(
     10 as u128
 );
 ```
-The first three arguments are always the `Api`, the runtime module name, and then the function name as defined in the metadata. Subsequently, the arguments of the runtime function that is called are supplied. Taking a look at the metadata, we see that the `create_kitty` call takes one argument, which is `price` of type `T::Balance` that is a type alias defined in substrate for a `u128`. Therefore, we are free to use `u128` as both encode to the same bytes. The macro does then query the account nonce from the node and creates a signed extrinsic ready to be encoded and sent. Note: The signing process is as not straight forward, additional information is included in the signing payload, which is more than the extrinsic payload that only consists of the prepared call statements, details can be looked up in the macro.
+The first three arguments are always the `Api`, the runtime module name, and then the function name as defined in the metadata. Subsequently, the arguments of the runtime function that is called are supplied. Taking a look at the metadata, we see that the `create_kitty` call takes one argument, which is `price` of type `T::Balance`, which is a type alias defined in substrate for a `u128`. Therefore, we are free to use `u128` as both encode to the same bytes. The macro does then query the account nonce from the node and creates a signed extrinsic ready to be encoded and sent. Note: The signing process is as not straight forward, additional information is included in the signing payload, which is more than the extrinsic payload that only consists of the prepared call statements, details can be looked up in the macro.
 
 The following call submits an extrinsic to the node and waits for the transaction hash that is returned upon block inclusion of the extrinsic.
 
@@ -167,6 +167,8 @@ let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
 ```
 
 Having received the transaction hash, we can check if the `Kitty` belonging to Alice's account has successfully been created. Again, looking at the metadata unveils that the there are two storage maps that are of interest to us. there is `KittyIndex`, which maps an `AccountId` to an index (`u64`) and there is `Kitties`, which maps this index to a `Kitty`. This indirect approach is overall computationally more efficient than a mapping from `AccountId` to `Kitty` directly. Thus, we need to lookup the index before we can access our `Kitty`.
+
+We can query the storage values of a runtime module via the `Api`'s `get_storage` method.
 
 ```
 let res_str = api.get_storage("Kitty",
@@ -190,7 +192,7 @@ let res_str = api.get_storage("Kitty",
 let res_vec = hexstr_to_vec(res_str).unwrap();
 ```
 
-Naturally, the `utils` module does not have a `hexstr_to_kitty` function, instead we can transform it into a byte vector. Now we must decode this vector into a `Kitty`, but neither rust nor substrate does know the structure of our `Kitty`. But the metadata does! In the metadata we find that our `Kitty` looks as follows: `Kitty<T::Hash, T::Balance>`. Hence, we can define the structure on the client side and tell rust what to decode into. `T::Hash` is again a substrate type alias for a 32 byte array aka `[u8; 32]`.
+Naturally, the `utils` module does not have a `hexstr_to_kitty` function, instead we can transform it into a byte vector. Now we must decode this vector into a `Kitty`, but neither rust nor substrate does know the structure of our `Kitty`. But luckily, the metadata does! In the metadata we find that our `Kitty` looks as follows: `Kitty<T::Hash, T::Balance>`. Hence, we can define the structure on the client side and tell rust what to decode into. `T::Hash` is again a substrate type alias for a 32 byte array aka `[u8; 32]`.
 
 ```
 #[derive(Encode, Decode, Debug)]
@@ -204,5 +206,6 @@ let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
 println!("[+] Cute decoded Kitty: {:?}\n", kitty);
 ```
 
-This concludes this little tutorial. We went through important features, namely creating extrinsics for custom runtime modules, reading storage values and decoding custom storage values. However, there are more features to our substrate api client such as predefined extrinsics for the `srml-contract` module, examples on how to listen to runtime `events` and more. The full code for this tutorial is found in the tutorials folder of the [substrate-api-client](https://github.com/scs/substrate-api-client).
+In order to use the `Decode::decode` function we need to add the `Parity`'s `Codec` crate as a dependency. This is a basic rust thing, and shall be left as an exercise to the reader.
 
+This concludes this little tutorial. We went through important features of the `substrate-api-client`, namely creating extrinsics for custom runtime modules, reading storage values and decoding custom storage values. However, there are more features to our substrate api client such as predefined extrinsics for the `srml-contract` module, examples on how to listen to runtime `events` and more. The full code for this tutorial is found in the tutorials folder of the [substrate-api-client](https://github.com/scs/substrate-api-client).
