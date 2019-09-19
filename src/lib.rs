@@ -22,6 +22,9 @@
 #[macro_use]
 extern crate sgx_tstd as std;
 
+#[macro_use]
+extern crate serde_derive;
+
 #[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
 use std::prelude::v1::*;
 
@@ -32,6 +35,8 @@ extern crate core as std;
 use std::sync::mpsc::channel;
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
+
+
 
 use codec::{Decode, Encode};
 use log::{info, debug};
