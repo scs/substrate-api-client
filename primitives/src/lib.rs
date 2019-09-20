@@ -54,7 +54,6 @@ pub mod crypto;
 pub mod u32_trait;
 
 pub mod ed25519;
-#[cfg(feature = "std")]
 pub mod sr25519;
 pub mod hash;
 mod hasher;

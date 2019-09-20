@@ -17,6 +17,9 @@
 
 use rstd::prelude::*;
 
+#[cfg(feature = "std")]
+use std::fmt;
+
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use runtime_primitives::AnySignature as Signature;
