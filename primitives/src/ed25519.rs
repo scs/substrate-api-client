@@ -232,10 +232,10 @@ impl std::fmt::Debug for Signature {
 	}
 }
 
-#[cfg(feature = "std")]
-impl std::hash::Hash for Signature {
-	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-		std::hash::Hash::hash(&self.0[..], state);
+
+impl core::hash::Hash for Signature {
+	fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+		core::hash::Hash::hash(&self.0[..], state);
 	}
 }
 
