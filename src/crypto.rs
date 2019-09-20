@@ -73,7 +73,7 @@ pub struct Sr25519;
 pub trait Crypto {
     type Seed: AsRef<[u8]> + AsMut<[u8]> + Sized + Default;
     type Pair: Pair;
-    type Public: Ss58Codec + AsRef<[u8]> + rstd::hash::Hash;
+    type Public: Ss58Codec + AsRef<[u8]> + core::hash::Hash;
     #[cfg(feature = "std")]
     fn pair_from_suri(phrase: &str, password: Option<&str>) -> Self::Pair;
     #[cfg(feature = "std")]

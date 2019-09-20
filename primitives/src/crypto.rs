@@ -19,7 +19,7 @@
 // end::description[]
 
 use rstd::vec::Vec;
-use rstd::hash::Hash;
+use core::hash::Hash;
 
 #[cfg(feature = "std")]
 use rstd::convert::TryInto;
