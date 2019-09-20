@@ -15,8 +15,8 @@
 
 */
 
+use primitives::{crypto::Ss58Codec, ed25519, sr25519, Pair};
 use runtime_primitives::AnySignature as Signature;
-use primitives::{crypto::Ss58Codec, ed25519, Pair, sr25519};
 
 pub enum CryptoKind {
     Ed25519,
@@ -35,7 +35,7 @@ impl AccountKey {
             CryptoKind::Ed25519 => {
                 let pair = Ed25519::pair_from_suri(phrase, password);
                 AccountKey::Ed(pair)
-            },
+            }
             CryptoKind::Sr25519 => {
                 let pair = Sr25519::pair_from_suri(phrase, password);
                 AccountKey::Sr(pair)
@@ -87,11 +87,18 @@ impl Crypto for Sr25519 {
     }
 
     fn public_from_suri(suri: &str, password: Option<&str>) -> Self::Public {
-        sr25519::Public::from_string(suri).ok().or_else(||
-            sr25519::Pair::from_string(suri, password).ok().map(|p| p.public())
-        ).expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
+        sr25519::Public::from_string(suri)
+            .ok()
+            .or_else(|| {
+                sr25519::Pair::from_string(suri, password)
+                    .ok()
+                    .map(|p| p.public())
+            })
+            .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
-    fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
+    fn ss58_from_pair(pair: &Self::Pair) -> String {
+        pair.public().to_ss58check()
+    }
 }
 
 struct Ed25519;
@@ -106,9 +113,16 @@ impl Crypto for Ed25519 {
             .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
     fn public_from_suri(suri: &str, password_override: Option<&str>) -> Self::Public {
-        ed25519::Public::from_string(suri).ok()
-            .or_else(|| ed25519::Pair::from_string(suri, password_override).ok().map(|p| p.public()))
+        ed25519::Public::from_string(suri)
+            .ok()
+            .or_else(|| {
+                ed25519::Pair::from_string(suri, password_override)
+                    .ok()
+                    .map(|p| p.public())
+            })
             .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
-    fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
+    fn ss58_from_pair(pair: &Self::Pair) -> String {
+        pair.public().to_ss58check()
+    }
 }

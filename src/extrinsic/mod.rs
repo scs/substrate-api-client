@@ -18,10 +18,9 @@
 //! Offers macros that build extrinsics for custom runtime modules based on the metadata.
 //! Additionally, some predefined extrinsics for common runtime modules are implemented.
 
-
-pub mod xt_primitives;
-pub mod contract;
 pub mod balances;
+pub mod contract;
+pub mod xt_primitives;
 
 pub extern crate codec;
 pub extern crate log;
@@ -52,7 +51,6 @@ macro_rules! compose_call {
     };
 }
 
-
 /// Generates an Unchecked extrinsic for a given call
 /// # Arguments
 ///
@@ -67,27 +65,30 @@ macro_rules! compose_extrinsic_offline {
     $call: expr,
     $nonce: expr,
     $genesis_hash: expr,
-    $runtime_spec_version: expr) => {
-        {
-            use crate::extrinsic::xt_primitives::*;
+    $runtime_spec_version: expr) => {{
+        use crate::extrinsic::xt_primitives::*;
 
-            let extra = GenericExtra::new($nonce);
-            let raw_payload = SignedPayload::from_raw(
-                $call,
-                extra.clone(),
-                ($runtime_spec_version, $genesis_hash, $genesis_hash, (), (), ())
-            );
+        let extra = GenericExtra::new($nonce);
+        let raw_payload = SignedPayload::from_raw(
+            $call,
+            extra.clone(),
+            (
+                $runtime_spec_version,
+                $genesis_hash,
+                $genesis_hash,
+                (),
+                (),
+                (),
+            ),
+        );
 
-            let signature = raw_payload.using_encoded(|payload|  {
-                    $signer.sign(payload)
-            });
+        let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
-            UncheckedExtrinsicV3 {
-                signature: Some((GenericAddress::from($signer.public()), signature, extra)),
-                function: $call,
-            }
+        UncheckedExtrinsicV3 {
+            signature: Some((GenericAddress::from($signer.public()), signature, extra)),
+            function: $call,
         }
-    }
+    }};
 }
 
 /// Generates an Unchecked extrinsic for a given module and call passed as a &str.
@@ -138,9 +139,9 @@ mod tests {
 
     use xt_primitives::*;
 
-    use crate::Api;
     use crate::crypto::*;
     use crate::extrinsic::balances::{BALANCES_MODULE, BALANCES_TRANSFER};
+    use crate::Api;
 
     use super::*;
 
@@ -162,8 +163,20 @@ mod tests {
         let amount = Balance::from(42 as u128);
         let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
 
-        let my_call = ([balance_module_index, balance_transfer_index], GenericAddress::from(to.clone()), Compact(amount)).encode();
-        let transfer_fn = compose_call!(api.metadata.clone(), BALANCES_MODULE, BALANCES_TRANSFER, GenericAddress::from(to), Compact(amount)).encode();
+        let my_call = (
+            [balance_module_index, balance_transfer_index],
+            GenericAddress::from(to.clone()),
+            Compact(amount),
+        )
+            .encode();
+        let transfer_fn = compose_call!(
+            api.metadata.clone(),
+            BALANCES_MODULE,
+            BALANCES_TRANSFER,
+            GenericAddress::from(to),
+            Compact(amount)
+        )
+        .encode();
         assert_eq!(my_call, transfer_fn);
     }
 }

@@ -19,10 +19,10 @@ use std::fmt;
 
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
-use runtime_primitives::AnySignature as Signature;
 use primitive_types::H256;
 use primitives::blake2_256;
 use runtime_primitives::generic::Era;
+use runtime_primitives::AnySignature as Signature;
 
 pub type GenericAddress = Address<[u8; 32], u32>;
 
@@ -51,7 +51,8 @@ pub type AdditionalSigned = (u32, H256, H256, (), (), ());
 #[derive(Encode)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
-impl<Call> SignedPayload<Call> where
+impl<Call> SignedPayload<Call>
+where
     Call: Encode + fmt::Debug,
 {
     pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
@@ -75,16 +76,16 @@ impl<Call> SignedPayload<Call> where
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
 pub struct UncheckedExtrinsicV3<Call>
-    where
-        Call: Encode + fmt::Debug,
+where
+    Call: Encode + fmt::Debug,
 {
     pub signature: Option<(GenericAddress, Signature, GenericExtra)>,
     pub function: Call,
 }
 
 impl<Call> UncheckedExtrinsicV3<Call>
-    where
-        Call: Encode + fmt::Debug,
+where
+    Call: Encode + fmt::Debug,
 {
     pub fn new_signed(
         function: Call,
@@ -106,17 +107,22 @@ impl<Call> UncheckedExtrinsicV3<Call>
 }
 
 impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
-    where
-        Call: fmt::Debug + Encode,
+where
+    Call: fmt::Debug + Encode,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "UncheckedExtrinsic({:?}, {:?})", self.signature.as_ref().map(|x| (&x.0, &x.2)), self.function)
+        write!(
+            f,
+            "UncheckedExtrinsic({:?}, {:?})",
+            self.signature.as_ref().map(|x| (&x.0, &x.2)),
+            self.function
+        )
     }
 }
 
 impl<Call> Encode for UncheckedExtrinsicV3<Call>
-    where
-        Call: Encode + fmt::Debug,
+where
+    Call: Encode + fmt::Debug,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {
@@ -124,7 +130,7 @@ impl<Call> Encode for UncheckedExtrinsicV3<Call>
                 Some(s) => {
                     v.push(3 as u8 | 0b1000_0000);
                     s.encode_to(v);
-                },
+                }
                 None => {
                     v.push(3 as u8 & 0b0111_1111);
                 }
