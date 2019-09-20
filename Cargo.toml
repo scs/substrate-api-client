@@ -15,8 +15,7 @@ primitive-types = { version = "0.5", default-features = false, features = ["code
 parity-codec-derive = { version = "3.3", default-features = false }
 
 [dependencies.primitives]
-git = 'https://github.com/paritytech/substrate'
-rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
+path = "./primitives"
 default-features=false
 package = "substrate-primitives"
 
@@ -160,3 +159,6 @@ path = "src/examples/example_custom_storage_struct.rs"
 [[example]]
 name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
+
+[patch."https://github.com/paritytech/substrate"]
+substrate-primitives = { package = "substrate-primitives", path = "./primitives", default-features=false }

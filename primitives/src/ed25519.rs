@@ -18,17 +18,17 @@
 //! Simple Ed25519 API.
 // end::description[]
 
+use rstd::vec::Vec;
 
 use crate::{hash::H256, hash::H512};
 use codec::{Encode, Decode};
 
-#[cfg(feature = "std")]
 use blake2_rfc;
 #[cfg(feature = "std")]
 use substrate_bip39::seed_from_entropy;
 #[cfg(feature = "std")]
 use bip39::{Mnemonic, Language, MnemonicType};
-#[cfg(feature = "std")]
+
 use crate::crypto::{Pair as TraitPair, DeriveJunction, SecretStringError, Ss58Codec};
 #[cfg(feature = "std")]
 use serde::{de, Serializer, Serialize, Deserializer, Deserialize};
@@ -37,7 +37,6 @@ use crate::{crypto::{Public as TraitPublic, UncheckedFrom, CryptoType, Derive}};
 /// A secret seed. It's not called a "secret key" because ring doesn't expose the secret keys
 /// of the key pair (yeah, dumb); as such we're forced to remember the seed manually if we
 /// will need it later (such as for HDKD).
-#[cfg(feature = "std")]
 type Seed = [u8; 32];
 
 /// A public key.
@@ -45,10 +44,8 @@ type Seed = [u8; 32];
 pub struct Public(pub [u8; 32]);
 
 /// A key pair.
-#[cfg(feature = "std")]
 pub struct Pair(ed25519_dalek::Keypair);
 
-#[cfg(feature = "std")]
 impl Clone for Pair {
 	fn clone(&self) -> Self {
 		Pair(ed25519_dalek::Keypair {
@@ -97,7 +94,6 @@ impl From<Public> for [u8; 32] {
 	}
 }
 
-#[cfg(feature = "std")]
 impl From<Pair> for Public {
 	fn from(x: Pair) -> Self {
 		x.public()
@@ -152,9 +148,9 @@ impl<'de> Deserialize<'de> for Public {
 	}
 }
 
-#[cfg(feature = "std")]
-impl std::hash::Hash for Public {
-	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+
+impl core::hash::Hash for Public {
+	fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
 		self.0.hash(state);
 	}
 }
@@ -333,7 +329,6 @@ impl TraitPublic for Public {
 impl Derive for Public {}
 
 /// Derive a single hard junction.
-#[cfg(feature = "std")]
 fn derive_hard_junction(secret_seed: &Seed, cc: &[u8; 32]) -> Seed {
 	("Ed25519HDKD", secret_seed, cc).using_encoded(|data| {
 		let mut res = [0u8; 32];
@@ -343,13 +338,12 @@ fn derive_hard_junction(secret_seed: &Seed, cc: &[u8; 32]) -> Seed {
 }
 
 /// An error when deriving a key.
-#[cfg(feature = "std")]
 pub enum DeriveError {
 	/// A soft key was found in the path (and is unsupported).
 	SoftKeyInPath,
 }
 
-#[cfg(feature = "std")]
+
 impl TraitPair for Pair {
 	type Public = Public;
 	type Seed = Seed;
@@ -359,6 +353,7 @@ impl TraitPair for Pair {
 	/// Generate new secure (random) key pair and provide the recovery phrase.
 	///
 	/// You can recover the same key later with `from_phrase`.
+	#[cfg(feature = "std")]
 	fn generate_with_phrase(password: Option<&str>) -> (Pair, String, Seed) {
 		let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
 		let phrase = mnemonic.phrase();
@@ -372,6 +367,7 @@ impl TraitPair for Pair {
 	}
 
 	/// Generate key pair from given recovery phrase and password.
+	#[cfg(feature = "std")]
 	fn from_phrase(phrase: &str, password: Option<&str>) -> Result<(Pair, Seed), SecretStringError> {
 		let big_seed = seed_from_entropy(
 			Mnemonic::from_phrase(phrase, Language::English)
@@ -414,6 +410,7 @@ impl TraitPair for Pair {
 	}
 
 	/// Generate a key from the phrase, password and derivation path.
+	#[cfg(feature = "std")]
 	fn from_standard_components<I: Iterator<Item=DeriveJunction>>(
 		phrase: &str,
 		password: Option<&str>,
@@ -470,7 +467,6 @@ impl TraitPair for Pair {
 	}
 }
 
-#[cfg(feature = "std")]
 impl Pair {
 	/// Get the seed for this key.
 	pub fn seed(&self) -> &Seed {
@@ -479,6 +475,7 @@ impl Pair {
 
 	/// Exactly as `from_string` except that if no matches are found then, the the first 32
 	/// characters are taken (padded with spaces as necessary) and used as the MiniSecretKey.
+	#[cfg(feature = "std")]
 	pub fn from_legacy_string(s: &str, password_override: Option<&str>) -> Pair {
 		Self::from_string(s, password_override).unwrap_or_else(|_| {
 			let mut padded_seed: Seed = [' ' as u8; 32];
@@ -490,16 +487,13 @@ impl Pair {
 }
 
 impl CryptoType for Public {
-	#[cfg(feature="std")]
 	type Pair = Pair;
 }
 
 impl CryptoType for Signature {
-	#[cfg(feature="std")]
 	type Pair = Pair;
 }
 
-#[cfg(feature = "std")]
 impl CryptoType for Pair {
 	type Pair = Pair;
 }

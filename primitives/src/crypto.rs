@@ -18,10 +18,13 @@
 //! Cryptographic utilities.
 // end::description[]
 
+use rstd::vec::Vec;
+use rstd::hash::Hash;
+
 #[cfg(feature = "std")]
 use rstd::convert::TryInto;
 use rstd::convert::TryFrom;
-#[cfg(feature = "std")]
+
 use parking_lot::Mutex;
 #[cfg(feature = "std")]
 use rand::{RngCore, rngs::OsRng};
@@ -30,8 +33,8 @@ use codec::{Encode, Decode};
 use regex::Regex;
 #[cfg(feature = "std")]
 use base58::{FromBase58, ToBase58};
-#[cfg(feature = "std")]
-use std::hash::Hash;
+//#[cfg(feature = "std")]
+//use std::hash::Hash;
 use zeroize::Zeroize;
 #[doc(hidden)]
 pub use rstd::ops::Deref;
@@ -48,7 +51,6 @@ pub enum Infallible {}
 
 /// The length of the junction identifier. Note that this is also referred to as the
 /// `CHAIN_CODE_LENGTH` in the context of Schnorrkel.
-#[cfg(feature = "std")]
 pub const JUNCTION_ID_LEN: usize = 32;
 
 /// Similar to `From`, except that the onus is on the part of the caller to ensure
@@ -120,7 +122,6 @@ impl<T: Zeroize> Drop for Protected<T> {
 
 /// An error with the interpretation of a secret.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg(feature = "std")]
 pub enum SecretStringError {
 	/// The overall format was invalid (e.g. the seed phrase contained symbols).
 	InvalidFormat,
@@ -140,7 +141,6 @@ pub enum SecretStringError {
 /// a new secret key from an existing secret key and, in the case of `SoftRaw` and `SoftIndex`
 /// a new public key from an existing public key.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Encode, Decode)]
-#[cfg(feature = "std")]
 pub enum DeriveJunction {
 	/// Soft (vanilla) derivation. Public keys have a correspondent derivation.
 	Soft([u8; JUNCTION_ID_LEN]),
@@ -148,7 +148,6 @@ pub enum DeriveJunction {
 	Hard([u8; JUNCTION_ID_LEN]),
 }
 
-#[cfg(feature = "std")]
 impl DeriveJunction {
 	/// Consume self to return a soft derive junction with the same chain code.
 	pub fn soften(self) -> Self { DeriveJunction::Soft(self.unwrap_inner()) }
@@ -209,7 +208,6 @@ impl DeriveJunction {
 	}
 }
 
-#[cfg(feature = "std")]
 impl<T: AsRef<str>> From<T> for DeriveJunction {
 	fn from(j: T) -> DeriveJunction {
 		let j = j.as_ref();
@@ -236,7 +234,6 @@ impl<T: AsRef<str>> From<T> for DeriveJunction {
 }
 
 /// An error type for SS58 decoding.
-#[cfg(feature = "std")]
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum PublicError {
 	/// Bad alphabet.
@@ -254,7 +251,6 @@ pub enum PublicError {
 }
 
 /// Key that can be encoded to/from SS58.
-#[cfg(feature = "std")]
 pub trait Ss58Codec: Sized {
 	/// Some if the string is a properly encoded SS58Check address.
 	fn from_ss58check(s: &str) -> Result<Self, PublicError> {
@@ -269,6 +265,7 @@ pub trait Ss58Codec: Sized {
 	fn from_ss58check_with_version(s: &str) -> Result<(Self, Ss58AddressFormat), PublicError>;
 	/// Some if the string is a properly encoded SS58Check address, optionally with
 	/// a derivation path following.
+	#[cfg(feature = "std")]
 	fn from_string(s: &str) -> Result<Self, PublicError> {
 		Self::from_string_with_version(s)
 			.and_then(|(r, v)| match v {
@@ -279,11 +276,14 @@ pub trait Ss58Codec: Sized {
 	}
 
 	/// Return the ss58-check string for this key.
+	#[cfg(feature = "std")]
 	fn to_ss58check_with_version(&self, version: Ss58AddressFormat) -> String;
 	/// Return the ss58-check string for this key.
+	#[cfg(feature = "std")]
 	fn to_ss58check(&self) -> String { self.to_ss58check_with_version(*DEFAULT_VERSION.lock()) }
 	/// Some if the string is a properly encoded SS58Check address, optionally with
 	/// a derivation path following.
+	#[cfg(feature = "std")]
 	fn from_string_with_version(s: &str) -> Result<(Self, Ss58AddressFormat), PublicError> {
 		Self::from_ss58check_with_version(s)
 	}
@@ -311,14 +311,13 @@ fn ss58hash(data: &[u8]) -> blake2_rfc::blake2b::Blake2bResult {
 	context.finalize()
 }
 
-#[cfg(feature = "std")]
+
 lazy_static::lazy_static! {
 	static ref DEFAULT_VERSION: Mutex<Ss58AddressFormat>
 		= Mutex::new(Ss58AddressFormat::SubstrateAccountDirect);
 }
 
 /// A known address (sub)format/network ID for SS58.
-#[cfg(feature = "std")]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Ss58AddressFormat {
 	/// Any Substrate network, direct checksum, standard account (*25519).
@@ -331,7 +330,7 @@ pub enum Ss58AddressFormat {
 	Custom(u8),
 }
 
-#[cfg(feature = "std")]
+
 impl From<Ss58AddressFormat> for u8 {
 	fn from(x: Ss58AddressFormat) -> u8 {
 		match x {
@@ -343,7 +342,7 @@ impl From<Ss58AddressFormat> for u8 {
 	}
 }
 
-#[cfg(feature = "std")]
+
 impl TryFrom<u8> for Ss58AddressFormat {
 	type Error = ();
 	fn try_from(x: u8) -> Result<Ss58AddressFormat, ()> {
@@ -356,7 +355,7 @@ impl TryFrom<u8> for Ss58AddressFormat {
 	}
 }
 
-#[cfg(feature = "std")]
+
 impl<'a> TryFrom<&'a str> for Ss58AddressFormat {
 	type Error = ();
 	fn try_from(x: &'a str) -> Result<Ss58AddressFormat, ()> {
@@ -413,7 +412,8 @@ impl<T: AsMut<[u8]> + AsRef<[u8]> + Default + Derive> Ss58Codec for T {
 		res.as_mut().copy_from_slice(&d[1..len+1]);
 		Ok((res, ver))
 	}
-
+	
+	#[cfg(feature = "std")]
 	fn to_ss58check_with_version(&self, version: Ss58AddressFormat) -> String {
 		let mut v = vec![version.into()];
 		v.extend(self.as_ref());
@@ -524,7 +524,10 @@ mod dummy {
 		type Seed = Dummy;
 		type Signature = Dummy;
 		type DeriveError = ();
+
+		#[cfg(feature = "std")]
 		fn generate_with_phrase(_: Option<&str>) -> (Self, String, Self::Seed) { Default::default() }
+		#[cfg(feature = "std")]
 		fn from_phrase(_: &str, _: Option<&str>)
 			-> Result<(Self, Self::Seed), SecretStringError>
 		{
@@ -553,7 +556,7 @@ mod dummy {
 /// Trait suitable for typical cryptographic PKI key pair type.
 ///
 /// For now it just specifies how to create a key from a phrase and derivation path.
-#[cfg(feature = "std")]
+
 pub trait Pair: CryptoType + Sized + Clone + Send + Sync + 'static {
 	/// The type which is used to encode a public key.
 	type Public: Public + Hash;
@@ -573,6 +576,9 @@ pub trait Pair: CryptoType + Sized + Clone + Send + Sync + 'static {
 	///
 	/// This is only for ephemeral keys really, since you won't have access to the secret key
 	/// for storage. If you want a persistent key pair, use `generate_with_phrase` instead.
+
+	//TODO: replace this conditionally with sgx random generator
+	#[cfg(feature = "std")]
 	fn generate() -> (Self, Self::Seed) {
 		let mut csprng: OsRng = OsRng::new().expect("OS random generator works; qed");
 		let mut seed = Self::Seed::default();
@@ -586,9 +592,11 @@ pub trait Pair: CryptoType + Sized + Clone + Send + Sync + 'static {
 	///
 	/// This is generally slower than `generate()`, so prefer that unless you need to persist
 	/// the key from the current session.
+	#[cfg(feature = "std")]
 	fn generate_with_phrase(password: Option<&str>) -> (Self, String, Self::Seed);
 
 	/// Returns the KeyPair from the English BIP39 seed `phrase`, or `None` if it's invalid.
+	#[cfg(feature = "std")]
 	fn from_phrase(phrase: &str, password: Option<&str>) -> Result<(Self, Self::Seed), SecretStringError>;
 
 	/// Derive a child key from a series of given junctions.
@@ -608,6 +616,7 @@ pub trait Pair: CryptoType + Sized + Clone + Send + Sync + 'static {
 	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError>;
 
 	/// Construct a key from a phrase, password and path.
+	#[cfg(feature = "std")]
 	fn from_standard_components<
 		I: Iterator<Item=DeriveJunction>
 	>(phrase: &str, password: Option<&str>, path: I) -> Result<Self, SecretStringError>;
@@ -650,6 +659,7 @@ pub trait Pair: CryptoType + Sized + Clone + Send + Sync + 'static {
 	/// be equivalent to no password at all.
 	///
 	/// `None` is returned if no matches are found.
+	#[cfg(feature = "std")]
 	fn from_string(s: &str, password_override: Option<&str>) -> Result<Self, SecretStringError> {
 		let hex_seed = if s.starts_with("0x") {
 			&s[2..]
@@ -719,7 +729,6 @@ impl<Inner, Outer, T> UncheckedFrom<T> for Outer where
 /// Type which has a particular kind of crypto associated with it.
 pub trait CryptoType {
 	/// The pair key type of this crypto.
-	#[cfg(feature="std")]
 	type Pair: Pair;
 }
 

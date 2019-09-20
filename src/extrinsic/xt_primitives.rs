@@ -16,13 +16,13 @@
 */
 
 use rstd::prelude::*;
-use rstd::fmt;
 
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use runtime_primitives::AnySignature as Signature;
 use primitive_types::H256;
 use primitives::blake2_256;
+//use blake2_rfc::blake2b::blake2b;
 use runtime_primitives::generic::Era;
 
 pub type GenericAddress = Address<[u8; 32], u32>;
@@ -53,7 +53,7 @@ pub type AdditionalSigned = (u32, H256, H256, (), (), ());
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
 impl<Call> SignedPayload<Call> where
-    Call: Encode + fmt::Debug,
+    Call: Encode ,
 {
     pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
         Self((call, extra, additional_signed))
@@ -77,7 +77,7 @@ impl<Call> SignedPayload<Call> where
 /// The SingedExtra used does not need to implement SingedExtension here.
 pub struct UncheckedExtrinsicV3<Call>
     where
-        Call: Encode + fmt::Debug,
+        Call: Encode ,
 {
     pub signature: Option<(GenericAddress, Signature, GenericExtra)>,
     pub function: Call,
@@ -85,7 +85,7 @@ pub struct UncheckedExtrinsicV3<Call>
 
 impl<Call> UncheckedExtrinsicV3<Call>
     where
-        Call: Encode + fmt::Debug,
+        Call: Encode ,
 {
     pub fn new_signed(
         function: Call,
@@ -107,6 +107,7 @@ impl<Call> UncheckedExtrinsicV3<Call>
     }
 }
 
+#[cfg(feature = "std")]
 impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
     where
         Call: fmt::Debug + Encode,
@@ -118,7 +119,7 @@ impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
 
 impl<Call> Encode for UncheckedExtrinsicV3<Call>
     where
-        Call: Encode + fmt::Debug,
+        Call: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {

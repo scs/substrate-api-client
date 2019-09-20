@@ -44,9 +44,8 @@ pub use codec::{Encode, Decode};// << for macro
 #[cfg(feature = "std")]
 pub use impl_serde::serialize as bytes;
 
-#[cfg(feature = "std")]
 pub mod hashing;
-#[cfg(feature = "std")]
+
 pub use hashing::{blake2_128, blake2_256, twox_64, twox_128, twox_256};
 #[cfg(feature = "std")]
 pub mod hexdisplay;
@@ -55,6 +54,7 @@ pub mod crypto;
 pub mod u32_trait;
 
 pub mod ed25519;
+#[cfg(feature = "std")]
 pub mod sr25519;
 pub mod hash;
 mod hasher;
