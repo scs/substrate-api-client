@@ -153,7 +153,7 @@ mod tests {
     fn call_from_meta_data_works() {
         let api = test_api();
 
-        let balance_module_index = 3u8;
+        let balance_module_index = 5u8;
         let balance_transfer_index = 0u8;
 
         let amount = Balance::from(42 as u128);
