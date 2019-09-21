@@ -22,9 +22,11 @@
 // end::description[]
 use rstd::vec::Vec;
 
+// brenzi: no_std issue trigger
 use schnorrkel::{signing_context, ExpansionMode, Keypair, SecretKey, MiniSecretKey, PublicKey,
 	derive::{Derivation, ChainCode, CHAIN_CODE_LENGTH}
 };
+
 #[cfg(feature = "std")]
 use substrate_bip39::mini_secret_from_entropy;
 #[cfg(feature = "std")]

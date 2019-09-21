@@ -19,13 +19,15 @@
 // end::description[]
 
 use rstd::vec::Vec;
+
 use core::hash::Hash;
 
 #[cfg(feature = "std")]
 use rstd::convert::TryInto;
 use rstd::convert::TryFrom;
-
+#[cfg(feature = "std")]
 use parking_lot::Mutex;
+
 #[cfg(feature = "std")]
 use rand::{RngCore, rngs::OsRng};
 use codec::{Encode, Decode};
@@ -36,7 +38,9 @@ use base58::{FromBase58, ToBase58};
 //#[cfg(feature = "std")]
 //use std::hash::Hash;
 use zeroize::Zeroize;
+
 #[doc(hidden)]
+
 pub use rstd::ops::Deref;
 
 /// The root phrase for our publicly known keys.
@@ -253,6 +257,7 @@ pub enum PublicError {
 /// Key that can be encoded to/from SS58.
 pub trait Ss58Codec: Sized {
 	/// Some if the string is a properly encoded SS58Check address.
+	#[cfg(feature = "std")]
 	fn from_ss58check(s: &str) -> Result<Self, PublicError> {
 		Self::from_ss58check_with_version(s)
 			.and_then(|(r, v)| match v {
@@ -311,7 +316,7 @@ fn ss58hash(data: &[u8]) -> blake2_rfc::blake2b::Blake2bResult {
 	context.finalize()
 }
 
-
+#[cfg(feature = "std")]
 lazy_static::lazy_static! {
 	static ref DEFAULT_VERSION: Mutex<Ss58AddressFormat>
 		= Mutex::new(Ss58AddressFormat::SubstrateAccountDirect);

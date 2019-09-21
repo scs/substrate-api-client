@@ -24,14 +24,17 @@ use crate::{hash::H256, hash::H512};
 use codec::{Encode, Decode};
 
 use blake2_rfc;
+
 #[cfg(feature = "std")]
 use substrate_bip39::seed_from_entropy;
 #[cfg(feature = "std")]
 use bip39::{Mnemonic, Language, MnemonicType};
 
 use crate::crypto::{Pair as TraitPair, DeriveJunction, SecretStringError, Ss58Codec};
+
 #[cfg(feature = "std")]
 use serde::{de, Serializer, Serialize, Deserializer, Deserialize};
+
 use crate::{crypto::{Public as TraitPublic, UncheckedFrom, CryptoType, Derive}};
 
 /// A secret seed. It's not called a "secret key" because ring doesn't expose the secret keys
@@ -43,8 +46,10 @@ type Seed = [u8; 32];
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 pub struct Public(pub [u8; 32]);
 
+// brenzi: no_std issue trigger
 /// A key pair.
 pub struct Pair(ed25519_dalek::Keypair);
+
 
 impl Clone for Pair {
 	fn clone(&self) -> Self {
