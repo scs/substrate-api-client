@@ -35,7 +35,8 @@ pub type GenericAddress = Address<[u8; 32], u32>;
 /// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, TakeFees). This can
 /// be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
-#[derive(Decode, Encode, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "std",derive(Debug))]
+#[derive(Decode, Encode, Clone, Eq, PartialEq)]
 pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
 
 impl GenericExtra {

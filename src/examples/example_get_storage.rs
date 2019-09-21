@@ -20,11 +20,12 @@
 use clap::{App, load_yaml};
 use codec::Encode;
 use keyring::AccountKeyring;
-use test_node_runtime::AccountId;
-
+use runtime_primitives::{AnySignature, traits::Verify};
 use substrate_api_client::Api;
 use substrate_api_client::crypto::{AccountKey, CryptoKind};
 use substrate_api_client::utils::hexstr_to_u256;
+
+type AccountId = <AnySignature as Verify>::Signer;
 
 fn main() {
     env_logger::init();

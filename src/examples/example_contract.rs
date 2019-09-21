@@ -29,7 +29,8 @@ use clap::{App, load_yaml};
 use codec::Decode;
 use log::*;
 use primitives::H256 as Hash;
-use test_node_runtime::Event;
+// FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try to avoid)
+use node_runtime::Event;
 
 use substrate_api_client::{
     Api,

@@ -84,9 +84,9 @@ git = 'https://github.com/paritytech/substrate'
 rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
 package = "node-runtime"
 
-[dev-dependencies.test_node_runtime]
-git = 'https://github.com/scs/substrate-test-nodes.git'
-package = "test-node-runtime"
+#[dev-dependencies.test_node_runtime]
+#git = 'https://github.com/scs/substrate-test-nodes.git'
+#package = "test-node-runtime"
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
