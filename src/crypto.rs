@@ -45,7 +45,6 @@ impl AccountKey {
             }
         }
     }
-    #[cfg(feature = "std")]
     pub fn public(&self) -> [u8; 32] {
         match self {
             AccountKey::Ed(pair) => pair.public().0,
