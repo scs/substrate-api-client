@@ -43,14 +43,12 @@ default-features = false
 [dependencies.ed25519-dalek]
 version = "1.0.0-pre.1"
 default-features = false
-features = ["u64_backend", "nightly"]
+features = ["u64_backend"]
 
 [dependencies.schnorrkel]
-git = "https://github.com/w3f/schnorrkel.git"
-#branch = "schizomerlin"
+version = "0.8.5"
 features = ["preaudit_deprecated"]
 default-features = false
-
 
 [dev-dependencies]
 ##substrate-serializer = { path = "../serializer" }
