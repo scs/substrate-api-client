@@ -54,9 +54,9 @@ pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
     match unhex {
         Ok(vec) => { 
             match vec.len() {
-                8 => {
+                1|2|4|8 => {
                     let mut h: [u8; 8] = Default::default();
-                    h.copy_from_slice(&vec);
+                    h[..vec.len()].copy_from_slice(&vec);
                     Ok(u64::from_le_bytes(h))
                 },
                 _ => {
@@ -75,7 +75,7 @@ pub fn hexstr_to_u256(hexstr: String) -> Result<U256, FromHexError> {
     match unhex {
         Ok(vec) => { 
             match vec.len() {
-                32 => {
+                1|2|4|8|16|32 => {
                     Ok(U256::from_little_endian(&vec[..]))
                 },
                 _ => {
@@ -120,6 +120,7 @@ mod tests {
     #[test]
     fn test_hextstr_to_u64() {
         assert_eq!(hexstr_to_u64("0x0100000000000000".to_string()), Ok(1u64));
+        assert_eq!(hexstr_to_u64("0x01000000".to_string()), Ok(1u64));
         assert_eq!(hexstr_to_u64("null".to_string()), Ok(0u64));
         assert_eq!(hexstr_to_u64("0x010000000000000000".to_string()), Err(hex::FromHexError::InvalidStringLength));
         assert_eq!(hexstr_to_u64("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
@@ -128,6 +129,7 @@ mod tests {
     #[test]
     fn test_hextstr_to_u256() {
         assert_eq!(hexstr_to_u256("0x0100000000000000000000000000000000000000000000000000000000000000".to_string()), Ok(U256::from(1)));
+        assert_eq!(hexstr_to_u256("0x01000000".to_string()), Ok(U256::from(1)));
         assert_eq!(hexstr_to_u256("null".to_string()), Ok(U256::from(0)));
         assert_eq!(hexstr_to_u256("0x010000000000000000".to_string()), Err(hex::FromHexError::InvalidStringLength));
         assert_eq!(hexstr_to_u256("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
