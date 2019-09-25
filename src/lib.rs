@@ -54,7 +54,8 @@ pub mod extrinsic;
 pub mod crypto;
 #[cfg(feature = "std")]
 pub mod node_metadata;
-#[cfg(feature = "std")]
+
+#[cfg(any(feature = "std", feature = "sgx"))]
 pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;

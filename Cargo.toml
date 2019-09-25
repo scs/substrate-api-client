@@ -133,6 +133,9 @@ std = [
 	"hex",
 ]
 
+#sgx = ["runtime_io/sgx"]
+sgx = []
+
 [[example]]
 name = "example_get_storage"
 path = "src/examples/example_get_storage.rs"
