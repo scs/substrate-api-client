@@ -59,7 +59,12 @@ pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
                     h.copy_from_slice(&vec);
                     Ok(u64::from_le_bytes(h))
                 },
-                _ => Err(hex::FromHexError::InvalidStringLength)
+                _ => {
+                    match vec.iter().sum() {
+                        0 => Ok(0u64),
+                        _ => Err(hex::FromHexError::InvalidStringLength)
+                    }
+                }
             }},
         Err(err) => Err(err),
     }
@@ -73,7 +78,12 @@ pub fn hexstr_to_u256(hexstr: String) -> Result<U256, FromHexError> {
                 32 => {
                     Ok(U256::from_little_endian(&vec[..]))
                 },
-                _ => Err(hex::FromHexError::InvalidStringLength)
+                _ => {
+                    match vec.iter().sum() {
+                        0 => Ok(U256::from(0)),
+                        _ => Err(hex::FromHexError::InvalidStringLength)
+                    }
+                }
             }},
         Err(err) => Err(err),
     }
@@ -110,6 +120,7 @@ mod tests {
     #[test]
     fn test_hextstr_to_u64() {
         assert_eq!(hexstr_to_u64("0x0100000000000000".to_string()), Ok(1u64));
+        assert_eq!(hexstr_to_u64("null".to_string()), Ok(0u64));
         assert_eq!(hexstr_to_u64("0x010000000000000000".to_string()), Err(hex::FromHexError::InvalidStringLength));
         assert_eq!(hexstr_to_u64("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
     }
@@ -117,6 +128,7 @@ mod tests {
     #[test]
     fn test_hextstr_to_u256() {
         assert_eq!(hexstr_to_u256("0x0100000000000000000000000000000000000000000000000000000000000000".to_string()), Ok(U256::from(1)));
+        assert_eq!(hexstr_to_u256("null".to_string()), Ok(U256::from(0)));
         assert_eq!(hexstr_to_u256("0x010000000000000000".to_string()), Err(hex::FromHexError::InvalidStringLength));
         assert_eq!(hexstr_to_u256("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
     }
@@ -124,7 +136,7 @@ mod tests {
     #[test]
     fn test_hextstr_to_hash() {
         assert_eq!(hexstr_to_hash("0x0000000000000000000000000000000000000000000000000000000000000000".to_string()), Ok(Hash::from([0u8;32])));
-        assert_eq!(hexstr_to_u256("0x010000000000000000".to_string()), Err(hex::FromHexError::InvalidStringLength));
-        assert_eq!(hexstr_to_u256("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
+        assert_eq!(hexstr_to_hash("0x010000000000000000".to_string()), Err(hex::FromHexError::InvalidStringLength));
+        assert_eq!(hexstr_to_hash("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
     }
 }
