@@ -25,7 +25,6 @@ use indices::address::Address;
 use runtime_primitives::AnySignature as Signature;
 use primitive_types::H256;
 use primitives::blake2_256;
-//use blake2_rfc::blake2b::blake2b;
 use runtime_primitives::generic::Era;
 
 pub type GenericAddress = Address<[u8; 32], u32>;
