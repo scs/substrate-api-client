@@ -16,7 +16,7 @@
 */
 
 use codec::alloc::string::FromUtf8Error;
-use log::{info, debug};
+use log::{debug, info};
 use metadata::{DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed};
 use serde::{Deserialize, Serialize};
 
@@ -38,7 +38,10 @@ pub struct Module {
 
 impl Module {
     fn new(name: &DecodeDifferent<&'static str, std::string::String>) -> Module {
-        Module { name: format!("{:?}", name).replace("\"", ""), calls: Vec::<Call>::new() }
+        Module {
+            name: format!("{:?}", name).replace("\"", ""),
+            calls: Vec::<Call>::new(),
+        }
     }
 }
 
@@ -50,7 +53,10 @@ pub struct Call {
 
 impl Call {
     fn new(name: &DecodeDifferent<&'static str, std::string::String>) -> Call {
-        Call { name: format!("{:?}", name).replace("\"", ""), args: Vec::<Arg>::new() }
+        Call {
+            name: format!("{:?}", name).replace("\"", ""),
+            args: Vec::<Arg>::new(),
+        }
     }
 }
 
@@ -61,8 +67,14 @@ pub struct Arg {
 }
 
 impl Arg {
-    fn new(name: &DecodeDifferent<&'static str, std::string::String>, ty: &DecodeDifferent<&'static str, std::string::String>) -> Arg {
-        Arg { name: format!("{:?}", name).replace("\"", ""), ty: format!("{:?}", ty).replace("\"", "") }
+    fn new(
+        name: &DecodeDifferent<&'static str, std::string::String>,
+        ty: &DecodeDifferent<&'static str, std::string::String>,
+    ) -> Arg {
+        Arg {
+            name: format!("{:?}", name).replace("\"", ""),
+            ty: format!("{:?}", ty).replace("\"", ""),
+        }
     }
 }
 
@@ -94,12 +106,14 @@ pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -
                                             for arg in arguments {
                                                 _call.args.push(Arg::new(&arg.name, &arg.ty));
                                             }
-                                        },
-                                        _ => unreachable!("All calls have at least the 'who' argument; qed"),
+                                        }
+                                        _ => unreachable!(
+                                            "All calls have at least the 'who' argument; qed"
+                                        ),
                                     }
                                     _mod.calls.push(_call);
                                 }
-                            },
+                            }
                             _ => debug!("No calls for this module"),
                         }
                         mod_vec.push(_mod);
@@ -108,10 +122,10 @@ pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -
                         info!("{:?}", m);
                     }
                     debug!("successfully decoded metadata");
-                },
+                }
                 _ => unreachable!("There are always modules present; qed"),
             }
-        },
+        }
         _ => panic!("Unsupported metadata"),
     }
     mod_vec

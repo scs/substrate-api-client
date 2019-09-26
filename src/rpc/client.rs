@@ -17,9 +17,9 @@
 
 use std::sync::mpsc::Sender as ThreadOut;
 
-use log::{info, debug, error};
-use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 use crate::rpc::json_req::REQUEST_TRANSFER;
+use log::{debug, error, info};
+use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
 
@@ -57,7 +57,7 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
-        Some(_idstr) => {},
+        Some(_idstr) => {}
         _ => {
             // subscriptions
             debug!("no id field found in response. must be subscription");
@@ -70,7 +70,7 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
                 }
                 _ => error!("unsupported method"),
             }
-        },
+        }
     };
     Ok(())
 }
@@ -79,21 +79,15 @@ pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) ->
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
-        Some(idstr) => {
-            match idstr.parse::<u32>() {
-                Ok(req_id) => {
-                    match req_id {
-                        REQUEST_TRANSFER => {
-                            match value.get("error") {
-                                Some(err) => error!("ERROR: {:?}", err),
-                                _ => debug!("no error"),
-                            }
-                        },
-                        _ => debug!("Unknown request id"),
-                    }
+        Some(idstr) => match idstr.parse::<u32>() {
+            Ok(req_id) => match req_id {
+                REQUEST_TRANSFER => match value.get("error") {
+                    Some(err) => error!("ERROR: {:?}", err),
+                    _ => debug!("no error"),
                 },
-                Err(_) => error!("error assigning request id"),
-            }
+                _ => debug!("Unknown request id"),
+            },
+            Err(_) => error!("error assigning request id"),
         },
         _ => {
             // subscriptions
@@ -104,17 +98,27 @@ pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) ->
                     match value["params"]["result"].as_str() {
                         Some(res) => debug!("author_extrinsicUpdate: {}", res),
                         _ => {
-                            debug!("author_extrinsicUpdate: finalized: {}", value["params"]["result"]["finalized"].as_str().unwrap());
+                            debug!(
+                                "author_extrinsicUpdate: finalized: {}",
+                                value["params"]["result"]["finalized"].as_str().unwrap()
+                            );
                             // return result to calling thread
-                            result.send(value["params"]["result"]["finalized"].as_str().unwrap().to_string()).unwrap();
+                            result
+                                .send(
+                                    value["params"]["result"]["finalized"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
+                                )
+                                .unwrap();
                             // we've reached the end of the flow. return
                             out.close(CloseCode::Normal).unwrap();
-                        },
+                        }
                     }
                 }
                 _ => error!("unsupported method"),
             }
-        },
+        }
     };
     Ok(())
 }
