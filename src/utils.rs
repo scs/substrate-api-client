@@ -29,10 +29,10 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
         Some(par) => {
             key.append(&mut par.clone());
             keyhash = hex::encode(blake2_256(&key));
-        }
+        },
         _ => {
             keyhash = hex::encode(twox_128(&key));
-        }
+        },
     }
     keyhash.insert_str(0, "0x");
     keyhash

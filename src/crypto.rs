@@ -39,7 +39,7 @@ impl AccountKey {
             CryptoKind::Ed25519 => {
                 let pair = Ed25519::pair_from_suri(phrase, password);
                 AccountKey::Ed(pair)
-            }
+            },
             CryptoKind::Sr25519 => {
                 let pair = Sr25519::pair_from_suri(phrase, password);
                 AccountKey::Sr(pair)
