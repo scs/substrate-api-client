@@ -15,6 +15,8 @@
 
 */
 
+#![feature(rustc_private)]
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use rstd::prelude::*;
@@ -47,6 +49,7 @@ use rpc::json_req;
 use utils::*;
 
 use primitive_types::U256;
+use runtime_version::RuntimeVersion;
 
 #[macro_use]
 pub mod extrinsic;
@@ -58,7 +61,7 @@ pub mod node_metadata;
 pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;
-pub mod utils;
+
 
 #[cfg(feature = "std")]
 #[derive(Clone)]

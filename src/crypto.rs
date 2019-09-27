@@ -108,9 +108,6 @@ impl Crypto for Sr25519 {
             })
             .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
-    fn ss58_from_pair(pair: &Self::Pair) -> String {
-        pair.public().to_ss58check()
-    }
 
     #[cfg(feature = "std")]
     fn ss58_from_pair(pair: &Self::Pair) -> String { pair.public().to_ss58check() }
@@ -141,7 +138,6 @@ impl Crypto for Ed25519 {
             .expect("Invalid 'to' URI; expecting either a secret URI or a public URI.")
     }
     #[cfg(feature = "std")]
-
     fn ss58_from_pair(pair: &Self::Pair) -> String {
         pair.public().to_ss58check()
     }
