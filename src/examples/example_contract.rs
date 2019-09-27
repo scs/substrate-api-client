@@ -29,9 +29,10 @@ use clap::{App, load_yaml};
 use codec::Decode;
 use log::*;
 use primitives::H256 as Hash;
-// FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try to avoid)
-use node_runtime::Event;
-
+// FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try 
+// to avoid because of a cargo issue https://github.com/rust-lang/cargo/issues/6571)
+// If you'd like to use this in your crate, add your node_runtime to dependencies and add
+// use my_node_runtime::Event;use node_runtime::Event;
 use substrate_api_client::{
     Api,
     crypto::*,
