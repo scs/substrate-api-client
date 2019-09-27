@@ -1,9 +1,9 @@
 # substrate-api-client
-Library for connecting to the substrate's RPC interface via WebSockets allowing to
+is a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
 
 * Compose extrinsics, send them and subscribe to updates.
 * Watch events and execute code upon events.
-* Parse and print the note metadata.
+* Parse and print the node metadata.
 
 ## Prerequisites
 In order to build the substrate-api-client and the examples, Rust and the wasm target are needed. For Linux:
@@ -16,99 +16,50 @@ In order to build the substrate-api-client and the examples, Rust and the wasm t
 
 For more information, please refer to the [substrate](https://github.com/paritytech/substrate) repository.
 
-## Setup
+## Substrate node
 
-Setup a substrate node. Tested with [revision 9b08e7ff of substrate](https://github.com/paritytech/substrate/commit/9b08e7ff938a45dbec7fcdb854063202e2b0cb48). Alternatively, the test node found at https://github.com/scs/substrate-test-nodes is guaranteed to work, which is anyhow needed for some examples.
+To execute the examples, a running substrate node is needed. The examples have been tested with [revision 9b08e7ff of substrate](https://github.com/paritytech/substrate/commit/9b08e7ff938a45dbec7fcdb854063202e2b0cb48). Alternatively, a dedicated test node can be found at https://github.com/scs/substrate-test-nodes.
+
+
+To build the test node, execute the following steps:
 
     git clone https://github.com/scs/substrate-test-nodes
     cd substrate-test-nodes/
     git checkout api-M1.1
-    // --release flag needed as block production time is too long otherwise.
     cargo build --release
-    
-Run the node (examples use by default `url=localhost` and `ws-port=9944`):    
-   
+
+Run the node:
+
     ./target/release/substrate-test-node --dev
-    
-Run the examples (optionally adjust url and port if wanted, not needed if the node is run with default arguments)
 
-    git clone https://github.com/scs/substrate-api-client.git
-    cd substrate-api-client
-    cargo run --example example_get_storage (-ns <custom url> -p <custom port>)
-
-Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
+## Tutorial
+There is a detailed tutorial in the [tutorials](/tutorials) folder.
 
 ## Examples
-To run an example, you can use i.e.
+To run an example, clone the `substrate-api-client` repository and run the desired example directly with the cargo command:
+
 ```
-cargo run --example example_transfer -- --ns 192.168.1.4 --node-port 9944
+    git clone https://github.com/scs/substrate-api-client.git
+    cd substrate-api-client
+    cargo run --example example_get_storage
 ```
+Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
-
-### Reading storage
-Shows how to read some storage values.
-
-    // get some plain storage value
-    let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
-    let result = hexstr_to_u256(result_str);
-    println!("[+] TransactionBaseFee is {}", result);
-
-    // get Alice's AccountNonce
-    let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let result = hexstr_to_u256(result_str);
-    println!("[+] Alice's Account Nonce is {}", result.low_u32());
-
-    // get Alice's AccountNonce with api.get_nonce()
-    api.signer = Some(AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519));
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
-
-
-See [example_get_storage.rs](/src/examples/example_get_storage.rs)
-
-### Sending transactions
-Shows how to use one of the predefined extrinsics to send transactions.
-
-See [example_transfer.rs](/src/examples/example_transfer.rs)
-
-### Sending generic extrinsics
-Shows how to use the compose_extrinsic! macro that is able to create an extrinsic for any kind of call, even for custom runtime modules.
-
-    // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
-    // used here to be able to run the examples against a generic substrate node with standard modules.
-    let xt = compose_extrinsic!(
-        api.clone(),
-        "Balances",
-        "transfer",
-        GenericAddress::from(to),
-        Compact(42 as u128)
-    );
-
-
-See [example_generic_extrinsic.rs](/src/examples/examples/example_generic_extrinsic.rs)
-
-### Callback
-Shows how to listen to events fired by a substrate node.
-
-See [example_event_callback.rs](/src/examples/example_event_callback.rs)
-
-### Pretty print metadata
-Shows how to print a substrate node's metadata in pretty json format. Has been proven a useful debugging tool.
-
-    let api = Api::new(format!("ws://{}", url));
-
-    let meta = api.get_metadata();
-    println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());
-
-See [example_print_metadata.rs](/src/examples/example_print_metadata.rs)
+The following examples can be found in the [examples](/src/examples) folder:
+* [example_compose_extrinsic_offline](/src/examples/example_compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
+* [example_contract](/src/examples/example_contract.rs): Handle ink! contracts (put, create, and call).
+* [example_custom_storage_struct](/src/examples/example_custom_storage_struct.rs): Fetch and decode custom structs from the runtime.
+* [example_event_callback](/src/examples/example_event_callback.rs): Subscribe and react on events.
+* [example_generic_extrinsic](/src/examples/example_generic_extrinsic.rs): Compose an extrinsic for any call in any module by supplying the module and call name as strings.
+* [example_get_storage](/src/examples/example_get_storage.rs): Read storage values.
+* [example_print_metadata](/src/examples/example_print_metadata.rs): Print the metadata of the node in a readable way.
+* [example_transfer](/src/examples/example_transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic
 
 ### ink! contract
 Shows how to setup an ink! contract with the predefined contract extrinsics:
 * put_code: Stores a contract wasm blob on the chain
-* create: Create an instance of the contract
+* create: Creates an instance of the contract
 * call: Calls a contract.
-
-See [example_contract.rs](/src/examples/example_contract.rs)
 
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes as the contract module is not included by default in a substrate node.
 
@@ -136,9 +87,38 @@ Shows how to fetch and decode a custom storage struct.
     let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
     println!("[+] Cute decoded Kitty: {:?}\n", kitty);
 
-See [example_custom_storage_struct.rs](/src/examples/example_custom_storage_struct.rs)
-
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes for obvious reasons.
+
+### Sending generic extrinsics
+Shows how to use the compose_extrinsic! macro that is able to create an extrinsic for any kind of call, even for custom runtime modules.
+
+    // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
+    // used here to be able to run the examples against a generic substrate node with standard modules.
+    let xt = compose_extrinsic!(
+        api.clone(),
+        "Balances",
+        "transfer",
+        GenericAddress::from(to),
+        Compact(42 as u128)
+    );
+
+### Reading storage
+Shows how to read some storage values.
+
+    // get some plain storage value
+    let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
+    let result = hexstr_to_u256(result_str);
+    println!("[+] TransactionBaseFee is {}", result);
+
+    // get Alice's AccountNonce
+    let accountid = AccountId::from(AccountKeyring::Alice);
+    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
+    let result = hexstr_to_u256(result_str);
+    println!("[+] Alice's Account Nonce is {}", result.low_u32());
+
+    // get Alice's AccountNonce with api.get_nonce()
+    api.signer = Some(AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519));
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
 
 ## Alternatives
 

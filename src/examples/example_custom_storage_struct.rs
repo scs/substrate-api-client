@@ -1,18 +1,16 @@
 /*
-   Copyright 2019 Supercomputing Systems AG
+    Copyright 2019 Supercomputing Systems AG
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+        http://www.apache.org/licenses/LICENSE-2.0
 
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 //! This example shows how to decode a runtime value that is a custom struct.
@@ -21,17 +19,17 @@
 //! must run against the customized node found in `https://github.com/scs/substrate-test-nodes`.
 //!
 
-use clap::{App, load_yaml};
+use clap::{load_yaml, App};
 use codec::{Decode, Encode};
 use log::*;
 use primitives::H256;
 
 use substrate_api_client::{
-    Api,
     compose_extrinsic,
     crypto::{AccountKey, CryptoKind},
     extrinsic,
     utils::*,
+    Api,
 };
 
 // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
@@ -48,38 +46,33 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
-    let api = Api::new(format!("ws://{}", url))
-        .set_signer(from.clone());
+    let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let xt = compose_extrinsic!(
-        api.clone(),
-        "KittyModule",
-        "create_kitty",
-        10 as u128
-    );
+    let xt = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
-    //send and watch extrinsic until finalized
+    
+    // send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
     // event similar to what we do in the example_contract.
-    let res_str = api.get_storage("Kitty",
-                                  "KittyIndex",
-                                  Some(from.public().encode())).unwrap();
+    let res_str = api
+        .get_storage("Kitty", "KittyIndex", Some(from.public().encode()))
+        .unwrap();
 
     let index = hexstr_to_u64(res_str).unwrap();
     println!("[+] Alice's Kitty is at index : {}\n", index);
 
-    // Get the Kitty
-    let res_str = api.get_storage("Kitty",
-                                  "Kitties",
-                                  Some(index.encode())).unwrap();
+    // get the Kitty
+    let res_str = api
+        .get_storage("Kitty", "Kitties", Some(index.encode()))
+        .unwrap();
 
     let res_vec = hexstr_to_vec(res_str).unwrap();
 
-    // Type annotations are needed here to know that to decode into.
+    // type annotations are needed here to know that to decode into.
     let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
     println!("[+] Cute decoded Kitty: {:?}\n", kitty);
 }

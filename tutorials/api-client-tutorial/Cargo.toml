@@ -1,0 +1,9 @@
+[package]
+name = "api-client-tutorial"
+version = "0.1.0"
+authors = ["Supercomputing Systems AG <info@scs.ch>"]
+edition = "2018"
+
+[dependencies]
+substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git" }
+codec = { package = "parity-scale-codec", features = ["derive"], version = "1.0.0", default-features = false }

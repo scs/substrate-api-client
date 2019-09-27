@@ -15,11 +15,11 @@
 
 */
 
-use primitives::H256 as Hash;
+use hex::FromHexError;
 use primitive_types::U256;
 use primitives::blake2_256;
 use primitives::twox_128;
-use hex::FromHexError;
+use primitives::H256 as Hash;
 
 pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
@@ -29,17 +29,18 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
         Some(par) => {
             key.append(&mut par.clone());
             keyhash = hex::encode(blake2_256(&key));
-        },
+        }
         _ => {
             keyhash = hex::encode(twox_128(&key));
-        },
+        }
     }
     keyhash.insert_str(0, "0x");
     keyhash
 }
 
 pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
-    let hexstr = hexstr.trim_matches('\"')
+    let hexstr = hexstr
+        .trim_matches('\"')
         .to_string()
         .trim_start_matches("0x")
         .to_string();
@@ -142,3 +143,4 @@ mod tests {
         assert_eq!(hexstr_to_hash("0x0q".to_string()), Err(hex::FromHexError::InvalidHexCharacter{c: 'q', index:1}));
     }
 }
+

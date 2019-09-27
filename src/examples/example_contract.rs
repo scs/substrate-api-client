@@ -1,18 +1,16 @@
 /*
-   Copyright 2019 Supercomputing Systems AG
+    Copyright 2019 Supercomputing Systems AG
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+        http://www.apache.org/licenses/LICENSE-2.0
 
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 //! This example shows how to use the predefined contract extrinsics found in the extrinsic module.
@@ -25,7 +23,7 @@
 
 use std::sync::mpsc::{channel, Receiver};
 
-use clap::{App, load_yaml};
+use clap::{load_yaml, App};
 use codec::Decode;
 use log::*;
 use primitives::H256 as Hash;
@@ -34,13 +32,10 @@ use primitives::H256 as Hash;
 // If you'd like to use this in your crate, add your node_runtime to dependencies and add
 // use my_node_runtime::Event;use node_runtime::Event;
 use substrate_api_client::{
-    Api,
     crypto::*,
-    extrinsic::{
-        contract,
-        xt_primitives::GenericAddress,
-    },
+    extrinsic::{contract, xt_primitives::GenericAddress},
     utils::*,
+    Api,
 };
 
 fn main() {
@@ -49,8 +44,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
-    let api = Api::new(format!("ws://{}", url))
-        .set_signer(from);
+    let api = Api::new(format!("ws://{}", url)).set_signer(from);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
     // contract to be deployed on the chain
@@ -63,12 +57,11 @@ fn main() {
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
     // 1. Put the contract code as a wasm blob on the chain
-    let xt = contract::put_code(
-        api.clone(),
-        500_000,
-        wasm,
+    let xt = contract::put_code(api.clone(), 500_000, wasm);
+    println!(
+        "[+] Putting contract code on chain with extrinsic:\n\n{:?}\n",
+        xt
     );
-    println!("[+] Putting contract code on chain with extrinsic:\n\n{:?}\n", xt);
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
@@ -76,22 +69,19 @@ fn main() {
     let (events_in, events_out) = channel();
     api.subscribe_events(events_in.clone());
 
-    // Wait for the `contract.CodeStored(code_hash)` event, which returns code hash that is needed
+    // wait for the `contract.CodeStored(code_hash)` event, which returns code hash that is needed
     // to define what contract shall be instantiated afterwards.
     println!("[+] Waiting for the contract.Stored event");
     let code_hash = subcribe_to_code_stored_event(&events_out);
     println!("[+] Event was received. Got code hash: {:?}\n", code_hash);
 
     // 2. Create an actual instance of the contract
-    let xt = contract::create(
-        api.clone(),
-        1_000,
-        500_000,
-        code_hash,
-        vec![1u8],
-    );
+    let xt = contract::create(api.clone(), 1_000, 500_000, code_hash, vec![1u8]);
 
-    println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
+    println!(
+        "[+] Creating a contract instance with extrinsic:\n\n{:?}\n",
+        xt
+    );
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
@@ -103,21 +93,21 @@ fn main() {
     // fired correspondingly.
     println!("[+] Waiting for the contract.Instantiated event");
     let deployed_at = subscribe_to_code_instantiated_event(&events_out);
-    println!("[+] Event was received. Contract deployed at: {:?}\n", deployed_at);
+    println!(
+        "[+] Event was received. Contract deployed at: {:?}\n",
+        deployed_at
+    );
 
     // 3. Call the contract instance
-    let xt = contract::call(
-        api.clone(),
-        deployed_at,
-        500_000,
-        500_000,
-        vec![1u8],
-    );
+    let xt = contract::call(api.clone(), deployed_at, 500_000, 500_000, vec![1u8]);
 
     // Currently, a contract call does not fire any events nor interact in any other fashion with
     // the outside world. Only node logs can supply information on the consequences of a contract
     // call. Still, it can be checked if the transaction was successful.
-    println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
+    println!(
+        "[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n",
+        xt
+    );
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
@@ -128,7 +118,7 @@ fn subcribe_to_code_stored_event(events_out: &Receiver<String>) -> Hash {
 
         let _unhex = hexstr_to_vec(event_str).unwrap();
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
         if let Ok(evts) = _events {
             for evr in &evts {
                 debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
@@ -150,7 +140,7 @@ fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> Generi
 
         let _unhex = hexstr_to_vec(event_str).unwrap();
         let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord::<Event, Hash>>::decode(&mut _er_enc);
+        let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
         if let Ok(evts) = _events {
             for evr in &evts {
                 debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);

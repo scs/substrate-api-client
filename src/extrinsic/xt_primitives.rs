@@ -22,10 +22,10 @@ use std::fmt;
 
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
-use runtime_primitives::AnySignature as Signature;
 use primitive_types::H256;
 use primitives::blake2_256;
 use runtime_primitives::generic::Era;
+use runtime_primitives::AnySignature as Signature;
 
 pub type GenericAddress = Address<[u8; 32], u32>;
 
@@ -54,6 +54,7 @@ pub type AdditionalSigned = (u32, H256, H256, (), (), ());
 
 #[derive(Encode)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
+
 
 impl<Call> SignedPayload<Call> where
     Call: Encode ,
@@ -112,11 +113,16 @@ impl<Call> UncheckedExtrinsicV3<Call>
 
 #[cfg(feature = "std")]
 impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
-    where
-        Call: fmt::Debug + Encode,
+where
+    Call: fmt::Debug + Encode,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "UncheckedExtrinsic({:?}, {:?})", self.signature.as_ref().map(|x| (&x.0, &x.2)), self.function)
+        write!(
+            f,
+            "UncheckedExtrinsic({:?}, {:?})",
+            self.signature.as_ref().map(|x| (&x.0, &x.2)),
+            self.function
+        )
     }
 }
 
@@ -130,7 +136,7 @@ impl<Call> Encode for UncheckedExtrinsicV3<Call>
                 Some(s) => {
                     v.push(3 as u8 | 0b1000_0000);
                     s.encode_to(v);
-                },
+                }
                 None => {
                     v.push(3 as u8 & 0b0111_1111);
                 }

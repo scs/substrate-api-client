@@ -17,6 +17,7 @@
 
 use codec::Compact;
 
+
 #[cfg(feature = "std")]
 use crate::{Api, compose_extrinsic};
 
@@ -54,3 +55,4 @@ pub fn set_balance(api: Api, who: GenericAddress, free_balance: u128, reserved_b
         Compact(reserved_balance)
 	)
 }
+

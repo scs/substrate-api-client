@@ -30,7 +30,6 @@ use codec::{Decode, Encode};
 use log::{info, debug};
 
 use metadata::RuntimeMetadataPrefixed;
-use runtime_version::RuntimeVersion;
 use primitives::H256 as Hash;
 
 #[cfg(feature = "std")]
@@ -59,6 +58,7 @@ pub mod node_metadata;
 pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;
+pub mod utils;
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
@@ -83,7 +83,13 @@ impl Api {
         let runtime_version = Api::_get_runtime_version(url.clone());
         info!("Runtime Version: {:?}", runtime_version);
 
-        Self { url, signer: None, genesis_hash, metadata, runtime_version }
+        Self {
+            url,
+            signer: None,
+            genesis_hash,
+            metadata,
+            runtime_version,
+        }
     }
 
     pub fn set_signer(mut self, signer: AccountKey) -> Self {
@@ -93,7 +99,8 @@ impl Api {
 
     fn _get_genesis_hash(url: String) -> Hash {
         let jsonreq = json_req::chain_get_block_hash();
-        let genesis_hash_str = Api::_get_request(url, jsonreq.to_string()).expect("Fetching genesis hash from node failed");
+        let genesis_hash_str = Api::_get_request(url, jsonreq.to_string())
+            .expect("Fetching genesis hash from node failed");
         hexstr_to_hash(genesis_hash_str).unwrap()
     }
 
@@ -104,9 +111,9 @@ impl Api {
         serde_json::from_str(&version_str).unwrap()
     }
 
-    fn _get_metadata(url: String) -> RuntimeMetadataPrefixed{
+    fn _get_metadata(url: String) -> RuntimeMetadataPrefixed {
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = Api::_get_request(url ,jsonreq.to_string()).unwrap();
+        let metadata_str = Api::_get_request(url, jsonreq.to_string()).unwrap();
 
         let _unhex = hexstr_to_vec(metadata_str).unwrap();
         let mut _om = _unhex.as_slice();
@@ -114,12 +121,23 @@ impl Api {
     }
 
     fn _get_nonce(url: String, signer: AccountKey) -> u32 {
-        let result_str = Api::_get_storage(url, "System", "AccountNonce", Some(signer.public().encode())).unwrap();
+        let result_str = Api::_get_storage(
+            url,
+            "System",
+            "AccountNonce",
+            Some(signer.public().encode()),
+        )
+        .unwrap();
         let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
         nonce.low_u32()
     }
 
-    fn _get_storage(url: String, module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
+    fn _get_storage(
+        url: String,
+        module: &str,
+        storage_key_name: &str,
+        param: Option<Vec<u8>>,
+    ) -> WsResult<String> {
         let keyhash = storage_key_hash(module, storage_key_name, param);
 
         debug!("with storage key: {}", keyhash);
@@ -147,7 +165,9 @@ impl Api {
     }
 
     pub fn get_free_balance(&self, address: [u8; 32]) -> U256 {
-        let result_str= self.get_storage("Balances", "FreeBalance", Some(address.encode())).unwrap();
+        let result_str = self
+            .get_storage("Balances", "FreeBalance", Some(address.encode()))
+            .unwrap();
         hexstr_to_u256(result_str).unwrap()
     }
 
@@ -155,7 +175,12 @@ impl Api {
         Api::_get_request(self.url.clone(), jsonreq)
     }
 
-    pub fn get_storage(&self, storage_prefix: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> WsResult<String> {
+    pub fn get_storage(
+        &self,
+        storage_prefix: &str,
+        storage_key_name: &str,
+        param: Option<Vec<u8>>,
+    ) -> WsResult<String> {
         Api::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
     }
 
@@ -165,9 +190,11 @@ impl Api {
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(),
-                                                          jsonreq.clone(),
-                                                          result_in.clone());
+        rpc::send_extrinsic_and_wait_until_finalized(
+            self.url.clone(),
+            jsonreq.clone(),
+            result_in.clone(),
+        );
 
         Ok(hexstr_to_hash(result_out.recv().unwrap()).unwrap())
     }
@@ -177,8 +204,6 @@ impl Api {
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
-        rpc::start_event_subscriber(self.url.clone(),
-                                         jsonreq.clone(),
-                                         sender.clone());
+        rpc::start_event_subscriber(self.url.clone(), jsonreq.clone(), sender.clone());
     }
 }
