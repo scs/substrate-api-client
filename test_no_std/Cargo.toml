@@ -28,8 +28,7 @@ features = ["no_oom", "no_panic_handler"]
 [patch.'https://github.com/paritytech/substrate']
 sr-io = { git = "https://github.com/scs/substraTEE-node", branch = "brenzi-private-tx"}
 substrate-primitives = { path = "../primitives"}
-substrate-application-crypto = { path = "../../substraTEE-worker/application-crypto"}
-#substrate-application-crypto = { git = "https://github.com/scs/substraTEE-worker", branch = "brenzi-private-tx"}
+substrate-application-crypto = { git = "https://github.com/scs/substraTEE-worker", branch = "brenzi-private-tx"}
 
 [patch.'https://github.com/scs/substrate-api-client']
 substrate-primitives = { path = "../primitives"}
