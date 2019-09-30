@@ -80,7 +80,7 @@ impl Api {
         info!("Got genesis hash: {:?}", genesis_hash);
 
         let meta = Api::_get_metadata(url.clone());
-        let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
+        let metadata = node_metadata::parse_metadata(&meta);
         info!("Metadata: {:?}", metadata);
 
         let runtime_version = Api::_get_runtime_version(url.clone());
