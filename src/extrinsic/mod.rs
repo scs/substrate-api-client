@@ -18,6 +18,11 @@
 //! Offers macros that build extrinsics for custom runtime modules based on the metadata.
 //! Additionally, some predefined extrinsics for common runtime modules are implemented.
 
+#[cfg(feature = "std")]
+pub extern crate codec;
+#[cfg(feature = "std")]
+pub extern crate log;
+
 pub mod balances;
 pub mod contract;
 pub mod xt_primitives;

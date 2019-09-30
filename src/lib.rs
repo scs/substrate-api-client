@@ -57,7 +57,7 @@ pub mod crypto;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
-#[cfg(any(feature = "std", feature = "sgx"))]
+#[cfg(feature = "std")]
 pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;

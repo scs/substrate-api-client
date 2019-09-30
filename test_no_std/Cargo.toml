@@ -1,0 +1,39 @@
+[package]
+name = "test_no_std"
+version = "0.1.0"
+authors = ["Alain Brenzikofer <alain.brenzikofer@scs.ch>"]
+edition = "2018"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[dependencies]
+libc = "0.2"
+
+[dependencies.substrate-api-client] 
+package = "substrate-api-client"
+path = ".."
+default-features=false
+
+[dependencies.sr-io]
+git = "https://github.com/scs/substraTEE-node"
+package = 'sr-io'
+branch = "brenzi-private-tx"
+default-features=false
+features = ["no_oom", "no_panic_handler"]
+
+[patch.'https://github.com/paritytech/substrate']
+sr-io = { git = "https://github.com/scs/substraTEE-node", branch = "brenzi-private-tx"}
+substrate-primitives = { path = "../primitives"}
+substrate-application-crypto = { path = "../../substraTEE-worker/application-crypto"}
+#substrate-application-crypto = { git = "https://github.com/scs/substraTEE-worker", branch = "brenzi-private-tx"}
+
+[patch.'https://github.com/scs/substrate-api-client']
+substrate-primitives = { path = "../primitives"}
+substrate-api-client = { path = "../"}
+
+[patch.crates-io]
+ed25519-dalek = { git = "https://github.com/scs/ed25519-dalek.git", branch = "no_std_sgx"}
