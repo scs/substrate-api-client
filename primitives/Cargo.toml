@@ -1,0 +1,98 @@
+[package]
+name = "substrate-primitives"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+rustc-hex = { version = "2.0", default-features = false }
+serde = { version = "1.0", optional = true, features = ["derive"] }
+twox-hash = { version = "1.3.0", default-features = false }
+byteorder = { version = "1.3.1", default-features = false }
+primitive-types = { version = "0.5.0", default-features = false, features = ["codec"] }
+impl-serde = { version = "0.1", optional = true }
+log = { version = "0.4", optional = true }
+wasmi = { version = "0.5.0", optional = true }
+hash-db = { version = "0.15.2", default-features = false }
+hash256-std-hasher = { version = "0.15.2", default-features = false }
+base58 = { version = "0.1", optional = true }
+rand = { version = "0.6", optional = true }
+sha2 = { version = "0.8", optional = true }
+substrate-bip39 = { version = "0.3.1", optional = true }
+tiny-bip39 = { version = "0.6.1", optional = true }
+hex = { version = "0.4", default-features = false }
+regex = { version = "1.1", optional = true }
+num-traits = { version = "0.2", default-features = false }
+zeroize = { version = "0.9.2", default-features = false }
+lazy_static = { version = "1.3", default-features = false }
+parking_lot = { version = "0.9.0", optional = true }
+
+[dependencies.rstd]
+git = 'https://github.com/paritytech/substrate'
+rev = '9b08e7ff938a45dbec7fcdb854063202e2b0cb48'
+package = "sr-std"
+default-features = false
+
+[dependencies.blake2-rfc]
+git     = "https://github.com/cesarb/blake2-rfc"
+package = "blake2-rfc"
+version = "0.2.18"
+default-features = false
+
+[dependencies.ed25519-dalek]
+version = "1.0.0-pre.1"
+default-features = false
+features = ["u64_backend"]
+
+[dependencies.schnorrkel]
+version = "0.8.5"
+features = ["preaudit_deprecated"]
+default-features = false
+
+[dev-dependencies]
+##substrate-serializer = { path = "../serializer" }
+#pretty_assertions = "0.6"
+#hex-literal = "0.2"
+#rand = "0.6"
+#criterion = "0.2"
+
+[[bench]]
+name = "benches"
+harness = false
+
+[lib]
+bench = false
+
+[features]
+default = ["std"]
+std = [
+	"log",
+	"wasmi",
+	"primitive-types/std",
+	"primitive-types/serde",
+	"primitive-types/byteorder",
+	"primitive-types/rustc-hex",
+	"primitive-types/libc",
+	"impl-serde",
+	"codec/std",
+	"hash256-std-hasher/std",
+	"hash-db/std",
+	"rstd/std",
+	"serde",
+	"rustc-hex/std",
+	"twox-hash/std",
+	"blake2-rfc/std",
+	"ed25519-dalek/std",
+	"base58",
+	"substrate-bip39",
+	"tiny-bip39",
+	"serde",
+	"byteorder/std",
+	"rand",
+	"sha2",
+	"regex",
+	"parking_lot",
+	"num-traits/std",
+	"zeroize/std",
+]

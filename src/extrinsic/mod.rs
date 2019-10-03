@@ -18,12 +18,15 @@
 //! Offers macros that build extrinsics for custom runtime modules based on the metadata.
 //! Additionally, some predefined extrinsics for common runtime modules are implemented.
 
+#[cfg(feature = "std")]
+pub extern crate codec;
+#[cfg(feature = "std")]
+pub extern crate log;
+
 pub mod balances;
 pub mod contract;
 pub mod xt_primitives;
 
-pub extern crate codec;
-pub extern crate log;
 
 /// Generates the extrinsic's call field for a given module and call passed as &str
 /// # Arguments
@@ -101,6 +104,7 @@ macro_rules! compose_extrinsic_offline {
 /// As of now the user needs to check himself that the correct arguments are supplied.
 
 #[macro_export]
+#[cfg(feature = "std")]
 macro_rules! compose_extrinsic {
 	($api: expr,
 	$module: expr,
@@ -157,7 +161,7 @@ mod tests {
     fn call_from_meta_data_works() {
         let api = test_api();
 
-        let balance_module_index = 3u8;
+        let balance_module_index = 5u8;
         let balance_transfer_index = 0u8;
 
         let amount = Balance::from(42 as u128);

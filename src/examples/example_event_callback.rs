@@ -48,7 +48,7 @@ fn main() {
         match _events {
             Ok(evts) => {
                 for evr in &evts {
-                    debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+                    println!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
                     match &evr.event {
                         Event::balances(be) => {
                             println!(">>>>>>>>>> balances event: {:?}", be);

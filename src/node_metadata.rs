@@ -30,10 +30,30 @@ pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Result<String, FromU
 
 pub type NodeMetadata = Vec<Module>;
 
+pub trait Print {
+    fn print_events(&self);
+    fn print_calls(&self);
+}
+
+impl Print for NodeMetadata {
+    fn print_events(&self) {
+        for m in self {
+            m.print_events();
+        }
+    }
+
+    fn print_calls(&self) {
+        for m in self {
+            m.print_calls()
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Module {
     pub name: String,
     pub calls: Vec<Call>,
+    pub events: Vec<Event>,
 }
 
 impl Module {
@@ -41,7 +61,24 @@ impl Module {
         Module {
             name: format!("{:?}", name).replace("\"", ""),
             calls: Vec::<Call>::new(),
+            events: Vec::<Event>::new()
         }
+    }
+
+    pub fn print_events(&self) {
+        println!("----------------- Events for Module: {} -----------------\n", self.name);
+        for e in &self.events {
+            println!("{:?}", e);
+        }
+        println!()
+    }
+
+    pub fn print_calls(&self) {
+        println!("----------------- Calls for Module: {} -----------------\n", self.name);
+        for e in &self.calls {
+            println!("{:?}", e);
+        }
+        println!()
     }
 }
 
@@ -57,6 +94,19 @@ impl Call {
             name: format!("{:?}", name).replace("\"", ""),
             args: Vec::<Arg>::new(),
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct Event {
+    pub name: String,
+    // in this case the only the argument types are provided as strings
+    pub args: Vec<String>,
+}
+
+impl Event {
+    fn new(name: &DecodeDifferent<&'static str, std::string::String>) -> Event {
+        Event { name: format!("{:?}", name).replace("\"", ""), args: Vec::<String>::new() }
     }
 }
 
@@ -78,7 +128,7 @@ impl Arg {
     }
 }
 
-pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -> Vec<Module> {
+pub fn parse_metadata(metadata: &RuntimeMetadataPrefixed) -> Vec<Module> {
     let mut mod_vec = Vec::<Module>::new();
     match &metadata.1 {
         RuntimeMetadata::V7(value) => {
@@ -116,6 +166,33 @@ pub fn parse_metadata_into_module_and_call(metadata: &RuntimeMetadataPrefixed) -
                             }
                             _ => debug!("No calls for this module"),
                         }
+
+                        match &module.event {
+                            Some(DecodeDifferent::Decoded(event)) => {
+                                debug!("-------------------- events ----------------");
+                                debug!("{:?}", event);
+                                if event.is_empty() {
+                                    // indices modules does for some reason list `Some([])' as calls and is thus counted in the call enum
+                                    // there might be others doing the same.
+                                    _mod.calls.push(Default::default())
+                                }
+
+                                for e in event {
+                                    let mut _event = Event::new(&e.name);
+                                    match &e.arguments {
+                                        DecodeDifferent::Decoded(arguments) => {
+                                            for arg in arguments {
+                                                _event.args.push(arg.to_string());
+                                            }
+                                        },
+                                        _ => unreachable!("All calls have at least the 'who' argument; qed"),
+                                    }
+                                    _mod.events.push(_event);
+                                }
+                            },
+                            _ => debug!("No calls for this module"),
+                        }
+
                         mod_vec.push(_mod);
                     }
                     for m in &mod_vec {

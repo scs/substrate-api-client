@@ -15,32 +15,55 @@
 
 */
 
-#![cfg_attr(not(feature = "std"), no_std)]
-#![macro_use]
+#![feature(rustc_private)]
 
+#![cfg_attr(not(feature = "std"), no_std)]
+
+use rstd::prelude::*;
+
+#[cfg(feature = "std")]
 use std::sync::mpsc::channel;
+#[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
 use codec::{Decode, Encode};
-use log::{debug, info};
+
+#[cfg(feature = "std")]
+use log::{info, debug};
+
 use metadata::RuntimeMetadataPrefixed;
 use primitives::H256 as Hash;
-use runtime_version::RuntimeVersion;
+
+#[cfg(feature = "std")]
 use ws::Result as WsResult;
 
 use crypto::AccountKey;
+
+#[cfg(feature = "std")]
 use node_metadata::NodeMetadata;
-use primitive_types::U256;
+
+#[cfg(feature = "std")]
 use rpc::json_req;
+
+#[cfg(feature = "std")]
 use utils::*;
+
+use primitive_types::U256;
+use runtime_version::RuntimeVersion;
 
 #[macro_use]
 pub mod extrinsic;
 pub mod crypto;
+#[cfg(feature = "std")]
 pub mod node_metadata;
-pub mod rpc;
-pub mod utils;
 
+#[cfg(feature = "std")]
+pub mod utils;
+#[cfg(feature = "std")]
+pub mod rpc;
+
+
+#[cfg(feature = "std")]
 #[derive(Clone)]
 pub struct Api {
     url: String,
@@ -50,13 +73,14 @@ pub struct Api {
     pub runtime_version: RuntimeVersion,
 }
 
+#[cfg(feature = "std")]
 impl Api {
     pub fn new(url: String) -> Self {
         let genesis_hash = Api::_get_genesis_hash(url.clone());
         info!("Got genesis hash: {:?}", genesis_hash);
 
         let meta = Api::_get_metadata(url.clone());
-        let metadata = node_metadata::parse_metadata_into_module_and_call(&meta);
+        let metadata = node_metadata::parse_metadata(&meta);
         info!("Metadata: {:?}", metadata);
 
         let runtime_version = Api::_get_runtime_version(url.clone());
