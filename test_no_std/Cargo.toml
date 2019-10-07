@@ -19,16 +19,19 @@ path = ".."
 default-features=false
 
 [dependencies.sr-io]
-git = "https://github.com/scs/substraTEE-node"
+#git = "https://github.com/scs/substraTEE-node"
+git = "https://github.com/paritytech/substrate"
+rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
 package = 'sr-io'
-tag = "M5"
+#tag = "M5"
 default-features=false
 features = ["no_oom", "no_panic_handler"]
 
 [patch.'https://github.com/paritytech/substrate']
-sr-io = { git = "https://github.com/scs/substraTEE-node", tag = "M5"}
+#sr-io = { git = "https://github.com/scs/substraTEE-node", tag = "M5"}
 substrate-primitives = { path = "../primitives"}
-substrate-application-crypto = { git = "https://github.com/scs/substraTEE-worker", tag = "M5"}
+#substrate-application-crypto = { git = "https://github.com/scs/substraTEE-worker", tag = "M5"}
+substrate-application-crypto = { path = "../../substraTEE-worker/application-crypto"}
 
 [patch.'https://github.com/scs/substrate-api-client']
 substrate-primitives = { path = "../primitives"}

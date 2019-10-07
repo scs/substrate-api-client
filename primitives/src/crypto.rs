@@ -585,9 +585,8 @@ pub trait Pair: CryptoType + Sized + Clone + Send + Sync + 'static {
 	//TODO: replace this conditionally with sgx random generator
 	#[cfg(feature = "std")]
 	fn generate() -> (Self, Self::Seed) {
-		let mut csprng: OsRng = OsRng::new().expect("OS random generator works; qed");
 		let mut seed = Self::Seed::default();
-		csprng.fill_bytes(seed.as_mut());
+		OsRng.fill_bytes(seed.as_mut());
 		(Self::from_seed(&seed), seed)
 	}
 
