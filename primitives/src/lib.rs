@@ -32,9 +32,7 @@ macro_rules! map {
 }
 
 use rstd::prelude::*;
-
 use rstd::ops::Deref;
-
 #[cfg(feature = "std")]
 use std::borrow::Cow;
 #[cfg(feature = "std")]
@@ -56,7 +54,7 @@ pub mod crypto;
 
 pub mod u32_trait;
 
-
+pub mod child_storage_key;
 pub mod hash;
 mod hasher;
 pub mod offchain;
@@ -227,3 +225,8 @@ impl codec::Decode for NeverNativeValue {
 	}
 }
 
+/// Provide a simple 4 byte identifier for a type.
+pub trait TypeId {
+	/// Simple 4 byte identifier.
+	const TYPE_ID: [u8; 4];
+}
