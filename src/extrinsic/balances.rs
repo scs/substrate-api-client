@@ -21,26 +21,24 @@ use codec::Compact;
 #[cfg(feature = "std")]
 use crate::{Api, compose_extrinsic};
 use primitives::crypto::Pair;
-use codec::Encode;
 use super::xt_primitives::*;
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
 
-pub type BalanceTransferFn<P> = ([u8; 2], P, Compact<u128>);
-pub type BalanceSetBalanceFn<P> = ([u8; 2], P, Compact<u128>, Compact<u128>);
+pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
+pub type BalanceSetBalanceFn = ([u8; 2], GenericAddress, Compact<u128>, Compact<u128>);
 
-pub type BalanceTransferXt<Pair, Public> = UncheckedExtrinsicV3<BalanceTransferFn<Public>, Pair>;
-pub type BalanceSetBalanceXt<Pair, Public> = UncheckedExtrinsicV3<BalanceSetBalanceFn<Public>, Pair>;
+pub type BalanceTransferXt<Pair> = UncheckedExtrinsicV3<BalanceTransferFn, Pair>;
+pub type BalanceSetBalanceXt<Pair> = UncheckedExtrinsicV3<BalanceSetBalanceFn, Pair>;
 
 #[cfg(feature = "std")]
 impl<P> Api<P>
     where
         P: Pair,
-        P::Public: Encode,
 {
-    pub fn transfer(&self, to: P::Public, amount: u128) -> BalanceTransferXt<P, P::Public> {
+    pub fn transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt<P> {
             compose_extrinsic!(
             self,
             BALANCES_MODULE,
@@ -50,7 +48,7 @@ impl<P> Api<P>
         )
     }
 
-    pub fn set_balance(&self, who: P::Public, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt<P, P::Public> {
+    pub fn set_balance(&self, who: GenericAddress, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt<P> {
             compose_extrinsic!(
             self,
             BALANCES_MODULE,

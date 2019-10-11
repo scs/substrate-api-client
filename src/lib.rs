@@ -33,7 +33,7 @@ use log::{info, debug};
 
 use metadata::RuntimeMetadataPrefixed;
 use primitives::H256 as Hash;
-use primitives::crypto::{Pair, Public};
+use primitives::crypto::Pair;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -60,7 +60,7 @@ pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;
 
-use extrinsic::xt_primitives::{GenericAddress, AccountId};
+use extrinsic::xt_primitives::AccountId;
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
@@ -76,8 +76,6 @@ pub struct Api<P: Pair> {
 impl<P> Api<P>
     where
         P: Pair,
-        P::Public: Encode,
-
 {
     pub fn new(url: String) -> Self {
         let genesis_hash = Self::_get_genesis_hash(url.clone());
@@ -99,7 +97,7 @@ impl<P> Api<P>
         }
     }
 
-    pub fn set_signer<'a>(&'a mut self, signer: P) -> &'a mut Self {
+    pub fn set_signer(&mut self, signer: P) -> &mut Self {
         self.signer = Some(signer);
         self
     }
@@ -127,14 +125,15 @@ impl<P> Api<P>
         RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
     }
 
-    fn _get_nonce(url: String, signer: P) -> u32 {
+    fn _get_nonce(url: String, signer: [u8; 32]) -> u32 {
         let result_str = Self::_get_storage(
             url,
             "System",
             "AccountNonce",
-            Some(signer.public().as_slice().encode()),
+            Some(signer.encode()),
         )
         .unwrap();
+        println!("Get nonce: {}", result_str);
         let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
         nonce.low_u32()
     }
@@ -166,14 +165,18 @@ impl<P> Api<P>
 
     pub fn get_nonce(&self) -> Result<u32, &str> {
         match &self.signer {
-            Some(key) => Ok(Self::_get_nonce(self.url.clone(), key.to_owned())),
+            Some(key) => {
+                let mut arr: [u8; 32] = Default::default();
+                arr.clone_from_slice(key.to_owned().public().as_ref());
+                Ok(Self::_get_nonce(self.url.clone(), arr))
+            },
             None => Err("Can't get nonce when no signer is set"),
         }
     }
 
-    pub fn get_free_balance(&self, address: P::Public) -> U256 {
+    pub fn get_free_balance(&self, address: &AccountId) -> U256 {
         let result_str = self
-            .get_storage("Balances", "FreeBalance", Some(address.encode()))
+            .get_storage("Balances", "FreeBalance", Some(address.0.encode()))
             .unwrap();
         hexstr_to_u256(result_str).unwrap()
     }

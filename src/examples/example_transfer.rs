@@ -19,7 +19,6 @@ use keyring::AccountKeyring;
 use primitives::{sr25519, crypto::Pair};
 
 use substrate_api_client::{
-    extrinsic,
     extrinsic::xt_primitives::*,
     Api,
 };
@@ -35,11 +34,11 @@ fn main() {
 
     let to = AccountId::from(AccountKeyring::Bob);
 
-    let result = api.get_free_balance(to.clone());
+    let result = api.get_free_balance(&to);
     println!("[+] Bob's Free Balance is is {}\n", result);
 
     // generate extrinsic
-    let xt = api.transfer(to.clone(), 1000);
+    let xt = api.transfer(GenericAddress::from(to.0.clone()), 1000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n",
@@ -54,7 +53,7 @@ fn main() {
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
-    let result = api.get_free_balance(to);
+    let result = api.get_free_balance(&to);
     println!("[+] Bob's Free Balance is now {}\n", result);
 }
 
