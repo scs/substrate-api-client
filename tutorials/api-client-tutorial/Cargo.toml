@@ -5,5 +5,8 @@ authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
 [dependencies]
-substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git" }
+substrate-api-client = { path = "../.." }
 codec = { package = "parity-scale-codec", features = ["derive"], version = "1.0.0", default-features = false }
+
+[patch."https://github.com/paritytech/substrate"]
+substrate-primitives = { package = "substrate-primitives", path = "../../primitives", default-features = false }
