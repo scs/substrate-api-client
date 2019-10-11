@@ -99,7 +99,7 @@ impl<P> Api<P>
         }
     }
 
-    pub fn set_signer(mut self, signer: P) -> Self {
+    pub fn set_signer<'a>(&'a mut self, signer: P) -> &'a mut Self {
         self.signer = Some(signer);
         self
     }
