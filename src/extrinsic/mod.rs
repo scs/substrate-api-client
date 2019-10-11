@@ -27,7 +27,6 @@ pub mod balances;
 pub mod contract;
 pub mod xt_primitives;
 
-
 /// Generates the extrinsic's call field for a given module and call passed as &str
 /// # Arguments
 ///
@@ -87,8 +86,10 @@ macro_rules! compose_extrinsic_offline {
 
         let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
+        let mut arr: [u8; 32] = Default::default();
+        arr.clone_from_slice($signer.public().as_ref());
         UncheckedExtrinsicV3 {
-            signature: Some((GenericAddress::from($signer.public()), signature, extra)),
+            signature: Some((GenericAddress::from(arr), signature, extra)),
             function: $call,
         }
     }};
@@ -140,6 +141,7 @@ macro_rules! compose_extrinsic {
 mod tests {
     use codec::{Compact, Encode};
     use node_primitives::Balance;
+    use primitives::sr25519;
 
     use xt_primitives::*;
 
@@ -165,7 +167,7 @@ mod tests {
         let balance_transfer_index = 0u8;
 
         let amount = Balance::from(42 as u128);
-        let to = AccountKey::public_from_suri("//Alice", Some(""), CryptoKind::Sr25519);
+        let to = sr25519::from_phrase("//Alice", Some(""));
 
         let my_call = (
             [balance_module_index, balance_transfer_index],

@@ -24,10 +24,11 @@ use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use primitive_types::H256;
 use primitives::blake2_256;
-use runtime_primitives::generic::Era;
-use runtime_primitives::AnySignature as Signature;
+use runtime_primitives::{AnySignature, traits::Verify, generic::Era};
+use primitives::crypto::Pair;
 
 pub type GenericAddress = Address<[u8; 32], u32>;
+pub type AccountId = <AnySignature as Verify>::Signer;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
@@ -79,22 +80,26 @@ impl<Call> SignedPayload<Call> where
 
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
-pub struct UncheckedExtrinsicV3<Call>
+pub struct UncheckedExtrinsicV3<Call, P>
     where
         Call: Encode ,
+        P: Pair,
 {
-    pub signature: Option<(GenericAddress, Signature, GenericExtra)>,
+    pub signature: Option<(GenericAddress, P::Signature, GenericExtra)>,
     pub function: Call,
 }
 
-impl<Call> UncheckedExtrinsicV3<Call>
+impl<Call, P> UncheckedExtrinsicV3<Call, P>
     where
         Call: Encode ,
+        P: Pair,
+        P::Public: fmt::Debug,
+        P::Signature: Encode,
 {
     pub fn new_signed(
         function: Call,
         signed: GenericAddress,
-        signature: Signature,
+        signature: P::Signature,
         extra: GenericExtra,
     ) -> Self {
         UncheckedExtrinsicV3 {
@@ -112,9 +117,11 @@ impl<Call> UncheckedExtrinsicV3<Call>
 }
 
 #[cfg(feature = "std")]
-impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
+impl<Call, P> fmt::Debug for UncheckedExtrinsicV3<Call, P>
 where
     Call: fmt::Debug + Encode,
+    P: Pair,
+    P::Signature: Encode,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -126,9 +133,11 @@ where
     }
 }
 
-impl<Call> Encode for UncheckedExtrinsicV3<Call>
+impl<Call, P> Encode for UncheckedExtrinsicV3<Call, P>
     where
         Call: Encode,
+        P: Pair,
+        P::Signature: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {

@@ -33,11 +33,10 @@ use log::{info, debug};
 
 use metadata::RuntimeMetadataPrefixed;
 use primitives::H256 as Hash;
+use primitives::crypto::{Pair, Public};
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
-
-use crypto::AccountKey;
 
 #[cfg(feature = "std")]
 use node_metadata::NodeMetadata;
@@ -53,7 +52,6 @@ use runtime_version::RuntimeVersion;
 
 #[macro_use]
 pub mod extrinsic;
-pub mod crypto;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
@@ -62,28 +60,34 @@ pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;
 
+use extrinsic::xt_primitives::{GenericAddress, AccountId};
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
-pub struct Api {
+pub struct Api<P: Pair> {
     url: String,
-    pub signer: Option<AccountKey>,
+    pub signer: Option<P>,
     pub genesis_hash: Hash,
     pub metadata: NodeMetadata,
     pub runtime_version: RuntimeVersion,
 }
 
 #[cfg(feature = "std")]
-impl Api {
+impl<P> Api<P>
+    where
+        P: Pair,
+        P::Public: Encode,
+
+{
     pub fn new(url: String) -> Self {
-        let genesis_hash = Api::_get_genesis_hash(url.clone());
+        let genesis_hash = Self::_get_genesis_hash(url.clone());
         info!("Got genesis hash: {:?}", genesis_hash);
 
-        let meta = Api::_get_metadata(url.clone());
+        let meta = Self::_get_metadata(url.clone());
         let metadata = node_metadata::parse_metadata(&meta);
         info!("Metadata: {:?}", metadata);
 
-        let runtime_version = Api::_get_runtime_version(url.clone());
+        let runtime_version = Self::_get_runtime_version(url.clone());
         info!("Runtime Version: {:?}", runtime_version);
 
         Self {
@@ -95,40 +99,40 @@ impl Api {
         }
     }
 
-    pub fn set_signer(mut self, signer: AccountKey) -> Self {
+    pub fn set_signer(mut self, signer: P) -> Self {
         self.signer = Some(signer);
         self
     }
 
     fn _get_genesis_hash(url: String) -> Hash {
         let jsonreq = json_req::chain_get_block_hash();
-        let genesis_hash_str = Api::_get_request(url, jsonreq.to_string())
+        let genesis_hash_str = Self::_get_request(url, jsonreq.to_string())
             .expect("Fetching genesis hash from node failed");
         hexstr_to_hash(genesis_hash_str).unwrap()
     }
 
     fn _get_runtime_version(url: String) -> RuntimeVersion {
         let jsonreq = json_req::state_get_runtime_version();
-        let version_str = Api::_get_request(url, jsonreq.to_string()).unwrap(); //expect("Fetching runtime version from node failed");
+        let version_str = Self::_get_request(url, jsonreq.to_string()).unwrap(); //expect("Fetching runtime version from node failed");
         debug!("got the following runtime version (raw): {}", version_str);
         serde_json::from_str(&version_str).unwrap()
     }
 
     fn _get_metadata(url: String) -> RuntimeMetadataPrefixed {
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = Api::_get_request(url, jsonreq.to_string()).unwrap();
+        let metadata_str = Self::_get_request(url, jsonreq.to_string()).unwrap();
 
         let _unhex = hexstr_to_vec(metadata_str).unwrap();
         let mut _om = _unhex.as_slice();
         RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
     }
 
-    fn _get_nonce(url: String, signer: AccountKey) -> u32 {
-        let result_str = Api::_get_storage(
+    fn _get_nonce(url: String, signer: P) -> u32 {
+        let result_str = Self::_get_storage(
             url,
             "System",
             "AccountNonce",
-            Some(signer.public().encode()),
+            Some(signer.public().as_slice().encode()),
         )
         .unwrap();
         let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
@@ -145,7 +149,7 @@ impl Api {
 
         debug!("with storage key: {}", keyhash);
         let jsonreq = json_req::state_get_storage(&keyhash);
-        Api::_get_request(url, jsonreq.to_string())
+        Self::_get_request(url, jsonreq.to_string())
     }
 
     // low level access
@@ -157,17 +161,17 @@ impl Api {
     }
 
     pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
-        Api::_get_metadata(self.url.clone())
+        Self::_get_metadata(self.url.clone())
     }
 
     pub fn get_nonce(&self) -> Result<u32, &str> {
         match &self.signer {
-            Some(key) => Ok(Api::_get_nonce(self.url.clone(), key.to_owned())),
+            Some(key) => Ok(Self::_get_nonce(self.url.clone(), key.to_owned())),
             None => Err("Can't get nonce when no signer is set"),
         }
     }
 
-    pub fn get_free_balance(&self, address: [u8; 32]) -> U256 {
+    pub fn get_free_balance(&self, address: P::Public) -> U256 {
         let result_str = self
             .get_storage("Balances", "FreeBalance", Some(address.encode()))
             .unwrap();
@@ -175,7 +179,7 @@ impl Api {
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
-        Api::_get_request(self.url.clone(), jsonreq)
+        Self::_get_request(self.url.clone(), jsonreq)
     }
 
     pub fn get_storage(
@@ -184,7 +188,7 @@ impl Api {
         storage_key_name: &str,
         param: Option<Vec<u8>>,
     ) -> WsResult<String> {
-        Api::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
+        Self::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {

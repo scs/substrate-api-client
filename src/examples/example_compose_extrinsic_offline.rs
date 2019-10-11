@@ -19,12 +19,15 @@
 use clap::{load_yaml, App};
 
 use node_runtime::{BalancesCall, Call};
+use keyring::AccountKeyring;
+use primitives::{sr25519, crypto::Pair};
 
 // compose_extrinsic_offline is only found if extrinsic is imported as well
 use substrate_api_client::{
     compose_extrinsic_offline,
-    crypto::{AccountKey, Crypto, CryptoKind, Sr25519},
-    extrinsic, Api,
+    extrinsic,
+    extrinsic::xt_primitives::AccountId,
+    Api,
 };
 
 fn main() {
@@ -32,7 +35,7 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = sr25519::Pair::from_phrase("//Alice", Some("")).unwrap().0;
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
 
     println!(
@@ -41,7 +44,7 @@ fn main() {
     );
 
     // define the recipient
-    let to = Sr25519::public_from_suri("//Bob", Some(""));
+    let to = AccountId::from(AccountKeyring::Bob);
 
     // compose the extrinsic with all the element
     let xt = compose_extrinsic_offline!(

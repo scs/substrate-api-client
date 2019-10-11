@@ -15,9 +15,10 @@
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
 use clap::{load_yaml, App};
+use keyring::AccountKeyring;
+use primitives::{sr25519, crypto::Pair};
 
 use substrate_api_client::{
-    crypto::{AccountKey, CryptoKind},
     extrinsic,
     extrinsic::xt_primitives::*,
     Api,
@@ -28,16 +29,16 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = sr25519::Pair::from_string("//Alice", Some("")).unwrap();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
+    let to = AccountId::from(AccountKeyring::Bob);
 
-    let result = api.get_free_balance(to);
+    let result = api.get_free_balance(to.clone());
     println!("[+] Bob's Free Balance is is {}\n", result);
 
     // generate extrinsic
-    let xt = extrinsic::balances::transfer(api.clone(), GenericAddress::from(to), 1000);
+    let xt = api.transfer(to.clone(), 1000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n",

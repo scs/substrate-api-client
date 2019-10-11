@@ -162,7 +162,7 @@ name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
 
 [patch."https://github.com/paritytech/substrate"]
-substrate-primitives = { package = "substrate-primitives", path = "./primitives", default-features=false }
+substrate-primitives = { package = "substrate-primitives", path = "./primitives", default-features = false }
 
 [patch.crates-io]
 ed25519-dalek = { git = "https://github.com/scs/ed25519-dalek.git", branch = "no_std_sgx"}

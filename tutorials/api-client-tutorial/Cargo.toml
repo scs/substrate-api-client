@@ -8,5 +8,10 @@ edition = "2018"
 substrate-api-client = { path = "../.." }
 codec = { package = "parity-scale-codec", features = ["derive"], version = "1.0.0", default-features = false }
 
+[dependencies.primitives]
+path = "./primitives"
+default-features=false
+package = "substrate-primitives"
+
 [patch."https://github.com/paritytech/substrate"]
 substrate-primitives = { package = "substrate-primitives", path = "../../primitives", default-features = false }

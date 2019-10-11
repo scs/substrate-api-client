@@ -26,7 +26,9 @@ use std::sync::mpsc::{channel, Receiver};
 use clap::{load_yaml, App};
 use codec::Decode;
 use log::*;
-use primitives::H256 as Hash;
+use primitives::{H256 as Hash, sr25519, crypto::Pair};
+use rstd::prelude::*;
+
 // FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try 
 // to avoid because of a cargo issue https://github.com/rust-lang/cargo/issues/6571)
 // If you'd like to use this in your crate, add your node_runtime to dependencies and add
@@ -34,8 +36,7 @@ use primitives::H256 as Hash;
 use node_runtime::Event;
 
 use substrate_api_client::{
-    crypto::*,
-    extrinsic::{contract, xt_primitives::GenericAddress},
+    extrinsic::xt_primitives::GenericAddress,
     utils::*,
     Api,
 };
@@ -45,7 +46,8 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = sr25519::Pair::from_phrase("//Alice", Some("")).unwrap().0;
+
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
@@ -59,7 +61,7 @@ fn main() {
     let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
     // 1. Put the contract code as a wasm blob on the chain
-    let xt = contract::put_code(api.clone(), 500_000, wasm);
+    let xt = api.put_code(500_000, wasm);
     println!(
         "[+] Putting contract code on chain with extrinsic:\n\n{:?}\n",
         xt
@@ -78,7 +80,7 @@ fn main() {
     println!("[+] Event was received. Got code hash: {:?}\n", code_hash);
 
     // 2. Create an actual instance of the contract
-    let xt = contract::create(api.clone(), 1_000, 500_000, code_hash, vec![1u8]);
+    let xt = api.create(1_000, 500_000, code_hash, vec![1u8]);
 
     println!(
         "[+] Creating a contract instance with extrinsic:\n\n{:?}\n",
@@ -101,7 +103,7 @@ fn main() {
     );
 
     // 3. Call the contract instance
-    let xt = contract::call(api.clone(), deployed_at, 500_000, 500_000, vec![1u8]);
+    let xt = api.call(deployed_at, 500_000, 500_000, vec![1u8]);
 
     // Currently, a contract call does not fire any events nor interact in any other fashion with
     // the outside world. Only node logs can supply information on the consequences of a contract

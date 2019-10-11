@@ -14,10 +14,11 @@
 */
 
 use codec::{Decode, Encode};
+use primitives::{sr25519, crypto::Pair};
+
 use substrate_api_client::{
     Api,
     compose_extrinsic,
-    crypto::{AccountKey, CryptoKind},
     extrinsic,
     utils::{hexstr_to_u64, hexstr_to_vec}
 };
@@ -31,7 +32,7 @@ struct Kitty {
 fn main() {
     let url = "127.0.0.1:9944";
 
-    let signer = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = sr25519::from_phrase("//Alice", Some(""));
 
     let api = Api::new(format!("ws://{}", url))
         .set_signer(signer.clone());
