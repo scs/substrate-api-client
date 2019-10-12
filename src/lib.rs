@@ -97,7 +97,7 @@ impl<P> Api<P>
         }
     }
 
-    pub fn set_signer(&mut self, signer: P) -> &mut Self {
+    pub fn set_signer(mut self, signer: P) -> Self {
         self.signer = Some(signer);
         self
     }
@@ -133,7 +133,6 @@ impl<P> Api<P>
             Some(signer.encode()),
         )
         .unwrap();
-        println!("Get nonce: {}", result_str);
         let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
         nonce.low_u32()
     }

@@ -45,7 +45,7 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with the AccountKey
-    let key = sr25519::Pair::from_phrase("//Alice", Some("")).unwrap().0;
+    let key = sr25519::Pair::from_string("//Alice", Some("")).unwrap();
     let result_str = api
         .get_storage("System", "AccountNonce", Some(key.public().encode()))
         .unwrap();

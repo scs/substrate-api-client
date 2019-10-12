@@ -44,53 +44,53 @@ pub type ContractPutCodeXt<P> = UncheckedExtrinsicV3<ContractPutCodeFn, P>;
 pub type ContractCreateXt<P> = UncheckedExtrinsicV3<ContractCreateFn, P>;
 pub type ContractCallXt<P> = UncheckedExtrinsicV3<ContractCallFn, P>;
 
-//#[cfg(feature = "std")]
-//impl <P: Pair> Api<P> {
-//    pub fn put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt<P> {
-//            compose_extrinsic!(
-//            &self,
-//            CONTRACTS_MODULE,
-//            CONTRACTS_PUT_CODE,
-//            Compact(gas_limit),
-//            code
-//        )
-//    }
-//
-//    pub fn create(
-//        &self,
-//        endowment: u128,
-//        gas_limit: u64,
-//        code_hash: Hash,
-//        data: Vec<u8>,
-//    ) -> ContractCreateXt<P> {
-//
-//            compose_extrinsic!(
-//            self,
-//            CONTRACTS_MODULE,
-//            CONTRACTS_CREATE,
-//            Compact(endowment),
-//            Compact(gas_limit),
-//            code_hash,
-//            data
-//        )
-//    }
-//
-//    pub fn call(
-//        &self,
-//        dest: GenericAddress,
-//        value: u128,
-//        gas_limit: u64,
-//        data: Vec<u8>,
-//    ) -> ContractCallXt<P>{
-//
-//            compose_extrinsic!(
-//            self,
-//            CONTRACTS_MODULE,
-//            CONTRACTS_CALL,
-//            dest,
-//            Compact(value),
-//            Compact(gas_limit),
-//            data
-//        )
-//    }
-//}
+#[cfg(feature = "std")]
+impl <P: Pair> Api<P> {
+    pub fn put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt<P> {
+            compose_extrinsic!(
+            &self,
+            CONTRACTS_MODULE,
+            CONTRACTS_PUT_CODE,
+            Compact(gas_limit),
+            code
+        )
+    }
+
+    pub fn create(
+        &self,
+        endowment: u128,
+        gas_limit: u64,
+        code_hash: Hash,
+        data: Vec<u8>,
+    ) -> ContractCreateXt<P> {
+
+            compose_extrinsic!(
+            self,
+            CONTRACTS_MODULE,
+            CONTRACTS_CREATE,
+            Compact(endowment),
+            Compact(gas_limit),
+            code_hash,
+            data
+        )
+    }
+
+    pub fn call(
+        &self,
+        dest: GenericAddress,
+        value: u128,
+        gas_limit: u64,
+        data: Vec<u8>,
+    ) -> ContractCallXt<P>{
+
+            compose_extrinsic!(
+            self,
+            CONTRACTS_MODULE,
+            CONTRACTS_CALL,
+            dest,
+            Compact(value),
+            Compact(gas_limit),
+            data
+        )
+    }
+}
