@@ -93,7 +93,6 @@ impl<Call, P> UncheckedExtrinsicV3<Call, P>
     where
         Call: Encode ,
         P: Pair,
-        P::Public: fmt::Debug,
         P::Signature: Encode,
 {
     pub fn new_signed(

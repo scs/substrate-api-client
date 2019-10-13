@@ -23,7 +23,7 @@ use primitives::{sr25519, crypto::Pair};
 // compose_extrinsic is only found if extrinsic is imported as well
 use substrate_api_client::{
     compose_extrinsic,
-    extrinsic::xt_primitives::AccountId,
+    extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3},
     extrinsic,
     Api,
 };
@@ -33,7 +33,7 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = sr25519::Pair::from_phrase("//Alice", Some("")).unwrap().0;
+    let from = sr25519::Pair::from_string("//Alice", Some("")).unwrap();
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
 
     // set the recipient
@@ -41,11 +41,11 @@ fn main() {
 
     // call Balances::transfer
     // the names are given as strings
-    let xt = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
-        to,
+        GenericAddress::from(to.0.clone()),
         Compact(42 as u128)
     );
 
