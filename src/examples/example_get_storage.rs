@@ -18,7 +18,7 @@ use clap::{load_yaml, App};
 use codec::Encode;
 use keyring::AccountKeyring;
 
-use primitives::{sr25519, crypto::Pair};
+use primitives::crypto::Pair;
 use substrate_api_client::{
     Api,
     extrinsic::xt_primitives::AccountId,
@@ -45,7 +45,7 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with the AccountKey
-    let key = sr25519::Pair::from_string("//Alice", Some("")).unwrap();
+    let key = AccountKeyring::Alice.pair();
     let result_str = api
         .get_storage("System", "AccountNonce", Some(key.public().encode()))
         .unwrap();

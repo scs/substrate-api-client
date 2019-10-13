@@ -26,7 +26,8 @@ use std::sync::mpsc::{channel, Receiver};
 use clap::{load_yaml, App};
 use codec::Decode;
 use log::*;
-use primitives::{H256 as Hash, sr25519, crypto::Pair};
+use keyring::AccountKeyring;
+use primitives::H256 as Hash;
 use rstd::prelude::*;
 
 // FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try 
@@ -46,8 +47,7 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = sr25519::Pair::from_string("//Alice", Some("")).unwrap();
-
+    let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 

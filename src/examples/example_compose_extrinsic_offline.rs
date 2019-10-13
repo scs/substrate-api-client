@@ -35,7 +35,7 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = sr25519::Pair::from_string("//Alice", Some("")).unwrap();
+    let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
 
     println!(
