@@ -155,22 +155,22 @@ If we now run the binary with `cargo run`, the metadata is printed to the termin
 As we have just created our node, no `Kitty` is stored on our substrate blockchain yet. But we find in the calls that there is a call named `create_kitty`, which presumably creates a `Kitty` with a price supplied as argument. We will call that function in order to create a `Kitty`. Calling a runtime function in substrate is done via an extrinsic, which is somewhat like a transaction in general blockchain jargon but not exactly, see [Extrinsics](https://substrate.dev/docs/en/overview/extrinsics). An extrinsic is always signed by the account that submits the extrinsic. Therefore, we set the `signer` field of the `Api` with an account, that is then used to sign the extrinsic.
 
 ```rust
-    let signer = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+let signer = AccountKeyring::Alice.pair();
 
-    let api = Api::new(format!("ws://{}", url)).set_signer(signer);
+let api = Api::new(format!("ws://{}", url)).set_signer(signer);
 ```
 
-`AccountKey` is defined in the `substrate-api-client::crypto` module, which implements some minimalistic crypto functions. It was written to offer the flexible use for both key types defined in substrate, i.e. `sr25519` and `ed25519`. Now we are ready to create an extrinsic for our `KittyModule`, which is performed via the `compose_extrinsic!` macro.
+`AccountKeyring` belongs to the substrate crate `keyring` that offers some predefined keys facilitating smooth developer experience. Now we are ready to create an extrinsic for our `KittyModule`, which is performed via the `compose_extrinsic!` macro.
 
 ```rust
-let xt = compose_extrinsic!(
+let xt: UncheckedExtrinsicV3<_, sr25519::Pair> = compose_extrinsic!(
     api.clone(),
     "KittyModule",
     "create_kitty",
     10 as u128
 );
 ```
-The first three arguments are always the `Api`, the runtime module name, and then the function name as defined in the metadata. Subsequently, the arguments of the runtime function that is called are supplied. Taking a look at the metadata, we see that the `create_kitty` call takes one argument, which is `price` of type `T::Balance`, which is a type alias defined in substrate for a `u128`. Therefore, we are free to use `u128` as both encode to the same bytes. The macro does then query the account nonce of the sender from the node and creates a signed extrinsic ready to be encoded and sent. 
+The first three arguments are always the `Api`, the runtime module name, and then the function name as defined in the metadata. Subsequently, the arguments of the runtime function that is called are supplied. Taking a look at the metadata, we see that the `create_kitty` call takes one argument, which is `price` of type `T::Balance`, which is a type alias defined in substrate for a `u128`. Therefore, we are free to use `u128` as both encode to the same bytes. The macro does then query the account nonce of the sender from the node and creates a signed extrinsic ready to be encoded and sent. We have to explicitly put a type annotation for the UncheckedExtrinsic as `ed25519` could also be used and the macro is not able to infer the type as macro expansion happens before names are resolved and types are inferred.
 
 Note: The signing process is not straight forward. Additional information is included in the signing payload which is more than the extrinsic payload that only consists of the prepared call statements. All the details can be found in the code.
 

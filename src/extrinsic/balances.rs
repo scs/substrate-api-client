@@ -34,10 +34,7 @@ pub type BalanceTransferXt<Pair> = UncheckedExtrinsicV3<BalanceTransferFn, Pair>
 pub type BalanceSetBalanceXt<Pair> = UncheckedExtrinsicV3<BalanceSetBalanceFn, Pair>;
 
 #[cfg(feature = "std")]
-impl<P> Api<P>
-    where
-        P: Pair,
-{
+impl<P: Pair> Api<P> {
     pub fn transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt<P> {
             compose_extrinsic!(
             self,

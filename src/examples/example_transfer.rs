@@ -16,7 +16,7 @@
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
 use clap::{load_yaml, App};
 use keyring::AccountKeyring;
-use primitives::{sr25519, crypto::Pair};
+use primitives::crypto::Pair;
 
 use substrate_api_client::{
     extrinsic::xt_primitives::*,
