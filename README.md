@@ -18,7 +18,7 @@ For more information, please refer to the [substrate](https://github.com/parityt
 
 ## Substrate node
 
-To execute the examples, a running substrate node is needed. The examples have been tested with [revision 9b08e7ff of substrate](https://github.com/paritytech/substrate/commit/9b08e7ff938a45dbec7fcdb854063202e2b0cb48). Alternatively, a dedicated test node can be found at https://github.com/scs/substrate-test-nodes.
+To execute the examples, a running substrate node is needed. The examples have been tested with [revision f17d023 of substrate](https://github.com/paritytech/substrate/commit/f17d023bbe179f15678ac9989f471c9b18917e17). Alternatively, a dedicated test node can be found at https://github.com/scs/substrate-test-nodes.
 
 
 To build the test node, execute the following steps:
@@ -94,11 +94,11 @@ Shows how to use the compose_extrinsic! macro that is able to create an extrinsi
 
     // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
     // used here to be able to run the examples against a generic substrate node with standard modules.
-    let xt = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
-        GenericAddress::from(to),
+        GenericAddress::from(to.0.clone()),
         Compact(42 as u128)
     );
 
@@ -106,19 +106,29 @@ Shows how to use the compose_extrinsic! macro that is able to create an extrinsi
 Shows how to read some storage values.
 
     // get some plain storage value
-    let result_str = api.get_storage("Balances", "TransactionBaseFee", None).unwrap();
-    let result = hexstr_to_u256(result_str);
-    println!("[+] TransactionBaseFee is {}", result);
+    let result_str = api.get_storage("Balances", "TotalIssuance", None).unwrap();
+    let result = hexstr_to_u256(result_str).unwrap();
+    println!("[+] TotalIssuance is {}", result);
 
     // get Alice's AccountNonce
     let accountid = AccountId::from(AccountKeyring::Alice);
-    let result_str = api.get_storage("System", "AccountNonce", Some(accountid.encode())).unwrap();
-    let result = hexstr_to_u256(result_str);
+    let result_str = api
+        .get_storage("System", "AccountNonce", Some(accountid.encode()))
+        .unwrap();
+    let result = hexstr_to_u256(result_str).unwrap();
+    println!("[+] Alice's Account Nonce is {}", result.low_u32());
+
+    // get Alice's AccountNonce with the AccountKey
+    let signer = AccountKeyring::Alice.pair();
+    let result_str = api
+        .get_storage("System", "AccountNonce", Some(signer.public().encode()))
+        .unwrap();
+    let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with api.get_nonce()
-    api.signer = Some(AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519));
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce());
+    api.signer = Some(signer);
+    println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
 ## Alternatives
 

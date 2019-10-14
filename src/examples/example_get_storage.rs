@@ -45,15 +45,15 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with the AccountKey
-    let key = AccountKeyring::Alice.pair();
+    let signer = AccountKeyring::Alice.pair();
     let result_str = api
-        .get_storage("System", "AccountNonce", Some(key.public().encode()))
+        .get_storage("System", "AccountNonce", Some(signer.public().encode()))
         .unwrap();
     let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with api.get_nonce()
-    api.signer = Some(key);
+    api.signer = Some(signer);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 }
 

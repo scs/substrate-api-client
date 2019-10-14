@@ -25,7 +25,7 @@ Now we will start to write client code that interacts with the node. The test-no
 ```
 
 The `Cargo.toml` has to have one sole dependency and should look like:
-```rust
+```
 [package]
 name = "api-client-tutorial"
 version = "0.1.0"
@@ -47,7 +47,9 @@ use substrate_api_client::{Api, node_metadata};
 fn main() {
     // instantiate an Api that connects to the given address
     let url = "127.0.0.1:9944";
-    let api = Api::new(format!("ws://{}", url));
+    // if no signer is set in the whole program, we need to give to Api a specific type instead of an associated type
+    // as during compilation the type needs to be defined.
+    let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
     let meta = api.get_metadata();
     println!("Metadata:\n {}", node_metadata::pretty_format(&meta).unwrap());
@@ -60,7 +62,7 @@ If we now run the binary with `cargo run`, the metadata is printed to the termin
 * `events`: callbacks that are fired from the runtime that a client can subscribe to
 
 
-```json
+```
     ...
     {
      "name": "KittyModule",
