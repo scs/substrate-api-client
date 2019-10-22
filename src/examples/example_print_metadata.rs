@@ -21,6 +21,8 @@ extern crate clap;
 
 use clap::App;
 
+use primitives::sr25519;
+
 use substrate_api_client::node_metadata;
 use substrate_api_client::Api;
 
@@ -28,7 +30,7 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::new(format!("ws://{}", url));
+    let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
     let meta = api.get_metadata();
     println!(

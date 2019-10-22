@@ -18,13 +18,12 @@ use clap::{load_yaml, App};
 use codec::Encode;
 use keyring::AccountKeyring;
 
-use runtime_primitives::{AnySignature, traits::Verify};
-use substrate_api_client::Api;
-
-use substrate_api_client::crypto::{AccountKey, CryptoKind};
-use substrate_api_client::utils::hexstr_to_u256;
-
-type AccountId = <AnySignature as Verify>::Signer;
+use primitives::crypto::Pair;
+use substrate_api_client::{
+    Api,
+    extrinsic::xt_primitives::AccountId,
+    utils::hexstr_to_u256,
+};
 
 fn main() {
     env_logger::init();
@@ -46,15 +45,15 @@ fn main() {
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with the AccountKey
-    let key = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let signer = AccountKeyring::Alice.pair();
     let result_str = api
-        .get_storage("System", "AccountNonce", Some(key.public().encode()))
+        .get_storage("System", "AccountNonce", Some(signer.public().encode()))
         .unwrap();
     let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] Alice's Account Nonce is {}", result.low_u32());
 
     // get Alice's AccountNonce with api.get_nonce()
-    api.signer = Some(key);
+    api.signer = Some(signer);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 }
 

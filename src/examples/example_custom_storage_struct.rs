@@ -22,12 +22,14 @@
 use clap::{load_yaml, App};
 use codec::{Decode, Encode};
 use log::*;
-use primitives::H256;
+use keyring::AccountKeyring;
+use primitives::{H256, sr25519, crypto::Pair};
+
 
 use substrate_api_client::{
     compose_extrinsic,
-    crypto::{AccountKey, CryptoKind},
     extrinsic,
+    extrinsic::xt_primitives::UncheckedExtrinsicV3,
     utils::*,
     Api,
 };
@@ -45,10 +47,10 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let xt = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
+    let xt: UncheckedExtrinsicV3<_, sr25519::Pair> = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
     

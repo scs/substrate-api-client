@@ -14,11 +14,16 @@
 */
 
 use codec::{Decode, Encode};
+use keyring::AccountKeyring;
+
+use primitives::crypto::Pair;
+use primitives::sr25519;
+
 use substrate_api_client::{
     Api,
     compose_extrinsic,
-    crypto::{AccountKey, CryptoKind},
     extrinsic,
+    extrinsic::xt_primitives::UncheckedExtrinsicV3,
     utils::{hexstr_to_u64, hexstr_to_vec}
 };
 
@@ -31,12 +36,12 @@ struct Kitty {
 fn main() {
     let url = "127.0.0.1:9944";
 
-    let signer = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let signer = AccountKeyring::Alice.pair();
 
     let api = Api::new(format!("ws://{}", url))
         .set_signer(signer.clone());
 
-    let xt = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV3<_, sr25519::Pair> = compose_extrinsic!(
         api.clone(),
         "KittyModule",
         "create_kitty",

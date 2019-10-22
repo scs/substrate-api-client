@@ -15,10 +15,10 @@
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
 use clap::{load_yaml, App};
+use keyring::AccountKeyring;
+use primitives::crypto::Pair;
 
 use substrate_api_client::{
-    crypto::{AccountKey, CryptoKind},
-    extrinsic,
     extrinsic::xt_primitives::*,
     Api,
 };
@@ -28,16 +28,16 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
+    let to = AccountId::from(AccountKeyring::Bob);
 
-    let result = api.get_free_balance(to);
+    let result = api.get_free_balance(&to);
     println!("[+] Bob's Free Balance is is {}\n", result);
 
     // generate extrinsic
-    let xt = extrinsic::balances::transfer(api.clone(), GenericAddress::from(to), 1000);
+    let xt = api.transfer(GenericAddress::from(to.0.clone()), 1000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n",
@@ -52,7 +52,7 @@ fn main() {
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
-    let result = api.get_free_balance(to);
+    let result = api.get_free_balance(&to);
     println!("[+] Bob's Free Balance is now {}\n", result);
 }
 

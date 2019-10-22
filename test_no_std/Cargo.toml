@@ -28,7 +28,12 @@ features = ["no_oom", "no_panic_handler"]
 [patch.'https://github.com/paritytech/substrate']
 sr-io = { git = "https://github.com/scs/substraTEE-node", rev = 'd4a057c5841796994b46b6b35de922ec5777fec5' }
 substrate-primitives = { path = "../primitives"}
-substrate-application-crypto = { git = "https://github.com/scs/substraTEE-worker" }
+substrate-application-crypto = { git = "https://github.com/scs/substrate", tag = "substraTEE-M5.1" }
+sr-std = { git = "https://github.com/scs/substrate", tag = "substraTEE-M5.1" }
+
+[patch.'https://github.com/scs/substrate']
+sr-io = { git = "https://github.com/scs/substraTEE-node", rev = 'd4a057c5841796994b46b6b35de922ec5777fec5' }
+substrate-primitives = { path = "../primitives"}
 
 [patch.'https://github.com/scs/substrate-api-client']
 substrate-primitives = { path = "../primitives"}

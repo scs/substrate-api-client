@@ -17,12 +17,15 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use clap::{load_yaml, App};
+use keyring::AccountKeyring;
+use primitives::{sr25519, crypto::Pair};
 
 // compose_extrinsic is only found if extrinsic is imported as well
 use substrate_api_client::{
     compose_extrinsic,
-    crypto::{AccountKey, CryptoKind},
-    extrinsic, Api,
+    extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3},
+    extrinsic,
+    Api,
 };
 
 fn main() {
@@ -30,19 +33,19 @@ fn main() {
     let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let from = AccountKey::new("//Alice", Some(""), CryptoKind::Sr25519);
+    let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
 
     // set the recipient
-    let to = AccountKey::public_from_suri("//Bob", Some(""), CryptoKind::Sr25519);
+    let to = AccountId::from(AccountKeyring::Bob);
 
     // call Balances::transfer
     // the names are given as strings
-    let xt = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
-        GenericAddress::from(to),
+        GenericAddress::from(to.0.clone()),
         Compact(42 as u128)
     );
 

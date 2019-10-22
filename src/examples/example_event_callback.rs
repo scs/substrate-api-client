@@ -20,6 +20,7 @@ use clap::{load_yaml, App};
 use codec::Decode;
 use log::{debug, error};
 use primitives::H256 as Hash;
+use primitives::sr25519;
 
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
@@ -33,7 +34,7 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::new(format!("ws://{}", url));
+    let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
