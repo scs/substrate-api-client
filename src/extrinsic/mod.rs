@@ -73,7 +73,7 @@ macro_rules! compose_extrinsic_offline {
 
         let extra = GenericExtra::new($nonce);
         let raw_payload = SignedPayload::from_raw(
-            $call,
+            $call.clone(),
             extra.clone(),
             (
                 $runtime_spec_version,
