@@ -35,7 +35,7 @@ pub type BalanceSetBalanceXt<Pair> = UncheckedExtrinsicV3<BalanceSetBalanceFn, P
 
 #[cfg(feature = "std")]
 impl<P: Pair> Api<P> {
-    pub fn transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt<P> {
+    pub fn balance_transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt<P> {
             compose_extrinsic!(
             self,
             BALANCES_MODULE,
@@ -45,7 +45,7 @@ impl<P: Pair> Api<P> {
         )
     }
 
-    pub fn set_balance(&self, who: GenericAddress, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt<P> {
+    pub fn balance_set_balance(&self, who: GenericAddress, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt<P> {
             compose_extrinsic!(
             self,
             BALANCES_MODULE,

@@ -46,7 +46,7 @@ pub type ContractCallXt<P> = UncheckedExtrinsicV3<ContractCallFn, P>;
 
 #[cfg(feature = "std")]
 impl <P: Pair> Api<P> {
-    pub fn put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt<P> {
+    pub fn contract_put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt<P> {
             compose_extrinsic!(
             &self,
             CONTRACTS_MODULE,
@@ -56,7 +56,7 @@ impl <P: Pair> Api<P> {
         )
     }
 
-    pub fn create(
+    pub fn contract_create(
         &self,
         endowment: u128,
         gas_limit: u64,
@@ -75,7 +75,7 @@ impl <P: Pair> Api<P> {
         )
     }
 
-    pub fn call(
+    pub fn contract_call(
         &self,
         dest: GenericAddress,
         value: u128,

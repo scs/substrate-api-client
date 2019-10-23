@@ -37,7 +37,7 @@ fn main() {
     println!("[+] Bob's Free Balance is is {}\n", result);
 
     // generate extrinsic
-    let xt = api.transfer(GenericAddress::from(to.0.clone()), 1000);
+    let xt = api.balance_transfer(GenericAddress::from(to.0.clone()), 1000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n",
