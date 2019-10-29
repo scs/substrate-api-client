@@ -68,7 +68,7 @@ macro_rules! compose_extrinsic_offline {
     $nonce: expr,
     $genesis_hash: expr,
     $runtime_spec_version: expr) => {{
-        use crate::extrinsic::xt_primitives::*;
+        use $crate::extrinsic::xt_primitives::*;
 
         let extra = GenericExtra::new($nonce);
         let raw_payload = SignedPayload::from_raw(
@@ -112,9 +112,9 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            use crate::extrinsic::codec::Compact;
-            use crate::extrinsic::log::info;
-            use crate::extrinsic::xt_primitives::*;
+            use $crate::extrinsic::codec::Compact;
+            use $crate::extrinsic::log::info;
+            use $crate::extrinsic::xt_primitives::*;
 
             info!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
             let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);

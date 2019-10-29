@@ -20,11 +20,9 @@ use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use primitives::{sr25519, crypto::Pair};
 
-// compose_extrinsic is only found if extrinsic is imported as well
 use substrate_api_client::{
     compose_extrinsic,
     extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3},
-    extrinsic,
     Api,
 };
 

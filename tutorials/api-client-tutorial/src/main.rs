@@ -22,7 +22,6 @@ use primitives::sr25519;
 use substrate_api_client::{
     Api,
     compose_extrinsic,
-    extrinsic,
     extrinsic::xt_primitives::UncheckedExtrinsicV3,
     utils::{hexstr_to_u64, hexstr_to_vec}
 };

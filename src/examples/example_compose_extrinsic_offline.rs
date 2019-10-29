@@ -22,10 +22,8 @@ use node_runtime::{BalancesCall, Call};
 use keyring::AccountKeyring;
 use primitives::{sr25519, crypto::Pair};
 
-// compose_extrinsic_offline is only found if extrinsic is imported as well
 use substrate_api_client::{
     compose_extrinsic_offline,
-    extrinsic,
     extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3},
     Api,
 };

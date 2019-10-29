@@ -28,7 +28,6 @@ use primitives::{H256, sr25519, crypto::Pair};
 
 use substrate_api_client::{
     compose_extrinsic,
-    extrinsic,
     extrinsic::xt_primitives::UncheckedExtrinsicV3,
     utils::*,
     Api,
