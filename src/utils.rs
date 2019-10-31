@@ -21,21 +21,32 @@ use primitives::blake2_256;
 use primitives::twox_128;
 use primitives::H256 as Hash;
 
-pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
+fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Vec<u8> {
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
-    let mut keyhash;
-
     match param {
         Some(par) => {
             key.append(&mut par.clone());
-            keyhash = hex::encode(blake2_256(&key));
+            blake2_256(&key).to_vec()
         },
         _ => {
-            keyhash = hex::encode(twox_128(&key));
+            twox_128(&key).to_vec()
         },
     }
-    keyhash.insert_str(0, "0x");
-    keyhash
+}
+
+pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
+    let mut keyhash_str = hex::encode(
+        storage_key_hash_vec(module, storage_key_name, param));
+    keyhash_str.insert_str(0, "0x");
+    keyhash_str
+}
+
+pub fn storage_key_hash_double_map(module: &str, storage_key_name: &str, first: Vec<u8>, second: Vec<u8>) -> String {
+    let mut keyhash = storage_key_hash_vec(module, storage_key_name, Some(first));
+    keyhash.append(&mut blake2_256(&second).to_vec());
+    let mut keyhash_str = hex::encode(keyhash);
+    keyhash_str.insert_str(0, "0x");
+    keyhash_str
 }
 
 pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
