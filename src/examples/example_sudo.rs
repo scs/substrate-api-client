@@ -48,8 +48,8 @@ fn main() {
             Compact(42 as u128),
             Compact(42 as u128)
         ),
-        GenericExtra::new(nonce+1),
-        nonce+1,
+        GenericExtra::new(nonce),
+        nonce,
         api.get_genesis_hash(),
         api.get_spec_version()
     );
