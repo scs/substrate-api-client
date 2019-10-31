@@ -161,6 +161,10 @@ path = "src/examples/example_custom_storage_struct.rs"
 name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
 
+[[example]]
+name = "example_sudo"
+path = "src/examples/example_sudo.rs"
+
 [patch."https://github.com/paritytech/substrate"]
 substrate-primitives = { package = "substrate-primitives", path = "./primitives", default-features = false }
 

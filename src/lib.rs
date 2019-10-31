@@ -162,6 +162,14 @@ impl<P> Api<P>
         Self::_get_metadata(self.url.clone())
     }
 
+    pub fn get_spec_version(&self) -> u32 {
+        Self::_get_runtime_version(self.url.clone()).spec_version
+    }
+
+    pub fn get_genesis_hash(&self) -> Hash {
+        Self::_get_genesis_hash(self.url.clone())
+    }
+
     pub fn get_nonce(&self) -> Result<u32, &str> {
         match &self.signer {
             Some(key) => {

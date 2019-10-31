@@ -53,7 +53,7 @@ impl GenericExtra {
 /// Order is the same as declared in the extra.
 pub type AdditionalSigned = (u32, H256, H256, (), (), ());
 
-#[derive(Encode)]
+#[derive(Encode, Clone)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
 
@@ -80,6 +80,7 @@ impl<Call> SignedPayload<Call> where
 
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
+#[derive(Clone)]
 pub struct UncheckedExtrinsicV3<Call, P>
     where
         Call: Encode ,

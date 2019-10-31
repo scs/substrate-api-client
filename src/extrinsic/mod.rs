@@ -53,6 +53,32 @@ macro_rules! compose_call {
     };
 }
 
+#[macro_export]
+macro_rules! compose_payload {    
+    ($call: expr,
+    $extra: expr,
+    $nonce: expr,
+    $genesis_hash: expr,
+    $runtime_spec_version: expr) => {{
+        use $crate::extrinsic::xt_primitives::*;
+
+        SignedPayload::from_raw(
+            $call,
+            $extra,
+            (
+                $runtime_spec_version,
+                $genesis_hash,
+                $genesis_hash,
+                (),
+                (),
+                (),
+            ),
+        )
+
+    }};
+}
+
+
 /// Generates an Unchecked extrinsic for a given call
 /// # Arguments
 ///
@@ -71,19 +97,13 @@ macro_rules! compose_extrinsic_offline {
         use $crate::extrinsic::xt_primitives::*;
 
         let extra = GenericExtra::new($nonce);
-        let raw_payload = SignedPayload::from_raw(
+        let raw_payload = $crate::compose_payload!(
             $call.clone(),
             extra.clone(),
-            (
-                $runtime_spec_version,
-                $genesis_hash,
-                $genesis_hash,
-                (),
-                (),
-                (),
-            ),
+            $nonce,
+            $genesis_hash,
+            $runtime_spec_version
         );
-
         let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
         let mut arr: [u8; 32] = Default::default();
