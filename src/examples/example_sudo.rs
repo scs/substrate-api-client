@@ -39,15 +39,16 @@ fn main() {
 
     let nonce = api.get_nonce().unwrap();
     // this call can only be called by sudo
-    let raw_payload = compose_payload!(
-        compose_call!(
+    let call = compose_call!(
             api.metadata.clone(),
             "Balances",
             "set_balance",
             GenericAddress::from(to.0.clone()),
             Compact(42 as u128),
             Compact(42 as u128)
-        ),
+    );
+    let raw_payload = compose_payload!(
+        call.clone(),
         GenericExtra::new(nonce),
         nonce,
         api.get_genesis_hash(),
@@ -59,7 +60,7 @@ fn main() {
         api.clone(),
         "Sudo",
         "sudo",
-        raw_payload
+        call
     );
 
     // send and watch extrinsic until finalized
