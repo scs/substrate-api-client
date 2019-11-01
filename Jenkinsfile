@@ -122,6 +122,7 @@ pipeline {
             sh './ci/check_fmt_log.sh'
           }
           catch (exc) {
+            echo 'Style changes detected. Setting build to unstable'
             currentBuild.result = 'UNSTABLE'
           }
         }
@@ -139,7 +140,7 @@ pipeline {
         emailext (
           subject: "Jenkins Build '${env.JOB_NAME} [${env.BUILD_NUMBER}]' is ${currentBuild.currentResult}",
           body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} changed state and is now ${currentBuild.currentResult}\n\nMore info at: ${env.BUILD_URL}",
-          to: 'marcel.frei@scs.ch'
+          to: '${env.RECIPIENTS_SUBSTRATEE}'
         )
     }
   }
