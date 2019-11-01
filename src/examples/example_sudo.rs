@@ -21,7 +21,7 @@ use keyring::AccountKeyring;
 use primitives::{sr25519, crypto::Pair};
 use codec::{Encode, Compact};
 use substrate_api_client::{
-    compose_extrinsic, compose_payload, compose_call,
+    compose_extrinsic, compose_call,
     extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3, GenericAddress},
     Api,
 };
@@ -47,15 +47,6 @@ fn main() {
             Compact(42 as u128),
             Compact(42 as u128)
     );
-    let raw_payload = compose_payload!(
-        call.clone(),
-        GenericExtra::new(nonce),
-        nonce,
-        api.get_genesis_hash(),
-        api.get_spec_version()
-    );
-    let signature = raw_payload.using_encoded(|payload| from.sign(payload));
-
     let xtsu: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
         api.clone(),
         "Sudo",
