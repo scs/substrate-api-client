@@ -2,6 +2,7 @@
 is a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
 
 * Compose extrinsics, send them and subscribe to updates.
+* supports composing extrinsics for `no_std` builds
 * Watch events and execute code upon events.
 * Parse and print the node metadata.
 
