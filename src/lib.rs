@@ -144,7 +144,19 @@ impl<P> Api<P>
         param: Option<Vec<u8>>,
     ) -> WsResult<String> {
         let keyhash = storage_key_hash(module, storage_key_name, param);
+        debug!("with storage key: {}", keyhash);
+        let jsonreq = json_req::state_get_storage(&keyhash);
+        Self::_get_request(url, jsonreq.to_string())
+    }
 
+    fn _get_storage_double_map(
+        url: String,
+        module: &str,
+        storage_key_name: &str,
+        first: Vec<u8>,
+        second: Vec<u8>
+    ) -> WsResult<String> {
+        let keyhash = storage_key_hash_double_map(module, storage_key_name, first, second);
         debug!("with storage key: {}", keyhash);
         let jsonreq = json_req::state_get_storage(&keyhash);
         Self::_get_request(url, jsonreq.to_string())
@@ -199,6 +211,17 @@ impl<P> Api<P>
         param: Option<Vec<u8>>,
     ) -> WsResult<String> {
         Self::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
+    }
+
+    pub fn get_storage_double_map(
+        &self,
+        storage_prefix: &str,
+        storage_key_name: &str,
+        first: Vec<u8>,
+        second: Vec<u8>,
+    ) -> WsResult<String> {
+        Self::_get_storage_double_map(self.url.clone(), storage_prefix, storage_key_name, 
+            first, second)
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {

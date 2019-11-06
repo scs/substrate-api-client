@@ -25,7 +25,7 @@ fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
     match param {
         Some(par) => {
-            key.append(&mut par.clone());
+            key.extend(&par.clone());
             blake2_256(&key).to_vec()
         },
         _ => {
@@ -43,7 +43,7 @@ pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<
 
 pub fn storage_key_hash_double_map(module: &str, storage_key_name: &str, first: Vec<u8>, second: Vec<u8>) -> String {
     let mut keyhash = storage_key_hash_vec(module, storage_key_name, Some(first));
-    keyhash.append(&mut blake2_256(&second).to_vec());
+    keyhash.extend(&blake2_256(&second).to_vec());
     let mut keyhash_str = hex::encode(keyhash);
     keyhash_str.insert_str(0, "0x");
     keyhash_str
