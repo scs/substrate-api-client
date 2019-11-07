@@ -136,11 +136,11 @@ pipeline {
     }
   }
   post {
-    changed {
+    unsuccessful {
         emailext (
           subject: "Jenkins Build '${env.JOB_NAME} [${env.BUILD_NUMBER}]' is ${currentBuild.currentResult}",
           body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} changed state and is now ${currentBuild.currentResult}\n\nMore info at: ${env.BUILD_URL}",
-          to: '${env.RECIPIENTS_SUBSTRATEE}'
+          to: "${env.RECIPIENTS_SUBSTRATEE}"
         )
     }
   }
