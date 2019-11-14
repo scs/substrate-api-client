@@ -5,19 +5,20 @@ authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
 [dependencies]
-env_logger      = { version = "0.6", optional = true }
+env_logger      = { version = "0.7", optional = true }
 ws              = { version = "0.7", optional = true }
-hex             = { version = "0.3", default-features=false, optional = true }
+hex             = { version = "0.4", default-features=false, optional = true }
 log             = { version = "0.4", optional = true }
 serde           = { version = "1.0", optional = true, features = ["derive"] }
 serde_json      = { version = "1.0", optional = true }
-primitive-types = { version = "0.5", default-features = false, features = ["codec"] }
-parity-codec-derive = { version = "3.3", default-features = false }
+primitive-types = { version = "0.6", default-features = false, features = ["codec"] }
 
 [dependencies.primitives]
-path = "./primitives"
-default-features=false
+git = 'https://github.com/paritytech/substrate'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "substrate-primitives"
+default-features = false
+features = ["full_crypto"]
 
 [dependencies.codec]
 package = "parity-scale-codec"
@@ -27,71 +28,71 @@ default-features = false
 
 [dependencies.indices]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "srml-indices"
 default-features=false
 
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "sr-io"
 default-features=false
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "srml-metadata"
 default-features=false
 
 [dependencies.runtime_version]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "sr-version"
 default-features=false
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "srml-balances"
 default-features=false
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "srml-system"
 default-features=false
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "sr-primitives"
 default-features=false
 
 [dependencies.runtime_support]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "srml-support"
 default-features=false
 
 [dependencies.rstd]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "sr-std"
 default-features = false
 
 [dev-dependencies.node_runtime]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "node-runtime"
 
 [dev-dependencies.node_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "node-primitives"
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
-rev = "f17d023bbe179f15678ac9989f471c9b18917e17"
+rev = "6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e"
 package = "srml-contracts"
 
 [dev-dependencies]
@@ -99,7 +100,7 @@ wabt = "0.9.0"
 
 [dev-dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
-rev = 'f17d023bbe179f15678ac9989f471c9b18917e17'
+rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
 package = "substrate-keyring"
 
 [dev-dependencies.clap] 
@@ -164,9 +165,6 @@ path = "src/examples/example_compose_extrinsic_offline.rs"
 [[example]]
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
-
-[patch."https://github.com/paritytech/substrate"]
-substrate-primitives = { package = "substrate-primitives", path = "./primitives", default-features = false }
 
 [patch.crates-io]
 ed25519-dalek = { git = "https://github.com/scs/ed25519-dalek.git", branch = "no_std_sgx"}
