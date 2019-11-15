@@ -15,7 +15,7 @@ primitive-types = { version = "0.6", default-features = false, features = ["code
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "substrate-primitives"
 default-features = false
 features = ["full_crypto"]
@@ -28,79 +28,79 @@ default-features = false
 
 [dependencies.indices]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
-package = "srml-indices"
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
+package = "paint-indices"
 default-features=false
 
 [dependencies.runtime_io]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "sr-io"
 default-features=false
 
 [dependencies.metadata]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
-package = "srml-metadata"
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
+package = "paint-metadata"
 default-features=false
 
 [dependencies.runtime_version]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "sr-version"
 default-features=false
 
 [dependencies.balances]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
-package = "srml-balances"
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
+package = "paint-balances"
 default-features=false
 
 [dependencies.system]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
-package = "srml-system"
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
+package = "paint-system"
 default-features=false
 
 [dependencies.runtime_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "sr-primitives"
 default-features=false
 
 [dependencies.runtime_support]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
-package = "srml-support"
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
+package = "paint-support"
 default-features=false
 
 [dependencies.rstd]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "sr-std"
 default-features = false
 
 [dev-dependencies.node_runtime]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "node-runtime"
 
-[dev-dependencies.node_primitives]
+[dependencies.node_primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "node-primitives"
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
-rev = "6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e"
-package = "srml-contracts"
+rev = "8700dbb1858f01b6ea6e3fc5d40d1478e7634c60"
+package = "paint-contracts"
 
 [dev-dependencies]
 wabt = "0.9.0"
 
 [dev-dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "substrate-keyring"
 
 [dev-dependencies.clap] 

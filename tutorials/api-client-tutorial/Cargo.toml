@@ -10,10 +10,10 @@ codec = { package = "parity-scale-codec", features = ["derive"], version = "1.0.
 
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "substrate-primitives"
 
 [dependencies.keyring]
 git = 'https://github.com/paritytech/substrate'
-rev = '6ae3b6c4ddc03d4cdb10bd1d417b95d20f4c1b6e'
+rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "substrate-keyring"
