@@ -60,11 +60,15 @@ pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;
 
-use extrinsic::xt_primitives::AccountId;
+use runtime_primitives::{AccountId32, MultiSignature};
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
-pub struct Api<P: Pair> {
+pub struct Api<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
     url: String,
     pub signer: Option<P>,
     pub genesis_hash: Hash,
@@ -76,6 +80,7 @@ pub struct Api<P: Pair> {
 impl<P> Api<P>
     where
         P: Pair,
+        MultiSignature: From<P::Signature>,
 {
     pub fn new(url: String) -> Self {
         let genesis_hash = Self::_get_genesis_hash(url.clone());
@@ -181,9 +186,10 @@ impl<P> Api<P>
         }
     }
 
-    pub fn get_free_balance(&self, address: &AccountId) -> U256 {
+    pub fn get_free_balance(&self, address: &AccountId32) -> U256 {
+        let id: &[u8; 32] = address.as_ref();
         let result_str = self
-            .get_storage("Balances", "FreeBalance", Some(address.0.encode()))
+            .get_storage("Balances", "FreeBalance", Some(id.to_owned().encode()))
             .unwrap();
         hexstr_to_u256(result_str).unwrap()
     }

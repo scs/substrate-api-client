@@ -19,6 +19,7 @@ use rstd::prelude::*;
 use codec::Compact;
 use primitives::H256 as Hash;
 use primitives::crypto::Pair;
+use runtime_primitives::MultiSignature;
 
 #[cfg(feature = "std")]
 use crate::{Api,compose_extrinsic};
@@ -40,13 +41,17 @@ pub type ContractCallFn = (
     Vec<u8>,
 );
 
-pub type ContractPutCodeXt<P> = UncheckedExtrinsicV3<ContractPutCodeFn, P>;
-pub type ContractCreateXt<P> = UncheckedExtrinsicV3<ContractCreateFn, P>;
-pub type ContractCallXt<P> = UncheckedExtrinsicV3<ContractCallFn, P>;
+pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
+pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
+pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
 
 #[cfg(feature = "std")]
-impl <P: Pair> Api<P> {
-    pub fn contract_put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt<P> {
+impl<P> Api<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    pub fn contract_put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt {
             compose_extrinsic!(
             &self,
             CONTRACTS_MODULE,
@@ -62,7 +67,7 @@ impl <P: Pair> Api<P> {
         gas_limit: u64,
         code_hash: Hash,
         data: Vec<u8>,
-    ) -> ContractCreateXt<P> {
+    ) -> ContractCreateXt {
 
             compose_extrinsic!(
             self,
@@ -81,7 +86,7 @@ impl <P: Pair> Api<P> {
         value: u128,
         gas_limit: u64,
         data: Vec<u8>,
-    ) -> ContractCallXt<P>{
+    ) -> ContractCallXt{
 
             compose_extrinsic!(
             self,

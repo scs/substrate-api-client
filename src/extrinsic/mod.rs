@@ -81,6 +81,7 @@ macro_rules! compose_extrinsic_offline {
                 (),
                 (),
                 (),
+                (),
             ),
         );
 
@@ -88,10 +89,13 @@ macro_rules! compose_extrinsic_offline {
 
         let mut arr: [u8; 32] = Default::default();
         arr.clone_from_slice($signer.public().as_ref());
-        UncheckedExtrinsicV3 {
-            signature: Some((GenericAddress::from(arr), signature, extra)),
-            function: $call,
-        }
+
+        UncheckedExtrinsicV3::new_signed(
+            $call,
+            GenericAddress::from(arr),
+            signature.into(),
+            extra
+        )
     }};
 }
 

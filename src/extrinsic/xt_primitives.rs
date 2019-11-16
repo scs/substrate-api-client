@@ -24,16 +24,13 @@ use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use primitive_types::H256;
 use primitives::blake2_256;
-use runtime_primitives::{AnySignature, traits::Verify, generic::Era};
-use primitives::crypto::Pair;
-
+use runtime_primitives::{MultiSignature, generic::Era};
 pub type GenericAddress = Address<[u8; 32], u32>;
-pub type AccountId = <AnySignature as Verify>::Signer;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
-/// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, TakeFees). This can
-/// be locked up in the System module. Fields that are merely PhantomData are not encoded and are
+/// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+/// This can be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
 #[cfg_attr(feature = "std",derive(Debug))]
 #[derive(Decode, Encode, Clone, Eq, PartialEq)]
@@ -44,14 +41,14 @@ impl GenericExtra {
         GenericExtra(
             Era::Immortal,
             Compact(nonce),
-            Compact(0 as u128), //weight
+            Compact(0 as u128),
         )
     }
 }
 
 /// additionalSigned fields of the respective SignedExtra fields.
 /// Order is the same as declared in the extra.
-pub type AdditionalSigned = (u32, H256, H256, (), (), ());
+pub type AdditionalSigned = (u32, H256, H256, (), (), (), ());
 
 #[derive(Encode, Clone)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
@@ -81,25 +78,22 @@ impl<Call> SignedPayload<Call> where
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
 #[derive(Clone)]
-pub struct UncheckedExtrinsicV3<Call, P>
+pub struct UncheckedExtrinsicV3<Call>
     where
-        Call: Encode ,
-        P: Pair,
+        Call: Encode,
 {
-    pub signature: Option<(GenericAddress, P::Signature, GenericExtra)>,
+    pub signature: Option<(GenericAddress, MultiSignature, GenericExtra)>,
     pub function: Call,
 }
 
-impl<Call, P> UncheckedExtrinsicV3<Call, P>
+impl<Call> UncheckedExtrinsicV3<Call>
     where
         Call: Encode ,
-        P: Pair,
-        P::Signature: Encode,
 {
     pub fn new_signed(
         function: Call,
         signed: GenericAddress,
-        signature: P::Signature,
+        signature: MultiSignature,
         extra: GenericExtra,
     ) -> Self {
         UncheckedExtrinsicV3 {
@@ -117,11 +111,9 @@ impl<Call, P> UncheckedExtrinsicV3<Call, P>
 }
 
 #[cfg(feature = "std")]
-impl<Call, P> fmt::Debug for UncheckedExtrinsicV3<Call, P>
+impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
 where
     Call: fmt::Debug + Encode,
-    P: Pair,
-    P::Signature: Encode,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -133,11 +125,9 @@ where
     }
 }
 
-impl<Call, P> Encode for UncheckedExtrinsicV3<Call, P>
+impl<Call> Encode for UncheckedExtrinsicV3<Call>
     where
         Call: Encode,
-        P: Pair,
-        P::Signature: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {
