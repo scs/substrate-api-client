@@ -92,7 +92,7 @@ macro_rules! compose_extrinsic_offline {
         let mut arr: [u8; 32] = Default::default();
         arr.clone_from_slice($signer.public().as_ref());
 
-        UncheckedExtrinsicV3::new_signed(
+        UncheckedExtrinsicV4::new_signed(
             $call,
             GenericAddress::from(AccountId::from(arr)),
             signature.into(),
@@ -134,7 +134,7 @@ macro_rules! compose_extrinsic {
                     $api.runtime_version.spec_version
                 )
             } else {
-                UncheckedExtrinsicV3 {
+                UncheckedExtrinsicV4 {
                     signature: None,
                     function: call.clone(),
                 }

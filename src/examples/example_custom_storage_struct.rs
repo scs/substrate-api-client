@@ -28,7 +28,7 @@ use primitives::{H256, crypto::Pair};
 
 use substrate_api_client::{
     compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV3,
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     utils::*,
     Api,
 };
@@ -49,7 +49,7 @@ fn main() {
     let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
     

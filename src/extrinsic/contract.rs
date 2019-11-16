@@ -41,9 +41,9 @@ pub type ContractCallFn = (
     Vec<u8>,
 );
 
-pub type ContractPutCodeXt = UncheckedExtrinsicV3<ContractPutCodeFn>;
-pub type ContractCreateXt = UncheckedExtrinsicV3<ContractCreateFn>;
-pub type ContractCallXt = UncheckedExtrinsicV3<ContractCallFn>;
+pub type ContractPutCodeXt = UncheckedExtrinsicV4<ContractPutCodeFn>;
+pub type ContractCreateXt = UncheckedExtrinsicV4<ContractCreateFn>;
+pub type ContractCallXt = UncheckedExtrinsicV4<ContractCallFn>;
 
 #[cfg(feature = "std")]
 impl<P> Api<P>

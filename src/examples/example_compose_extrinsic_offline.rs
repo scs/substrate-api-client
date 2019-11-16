@@ -24,7 +24,7 @@ use primitives::crypto::Pair;
 
 use substrate_api_client::{
     compose_extrinsic_offline,
-    extrinsic::xt_primitives::UncheckedExtrinsicV3,
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     Api,
 };
 
@@ -45,7 +45,7 @@ fn main() {
     let to = AccountKeyring::Bob.to_account_id();
 
     // compose the extrinsic with all the element
-    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic_offline!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
         api.clone().signer.unwrap(),
         Call::Balances(BalancesCall::transfer(to.clone().into(), 42)),
         api.get_nonce().unwrap(),

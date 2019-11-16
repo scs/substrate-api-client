@@ -22,7 +22,7 @@ use primitives::crypto::Pair;
 
 use substrate_api_client::{
     compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV3,
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     Api,
 };
 
@@ -39,7 +39,7 @@ fn main() {
 
     // call Balances::transfer
     // the names are given as strings
-    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",

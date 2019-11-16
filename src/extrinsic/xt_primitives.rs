@@ -79,7 +79,7 @@ impl<Call> SignedPayload<Call> where
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
 #[derive(Clone)]
-pub struct UncheckedExtrinsicV3<Call>
+pub struct UncheckedExtrinsicV4<Call>
     where
         Call: Encode,
 {
@@ -87,7 +87,7 @@ pub struct UncheckedExtrinsicV3<Call>
     pub function: Call,
 }
 
-impl<Call> UncheckedExtrinsicV3<Call>
+impl<Call> UncheckedExtrinsicV4<Call>
     where
         Call: Encode ,
 {
@@ -97,7 +97,7 @@ impl<Call> UncheckedExtrinsicV3<Call>
         signature: MultiSignature,
         extra: GenericExtra,
     ) -> Self {
-        UncheckedExtrinsicV3 {
+        UncheckedExtrinsicV4 {
             signature: Some((signed, signature, extra)),
             function,
         }
@@ -112,7 +112,7 @@ impl<Call> UncheckedExtrinsicV3<Call>
 }
 
 #[cfg(feature = "std")]
-impl<Call> fmt::Debug for UncheckedExtrinsicV3<Call>
+impl<Call> fmt::Debug for UncheckedExtrinsicV4<Call>
 where
     Call: fmt::Debug + Encode,
 {
@@ -126,7 +126,7 @@ where
     }
 }
 
-impl<Call> Encode for UncheckedExtrinsicV3<Call>
+impl<Call> Encode for UncheckedExtrinsicV4<Call>
     where
         Call: Encode,
 {

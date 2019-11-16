@@ -22,7 +22,7 @@ use primitives::crypto::Pair;
 use codec::Compact;
 use substrate_api_client::{
     compose_extrinsic, compose_call,
-    extrinsic::xt_primitives::{UncheckedExtrinsicV3, GenericAddress},
+    extrinsic::xt_primitives::{UncheckedExtrinsicV4, GenericAddress},
     Api,
 };
 
@@ -46,7 +46,7 @@ fn main() {
             Compact(42 as u128),
             Compact(42 as u128)
     );
-    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
         api.clone(),
         "Sudo",
         "sudo",
