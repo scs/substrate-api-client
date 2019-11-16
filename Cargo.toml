@@ -89,6 +89,7 @@ package = "node-runtime"
 git = 'https://github.com/paritytech/substrate'
 rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
 package = "node-primitives"
+default-features=false
 
 [dev-dependencies.contracts]
 git = 'https://github.com/paritytech/substrate'
