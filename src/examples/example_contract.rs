@@ -153,7 +153,7 @@ fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> Generi
                         info!("Received Contract.Instantiated Event");
                         info!("From: {:?}", from);
                         info!("Deployed at: {:?}", deployed_at);
-                        return GenericAddress::from(deployed_at.to_owned().0);
+                        return GenericAddress::from(deployed_at.to_owned());
                     }
                 }
             }

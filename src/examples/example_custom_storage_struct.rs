@@ -23,7 +23,7 @@ use clap::{load_yaml, App};
 use codec::{Decode, Encode};
 use log::*;
 use keyring::AccountKeyring;
-use primitives::{H256, sr25519, crypto::Pair};
+use primitives::{H256, crypto::Pair};
 
 
 use substrate_api_client::{
@@ -49,7 +49,7 @@ fn main() {
     let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let xt: UncheckedExtrinsicV3<_, sr25519::Pair> = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
+    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
     

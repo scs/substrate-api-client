@@ -22,6 +22,7 @@
 pub extern crate codec;
 #[cfg(feature = "std")]
 pub extern crate log;
+pub extern crate node_primitives;
 
 pub mod balances;
 pub mod contract;
@@ -69,6 +70,7 @@ macro_rules! compose_extrinsic_offline {
     $genesis_hash: expr,
     $runtime_spec_version: expr) => {{
         use $crate::extrinsic::xt_primitives::*;
+        use $crate::extrinsic::node_primitives::AccountId;
 
         let extra = GenericExtra::new($nonce);
         let raw_payload = SignedPayload::from_raw(
@@ -92,7 +94,7 @@ macro_rules! compose_extrinsic_offline {
 
         UncheckedExtrinsicV3::new_signed(
             $call,
-            GenericAddress::from(arr),
+            GenericAddress::from(AccountId::from(arr)),
             signature.into(),
             extra
         )

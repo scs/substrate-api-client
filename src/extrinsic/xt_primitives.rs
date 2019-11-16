@@ -23,9 +23,10 @@ use std::fmt;
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use primitive_types::H256;
+use node_primitives::{AccountIndex, AccountId};
 use primitives::blake2_256;
 use runtime_primitives::{MultiSignature, generic::Era};
-pub type GenericAddress = Address<[u8; 32], u32>;
+pub type GenericAddress = Address<AccountId, AccountIndex>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
