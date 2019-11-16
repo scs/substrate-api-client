@@ -143,11 +143,11 @@ impl<Call, P> Encode for UncheckedExtrinsicV3<Call, P>
         encode_with_vec_prefix::<Self, _>(|v| {
             match self.signature.as_ref() {
                 Some(s) => {
-                    v.push(3 as u8 | 0b1000_0000);
+                    v.push(4 as u8 | 0b1000_0000);
                     s.encode_to(v);
                 }
                 None => {
-                    v.push(3 as u8 & 0b0111_1111);
+                    v.push(4 as u8 & 0b0111_1111);
                 }
             }
             self.function.encode_to(v);
