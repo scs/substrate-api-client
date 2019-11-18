@@ -27,6 +27,7 @@ pub extern fn main(_nargs: i32, _args: *const *const u8) -> i32 {
     // Exit with a return status of 0.
     0
 }
+
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
     loop {}

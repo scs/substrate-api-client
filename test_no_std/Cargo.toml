@@ -20,19 +20,19 @@ default-features=false
 features=["full_crypto"]
 
 [dependencies.application-crypto]
-git = 'https://github.com/paritytech/substrate'
-rev = '8700dbb1858f01b6ea6e3fc5d40d1478e7634c60'
+git = 'https://github.com/scs/substrate'
+branch = "brenzi-fix-full-crypto"
 package = "substrate-application-crypto"
 default-features = false
 features = ["full_crypto"]
 
-#[dependencies.sr-io]
-#git = "https://github.com/scs/substraTEE-node"
-#rev = 'd4a057c5841796994b46b6b35de922ec5777fec5'
-#package = 'sr-io'
-#default-features=false
-#features = ["no_oom", "no_panic_handler"]
-#
+[dependencies.sr-io]
+git = 'https://github.com/scs/substrate'
+branch = "brenzi-fix-full-crypto"
+package = 'sr-io'
+default-features=false
+features = ["disable_oom", "disable_panic_handler"]
+
 #[patch.'https://github.com/paritytech/substrate']
 #sr-io = { git = "https://github.com/scs/substraTEE-node", rev = 'd4a057c5841796994b46b6b35de922ec5777fec5' }
 
