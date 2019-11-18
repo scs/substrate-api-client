@@ -130,6 +130,8 @@ std = [
 	"ws",
 	"hex",
 ]
+# need to add this for the app_crypto macro
+full_crypto = []
 
 [[example]]
 name = "example_get_storage"
