@@ -21,7 +21,7 @@ use primitives::crypto::Pair;
 use substrate_api_client::{
     Api,
     compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV3,
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     utils::{hexstr_to_u64, hexstr_to_vec}
 };
 
