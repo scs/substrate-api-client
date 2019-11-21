@@ -14,8 +14,8 @@ serde_json      = { version = "1.0", optional = true }
 primitive-types = { version = "0.6", default-features = false, features = ["codec"] }
 
 [dependencies.primitives]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "substrate-primitives"
 default-features = false
 features = ["full_crypto"]
@@ -27,81 +27,81 @@ version = "1.0.0"
 default-features = false
 
 [dependencies.indices]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
-package = "paint-indices"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+package = "pallet-indices"
 default-features=false
 
 [dependencies.runtime_io]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "sr-io"
 default-features=false
 
 [dependencies.metadata]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
-package = "paint-metadata"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+package = "palette-metadata"
 default-features=false
 
 [dependencies.runtime_version]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "sr-version"
 default-features=false
 
 [dependencies.balances]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
-package = "paint-balances"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+package = "pallet-balances"
 default-features=false
 
 [dependencies.system]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
-package = "paint-system"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+package = "palette-system"
 default-features=false
 
 [dependencies.runtime_primitives]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "sr-primitives"
 default-features=false
 
 [dependencies.runtime_support]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
-package = "paint-support"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+package = "palette-support"
 default-features=false
 
 [dependencies.rstd]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "sr-std"
 default-features = false
 
 [dev-dependencies.node_runtime]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "node-runtime"
 
 [dependencies.node_primitives]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "node-primitives"
 default-features=false
 
 [dev-dependencies.contracts]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
-package = "paint-contracts"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+package = "pallet-contracts"
 
 [dev-dependencies]
 wabt = "0.9.0"
 
 [dev-dependencies.keyring]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "substrate-keyring"
 
 [dev-dependencies.clap] 

@@ -20,24 +20,18 @@ default-features=false
 features=["full_crypto"]
 
 [dependencies.application-crypto]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = "substrate-application-crypto"
 default-features = false
 features = ["full_crypto"]
 
 [dependencies.sr-io]
-git = "https://github.com/scs/substrate"
-branch = "brenzi-fix-full-crypto"
+git = "https://github.com/paritytech/substrate"
+rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
 package = 'sr-io'
 default-features=false
 features = ["disable_oom", "disable_panic_handler"]
-
-#[patch.'https://github.com/paritytech/substrate']
-#sr-io = { git = "https://github.com/scs/substraTEE-node", rev = 'd4a057c5841796994b46b6b35de922ec5777fec5' }
-
-#[patch.'https://github.com/scs/substrate-api-client']
-#substrate-api-client = { path = "../"}
 
 #[patch.crates-io]
 #ed25519-dalek = { git = "https://github.com/scs/ed25519-dalek.git", branch = "no_std_sgx"}
