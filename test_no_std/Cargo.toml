@@ -20,14 +20,14 @@ default-features=false
 features=["full_crypto"]
 
 [dependencies.application-crypto]
-git = 'https://github.com/scs/substrate'
+git = "https://github.com/scs/substrate"
 branch = "brenzi-fix-full-crypto"
 package = "substrate-application-crypto"
 default-features = false
 features = ["full_crypto"]
 
 [dependencies.sr-io]
-git = 'https://github.com/scs/substrate'
+git = "https://github.com/scs/substrate"
 branch = "brenzi-fix-full-crypto"
 package = 'sr-io'
 default-features=false
