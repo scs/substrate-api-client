@@ -25,7 +25,7 @@ fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
     match param {
         Some(par) => {
-            key.extend(&par.clone());
+            key.extend(&par);
             blake2_256(&key).to_vec()
         },
         _ => {
