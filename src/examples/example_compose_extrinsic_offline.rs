@@ -20,11 +20,11 @@ use clap::{load_yaml, App};
 
 use node_runtime::{BalancesCall, Call};
 use keyring::AccountKeyring;
-use primitives::{sr25519, crypto::Pair};
+use primitives::crypto::Pair;
 
 use substrate_api_client::{
     compose_extrinsic_offline,
-    extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3},
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     Api,
 };
 
@@ -42,10 +42,10 @@ fn main() {
     );
 
     // define the recipient
-    let to = AccountId::from(AccountKeyring::Bob);
+    let to = AccountKeyring::Bob.to_account_id();
 
     // compose the extrinsic with all the element
-    let xt: UncheckedExtrinsicV3<_, sr25519::Pair> = compose_extrinsic_offline!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
         api.clone().signer.unwrap(),
         Call::Balances(BalancesCall::transfer(to.clone().into(), 42)),
         api.get_nonce().unwrap(),

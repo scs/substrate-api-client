@@ -22,6 +22,7 @@
 pub extern crate codec;
 #[cfg(feature = "std")]
 pub extern crate log;
+pub extern crate node_primitives;
 
 pub mod balances;
 pub mod contract;
@@ -69,6 +70,7 @@ macro_rules! compose_extrinsic_offline {
     $genesis_hash: expr,
     $runtime_spec_version: expr) => {{
         use $crate::extrinsic::xt_primitives::*;
+        use $crate::extrinsic::node_primitives::AccountId;
 
         let extra = GenericExtra::new($nonce);
         let raw_payload = SignedPayload::from_raw(
@@ -81,6 +83,7 @@ macro_rules! compose_extrinsic_offline {
                 (),
                 (),
                 (),
+                (),
             ),
         );
 
@@ -88,10 +91,13 @@ macro_rules! compose_extrinsic_offline {
 
         let mut arr: [u8; 32] = Default::default();
         arr.clone_from_slice($signer.public().as_ref());
-        UncheckedExtrinsicV3 {
-            signature: Some((GenericAddress::from(arr), signature, extra)),
-            function: $call,
-        }
+
+        UncheckedExtrinsicV4::new_signed(
+            $call,
+            GenericAddress::from(AccountId::from(arr)),
+            signature.into(),
+            extra
+        )
     }};
 }
 
@@ -128,61 +134,11 @@ macro_rules! compose_extrinsic {
                     $api.runtime_version.spec_version
                 )
             } else {
-                UncheckedExtrinsicV3 {
+                UncheckedExtrinsicV4 {
                     signature: None,
                     function: call.clone(),
                 }
             }
 		}
     };
-}
-
-#[cfg(test)]
-mod tests {
-    use codec::{Compact, Encode};
-    use node_primitives::Balance;
-    use primitives::sr25519;
-
-    use xt_primitives::*;
-
-    use crate::crypto::*;
-    use crate::extrinsic::balances::{BALANCES_MODULE, BALANCES_TRANSFER};
-    use crate::Api;
-
-    use super::*;
-
-    fn test_api() -> Api {
-        let node_ip = "127.0.0.1";
-        let node_port = "9944";
-        let url = format!("{}:{}", node_ip, node_port);
-        println!("Interacting with node on {}", url);
-        Api::new(format!("ws://{}", url))
-    }
-
-    #[test]
-    fn call_from_meta_data_works() {
-        let api = test_api();
-
-        let balance_module_index = 5u8;
-        let balance_transfer_index = 0u8;
-
-        let amount = Balance::from(42 as u128);
-        let to = sr25519::from_phrase("//Alice", Some(""));
-
-        let my_call = (
-            [balance_module_index, balance_transfer_index],
-            GenericAddress::from(to.clone()),
-            Compact(amount),
-        )
-            .encode();
-        let transfer_fn = compose_call!(
-            api.metadata.clone(),
-            BALANCES_MODULE,
-            BALANCES_TRANSFER,
-            GenericAddress::from(to),
-            Compact(amount)
-        )
-        .encode();
-        assert_eq!(my_call, transfer_fn);
-    }
 }

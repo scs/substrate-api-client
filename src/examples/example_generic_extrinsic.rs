@@ -18,11 +18,11 @@
 
 use clap::{load_yaml, App};
 use keyring::AccountKeyring;
-use primitives::{sr25519, crypto::Pair};
+use primitives::crypto::Pair;
 
 use substrate_api_client::{
     compose_extrinsic,
-    extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3},
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     Api,
 };
 
@@ -35,15 +35,15 @@ fn main() {
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
 
     // set the recipient
-    let to = AccountId::from(AccountKeyring::Bob);
+    let to = AccountKeyring::Bob.to_account_id();
 
     // call Balances::transfer
     // the names are given as strings
-    let xt: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
-        GenericAddress::from(to.0.clone()),
+        GenericAddress::from(to.clone()),
         Compact(42 as u128)
     );
 

@@ -31,13 +31,13 @@ fn main() {
     let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let to = AccountId::from(AccountKeyring::Bob);
+    let to = AccountKeyring::Bob.to_account_id();
 
     let result = api.get_free_balance(&to);
     println!("[+] Bob's Free Balance is is {}\n", result);
 
     // generate extrinsic
-    let xt = api.balance_transfer(GenericAddress::from(to.0.clone()), 1000);
+    let xt = api.balance_transfer(GenericAddress::from(to.clone()), 1000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n",

@@ -17,12 +17,11 @@ use codec::{Decode, Encode};
 use keyring::AccountKeyring;
 
 use primitives::crypto::Pair;
-use primitives::sr25519;
 
 use substrate_api_client::{
     Api,
     compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV3,
+    extrinsic::xt_primitives::UncheckedExtrinsicV4,
     utils::{hexstr_to_u64, hexstr_to_vec}
 };
 
@@ -40,7 +39,7 @@ fn main() {
     let api = Api::new(format!("ws://{}", url))
         .set_signer(signer.clone());
 
-    let xt: UncheckedExtrinsicV3<_, sr25519::Pair> = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic!(
         api.clone(),
         "KittyModule",
         "create_kitty",

@@ -18,11 +18,11 @@
 
 use clap::{load_yaml, App};
 use keyring::AccountKeyring;
-use primitives::{sr25519, crypto::Pair};
+use primitives::crypto::Pair;
 use codec::Compact;
 use substrate_api_client::{
     compose_extrinsic, compose_call,
-    extrinsic::xt_primitives::{AccountId, UncheckedExtrinsicV3, GenericAddress},
+    extrinsic::xt_primitives::{UncheckedExtrinsicV4, GenericAddress},
     Api,
 };
 
@@ -35,18 +35,18 @@ fn main() {
     let api = Api::new(format!("ws://{}", url)).set_signer(sudoer.clone());
 
     // set the recipient of newly issued funds
-    let to = AccountId::from(AccountKeyring::Bob);
+    let to = AccountKeyring::Bob.to_account_id();
 
     // this call can only be called by sudo
     let call = compose_call!(
             api.metadata.clone(),
             "Balances",
             "set_balance",
-            GenericAddress::from(to.0.clone()),
+            GenericAddress::from(to.clone()),
             Compact(42 as u128),
             Compact(42 as u128)
     );
-    let xt: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
         api.clone(),
         "Sudo",
         "sudo",

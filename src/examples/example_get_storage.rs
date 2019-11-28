@@ -21,7 +21,6 @@ use keyring::AccountKeyring;
 use primitives::crypto::Pair;
 use substrate_api_client::{
     Api,
-    extrinsic::xt_primitives::AccountId,
     utils::hexstr_to_u256,
 };
 
@@ -37,7 +36,7 @@ fn main() {
     println!("[+] TotalIssuance is {}", result);
 
     // get Alice's AccountNonce
-    let accountid = AccountId::from(AccountKeyring::Alice);
+    let accountid = AccountKeyring::Alice.to_account_id();
     let result_str = api
         .get_storage("System", "AccountNonce", Some(accountid.encode()))
         .unwrap();
