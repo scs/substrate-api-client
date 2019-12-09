@@ -86,7 +86,7 @@ where
         info!("Got genesis hash: {:?}", genesis_hash);
 
         let meta = Self::_get_metadata(url.clone());
-        let metadata = node_metadata::parse_metadata(&meta);
+        let metadata = node_metadata::parse_metadata(meta).unwrap();
         info!("Metadata: {:?}", metadata);
 
         let runtime_version = Self::_get_runtime_version(url.clone());
