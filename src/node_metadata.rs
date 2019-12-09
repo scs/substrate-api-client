@@ -17,8 +17,6 @@
 
 use std::{
     collections::HashMap,
-    convert::TryFrom,
-    marker::PhantomData,
     str::FromStr,
 };
 
@@ -54,6 +52,16 @@ impl NodeMetadata {
         self.modules_with_calls
             .get(&name)
             .ok_or(MetadataError::ModuleNotFound(name))
+    }
+
+    pub fn module_with_events(
+        &self,
+        module_index: u8,
+    ) -> Result<&ModuleWithEvents, MetadataError> {
+        self.modules_with_events
+            .values()
+            .find(|&module| module.index == module_index)
+            .ok_or(MetadataError::ModuleWithEventsNotFound(module_index))
     }
 
     pub fn modules_with_events(&self) -> impl Iterator<Item = &ModuleWithEvents> {
@@ -121,6 +129,20 @@ impl ModuleWithEvents {
         }
     }
 
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn events(&self) -> impl Iterator<Item = &Event> {
+        self.events.values()
+    }
+
+    pub fn event(&self, index: u8) -> Result<&Event, MetadataError> {
+        self.events
+            .get(&index)
+            .ok_or(MetadataError::EventNotFound(index))
+    }
+
     pub fn print_events(&self) {
         println!(
             "----------------- Events for Module: {} -----------------\n",
@@ -158,12 +180,6 @@ pub struct Event {
 impl Event {
     pub fn arguments(&self) -> Vec<EventArg> {
         self.arguments.to_vec()
-    }
-}
-
-impl Event {
-    fn new(name: &DecodeDifferent<&'static str, std::string::String>) -> Event {
-        Event { name: format!("{:?}", name).replace("\"", ""), arguments: Vec::<EventArg>::new() }
     }
 }
 

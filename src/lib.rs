@@ -24,11 +24,14 @@ use std::sync::mpsc::channel;
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
+#[cfg(feature = "std")]
+use std::convert::TryFrom;
+
+use codec::{Decode, Encode, Error as CodecError};
 use balances::AccountData;
-use codec::{Decode, Encode};
 
 #[cfg(feature = "std")]
-use log::{debug, info};
+use log::{info, error, debug};
 
 use metadata::RuntimeMetadataPrefixed;
 use sp_core::crypto::Pair;
@@ -53,12 +56,16 @@ use sp_version::RuntimeVersion;
 pub mod extrinsic;
 #[cfg(feature = "std")]
 pub mod node_metadata;
+#[cfg(feature = "std")]
+pub mod events;
 
 #[cfg(feature = "std")]
 pub mod rpc;
 #[cfg(feature = "std")]
 pub mod utils;
 
+use crate::events::{RawEvent, RuntimeEvent, EventsDecoder};
+use std::sync::mpsc::Receiver;
 use sp_runtime::{AccountId32, MultiSignature};
 
 #[cfg(feature = "std")]
@@ -251,5 +258,38 @@ where
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
         rpc::start_event_subscriber(self.url.clone(), jsonreq.clone(), sender.clone());
+    }
+
+    pub fn wait_for_event<E: Decode>(&self, module: &str, variant: &str, receiver: Receiver<String>) -> Option<Result<E, CodecError>> {
+        self.wait_for_raw_event(module, variant, receiver)
+            .map(|raw| E::decode(&mut &raw.data[..]))
+    }
+
+    pub fn wait_for_raw_event(&self, module: &str, variant: &str, receiver: Receiver<String>) -> Option<RawEvent> {
+        loop {
+            let event_str = receiver.recv().unwrap();
+
+            let _unhex = hexstr_to_vec(event_str).unwrap();
+            let mut _er_enc = _unhex.as_slice();
+
+            let event_decoder = EventsDecoder::try_from(self.metadata.clone()).unwrap();
+            let _events = event_decoder.decode_events(&mut _er_enc);
+
+            match _events {
+                Ok(raw_events) => {
+                    for (phase, event) in raw_events.into_iter() {
+                        println!("decoded: {:?}, {:?}", phase, event);
+                        match event {
+                            RuntimeEvent::Raw(raw)
+                                if raw.module == module && raw.variant == variant => {
+                                    return Some(raw)
+                                }
+                            _ => debug!("ignoring unsupported module event: {:?}", event),
+                        }
+                    }
+                }
+                Err(_) => error!("couldn't decode event record list"),
+            }
+        }
     }
 }
