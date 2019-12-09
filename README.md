@@ -1,12 +1,16 @@
 # substrate-api-client
-is a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
 
-* Compose extrinsics, send them and subscribe to updates.
+![web3 grant badge](./web3_foundation_grants_badge_black.svg)
+
+substrate-api-client a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
+
+* Compose extrinsics, send them and subscribe to updates (synchronously).
 * supports composing extrinsics for `no_std` builds
 * Watch events and execute code upon events.
 * Parse and print the node metadata.
 
 ## Prerequisites
+
 In order to build the substrate-api-client and the examples, Rust and the wasm target are needed. For Linux:
 
     curl https://sh.rustup.rs -sSf | sh
@@ -34,19 +38,23 @@ Run the node:
     ./target/release/substrate-test-node --dev
 
 ## Tutorial
+
 There is a detailed tutorial in the [tutorials](/tutorials) folder.
 
 ## Examples
+
 To run an example, clone the `substrate-api-client` repository and run the desired example directly with the cargo command:
 
-```
+```bash
     git clone https://github.com/scs/substrate-api-client.git
     cd substrate-api-client
     cargo run --example example_get_storage
 ```
+
 Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
 The following examples can be found in the [examples](/src/examples) folder:
+
 * [example_compose_extrinsic_offline](/src/examples/example_compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
 * [example_contract](/src/examples/example_contract.rs): Handle ink! contracts (put, create, and call).
 * [example_custom_storage_struct](/src/examples/example_custom_storage_struct.rs): Fetch and decode custom structs from the runtime.
@@ -57,7 +65,9 @@ The following examples can be found in the [examples](/src/examples) folder:
 * [example_transfer](/src/examples/example_transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic
 
 ### ink! contract
+
 Shows how to setup an ink! contract with the predefined contract extrinsics:
+
 * put_code: Stores a contract wasm blob on the chain
 * create: Creates an instance of the contract
 * call: Calls a contract.
@@ -65,6 +75,7 @@ Shows how to setup an ink! contract with the predefined contract extrinsics:
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes as the contract module is not included by default in a substrate node.
 
 ### Read custom storage struct
+
 Shows how to fetch and decode a custom storage struct.
 
     // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
@@ -91,6 +102,7 @@ Shows how to fetch and decode a custom storage struct.
 *Note*: This example only works with the substrate-test-node found in https://github.com/scs/substrate-test-nodes for obvious reasons.
 
 ### Sending generic extrinsics
+
 Shows how to use the compose_extrinsic! macro that is able to create an extrinsic for any kind of call, even for custom runtime modules.
 
     // Exchange "Balance" and "transfer" with the names of your custom runtime module. They are only
@@ -104,6 +116,7 @@ Shows how to use the compose_extrinsic! macro that is able to create an extrinsi
     );
 
 ### Reading storage
+
 Shows how to read some storage values.
 
     // get some plain storage value
