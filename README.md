@@ -1,6 +1,7 @@
 # substrate-api-client
-
-![web3 grant badge](./web3_foundation_grants_badge_black.svg)
+<p align="center">
+<img src=./web3_foundation_grants_badge_black.svg width = 400>
+</p>
 
 substrate-api-client a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
 
