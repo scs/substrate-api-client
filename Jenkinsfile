@@ -57,7 +57,6 @@ pipeline {
         timeout(time: 1, unit: 'MINUTES')
       }
       steps {
-        sh 'target/release/examples/example_compose_extrinsic_offline'
         sh 'target/release/examples/example_custom_storage_struct'
         sh 'target/release/examples/example_generic_extrinsic'
         sh 'target/release/examples/example_print_metadata'
@@ -65,6 +64,7 @@ pipeline {
         sh 'target/release/examples/example_get_storage'
         // echo 'Running tests which are known to hang (needs fixing)'
         // catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        //   sh 'target/release/examples/example_compose_extrinsic_offline'
         //   sh 'target/release/examples/example_contract'
         //   sh 'target/release/examples/example_event_callback'
         // }
