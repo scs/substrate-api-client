@@ -40,16 +40,12 @@ pub mod xt_primitives;
 macro_rules! compose_call {
 ($node_metadata: expr, $module: expr, $call_name: expr $(, $args: expr) *) => {
         {
-            let mut meta = $node_metadata;
-            meta.retain(|m| !m.calls.is_empty());
+            let module = $node_metadata.module_with_calls($module).unwrap().to_owned();
 
-            let module_index = meta
-            .iter().position(|m| m.name == $module).expect("Module not found in Metadata");
-
-            let call_index = meta[module_index].calls
+            let call_index = module.calls
             .iter().position(|c| c.name == $call_name).expect("Call not found in Module");
 
-            ([module_index as u8, call_index as u8] $(, ($args)) *)
+            ([module.index, call_index as u8] $(, ($args)) *)
         }
     };
 }

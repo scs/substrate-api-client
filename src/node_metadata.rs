@@ -35,7 +35,31 @@ pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Result<String, FromU
     String::from_utf8(ser.into_inner())
 }
 
-pub type NodeMetadata = Vec<Module>;
+#[derive(Clone, Debug)]
+pub struct NodeMetadata {
+    modules_with_calls: HashMap<String, ModuleWithCalls>,
+    modules_with_events: HashMap<String, ModuleWithEvents>,
+}
+
+impl NodeMetadata {
+    pub fn modules_with_calls(&self) -> impl Iterator<Item = &ModuleWithCalls> {
+        self.modules_with_calls.values()
+    }
+
+    pub fn module_with_calls<S>(&self, name: S) -> Result<&ModuleWithCalls, MetadataError>
+                                where
+                                    S: ToString,
+    {
+        let name = name.to_string();
+        self.modules_with_calls
+            .get(&name)
+            .ok_or(MetadataError::ModuleNotFound(name))
+    }
+
+    pub fn modules_with_events(&self) -> impl Iterator<Item = &ModuleWithEvents> {
+        self.modules_with_events.values()
+    }
+}
 
 pub trait Print {
     fn print_events(&self);
@@ -44,30 +68,55 @@ pub trait Print {
 
 impl Print for NodeMetadata {
     fn print_events(&self) {
-        for m in self {
+        for m in self.modules_with_events.values() {
             m.print_events();
         }
     }
 
     fn print_calls(&self) {
-        for m in self {
+        for m in self.modules_with_calls.values() {
             m.print_calls()
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct Module {
+pub struct ModuleWithCalls {
     pub name: String,
+    pub index: u8,
     pub calls: Vec<Call>,
+}
+
+impl ModuleWithCalls {
+    fn new(name: &DecodeDifferent<&'static str, std::string::String>, index: u8) -> ModuleWithCalls {
+        ModuleWithCalls {
+            name: format!("{:?}", name).replace("\"", ""),
+            index,
+            calls: Vec::<Call>::new(),
+        }
+    }
+
+    pub fn print_calls(&self) {
+        println!("----------------- Calls for Module: {} -----------------\n", self.name);
+        for e in &self.calls {
+            println!("{:?}", e);
+        }
+        println!()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct ModuleWithEvents {
+    pub name: String,
+    pub index: u8,
     pub events: HashMap<u8, Event>,
 }
 
-impl Module {
-    fn new(name: &DecodeDifferent<&'static str, std::string::String>) -> Module {
-        Module {
+impl ModuleWithEvents {
+    fn new(name: &DecodeDifferent<&'static str, std::string::String>, index: u8) -> ModuleWithEvents {
+        ModuleWithEvents {
             name: format!("{:?}", name).replace("\"", ""),
-            calls: Vec::<Call>::new(),
+            index,
             events: HashMap::new(),
         }
     }
@@ -78,17 +127,6 @@ impl Module {
             self.name
         );
         for e in &self.events {
-            println!("{:?}", e);
-        }
-        println!()
-    }
-
-    pub fn print_calls(&self) {
-        println!(
-            "----------------- Calls for Module: {} -----------------\n",
-            self.name
-        );
-        for e in &self.calls {
             println!("{:?}", e);
         }
         println!()
@@ -228,8 +266,9 @@ impl Arg {
     }
 }
 
-pub fn parse_metadata(metadata: RuntimeMetadataPrefixed) -> Result<Vec<Module>, Error> {
-    let mut mod_vec = Vec::<Module>::new();
+pub fn parse_metadata(metadata: RuntimeMetadataPrefixed) -> Result<NodeMetadata, Error> {
+    let mut modules_with_events = HashMap::new();
+    let mut modules_with_calls = HashMap::new();
 
     let meta = match metadata.1 {
         RuntimeMetadata::V8(meta) => meta,
@@ -238,9 +277,9 @@ pub fn parse_metadata(metadata: RuntimeMetadataPrefixed) -> Result<Vec<Module>, 
     debug!("-------------------- modules ----------------");
     for module in convert(meta.modules)?.into_iter() {
         debug!("module: {:?}", module.name);
-        let mut _mod = Module::new(&module.name);
         debug!("-------------------- calls ----------------");
         if let Some(calls) = module.calls {
+            let mut _mod = ModuleWithCalls::new(&module.name, modules_with_calls.len() as u8);
             let calls = convert(calls)?;
 
             if calls.is_empty() {
@@ -256,26 +295,51 @@ pub fn parse_metadata(metadata: RuntimeMetadataPrefixed) -> Result<Vec<Module>, 
                 }
                 _mod.calls.push(_call);
             }
+            modules_with_calls.insert(_mod.name.clone(), _mod);
         }
 
         if let Some(events) = module.event {
+            let mut _mod = ModuleWithEvents::new(&module.name, modules_with_events.len() as u8);
             let mut event_map = HashMap::new();
             for (index, e) in convert(events)?.into_iter().enumerate() {
                 event_map.insert(index as u8, convert_event(e).unwrap());
             }
             _mod.events = event_map;
-        } else {
-            debug!("No calls for this module");
-        }
 
-        mod_vec.push(_mod);
+            modules_with_events.insert(_mod.name.clone(), _mod);
+        }
     }
-    for m in &mod_vec {
+    for m in modules_with_calls.values() {
+        info!("{:?}", m);
+    }
+    for m in modules_with_events.values() {
         info!("{:?}", m);
     }
     debug!("successfully decoded metadata");
-    Ok(mod_vec)
+    Ok(NodeMetadata {
+        modules_with_calls,
+        modules_with_events,
+    })
 }
+
+#[derive(Debug, thiserror::Error)]
+pub enum MetadataError {
+    #[error("Module not found")]
+    ModuleNotFound(String),
+    #[error("Module with events not found")]
+    ModuleWithEventsNotFound(u8),
+    #[error("Call not found")]
+    CallNotFound(&'static str),
+    #[error("Event not found")]
+    EventNotFound(u8),
+    #[error("Storage not found")]
+    StorageNotFound(&'static str),
+    #[error("Storage type error")]
+    StorageTypeError,
+    #[error("Map value type error")]
+    MapValueTypeError,
+}
+
 
 #[derive(Debug)]
 pub enum Error {
