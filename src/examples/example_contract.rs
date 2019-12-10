@@ -38,7 +38,7 @@ use substrate_api_client::{
 
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
-    from: EventArg<AccountId>,
+    _from: EventArg<AccountId>,
     deployed_at: EventArg<AccountId>,
 }
 
