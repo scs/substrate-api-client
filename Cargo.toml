@@ -167,8 +167,8 @@ name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
 
 [[example]]
-name = "example_generic_event_listener"
-path = "src/examples/example_generic_event_listener.rs"
+name = "example_generic_event_callback"
+path = "src/examples/example_generic_event_callback.rs"
 
 [[example]]
 name = "example_sudo"

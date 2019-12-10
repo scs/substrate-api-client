@@ -20,9 +20,7 @@ use std::{
         HashSet,
     },
     convert::TryFrom,
-    marker::{
-        Send,
-    },
+    marker::Send,
 };
 
 use codec::{
@@ -34,7 +32,7 @@ use codec::{
     Input,
     Output,
 };
-
+use runtime_primitives::DispatchError;
 use system::Phase;
 
 use crate::{
@@ -44,8 +42,6 @@ use crate::{
         MetadataError,
     },
 };
-
-use runtime_primitives::DispatchError;
 
 /// Event for the System module.
 #[derive(Clone, Debug, Decode)]
