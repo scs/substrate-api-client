@@ -174,11 +174,11 @@ impl Call {
 pub struct Event {
     pub name: String,
     // in this case the only the argument types are provided as strings
-    pub arguments: Vec<EventArg>,
+    pub arguments: Vec<EventArgMetadata>,
 }
 
 impl Event {
-    pub fn arguments(&self) -> Vec<EventArg> {
+    pub fn arguments(&self) -> Vec<EventArgMetadata> {
         self.arguments.to_vec()
     }
 }
@@ -189,19 +189,19 @@ impl Event {
 /// Used to calculate the size of a instance of an event variant without having the concrete type,
 /// so the raw bytes can be extracted from the encoded `Vec<EventRecord<E>>` (without `E` defined).
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum EventArg {
+pub enum EventArgMetadata {
     Primitive(String),
-    Vec(Box<EventArg>),
-    Tuple(Vec<EventArg>),
+    Vec(Box<EventArgMetadata>),
+    Tuple(Vec<EventArgMetadata>),
 }
 
-impl FromStr for EventArg {
+impl FromStr for EventArgMetadata {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("Vec<") {
             if s.ends_with('>') {
-                Ok(EventArg::Vec(Box::new(s[4..s.len() - 1].parse()?)))
+                Ok(EventArgMetadata::Vec(Box::new(s[4..s.len() - 1].parse()?)))
             } else {
                 Err(Error::InvalidEventArg(
                     s.to_string(),
@@ -215,7 +215,7 @@ impl FromStr for EventArg {
                     let arg = arg.trim().parse()?;
                     args.push(arg)
                 }
-                Ok(EventArg::Tuple(args))
+                Ok(EventArgMetadata::Tuple(args))
             } else {
                 Err(Error::InvalidEventArg(
                     s.to_string(),
@@ -223,18 +223,18 @@ impl FromStr for EventArg {
                 ))
             }
         } else {
-            Ok(EventArg::Primitive(s.to_string()))
+            Ok(EventArgMetadata::Primitive(s.to_string()))
         }
     }
 }
 
-impl EventArg {
+impl EventArgMetadata {
     /// Returns all primitive types for this EventArg
     pub fn primitives(&self) -> Vec<String> {
         match self {
-            EventArg::Primitive(p) => vec![p.clone()],
-            EventArg::Vec(arg) => arg.primitives(),
-            EventArg::Tuple(args) => {
+            EventArgMetadata::Primitive(p) => vec![p.clone()],
+            EventArgMetadata::Vec(arg) => arg.primitives(),
+            EventArgMetadata::Tuple(args) => {
                 let mut primitives = Vec::new();
                 for arg in args {
                     primitives.extend(arg.primitives())
@@ -258,7 +258,7 @@ fn convert_event(
     let name = convert(event.name)?;
     let mut arguments = Vec::new();
     for arg in convert(event.arguments)? {
-        let arg = arg.parse::<EventArg>()?;
+        let arg = arg.parse::<EventArgMetadata>()?;
         arguments.push(arg);
     }
     Ok(Event { name, arguments })

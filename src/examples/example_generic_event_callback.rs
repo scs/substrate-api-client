@@ -17,26 +17,19 @@
 use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
-use codec::{Decode, Compact};
+use codec::Decode;
 use primitives::sr25519;
 use node_primitives::AccountId;
 
-use substrate_api_client::Api;
+use substrate_api_client::{Api, events::EventArg};
 
-
-// The decode raw_bytes in the from the events decoder prepends the legnth of each argument as
-// as Compact<u32>.
 #[derive(Decode)]
-struct TransferEventArgs(
-    Compact<u32>,
-    AccountId,
-    Compact<u32>,
-    AccountId,
-    Compact<u32>,
-    u128,
-    Compact<u32>,
-    u128,
-);
+struct TransferEventArgs {
+    from: EventArg<AccountId>,
+    to: EventArg<AccountId>,
+    value: EventArg<u128>,
+    fee: EventArg<u128>,
+}
 
 fn main() {
     env_logger::init();
@@ -51,18 +44,14 @@ fn main() {
     let args: TransferEventArgs = api.wait_for_event(
         "Balances",
         "Transfer",
-        events_out)
+        &events_out)
         .unwrap()
         .unwrap();
 
-    println!("Length Transactor: {:?}", args.0);
-    println!("Transactor: {:?}", args.1);
-    println!("Length Destination: {:?}", args.2);
-    println!("Destination: {:?}", args.3);
-    println!("Length Value: {:?}", args.4);
-    println!("Value: {:?}", args.5);
-    println!("Length Fee: {:?}", args.6);
-    println!("Fee: {:?}", args.7);
+    println!("Transactor: {:?}", args.from.value);
+    println!("Destination: {:?}", args.to.value);
+    println!("Value: {:?}", args.value.value);
+    println!("Fee: {:?}", args.fee.value);
 }
 
 pub fn get_node_url_from_cli() -> String {

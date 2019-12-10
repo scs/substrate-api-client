@@ -260,12 +260,12 @@ where
         rpc::start_event_subscriber(self.url.clone(), jsonreq.clone(), sender.clone());
     }
 
-    pub fn wait_for_event<E: Decode>(&self, module: &str, variant: &str, receiver: Receiver<String>) -> Option<Result<E, CodecError>> {
+    pub fn wait_for_event<E: Decode>(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<Result<E, CodecError>> {
         self.wait_for_raw_event(module, variant, receiver)
             .map(|raw| E::decode(&mut &raw.data[..]))
     }
 
-    pub fn wait_for_raw_event(&self, module: &str, variant: &str, receiver: Receiver<String>) -> Option<RawEvent> {
+    pub fn wait_for_raw_event(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<RawEvent> {
         loop {
             let event_str = receiver.recv().unwrap();
 
@@ -278,7 +278,7 @@ where
             match _events {
                 Ok(raw_events) => {
                     for (phase, event) in raw_events.into_iter() {
-                        println!("decoded: {:?}, {:?}", phase, event);
+                        info!("Decoded Event: {:?}, {:?}", phase, event);
                         match event {
                             RuntimeEvent::Raw(raw)
                                 if raw.module == module && raw.variant == variant => {

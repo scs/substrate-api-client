@@ -37,7 +37,7 @@ use system::Phase;
 
 use crate::{
     node_metadata::{
-        EventArg,
+        EventArgMetadata,
         NodeMetadata,
         MetadataError,
     },
@@ -68,6 +68,12 @@ pub struct RawEvent {
     pub variant: String,
     /// The raw Event data
     pub data: Vec<u8>,
+}
+
+#[derive(Decode)]
+pub struct EventArg<T> {
+    _length: Compact<u32>,
+    pub value: T,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -183,21 +189,21 @@ impl EventsDecoder {
 
     fn decode_raw_bytes<I: Input, W: Output>(
         &self,
-        args: &[EventArg],
+        args: &[EventArgMetadata],
         input: &mut I,
         output: &mut W,
     ) -> Result<(), EventsError> {
         for arg in args {
             match arg {
-                EventArg::Vec(arg) => {
+                EventArgMetadata::Vec(arg) => {
                     let len = <Compact<u32>>::decode(input)?;
                     len.encode_to(output);
                     for _ in 0..len.0 {
                         self.decode_raw_bytes(&[*arg.clone()], input, output)?
                     }
                 }
-                EventArg::Tuple(args) => self.decode_raw_bytes(args, input, output)?,
-                EventArg::Primitive(name) => {
+                EventArgMetadata::Tuple(args) => self.decode_raw_bytes(args, input, output)?,
+                EventArgMetadata::Primitive(name) => {
                     if let Some(size) = self.type_sizes.get(name) {
                         let mut buf = vec![0; *size];
                         input.read(&mut buf)?;
