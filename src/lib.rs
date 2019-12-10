@@ -17,25 +17,30 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "std")]
 use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Receiver};
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
 #[cfg(feature = "std")]
 use std::convert::TryFrom;
 
+#[cfg(feature = "std")]
 use codec::{Decode, Encode, Error as CodecError};
 use balances::AccountData;
 
 #[cfg(feature = "std")]
 use log::{info, error, debug};
 
+#[cfg(feature = "std")]
 use metadata::RuntimeMetadataPrefixed;
-use sp_core::crypto::Pair;
+#[cfg(feature = "std")]
 use sp_core::H256 as Hash;
+#[cfg(feature = "std")]
+use sp_core::crypto::Pair;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -49,7 +54,9 @@ use rpc::json_req;
 #[cfg(feature = "std")]
 use utils::*;
 
+#[cfg(feature = "std")]
 use primitive_types::U256;
+#[cfg(feature = "std")]
 use sp_version::RuntimeVersion;
 
 #[macro_use]
@@ -64,8 +71,9 @@ pub mod rpc;
 #[cfg(feature = "std")]
 pub mod utils;
 
-use crate::events::{RawEvent, RuntimeEvent, EventsDecoder};
-use std::sync::mpsc::Receiver;
+#[cfg(feature = "std")]
+use events::{RawEvent, RuntimeEvent, EventsDecoder};
+#[cfg(feature = "std")]
 use sp_runtime::{AccountId32, MultiSignature};
 
 #[cfg(feature = "std")]

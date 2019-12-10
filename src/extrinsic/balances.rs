@@ -33,7 +33,6 @@ pub type BalanceSetBalanceFn = ([u8; 2], GenericAddress, Compact<u128>, Compact<
 pub type BalanceTransferXt = UncheckedExtrinsicV4<BalanceTransferFn>;
 pub type BalanceSetBalanceXt = UncheckedExtrinsicV4<BalanceSetBalanceFn>;
 
-#[cfg(feature = "std")]
 impl<P> Api<P>
 where
     P: Pair,

@@ -24,7 +24,9 @@ pub extern crate codec;
 pub extern crate log;
 pub extern crate node_primitives;
 
+#[cfg(feature = "std")]
 pub mod balances;
+#[cfg(feature = "std")]
 pub mod contract;
 pub mod xt_primitives;
 
