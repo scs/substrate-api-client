@@ -16,7 +16,6 @@ futures-signals = {git="https://github.com/alanpoon/rust-signals.git",branch="ma
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ws              = { version = "0.7", optional = true }
-tokio = "0.2.4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "0.3.19"
