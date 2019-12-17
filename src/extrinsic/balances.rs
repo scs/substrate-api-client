@@ -40,7 +40,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn balance_transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt {
+    pub async fn balance_transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt {
             compose_extrinsic!(
             self,
             BALANCES_MODULE,
@@ -50,7 +50,7 @@ where
         )
     }
 
-    pub fn balance_set_balance(&self, who: GenericAddress, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt {
+    pub async fn balance_set_balance(&self, who: GenericAddress, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt {
             compose_extrinsic!(
             self,
             BALANCES_MODULE,
