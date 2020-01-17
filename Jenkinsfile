@@ -89,7 +89,7 @@ pipeline {
     }
     stage('Formater') {
       steps {
-        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
           sh 'cargo fmt -- --check > ${WORKSPACE}/fmt.log'
         }
       }
@@ -130,8 +130,7 @@ pipeline {
     }
     stage('Archive artifact') {
       steps {
-        archiveArtifacts artifacts: '**/build_*.log', fingerprint: true
-        archiveArtifacts artifacts: '**/clippy_*.log', fingerprint: true
+        archiveArtifacts artifacts: '*.log', fingerprint: true
       }
     }
   }
@@ -139,7 +138,7 @@ pipeline {
     unsuccessful {
         emailext (
           subject: "Jenkins Build '${env.JOB_NAME} [${env.BUILD_NUMBER}]' is ${currentBuild.currentResult}",
-          body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} changed state and is now ${currentBuild.currentResult}\n\nMore info at: ${env.BUILD_URL}",
+          body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} is ${currentBuild.currentResult}\n\nMore info at: ${env.BUILD_URL}",
           to: "${env.RECIPIENTS_SUBSTRATEE}"
         )
     }
