@@ -39,11 +39,11 @@ fn main() {
 
     // call Balances::transfer
     // the names are given as strings
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV3<_, sr25519::Pair>  = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
-        GenericAddress::from(to.clone()),
+        GenericAddress::from(to.0.clone()),
         Compact(42 as u128)
     );
 
