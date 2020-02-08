@@ -17,12 +17,11 @@
 
 use codec::Compact;
 
-
-#[cfg(feature = "std")]
-use crate::{Api, compose_extrinsic};
-use primitives::crypto::Pair;
-use runtime_primitives::{MultiSignature};
 use super::xt_primitives::*;
+#[cfg(feature = "std")]
+use crate::{compose_extrinsic, Api};
+use primitives::crypto::Pair;
+use runtime_primitives::MultiSignature;
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
@@ -41,7 +40,7 @@ where
     MultiSignature: From<P::Signature>,
 {
     pub fn balance_transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt {
-            compose_extrinsic!(
+        compose_extrinsic!(
             self,
             BALANCES_MODULE,
             BALANCES_TRANSFER,
@@ -50,8 +49,13 @@ where
         )
     }
 
-    pub fn balance_set_balance(&self, who: GenericAddress, free_balance: u128, reserved_balance: u128) -> BalanceSetBalanceXt {
-            compose_extrinsic!(
+    pub fn balance_set_balance(
+        &self,
+        who: GenericAddress,
+        free_balance: u128,
+        reserved_balance: u128,
+    ) -> BalanceSetBalanceXt {
+        compose_extrinsic!(
             self,
             BALANCES_MODULE,
             BALANCES_SET_BALANCE,

@@ -19,10 +19,7 @@ use codec::Encode;
 use keyring::AccountKeyring;
 
 use primitives::crypto::Pair;
-use substrate_api_client::{
-    Api,
-    utils::hexstr_to_u256,
-};
+use substrate_api_client::{utils::hexstr_to_u256, Api};
 
 fn main() {
     env_logger::init();

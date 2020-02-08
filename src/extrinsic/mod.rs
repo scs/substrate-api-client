@@ -69,8 +69,8 @@ macro_rules! compose_extrinsic_offline {
     $nonce: expr,
     $genesis_hash: expr,
     $runtime_spec_version: expr) => {{
-        use $crate::extrinsic::xt_primitives::*;
         use $crate::extrinsic::node_primitives::AccountId;
+        use $crate::extrinsic::xt_primitives::*;
 
         let extra = GenericExtra::new($nonce);
         let raw_payload = SignedPayload::from_raw(
@@ -96,7 +96,7 @@ macro_rules! compose_extrinsic_offline {
             $call,
             GenericAddress::from(AccountId::from(arr)),
             signature.into(),
-            extra
+            extra,
         )
     }};
 }

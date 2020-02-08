@@ -84,11 +84,7 @@ pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
 }
 
 pub fn author_submit_and_watch_extrinsic_with_id(xthex_prefixed: &str, id: u32) -> Value {
-    json_req(
-        "author_submitAndWatchExtrinsic",
-        xthex_prefixed,
-        id,
-    )
+    json_req("author_submitAndWatchExtrinsic", xthex_prefixed, id)
 }
 
 fn json_req(method: &str, params: &str, id: u32) -> Value {

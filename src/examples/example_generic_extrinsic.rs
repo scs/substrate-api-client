@@ -21,9 +21,7 @@ use keyring::AccountKeyring;
 use primitives::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV4,
-    Api,
+    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api,
 };
 
 fn main() {

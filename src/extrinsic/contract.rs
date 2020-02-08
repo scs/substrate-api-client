@@ -15,14 +15,14 @@
 
 */
 
-use rstd::prelude::*;
 use codec::Compact;
-use primitives::H256 as Hash;
 use primitives::crypto::Pair;
+use primitives::H256 as Hash;
+use rstd::prelude::*;
 use runtime_primitives::MultiSignature;
 
 #[cfg(feature = "std")]
-use crate::{Api,compose_extrinsic};
+use crate::{compose_extrinsic, Api};
 
 use super::xt_primitives::*;
 
@@ -52,7 +52,7 @@ where
     MultiSignature: From<P::Signature>,
 {
     pub fn contract_put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt {
-            compose_extrinsic!(
+        compose_extrinsic!(
             &self,
             CONTRACTS_MODULE,
             CONTRACTS_PUT_CODE,
@@ -68,8 +68,7 @@ where
         code_hash: Hash,
         data: Vec<u8>,
     ) -> ContractCreateXt {
-
-            compose_extrinsic!(
+        compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
             CONTRACTS_CREATE,
@@ -86,9 +85,8 @@ where
         value: u128,
         gas_limit: u64,
         data: Vec<u8>,
-    ) -> ContractCallXt{
-
-            compose_extrinsic!(
+    ) -> ContractCallXt {
+        compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
             CONTRACTS_CALL,

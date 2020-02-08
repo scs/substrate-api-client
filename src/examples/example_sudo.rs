@@ -17,12 +17,12 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use clap::{load_yaml, App};
+use codec::Compact;
 use keyring::AccountKeyring;
 use primitives::crypto::Pair;
-use codec::Compact;
 use substrate_api_client::{
-    compose_extrinsic, compose_call,
-    extrinsic::xt_primitives::{UncheckedExtrinsicV4, GenericAddress},
+    compose_call, compose_extrinsic,
+    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
     Api,
 };
 
@@ -39,19 +39,14 @@ fn main() {
 
     // this call can only be called by sudo
     let call = compose_call!(
-            api.metadata.clone(),
-            "Balances",
-            "set_balance",
-            GenericAddress::from(to.clone()),
-            Compact(42 as u128),
-            Compact(42 as u128)
+        api.metadata.clone(),
+        "Balances",
+        "set_balance",
+        GenericAddress::from(to.clone()),
+        Compact(42 as u128),
+        Compact(42 as u128)
     );
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
-        api.clone(),
-        "Sudo",
-        "sudo",
-        call
-    );
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
 
     // send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();

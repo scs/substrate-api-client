@@ -22,10 +22,10 @@ use std::fmt;
 
 use codec::{Compact, Decode, Encode};
 use indices::address::Address;
+use node_primitives::{AccountId, AccountIndex};
 use primitive_types::H256;
-use node_primitives::{AccountIndex, AccountId};
 use primitives::blake2_256;
-use runtime_primitives::{MultiSignature, generic::Era};
+use runtime_primitives::{generic::Era, MultiSignature};
 pub type GenericAddress = Address<AccountId, AccountIndex>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
@@ -33,17 +33,13 @@ pub type GenericAddress = Address<AccountId, AccountIndex>;
 /// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
 /// This can be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
-#[cfg_attr(feature = "std",derive(Debug))]
+#[cfg_attr(feature = "std", derive(Debug))]
 #[derive(Decode, Encode, Clone, Eq, PartialEq)]
 pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
 
 impl GenericExtra {
     pub fn new(nonce: u32) -> GenericExtra {
-        GenericExtra(
-            Era::Immortal,
-            Compact(nonce),
-            Compact(0 as u128),
-        )
+        GenericExtra(Era::Immortal, Compact(nonce), Compact(0 as u128))
     }
 }
 
@@ -54,9 +50,9 @@ pub type AdditionalSigned = (u32, H256, H256, (), (), (), ());
 #[derive(Encode, Clone)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
-
-impl<Call> SignedPayload<Call> where
-    Call: Encode ,
+impl<Call> SignedPayload<Call>
+where
+    Call: Encode,
 {
     pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
         Self((call, extra, additional_signed))
@@ -80,16 +76,16 @@ impl<Call> SignedPayload<Call> where
 /// The SingedExtra used does not need to implement SingedExtension here.
 #[derive(Clone)]
 pub struct UncheckedExtrinsicV4<Call>
-    where
-        Call: Encode,
+where
+    Call: Encode,
 {
     pub signature: Option<(GenericAddress, MultiSignature, GenericExtra)>,
     pub function: Call,
 }
 
 impl<Call> UncheckedExtrinsicV4<Call>
-    where
-        Call: Encode ,
+where
+    Call: Encode,
 {
     pub fn new_signed(
         function: Call,
@@ -102,7 +98,7 @@ impl<Call> UncheckedExtrinsicV4<Call>
             function,
         }
     }
-    
+
     #[cfg(feature = "std")]
     pub fn hex_encode(&self) -> String {
         let mut hex_str = hex::encode(self.encode());
@@ -127,8 +123,8 @@ where
 }
 
 impl<Call> Encode for UncheckedExtrinsicV4<Call>
-    where
-        Call: Encode,
+where
+    Call: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {

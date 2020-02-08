@@ -27,11 +27,11 @@ use std::sync::mpsc::Sender as ThreadOut;
 use codec::{Decode, Encode};
 
 #[cfg(feature = "std")]
-use log::{info, debug};
+use log::{debug, info};
 
 use metadata::RuntimeMetadataPrefixed;
-use primitives::H256 as Hash;
 use primitives::crypto::Pair;
+use primitives::H256 as Hash;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -54,9 +54,9 @@ pub mod extrinsic;
 pub mod node_metadata;
 
 #[cfg(feature = "std")]
-pub mod utils;
-#[cfg(feature = "std")]
 pub mod rpc;
+#[cfg(feature = "std")]
+pub mod utils;
 
 use runtime_primitives::{AccountId32, MultiSignature};
 
@@ -76,9 +76,9 @@ where
 
 #[cfg(feature = "std")]
 impl<P> Api<P>
-    where
-        P: Pair,
-        MultiSignature: From<P::Signature>,
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
 {
     pub fn new(url: String) -> Self {
         let genesis_hash = Self::_get_genesis_hash(url.clone());
@@ -129,13 +129,8 @@ impl<P> Api<P>
     }
 
     fn _get_nonce(url: String, signer: [u8; 32]) -> u32 {
-        let result_str = Self::_get_storage(
-            url,
-            "System",
-            "AccountNonce",
-            Some(signer.encode()),
-        )
-        .unwrap();
+        let result_str =
+            Self::_get_storage(url, "System", "AccountNonce", Some(signer.encode())).unwrap();
         let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
         nonce.low_u32()
     }
@@ -157,7 +152,7 @@ impl<P> Api<P>
         module: &str,
         storage_key_name: &str,
         first: Vec<u8>,
-        second: Vec<u8>
+        second: Vec<u8>,
     ) -> WsResult<String> {
         let keyhash = storage_key_hash_double_map(module, storage_key_name, first, second);
         debug!("with storage key: {}", keyhash);
@@ -191,7 +186,7 @@ impl<P> Api<P>
                 let mut arr: [u8; 32] = Default::default();
                 arr.clone_from_slice(key.to_owned().public().as_ref());
                 Ok(Self::_get_nonce(self.url.clone(), arr))
-            },
+            }
             None => Err("Can't get nonce when no signer is set"),
         }
     }
@@ -224,8 +219,13 @@ impl<P> Api<P>
         first: Vec<u8>,
         second: Vec<u8>,
     ) -> WsResult<String> {
-        Self::_get_storage_double_map(self.url.clone(), storage_prefix, storage_key_name, 
-            first, second)
+        Self::_get_storage_double_map(
+            self.url.clone(),
+            storage_prefix,
+            storage_key_name,
+            first,
+            second,
+        )
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {

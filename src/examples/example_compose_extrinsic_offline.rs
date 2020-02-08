@@ -18,14 +18,12 @@
 
 use clap::{load_yaml, App};
 
-use node_runtime::{BalancesCall, Call};
 use keyring::AccountKeyring;
+use node_runtime::{BalancesCall, Call};
 use primitives::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic_offline,
-    extrinsic::xt_primitives::UncheckedExtrinsicV4,
-    Api,
+    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api,
 };
 
 fn main() {

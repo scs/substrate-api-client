@@ -61,12 +61,15 @@ impl Module {
         Module {
             name: format!("{:?}", name).replace("\"", ""),
             calls: Vec::<Call>::new(),
-            events: Vec::<Event>::new()
+            events: Vec::<Event>::new(),
         }
     }
 
     pub fn print_events(&self) {
-        println!("----------------- Events for Module: {} -----------------\n", self.name);
+        println!(
+            "----------------- Events for Module: {} -----------------\n",
+            self.name
+        );
         for e in &self.events {
             println!("{:?}", e);
         }
@@ -74,7 +77,10 @@ impl Module {
     }
 
     pub fn print_calls(&self) {
-        println!("----------------- Calls for Module: {} -----------------\n", self.name);
+        println!(
+            "----------------- Calls for Module: {} -----------------\n",
+            self.name
+        );
         for e in &self.calls {
             println!("{:?}", e);
         }
@@ -106,7 +112,10 @@ pub struct Event {
 
 impl Event {
     fn new(name: &DecodeDifferent<&'static str, std::string::String>) -> Event {
-        Event { name: format!("{:?}", name).replace("\"", ""), args: Vec::<String>::new() }
+        Event {
+            name: format!("{:?}", name).replace("\"", ""),
+            args: Vec::<String>::new(),
+        }
     }
 }
 
@@ -184,12 +193,14 @@ pub fn parse_metadata(metadata: &RuntimeMetadataPrefixed) -> Vec<Module> {
                                             for arg in arguments {
                                                 _event.args.push(arg.to_string());
                                             }
-                                        },
-                                        _ => unreachable!("All calls have at least the 'who' argument; qed"),
+                                        }
+                                        _ => unreachable!(
+                                            "All calls have at least the 'who' argument; qed"
+                                        ),
                                     }
                                     _mod.events.push(_event);
                                 }
-                            },
+                            }
                             _ => debug!("No calls for this module"),
                         }
 

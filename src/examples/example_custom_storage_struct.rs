@@ -21,16 +21,12 @@
 
 use clap::{load_yaml, App};
 use codec::{Decode, Encode};
-use log::*;
 use keyring::AccountKeyring;
-use primitives::{H256, crypto::Pair};
-
+use log::*;
+use primitives::{crypto::Pair, H256};
 
 use substrate_api_client::{
-    compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV4,
-    utils::*,
-    Api,
+    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, utils::*, Api,
 };
 
 // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
@@ -49,10 +45,11 @@ fn main() {
     let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from.clone());
 
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
+    let xt: UncheckedExtrinsicV4<_> =
+        compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
-    
+
     // send and watch extrinsic until finalized
     let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);

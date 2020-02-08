@@ -18,10 +18,7 @@ use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use primitives::crypto::Pair;
 
-use substrate_api_client::{
-    extrinsic::xt_primitives::*,
-    Api,
-};
+use substrate_api_client::{extrinsic::xt_primitives::*, Api};
 
 fn main() {
     env_logger::init();
