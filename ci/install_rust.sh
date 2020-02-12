@@ -14,7 +14,7 @@ source $HOME/.cargo/env
 
 # Install nightly that supports clippy
 # Overview: https://rust-lang.github.io/rustup-components-history/index.html
-rustup default nightly-2019-11-17
+rustup default nightly--2020-02-06
 
 # Install aux components, clippy for linter, rustfmt for formatting
 rustup component add clippy
