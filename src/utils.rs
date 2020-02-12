@@ -15,21 +15,23 @@
 
 */
 
+use codec::{Decode, Error};
 use hex::FromHexError;
 use primitive_types::U256;
+use balances::AccountData;
 use sp_core::blake2_256;
 use sp_core::twox_128;
 use sp_core::H256 as Hash;
 
 fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Vec<u8> {
-    let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
-    match param {
-        Some(par) => {
-            key.extend(&par);
-            blake2_256(&key).to_vec()
-        }
-        _ => twox_128(&key).to_vec(),
+    let mut key = twox_128(module.as_bytes()).to_vec();
+    key.extend(&twox_128(storage_key_name.as_bytes()));
+
+    if param.is_some() {
+        key.extend(&blake2_256(&param.unwrap()));
     }
+
+    key
 }
 
 pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
@@ -64,35 +66,35 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
 }
 
 pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
-    let unhex = hexstr_to_vec(hexstr);
-    match unhex {
-        Ok(vec) => match vec.len() {
-            1 | 2 | 4 | 8 => {
-                let mut h: [u8; 8] = Default::default();
-                h[..vec.len()].copy_from_slice(&vec);
-                Ok(u64::from_le_bytes(h))
-            }
-            _ => match vec.iter().sum() {
-                0 => Ok(0u64),
-                _ => Err(hex::FromHexError::InvalidStringLength),
-            },
-        },
-        Err(err) => Err(err),
+    let vec = hexstr_to_vec(hexstr)?;
+    match vec.len() {
+        1 | 2 | 4 | 8 => {
+            let mut h: [u8; 8] = Default::default();
+            h[..vec.len()].copy_from_slice(&vec);
+            Ok(u64::from_le_bytes(h))
+        }
+        _ => match vec.iter().sum() {
+            0 => Ok(0u64),
+            _ => Err(hex::FromHexError::InvalidStringLength),
+        }
     }
 }
 
 pub fn hexstr_to_u256(hexstr: String) -> Result<U256, FromHexError> {
-    let unhex = hexstr_to_vec(hexstr);
-    match unhex {
-        Ok(vec) => match vec.len() {
-            1 | 2 | 4 | 8 | 16 | 32 => Ok(U256::from_little_endian(&vec[..])),
-            _ => match vec.iter().sum() {
-                0 => Ok(U256::from(0)),
-                _ => Err(hex::FromHexError::InvalidStringLength),
-            },
+    let vec = hexstr_to_vec(hexstr)?;
+    match vec.len() {
+        1 | 2 | 4 | 8 | 16 | 32 => Ok(U256::from_little_endian(&vec[..])),
+        _ => match vec.iter().sum() {
+            0 => Ok(U256::from(0)),
+            _ => Err(hex::FromHexError::InvalidStringLength),
         },
-        Err(err) => Err(err),
     }
+}
+
+pub fn hexstr_to_account_data(hexstr: String) -> Result<AccountData<u128>, Error> {
+    let vec = hexstr_to_vec(hexstr).map_err(|_| "FromHexError: InvalidStringLength")?;
+
+    Decode::decode(&mut vec.as_slice())
 }
 
 pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
