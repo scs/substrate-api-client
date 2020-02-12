@@ -122,7 +122,7 @@ fn subcribe_to_code_stored_event(events_out: &Receiver<String>) -> Hash {
         if let Ok(evts) = _events {
             for evr in &evts {
                 debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
-                if let Event::contracts(ce) = &evr.event {
+                if let Event::pallet_contracts(ce) = &evr.event {
                     if let contracts::RawEvent::CodeStored(code_hash) = &ce {
                         info!("Received Contract.CodeStored event");
                         info!("Codehash: {:?}", code_hash);
@@ -144,7 +144,7 @@ fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> Generi
         if let Ok(evts) = _events {
             for evr in &evts {
                 debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
-                if let Event::contracts(ce) = &evr.event {
+                if let Event::pallet_contracts(ce) = &evr.event {
                     if let contracts::RawEvent::Instantiated(from, deployed_at) = &ce {
                         info!("Received Contract.Instantiated Event");
                         info!("From: {:?}", from);

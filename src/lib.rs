@@ -24,6 +24,7 @@ use std::sync::mpsc::channel;
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
+use balances::AccountData;
 use codec::{Decode, Encode};
 
 #[cfg(feature = "std")]
@@ -191,12 +192,13 @@ where
         }
     }
 
-    pub fn get_free_balance(&self, address: &AccountId32) -> U256 {
+    pub fn get_account_data(&self, address: &AccountId32) -> Option<AccountData<u128>> {
         let id: &[u8; 32] = address.as_ref();
         let result_str = self
-            .get_storage("Balances", "FreeBalance", Some(id.to_owned().encode()))
+            .get_storage("Balances", "Account", Some(id.to_owned().encode()))
             .unwrap();
-        hexstr_to_u256(result_str).unwrap()
+
+        hexstr_to_account_data(result_str).ok()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {

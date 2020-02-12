@@ -30,8 +30,8 @@ fn main() {
 
     let to = AccountKeyring::Bob.to_account_id();
 
-    let result = api.get_free_balance(&to);
-    println!("[+] Bob's Free Balance is is {}\n", result);
+    let bob = api.get_account_data(&to).unwrap();
+    println!("[+] Bob's Free Balance is is {}\n", bob.free);
 
     // generate extrinsic
     let xt = api.balance_transfer(GenericAddress::from(to.clone()), 1000);
@@ -49,8 +49,8 @@ fn main() {
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
-    let result = api.get_free_balance(&to);
-    println!("[+] Bob's Free Balance is now {}\n", result);
+    let bob = api.get_account_data(&to).unwrap();
+    println!("[+] Bob's Free Balance is now {}\n", bob.free);
 }
 
 pub fn get_node_url_from_cli() -> String {
