@@ -15,7 +15,7 @@
 
 */
 
-use rstd::prelude::*;
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use std::fmt;
@@ -24,8 +24,8 @@ use codec::{Compact, Decode, Encode};
 use indices::address::Address;
 use node_primitives::{AccountId, AccountIndex};
 use primitive_types::H256;
-use primitives::blake2_256;
-use runtime_primitives::{generic::Era, MultiSignature};
+use sp_core::blake2_256;
+use sp_runtime::{generic::Era, MultiSignature};
 pub type GenericAddress = Address<AccountId, AccountIndex>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
@@ -144,7 +144,7 @@ where
 
 /// Same function as in primitives::generic. Needed to be copied as it is private there.
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
-    let size = rstd::mem::size_of::<T>();
+    let size = sp_std::mem::size_of::<T>();
     let reserve = match size {
         0..=0b0011_1111 => 1,
         0..=0b0011_1111_1111_1111 => 2,

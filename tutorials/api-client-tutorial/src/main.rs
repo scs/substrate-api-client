@@ -16,7 +16,7 @@
 use codec::{Decode, Encode};
 use keyring::AccountKeyring;
 
-use primitives::crypto::Pair;
+use sp_core::crypto::Pair;
 
 use substrate_api_client::{
     Api,

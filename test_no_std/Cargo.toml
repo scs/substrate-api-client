@@ -21,15 +21,15 @@ features=["full_crypto"]
 
 [dependencies.application-crypto]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "substrate-application-crypto"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-application-crypto"
 default-features = false
 features = ["full_crypto"]
 
-[dependencies.sr-io]
+[dependencies.sp-io]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = 'sr-io'
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = 'sp-io'
 default-features=false
 features = ["disable_oom", "disable_panic_handler"]
 

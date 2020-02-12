@@ -27,8 +27,8 @@ use clap::{load_yaml, App};
 use codec::Decode;
 use keyring::AccountKeyring;
 use log::*;
-use primitives::H256 as Hash;
-use rstd::prelude::*;
+use sp_core::H256 as Hash;
+use sp_std::prelude::*;
 
 // FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try
 // to avoid because of a cargo issue https://github.com/rust-lang/cargo/issues/6571)

@@ -17,9 +17,9 @@
 
 use hex::FromHexError;
 use primitive_types::U256;
-use primitives::blake2_256;
-use primitives::twox_128;
-use primitives::H256 as Hash;
+use sp_core::blake2_256;
+use sp_core::twox_128;
+use sp_core::H256 as Hash;
 
 fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Vec<u8> {
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();

@@ -17,7 +17,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use rstd::prelude::*;
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use std::sync::mpsc::channel;
@@ -30,8 +30,8 @@ use codec::{Decode, Encode};
 use log::{debug, info};
 
 use metadata::RuntimeMetadataPrefixed;
-use primitives::crypto::Pair;
-use primitives::H256 as Hash;
+use sp_core::crypto::Pair;
+use sp_core::H256 as Hash;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -46,7 +46,7 @@ use rpc::json_req;
 use utils::*;
 
 use primitive_types::U256;
-use runtime_version::RuntimeVersion;
+use sp_version::RuntimeVersion;
 
 #[macro_use]
 pub mod extrinsic;
@@ -58,7 +58,7 @@ pub mod rpc;
 #[cfg(feature = "std")]
 pub mod utils;
 
-use runtime_primitives::{AccountId32, MultiSignature};
+use sp_runtime::{AccountId32, MultiSignature};
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
