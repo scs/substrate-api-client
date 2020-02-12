@@ -39,7 +39,7 @@ fn main() {
     let api = Api::new(format!("ws://{}", url))
         .set_signer(signer.clone());
 
-    let xt: UncheckedExtrinsicV3<_> = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
         api.clone(),
         "KittyModule",
         "create_kitty",
