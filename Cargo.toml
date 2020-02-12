@@ -168,6 +168,3 @@ path = "src/examples/example_compose_extrinsic_offline.rs"
 [[example]]
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
-
-[patch.crates-io]
-ed25519-dalek = { git = "https://github.com/scs/ed25519-dalek.git", branch = "no_std_sgx"}
