@@ -51,7 +51,7 @@ use crate::{
 #[derive(Clone, Debug, Decode)]
 pub enum SystemEvent {
     /// An extrinsic completed successfully.
-    ExtrinsicSuccess,
+    ExtrinsicSuccess(DispatchInfo),
     /// An extrinsic failed.
     ExtrinsicFailed(DispatchError, DispatchInfo),
 }
@@ -123,7 +123,7 @@ impl TryFrom<Metadata> for EventsDecoder {
         decoder.register_type_size::<node_primitives::AccountId>("AccountId")?;
         decoder.register_type_size::<node_primitives::BlockNumber>("BlockNumber")?;
         decoder.register_type_size::<node_primitives::Hash>("Hash")?;
-        decoder.register_type_size::<u128>("Balance")?;
+        decoder.register_type_size::<node_primitives::Balance>("Balance")?;
         // VoteThreshold enum index
         decoder.register_type_size::<u8>("VoteThreshold")?;
 
@@ -257,6 +257,8 @@ impl EventsDecoder {
             };
 
 //             topics come after the event data in EventRecord
+            log::debug!("Phase {:?}, Event: {:?}", phase, event);
+
             log::debug!("Decoding topics {:?}", input);
             let _topics = Vec::<node_primitives::Hash>::decode(input)?;
             r.push((phase, event));
