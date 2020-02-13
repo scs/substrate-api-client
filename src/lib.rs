@@ -47,7 +47,7 @@ use sp_core::crypto::Pair;
 use ws::Result as WsResult;
 
 #[cfg(feature = "std")]
-use node_metadata::NodeMetadata;
+use node_metadata::Metadata;
 
 #[cfg(feature = "std")]
 use rpc::json_req;
@@ -87,7 +87,7 @@ where
     url: String,
     pub signer: Option<P>,
     pub genesis_hash: Hash,
-    pub metadata: NodeMetadata,
+    pub metadata: Metadata,
     pub runtime_version: RuntimeVersion,
 }
 
@@ -102,7 +102,7 @@ where
         info!("Got genesis hash: {:?}", genesis_hash);
 
         let meta = Self::_get_metadata(url.clone());
-        let metadata = node_metadata::parse_metadata(meta).unwrap();
+        let metadata = Metadata::try_from(meta).unwrap();
         info!("Metadata: {:?}", metadata);
 
         let runtime_version = Self::_get_runtime_version(url.clone());
@@ -283,7 +283,7 @@ where
 
             let event_decoder = EventsDecoder::try_from(self.metadata.clone()).unwrap();
             let _events = event_decoder.decode_events(&mut _er_enc);
-
+            info!("wait for raw event");
             match _events {
                 Ok(raw_events) => {
                     for (phase, event) in raw_events.into_iter() {

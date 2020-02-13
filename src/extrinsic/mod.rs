@@ -44,10 +44,9 @@ macro_rules! compose_call {
         {
             let module = $node_metadata.module_with_calls($module).unwrap().to_owned();
 
-            let call_index = module.calls
-            .iter().position(|c| c.name == $call_name).expect("Call not found in Module");
+            let call_index = module.calls.get($call_name).unwrap();
 
-            ([module.index, call_index as u8] $(, ($args)) *)
+            ([module.index, *call_index as u8] $(, ($args)) *)
         }
     };
 }

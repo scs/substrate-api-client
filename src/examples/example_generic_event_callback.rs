@@ -21,14 +21,14 @@ use codec::Decode;
 use sp_core::sr25519;
 use node_primitives::AccountId;
 
-use substrate_api_client::{Api, events::EventArg};
+use substrate_api_client::{Api, events::GenericEventArg};
 
 #[derive(Decode)]
 struct TransferEventArgs {
-    from: EventArg<AccountId>,
-    to: EventArg<AccountId>,
-    value: EventArg<u128>,
-    fee: EventArg<u128>,
+    from: GenericEventArg<AccountId>,
+    to: GenericEventArg<AccountId>,
+    value: GenericEventArg<u128>,
+    fee: GenericEventArg<u128>,
 }
 
 fn main() {

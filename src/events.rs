@@ -20,7 +20,10 @@ use std::{
         HashSet,
     },
     convert::TryFrom,
-    marker::Send,
+    marker::{
+//        PhantomData,
+        Send,
+    },
 };
 
 use codec::{
@@ -33,12 +36,13 @@ use codec::{
     Output,
 };
 use sp_runtime::DispatchError;
+use support::weights::DispatchInfo;
 use system::Phase;
 
 use crate::{
     node_metadata::{
-        EventArgMetadata,
-        NodeMetadata,
+        EventArg,
+        Metadata,
         MetadataError,
     },
 };
@@ -49,7 +53,7 @@ pub enum SystemEvent {
     /// An extrinsic completed successfully.
     ExtrinsicSuccess,
     /// An extrinsic failed.
-    ExtrinsicFailed(DispatchError),
+    ExtrinsicFailed(DispatchError, DispatchInfo),
 }
 
 /// Top level Event that can be produced by a substrate runtime
@@ -71,7 +75,7 @@ pub struct RawEvent {
 }
 
 #[derive(Decode)]
-pub struct EventArg<T> {
+pub struct GenericEventArg<T> {
     _length: Compact<u32>,
     pub value: T,
 }
@@ -82,28 +86,20 @@ pub enum EventsError {
     CodecError(#[from] CodecError),
     #[error("Metadata error: {0:?}")]
     Metadata(#[from] MetadataError),
-    #[error("Type Sizes Missing: {0:?}")]
-    TypeSizesMissing(Vec<String>),
     #[error("Type Sizes Unavailable: {0:?}")]
     TypeSizeUnavailable(String),
 }
 
-impl From<Vec<String>> for EventsError {
-    fn from(error: Vec<String>) -> Self {
-        EventsError::TypeSizesMissing(error)
-    }
-}
-
 pub struct EventsDecoder {
-    metadata: NodeMetadata,
+    metadata: Metadata,
     type_sizes: HashMap<String, usize>,
 //    marker: PhantomData<fn() -> T>,
 }
 
-impl TryFrom<NodeMetadata> for EventsDecoder {
+impl TryFrom<Metadata> for EventsDecoder {
     type Error = EventsError;
 
-    fn try_from(metadata: NodeMetadata) -> Result<Self, Self::Error> {
+    fn try_from(metadata: Metadata) -> Result<Self, Self::Error> {
         let mut decoder = Self {
             metadata,
             type_sizes: HashMap::new(),
@@ -131,25 +127,14 @@ impl TryFrom<NodeMetadata> for EventsDecoder {
         // VoteThreshold enum index
         decoder.register_type_size::<u8>("VoteThreshold")?;
 
-        // Ignore these unregistered types, which are not fixed size primitives
-        decoder.check_missing_type_sizes(vec![
-            "DispatchInfo",
-            "DispatchError",
-            "Result<(), DispatchError>",
-            "OpaqueTimeSlot",
-            "rstd::marker::PhantomData<(AccountId, Event)>",
-            // FIXME: determine type size for the following if necessary/possible
-            "IdentificationTuple",
-            "AuthorityList",
-        ])?;
         Ok(decoder)
     }
 }
 
 impl EventsDecoder {
     pub fn register_type_size<U>(&mut self, name: &str) -> Result<usize, EventsError>
-                                 where
-                                     U: Default + Codec + Send + 'static,
+    where
+        U: Default + Codec + Send + 'static,
     {
         let size = U::default().encode().len();
         if size > 0 {
@@ -160,54 +145,61 @@ impl EventsDecoder {
         }
     }
 
-    fn check_missing_type_sizes<I: IntoIterator<Item = &'static str>>(
-        &self,
-        ignore: I,
-    ) -> Result<(), Vec<String>> {
+    pub fn check_missing_type_sizes(&self) {
         let mut missing = HashSet::new();
-        let mut ignore_set = HashSet::new();
-        ignore_set.extend(ignore);
         for module in self.metadata.modules_with_events() {
             for event in module.events() {
                 for arg in event.arguments() {
                     for primitive in arg.primitives() {
-                        if !self.type_sizes.contains_key(&primitive)
-                            && !ignore_set.contains(primitive.as_str())
+                        if module.name() != "System"
+                            && !self.type_sizes.contains_key(&primitive)
+                            && !primitive.contains("PhantomData")
                         {
-                            missing.insert(primitive);
+                            missing.insert(format!(
+                                "{}::{}::{}",
+                                module.name(),
+                                event.name,
+                                primitive
+                            ));
                         }
                     }
                 }
             }
         }
-        if missing.is_empty() {
-            Ok(())
-        } else {
-            Err(missing.into_iter().collect())
+        if missing.len() > 0 {
+            log::warn!(
+                "The following primitive types do not have registered sizes: {:?} \
+                If any of these events are received, an error will occur since we cannot decode them",
+                missing
+            );
         }
     }
 
     fn decode_raw_bytes<I: Input, W: Output>(
         &self,
-        args: &[EventArgMetadata],
+        args: &[EventArg],
         input: &mut I,
         output: &mut W,
     ) -> Result<(), EventsError> {
         for arg in args {
             match arg {
-                EventArgMetadata::Vec(arg) => {
+                EventArg::Vec(arg) => {
                     let len = <Compact<u32>>::decode(input)?;
                     len.encode_to(output);
                     for _ in 0..len.0 {
                         self.decode_raw_bytes(&[*arg.clone()], input, output)?
                     }
                 }
-                EventArgMetadata::Tuple(args) => self.decode_raw_bytes(args, input, output)?,
-                EventArgMetadata::Primitive(name) => {
+                EventArg::Tuple(args) => self.decode_raw_bytes(args, input, output)?,
+                EventArg::Primitive(name) => {
+                    if name.contains("PhantomData") {
+                        // PhantomData is size 0
+                        return Ok(())
+                    }
                     if let Some(size) = self.type_sizes.get(name) {
                         let mut buf = vec![0; *size];
                         input.read(&mut buf)?;
-                        buf.encode_to(output);
+                        output.write(&buf);
                     } else {
                         return Err(EventsError::TypeSizeUnavailable(name.to_owned()))
                     }
@@ -221,21 +213,25 @@ impl EventsDecoder {
         &self,
         input: &mut &[u8],
     ) -> Result<Vec<(Phase, RuntimeEvent)>, EventsError> {
+        log::debug!("Decoding compact len: {:?}", input);
         let compact_len = <Compact<u32>>::decode(input)?;
         let len = compact_len.0 as usize;
 
         let mut r = Vec::new();
         for _ in 0..len {
             // decode EventRecord
+            log::debug!("Decoding phase: {:?}", input);
             let phase = Phase::decode(input)?;
-            let module_variant = input.read_byte()? as u8;
+            let module_variant = input.read_byte()?;
 
             let module = self.metadata.module_with_events(module_variant)?;
             let event = if module.name() == "System" {
+                log::debug!("Decoding system event, intput: {:?}", input);
                 let system_event = SystemEvent::decode(input)?;
+                log::debug!("Decoding successful, system_event: {:?}", system_event);
                 RuntimeEvent::System(system_event)
             } else {
-                let event_variant = input.read_byte()? as u8;
+                let event_variant = input.read_byte()?;
                 let event_metadata = module.event(event_variant)?;
                 log::debug!("decoding event '{}::{}'", module.name(), event_metadata.name);
 
@@ -245,6 +241,14 @@ impl EventsDecoder {
                     input,
                     &mut event_data,
                 )?;
+
+                log::debug!(
+                    "received event '{}::{}', raw bytes: {}",
+                    module.name(),
+                    event_metadata.name,
+                    hex::encode(&event_data),
+                );
+
                 RuntimeEvent::Raw(RawEvent {
                     module: module.name().to_string(),
                     variant: event_metadata.name.clone(),
@@ -252,7 +256,8 @@ impl EventsDecoder {
                 })
             };
 
-            // topics come after the event data in EventRecord
+//             topics come after the event data in EventRecord
+            log::debug!("Decoding topics {:?}", input);
             let _topics = Vec::<node_primitives::Hash>::decode(input)?;
             r.push((phase, event));
         }

@@ -31,14 +31,14 @@ use sp_core::H256 as Hash;
 use sp_std::prelude::*;
 
 use substrate_api_client::{
-    events::EventArg,
+    events::GenericEventArg,
     Api,
 };
 
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
-    _from: EventArg<AccountId>,
-    deployed_at: EventArg<AccountId>,
+    _from: GenericEventArg<AccountId>,
+    deployed_at: GenericEventArg<AccountId>,
 }
 
 fn main() {
