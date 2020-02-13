@@ -74,12 +74,6 @@ pub struct RawEvent {
     pub data: Vec<u8>,
 }
 
-#[derive(Decode)]
-pub struct GenericEventArg<T> {
-    _length: Compact<u32>,
-    pub value: T,
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum EventsError {
     #[error("Scale codec error: {0:?}")]

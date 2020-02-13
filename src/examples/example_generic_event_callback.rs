@@ -13,22 +13,25 @@
     limitations under the License.
 */
 
-///! Very simple example that shows how to subscribe to events.
+///! Very simple example that shows how to subscribe to events generically
+/// implying no runtime needs to be imported
 use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
-use codec::Decode;
+use codec::{Decode};
 use sp_core::sr25519;
 use node_primitives::AccountId;
 
-use substrate_api_client::{Api, events::GenericEventArg};
+use substrate_api_client::Api;
 
+
+// Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
 struct TransferEventArgs {
-    from: GenericEventArg<AccountId>,
-    to: GenericEventArg<AccountId>,
-    value: GenericEventArg<u128>,
-    fee: GenericEventArg<u128>,
+    from: AccountId,
+    to: AccountId,
+    value: u128,
+    fee: u128,
 }
 
 fn main() {
@@ -48,10 +51,10 @@ fn main() {
         .unwrap()
         .unwrap();
 
-    println!("Transactor: {:?}", args.from.value);
-    println!("Destination: {:?}", args.to.value);
-    println!("Value: {:?}", args.value.value);
-    println!("Fee: {:?}", args.fee.value);
+    println!("Transactor: {:?}", args.from);
+    println!("Destination: {:?}", args.to);
+    println!("Value: {:?}", args.value);
+    println!("Fee: {:?}", args.fee);
 }
 
 pub fn get_node_url_from_cli() -> String {

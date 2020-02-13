@@ -30,15 +30,12 @@ use node_primitives::AccountId;
 use sp_core::H256 as Hash;
 use sp_std::prelude::*;
 
-use substrate_api_client::{
-    events::GenericEventArg,
-    Api,
-};
+use substrate_api_client::Api;
 
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
-    _from: GenericEventArg<AccountId>,
-    deployed_at: GenericEventArg<AccountId>,
+    _from: AccountId,
+    deployed_at: AccountId,
 }
 
 fn main() {
@@ -111,11 +108,11 @@ fn main() {
 
     println!(
         "[+] Event was received. Contract deployed at: {:?}\n",
-        args.deployed_at.value
+        args.deployed_at
     );
 
     // 3. Call the contract instance
-    let xt = api.contract_call(args.deployed_at.value.into(), 500_000, 500_000, vec![1u8]);
+    let xt = api.contract_call(args.deployed_at.into(), 500_000, 500_000, vec![1u8]);
 
     // Currently, a contract call does not fire any events nor interact in any other fashion with
     // the outside world. Only node logs can supply information on the consequences of a contract
