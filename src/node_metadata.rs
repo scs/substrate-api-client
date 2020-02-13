@@ -36,6 +36,7 @@ use metadata::{
     StorageHasher,
     META_RESERVED,
 };
+use serde::ser::Serialize;
 use sp_core::storage::StorageKey;
 
 #[derive(Debug, thiserror::Error)]
@@ -94,6 +95,16 @@ impl Metadata {
         self.modules_with_events.values()
     }
 
+    pub fn module_with_events_by_name<S>(&self, name: S) -> Result<&ModuleWithEvents, MetadataError>
+    where
+        S: ToString,
+    {
+        let name = name.to_string();
+        self.modules_with_events
+            .get(&name)
+            .ok_or(MetadataError::ModuleNotFound(name))
+    }
+
     pub fn module_with_events(
         &self,
         module_index: u8,
@@ -104,7 +115,7 @@ impl Metadata {
             .ok_or(MetadataError::ModuleWithEventsNotFound(module_index))
     }
 
-    pub fn pretty(&self) -> String {
+    pub fn print_overview(&self) {
         let mut string = String::new();
         for (name, module) in &self.modules {
             string.push_str(name.as_str());
@@ -129,7 +140,27 @@ impl Metadata {
                 }
             }
         }
-        string
+        println!("{}", string);
+    }
+
+    pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String>{
+        let buf = Vec::new();
+        let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
+        let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
+        metadata.serialize(&mut ser).unwrap();
+        String::from_utf8(ser.into_inner()).ok()
+    }
+
+    pub fn print_modules_with_calls(&self) {
+        for m in self.modules_with_calls() {
+            m.print()
+        }
+    }
+
+    pub fn print_modules_with_events(&self) {
+        for m in self.modules_with_events() {
+            m.print()
+        }
     }
 }
 
@@ -148,6 +179,7 @@ impl ModuleMetadata {
     }
 }
 
+// Todo make nice list of Call args to facilitate call arg lookup
 #[derive(Clone, Debug)]
 pub struct ModuleWithCalls {
     pub index: u8,
@@ -156,10 +188,10 @@ pub struct ModuleWithCalls {
 }
 
 impl ModuleWithCalls {
-    pub fn print_calls(&self) {
-        println!("----------------- Calls for Module: {} -----------------\n", self.name);
-        for e in &self.calls {
-            println!("{:?}", e);
+    pub fn print(&self) {
+        println!("----------------- Calls for Module: '{}' -----------------\n", self.name);
+        for (name, index ) in &self.calls {
+            println!("Name: {}, index {}", name, index);
         }
         println!()
     }
@@ -185,6 +217,15 @@ impl ModuleWithEvents {
         self.events
             .get(&index)
             .ok_or(MetadataError::EventNotFound(index))
+    }
+
+    pub fn print(&self) {
+        println!("----------------- Events for Module: {} -----------------\n", self.name());
+
+        for e in self.events() {
+            println!("Name: {:?}, Args: {:?}", e.name, e.arguments);
+        }
+        println!()
     }
 }
 
