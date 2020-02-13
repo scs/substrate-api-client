@@ -18,7 +18,7 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use primitives::sr25519;
+use sp_core::sr25519;
 use node_primitives::AccountId;
 
 use substrate_api_client::{Api, events::EventArg};

@@ -287,7 +287,7 @@ pub fn parse_metadata(metadata: RuntimeMetadataPrefixed) -> Result<NodeMetadata,
     let mut modules_with_calls = HashMap::new();
 
     let meta = match metadata.1 {
-        RuntimeMetadata::V8(meta) => meta,
+        RuntimeMetadata::V11(meta) => meta,
         _ => return Err(Error::InvalidVersion),
     };
     debug!("-------------------- modules ----------------");

@@ -32,7 +32,7 @@ use codec::{
     Input,
     Output,
 };
-use runtime_primitives::DispatchError;
+use sp_runtime::DispatchError;
 use system::Phase;
 
 use crate::{

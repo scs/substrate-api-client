@@ -30,6 +30,7 @@ use std::convert::TryFrom;
 
 #[cfg(feature = "std")]
 use codec::{Decode, Encode, Error as CodecError};
+#[cfg(feature = "std")]
 use balances::AccountData;
 
 #[cfg(feature = "std")]

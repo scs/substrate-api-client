@@ -26,7 +26,6 @@ use std::sync::mpsc::channel;
 use clap::{load_yaml, App};
 use codec::Decode;
 use keyring::AccountKeyring;
-use log::*;
 use node_primitives::AccountId;
 use sp_core::H256 as Hash;
 use sp_std::prelude::*;
