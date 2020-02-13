@@ -136,11 +136,14 @@ pipeline {
   }
   post {
     unsuccessful {
-        emailext (
-          subject: "Jenkins Build '${env.JOB_NAME} [${env.BUILD_NUMBER}]' is ${currentBuild.currentResult}",
-          body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} is ${currentBuild.currentResult}\n\nMore info at: ${env.BUILD_URL}",
-          to: "${env.RECIPIENTS_SUBSTRATEE}"
-        )
+      emailext (
+        subject: "Jenkins Build '${env.JOB_NAME} [${env.BUILD_NUMBER}]' is ${currentBuild.currentResult}",
+        body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} is ${currentBuild.currentResult}\n\nMore info at: ${env.BUILD_URL}",
+        to: "${env.RECIPIENTS_SUBSTRATEE}"
+      )
+    }
+    always {
+      cleanWs()
     }
   }
 }
