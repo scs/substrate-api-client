@@ -32,6 +32,7 @@ use sp_std::prelude::*;
 
 use substrate_api_client::Api;
 
+// Lookup the details on the event from the metadata
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
     _from: AccountId,

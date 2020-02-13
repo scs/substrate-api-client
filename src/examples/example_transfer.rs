@@ -30,9 +30,10 @@ fn main() {
 
     let to = AccountKeyring::Bob.to_account_id();
 
-    let bob = api.get_account_data(&to).unwrap();
-    println!("[+] Bob's Free Balance is is {}\n", bob.free);
-
+    match api.get_account_data(&to) {
+        Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
+        None => println!("[+] Bob's Free Balance is is {}\n", 0),
+    }
     // generate extrinsic
     let xt = api.balance_transfer(GenericAddress::from(to.clone()), 1000);
 
