@@ -31,14 +31,25 @@ pub const CONTRACTS_PUT_CODE: &str = "put_code";
 pub const CONTRACTS_INSTANTIATE: &str = "instantiate";
 pub const CONTRACTS_CALL: &str = "call";
 
-pub type ContractPutCodeFn = ([u8; 2], Compact<u64>, Vec<u8>);
-pub type ContractInstantiateFn = ([u8; 2], Compact<u128>, Compact<u64>, Hash, Vec<u8>);
+type CallIndex = [u8; 2];
+
+type Gas = u64;
+type Data = Vec<u8>;
+type Balance = u128;
+
+type GasLimit = Compact<Gas>;
+type Endowment = Compact<Balance>;
+type Value = Compact<Balance>;
+type Destination = GenericAddress;
+
+pub type ContractPutCodeFn = (CallIndex, GasLimit, Data);
+pub type ContractInstantiateFn = (CallIndex, Endowment, GasLimit, Hash, Data);
 pub type ContractCallFn = (
-    [u8; 2],
-    GenericAddress,
-    Compact<u128>,
-    Compact<u64>,
-    Vec<u8>,
+    CallIndex,
+    Destination,
+    Value,
+    GasLimit,
+    Data,
 );
 
 pub type ContractPutCodeXt = UncheckedExtrinsicV4<ContractPutCodeFn>;
@@ -51,7 +62,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn contract_put_code(&self, gas_limit: u64, code: Vec<u8>) -> ContractPutCodeXt {
+    pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {
         compose_extrinsic!(
             &self,
             CONTRACTS_MODULE,
@@ -63,10 +74,10 @@ where
 
     pub fn contract_instantiate(
         &self,
-        endowment: u128,
-        gas_limit: u64,
+        endowment: Balance,
+        gas_limit: Gas,
         code_hash: Hash,
-        data: Vec<u8>,
+        data: Data,
     ) -> ContractInstantiateXt {
 
             compose_extrinsic!(
@@ -83,9 +94,9 @@ where
     pub fn contract_call(
         &self,
         dest: GenericAddress,
-        value: u128,
-        gas_limit: u64,
-        data: Vec<u8>,
+        value: Balance,
+        gas_limit: Gas,
+        data: Data,
     ) -> ContractCallXt {
         compose_extrinsic!(
             self,

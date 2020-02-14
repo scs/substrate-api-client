@@ -27,18 +27,22 @@ pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
 
-pub type BalanceTransferFn = ([u8; 2], GenericAddress, Compact<u128>);
-pub type BalanceSetBalanceFn = ([u8; 2], GenericAddress, Compact<u128>, Compact<u128>);
+pub type CallIndex = [u8; 2];
+pub type Balance = u128;
+
+pub type BalanceTransferFn = (CallIndex, GenericAddress, Compact<Balance>);
+pub type BalanceSetBalanceFn = (CallIndex, GenericAddress, Compact<Balance>, Compact<Balance>);
 
 pub type BalanceTransferXt = UncheckedExtrinsicV4<BalanceTransferFn>;
 pub type BalanceSetBalanceXt = UncheckedExtrinsicV4<BalanceSetBalanceFn>;
 
+#[cfg(feature = "std")]
 impl<P> Api<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn balance_transfer(&self, to: GenericAddress, amount: u128) -> BalanceTransferXt {
+    pub fn balance_transfer(&self, to: GenericAddress, amount: Balance) -> BalanceTransferXt {
         compose_extrinsic!(
             self,
             BALANCES_MODULE,
@@ -51,8 +55,8 @@ where
     pub fn balance_set_balance(
         &self,
         who: GenericAddress,
-        free_balance: u128,
-        reserved_balance: u128,
+        free_balance: Balance,
+        reserved_balance: Balance,
     ) -> BalanceSetBalanceXt {
         compose_extrinsic!(
             self,
