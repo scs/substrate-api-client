@@ -73,10 +73,8 @@ fn main() {
     // wait for the `contract.CodeStored(code_hash)` event, which returns code hash that is needed
     // to define what contract shall be instantiated afterwards.
     println!("[+] Waiting for the contract.CodeStored event");
-    let code_hash: Hash = api.wait_for_event(
-        "Contract",
-        "CodeStored",
-        &events_out)
+    let code_hash: Hash = api
+        .wait_for_event("Contract", "CodeStored", &events_out)
         .unwrap()
         .unwrap();
     println!("[+] Event was received. Got code hash: {:?}\n", code_hash);
@@ -100,10 +98,8 @@ fn main() {
     println!("[+] Waiting for the contract.Instantiated event");
 
     // Fixme: Somehow no events are thrown from this point. The example hangs here...
-    let args: ContractInstantiatedEventArgs = api.wait_for_event(
-        "Contract",
-        "Instantiated",
-        &events_out)
+    let args: ContractInstantiatedEventArgs = api
+        .wait_for_event("Contract", "Instantiated", &events_out)
         .unwrap()
         .unwrap();
 

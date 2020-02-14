@@ -15,26 +15,13 @@
 
 */
 
-use std::{
-    collections::HashMap,
-    convert::TryFrom,
-    marker::PhantomData,
-    str::FromStr,
-};
+use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, str::FromStr};
 
-use codec::{
-    Decode,
-    Encode,
-};
+use codec::{Decode, Encode};
 
 use metadata::{
-    DecodeDifferent,
-    RuntimeMetadata,
-    RuntimeMetadataPrefixed,
-    StorageEntryModifier,
-    StorageEntryType,
-    StorageHasher,
-    META_RESERVED,
+    DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed, StorageEntryModifier,
+    StorageEntryType, StorageHasher, META_RESERVED,
 };
 use serde::ser::Serialize;
 use sp_core::storage::StorageKey;
@@ -105,10 +92,7 @@ impl Metadata {
             .ok_or(MetadataError::ModuleNotFound(name))
     }
 
-    pub fn module_with_events(
-        &self,
-        module_index: u8,
-    ) -> Result<&ModuleWithEvents, MetadataError> {
+    pub fn module_with_events(&self, module_index: u8) -> Result<&ModuleWithEvents, MetadataError> {
         self.modules_with_events
             .values()
             .find(|&module| module.index == module_index)
@@ -143,7 +127,7 @@ impl Metadata {
         println!("{}", string);
     }
 
-    pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String>{
+    pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
         let buf = Vec::new();
         let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
         let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
@@ -189,8 +173,11 @@ pub struct ModuleWithCalls {
 
 impl ModuleWithCalls {
     pub fn print(&self) {
-        println!("----------------- Calls for Module: '{}' -----------------\n", self.name);
-        for (name, index ) in &self.calls {
+        println!(
+            "----------------- Calls for Module: '{}' -----------------\n",
+            self.name
+        );
+        for (name, index) in &self.calls {
             println!("Name: {}, index {}", name, index);
         }
         println!()
@@ -220,7 +207,10 @@ impl ModuleWithEvents {
     }
 
     pub fn print(&self) {
-        println!("----------------- Events for Module: {} -----------------\n", self.name());
+        println!(
+            "----------------- Events for Module: {} -----------------\n",
+            self.name()
+        );
 
         for e in self.events() {
             println!("Name: {:?}, Args: {:?}", e.name, e.arguments);
@@ -239,9 +229,7 @@ pub struct StorageMetadata {
 }
 
 impl StorageMetadata {
-    pub fn get_map<K: Encode, V: Decode + Clone>(
-        &self,
-    ) -> Result<StorageMap<K, V>, MetadataError> {
+    pub fn get_map<K: Encode, V: Decode + Clone>(&self) -> Result<StorageMap<K, V>, MetadataError> {
         match &self.ty {
             StorageEntryType::Map { hasher, .. } => {
                 let module_prefix = self.module_prefix.as_bytes().to_vec();
@@ -391,7 +379,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 
     fn try_from(metadata: RuntimeMetadataPrefixed) -> Result<Self, Self::Error> {
         if metadata.0 != META_RESERVED {
-            return Err(ConversionError::InvalidPrefix.into())
+            return Err(ConversionError::InvalidPrefix.into());
         }
         let meta = match metadata.1 {
             RuntimeMetadata::V11(meta) => meta,
@@ -409,11 +397,8 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
                 let module_prefix = convert(storage.prefix)?;
                 for entry in convert(storage.entries)?.into_iter() {
                     let storage_prefix = convert(entry.name.clone())?;
-                    let entry = convert_entry(
-                        module_prefix.clone(),
-                        storage_prefix.clone(),
-                        entry,
-                    )?;
+                    let entry =
+                        convert_entry(module_prefix.clone(), storage_prefix.clone(), entry)?;
                     storage_map.insert(storage_prefix, entry);
                 }
             }
@@ -463,18 +448,14 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
     }
 }
 
-fn convert<B: 'static, O: 'static>(
-    dd: DecodeDifferent<B, O>,
-) -> Result<O, ConversionError> {
+fn convert<B: 'static, O: 'static>(dd: DecodeDifferent<B, O>) -> Result<O, ConversionError> {
     match dd {
         DecodeDifferent::Decoded(value) => Ok(value),
         _ => Err(ConversionError::ExpectedDecoded),
     }
 }
 
-fn convert_event(
-    event: metadata::EventMetadata,
-) -> Result<ModuleEventMetadata, ConversionError> {
+fn convert_event(event: metadata::EventMetadata) -> Result<ModuleEventMetadata, ConversionError> {
     let name = convert(event.name)?;
     let mut arguments = Vec::new();
     for arg in convert(event.arguments)? {

@@ -15,10 +15,10 @@
 
 */
 
+use balances::AccountData;
 use codec::{Decode, Error};
 use hex::FromHexError;
 use primitive_types::U256;
-use balances::AccountData;
 use sp_core::blake2_256;
 use sp_core::twox_128;
 use sp_core::H256 as Hash;
@@ -76,7 +76,7 @@ pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
         _ => match vec.iter().sum() {
             0 => Ok(0u64),
             _ => Err(hex::FromHexError::InvalidStringLength),
-        }
+        },
     }
 }
 

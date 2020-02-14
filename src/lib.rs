@@ -21,27 +21,27 @@
 use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
-use std::sync::mpsc::{channel, Receiver};
-#[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
+#[cfg(feature = "std")]
+use std::sync::mpsc::{channel, Receiver};
 
 #[cfg(feature = "std")]
 use std::convert::TryFrom;
 
 #[cfg(feature = "std")]
-use codec::{Decode, Encode, Error as CodecError};
-#[cfg(feature = "std")]
 use balances::AccountData;
+#[cfg(feature = "std")]
+use codec::{Decode, Encode, Error as CodecError};
 
 #[cfg(feature = "std")]
-use log::{info, error, debug};
+use log::{debug, error, info};
 
 #[cfg(feature = "std")]
 use metadata::RuntimeMetadataPrefixed;
 #[cfg(feature = "std")]
-use sp_core::H256 as Hash;
-#[cfg(feature = "std")]
 use sp_core::crypto::Pair;
+#[cfg(feature = "std")]
+use sp_core::H256 as Hash;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -61,9 +61,9 @@ use sp_version::RuntimeVersion;
 #[macro_use]
 pub mod extrinsic;
 #[cfg(feature = "std")]
-pub mod node_metadata;
-#[cfg(feature = "std")]
 pub mod events;
+#[cfg(feature = "std")]
+pub mod node_metadata;
 
 #[cfg(feature = "std")]
 pub mod rpc;
@@ -71,7 +71,7 @@ pub mod rpc;
 pub mod utils;
 
 #[cfg(feature = "std")]
-use events::{RawEvent, RuntimeEvent, EventsDecoder};
+use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
 use sp_runtime::{AccountId32, MultiSignature};
 
@@ -250,11 +250,7 @@ where
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();
-        rpc::send_extrinsic_and_wait_until_finalized(
-            self.url.clone(),
-            jsonreq,
-            result_in,
-        );
+        rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
 
         Ok(hexstr_to_hash(result_out.recv().unwrap()).unwrap())
     }
@@ -267,12 +263,22 @@ where
         rpc::start_event_subscriber(self.url.clone(), jsonreq, sender);
     }
 
-    pub fn wait_for_event<E: Decode>(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<Result<E, CodecError>> {
+    pub fn wait_for_event<E: Decode>(
+        &self,
+        module: &str,
+        variant: &str,
+        receiver: &Receiver<String>,
+    ) -> Option<Result<E, CodecError>> {
         self.wait_for_raw_event(module, variant, receiver)
             .map(|raw| E::decode(&mut &raw.data[..]))
     }
 
-    pub fn wait_for_raw_event(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<RawEvent> {
+    pub fn wait_for_raw_event(
+        &self,
+        module: &str,
+        variant: &str,
+        receiver: &Receiver<String>,
+    ) -> Option<RawEvent> {
         loop {
             let event_str = receiver.recv().unwrap();
 
@@ -288,9 +294,10 @@ where
                         info!("Decoded Event: {:?}, {:?}", phase, event);
                         match event {
                             RuntimeEvent::Raw(raw)
-                                if raw.module == module && raw.variant == variant => {
-                                    return Some(raw)
-                                }
+                                if raw.module == module && raw.variant == variant =>
+                            {
+                                return Some(raw)
+                            }
                             _ => debug!("ignoring unsupported module event: {:?}", event),
                         }
                     }

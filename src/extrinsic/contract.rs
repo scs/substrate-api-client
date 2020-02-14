@@ -18,8 +18,8 @@
 use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_core::H256 as Hash;
-use sp_std::prelude::*;
 use sp_runtime::MultiSignature;
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use crate::{compose_extrinsic, Api};
@@ -44,13 +44,7 @@ type Destination = GenericAddress;
 
 pub type ContractPutCodeFn = (CallIndex, GasLimit, Data);
 pub type ContractInstantiateFn = (CallIndex, Endowment, GasLimit, Hash, Data);
-pub type ContractCallFn = (
-    CallIndex,
-    Destination,
-    Value,
-    GasLimit,
-    Data,
-);
+pub type ContractCallFn = (CallIndex, Destination, Value, GasLimit, Data);
 
 pub type ContractPutCodeXt = UncheckedExtrinsicV4<ContractPutCodeFn>;
 pub type ContractInstantiateXt = UncheckedExtrinsicV4<ContractInstantiateFn>;
@@ -79,8 +73,7 @@ where
         code_hash: Hash,
         data: Data,
     ) -> ContractInstantiateXt {
-
-            compose_extrinsic!(
+        compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
             CONTRACTS_INSTANTIATE,

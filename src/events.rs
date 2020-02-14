@@ -15,37 +15,17 @@
 // along with substrate-subxt.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::{
-    collections::{
-        HashMap,
-        HashSet,
-    },
+    collections::{HashMap, HashSet},
     convert::TryFrom,
-    marker::{
-//        PhantomData,
-        Send,
-    },
+    marker::Send,
 };
 
-use codec::{
-    Codec,
-    Compact,
-    Decode,
-    Encode,
-    Error as CodecError,
-    Input,
-    Output,
-};
+use codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input, Output};
 use sp_runtime::DispatchError;
 use support::weights::DispatchInfo;
 use system::Phase;
 
-use crate::{
-    node_metadata::{
-        EventArg,
-        Metadata,
-        MetadataError,
-    },
-};
+use crate::node_metadata::{EventArg, Metadata, MetadataError};
 
 /// Event for the System module.
 #[derive(Clone, Debug, Decode)]
@@ -87,7 +67,7 @@ pub enum EventsError {
 pub struct EventsDecoder {
     metadata: Metadata,
     type_sizes: HashMap<String, usize>,
-//    marker: PhantomData<fn() -> T>,
+    // marker: PhantomData<fn() -> T>,
 }
 
 impl TryFrom<Metadata> for EventsDecoder {
@@ -97,7 +77,7 @@ impl TryFrom<Metadata> for EventsDecoder {
         let mut decoder = Self {
             metadata,
             type_sizes: HashMap::new(),
-//            marker: PhantomData,
+            // marker: PhantomData,
         };
         // register default event arg type sizes for dynamic decoding of events
         decoder.register_type_size::<bool>("bool")?;
@@ -188,14 +168,14 @@ impl EventsDecoder {
                 EventArg::Primitive(name) => {
                     if name.contains("PhantomData") {
                         // PhantomData is size 0
-                        return Ok(())
+                        return Ok(());
                     }
                     if let Some(size) = self.type_sizes.get(name) {
                         let mut buf = vec![0; *size];
                         input.read(&mut buf)?;
                         output.write(&buf);
                     } else {
-                        return Err(EventsError::TypeSizeUnavailable(name.to_owned()))
+                        return Err(EventsError::TypeSizeUnavailable(name.to_owned()));
                     }
                 }
             }
@@ -227,14 +207,14 @@ impl EventsDecoder {
             } else {
                 let event_variant = input.read_byte()?;
                 let event_metadata = module.event(event_variant)?;
-                log::debug!("decoding event '{}::{}'", module.name(), event_metadata.name);
+                log::debug!(
+                    "decoding event '{}::{}'",
+                    module.name(),
+                    event_metadata.name
+                );
 
                 let mut event_data = Vec::<u8>::new();
-                self.decode_raw_bytes(
-                    &event_metadata.arguments(),
-                    input,
-                    &mut event_data,
-                )?;
+                self.decode_raw_bytes(&event_metadata.arguments(), input, &mut event_data)?;
 
                 log::debug!(
                     "received event '{}::{}', raw bytes: {}",
@@ -250,7 +230,7 @@ impl EventsDecoder {
                 })
             };
 
-//             topics come after the event data in EventRecord
+            // topics come after the event data in EventRecord
             log::debug!("Phase {:?}, Event: {:?}", phase, event);
 
             log::debug!("Decoding topics {:?}", input);

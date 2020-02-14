@@ -31,7 +31,12 @@ pub type CallIndex = [u8; 2];
 pub type Balance = u128;
 
 pub type BalanceTransferFn = (CallIndex, GenericAddress, Compact<Balance>);
-pub type BalanceSetBalanceFn = (CallIndex, GenericAddress, Compact<Balance>, Compact<Balance>);
+pub type BalanceSetBalanceFn = (
+    CallIndex,
+    GenericAddress,
+    Compact<Balance>,
+    Compact<Balance>,
+);
 
 pub type BalanceTransferXt = UncheckedExtrinsicV4<BalanceTransferFn>;
 pub type BalanceSetBalanceXt = UncheckedExtrinsicV4<BalanceSetBalanceFn>;

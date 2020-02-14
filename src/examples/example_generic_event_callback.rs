@@ -18,12 +18,11 @@
 use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
-use codec::{Decode};
-use sp_core::sr25519;
+use codec::Decode;
 use node_primitives::AccountId;
+use sp_core::sr25519;
 
 use substrate_api_client::Api;
-
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -44,10 +43,8 @@ fn main() {
     let (events_in, events_out) = channel();
 
     api.subscribe_events(events_in.clone());
-    let args: TransferEventArgs = api.wait_for_event(
-        "Balances",
-        "Transfer",
-        &events_out)
+    let args: TransferEventArgs = api
+        .wait_for_event("Balances", "Transfer", &events_out)
         .unwrap()
         .unwrap();
 

@@ -41,7 +41,10 @@ fn main() {
     meta.print_modules_with_events();
 
     // print full substrate metadata json formatted
-    println!("{}", Metadata::pretty_format(&api.get_metadata()).unwrap_or("pretty format failed".to_string()))
+    println!(
+        "{}",
+        Metadata::pretty_format(&api.get_metadata()).unwrap_or("pretty format failed".to_string())
+    )
 }
 
 pub fn get_node_url_from_cli() -> String {
