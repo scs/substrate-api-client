@@ -20,8 +20,8 @@ use codec::Compact;
 use super::xt_primitives::*;
 #[cfg(feature = "std")]
 use crate::{compose_extrinsic, Api};
-use primitives::crypto::Pair;
-use runtime_primitives::MultiSignature;
+use sp_core::crypto::Pair;
+use sp_runtime::MultiSignature;
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";

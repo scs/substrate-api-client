@@ -17,21 +17,22 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use rstd::prelude::*;
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use std::sync::mpsc::channel;
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
+use balances::AccountData;
 use codec::{Decode, Encode};
 
 #[cfg(feature = "std")]
 use log::{debug, info};
 
 use metadata::RuntimeMetadataPrefixed;
-use primitives::crypto::Pair;
-use primitives::H256 as Hash;
+use sp_core::crypto::Pair;
+use sp_core::H256 as Hash;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -46,7 +47,7 @@ use rpc::json_req;
 use utils::*;
 
 use primitive_types::U256;
-use runtime_version::RuntimeVersion;
+use sp_version::RuntimeVersion;
 
 #[macro_use]
 pub mod extrinsic;
@@ -58,7 +59,7 @@ pub mod rpc;
 #[cfg(feature = "std")]
 pub mod utils;
 
-use runtime_primitives::{AccountId32, MultiSignature};
+use sp_runtime::{AccountId32, MultiSignature};
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
@@ -191,12 +192,13 @@ where
         }
     }
 
-    pub fn get_free_balance(&self, address: &AccountId32) -> U256 {
+    pub fn get_account_data(&self, address: &AccountId32) -> Option<AccountData<u128>> {
         let id: &[u8; 32] = address.as_ref();
         let result_str = self
-            .get_storage("Balances", "FreeBalance", Some(id.to_owned().encode()))
+            .get_storage("Balances", "Account", Some(id.to_owned().encode()))
             .unwrap();
-        hexstr_to_u256(result_str).unwrap()
+
+        hexstr_to_account_data(result_str).ok()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {

@@ -38,13 +38,13 @@ impl Handler for RpcClient {
     }
 
     fn on_message(&mut self, msg: Message) -> Result<()> {
-        info!("got message");
-        debug!("{}", msg);
         (self.on_message_fn)(msg, self.out.clone(), self.result.clone())
     }
 }
 
 pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+    info!("Got get_request_msg");
+    debug!("{}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
@@ -54,6 +54,8 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
 }
 
 pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>) -> Result<()> {
+    info!("got on_subscription_msg");
+    debug!("{}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
@@ -64,9 +66,12 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
             debug!("method: {:?}", value["method"].as_str());
             match value["method"].as_str() {
                 Some("state_storage") => {
-                    let _changes = &value["params"]["result"]["changes"];
-                    let _res_str = _changes[0][1].as_str().unwrap().to_string();
-                    result.send(_res_str).unwrap();
+                    let changes = &value["params"]["result"]["changes"];
+
+                    match changes[0][1].as_str() {
+                        Some(change_set) => result.send(change_set.to_owned()).unwrap(),
+                        None => println!("No events happened"),
+                    };
                 }
                 _ => error!("unsupported method"),
             }

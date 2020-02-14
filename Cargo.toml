@@ -13,10 +13,10 @@ serde           = { version = "1.0", optional = true, features = ["derive"] }
 serde_json      = { version = "1.0", optional = true }
 primitive-types = { version = "0.6", default-features = false, features = ["codec"] }
 
-[dependencies.primitives]
+[dependencies.sp-core]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "substrate-primitives"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-core"
 default-features = false
 features = ["full_crypto"]
 
@@ -28,72 +28,72 @@ default-features = false
 
 [dependencies.indices]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 package = "pallet-indices"
 default-features=false
 
 [dependencies.runtime_io]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "sr-io"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-io"
 default-features=false
 
 [dependencies.metadata]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "palette-metadata"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "frame-metadata"
 default-features=false
 
-[dependencies.runtime_version]
+[dependencies.sp-version]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "sr-version"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-version"
 default-features=false
 
 [dependencies.balances]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 package = "pallet-balances"
 default-features=false
 
 [dependencies.system]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "palette-system"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "frame-system"
 default-features=false
 
-[dependencies.runtime_primitives]
+[dependencies.sp-runtime]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "sr-primitives"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-runtime"
 default-features=false
 
-[dependencies.runtime_support]
+[dependencies.support]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "palette-support"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "frame-support"
 default-features=false
 
-[dependencies.rstd]
+[dependencies.sp-std]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "sr-std"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-std"
 default-features = false
 
 [dev-dependencies.node_runtime]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 package = "node-runtime"
 
 [dependencies.node_primitives]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 package = "node-primitives"
 default-features=false
 
 [dev-dependencies.contracts]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 package = "pallet-contracts"
 
 [dev-dependencies]
@@ -101,8 +101,8 @@ wabt = "0.9.0"
 
 [dev-dependencies.keyring]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "substrate-keyring"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-keyring"
 
 [dev-dependencies.clap] 
 version = "2.33"
@@ -111,18 +111,18 @@ features = ["yaml"]
 [features]
 default = ["std"]
 std = [
-	"primitives/std",
+	"sp-core/std",
 	"codec/std",
-    "runtime_primitives/std",
-	"runtime_support/std",
-	"runtime_primitives/std",
+    "sp-runtime/std",
+	"support/std",
+	"sp-runtime/std",
 	"system/std",
 	"balances/std",
-	"runtime_version/std",
+	"sp-version/std",
 	"metadata/std",
 	"runtime_io/std",
 	"indices/std",
-	"primitives/std",
+	"sp-core/std",
 	"serde/std",
 	"serde_json",
 	"env_logger",
@@ -168,6 +168,3 @@ path = "src/examples/example_compose_extrinsic_offline.rs"
 [[example]]
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
-
-[patch.crates-io]
-ed25519-dalek = { git = "https://github.com/scs/ed25519-dalek.git", branch = "no_std_sgx"}

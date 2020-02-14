@@ -16,10 +16,10 @@
 */
 
 use codec::Compact;
-use primitives::crypto::Pair;
-use primitives::H256 as Hash;
-use rstd::prelude::*;
-use runtime_primitives::MultiSignature;
+use sp_core::crypto::Pair;
+use sp_core::H256 as Hash;
+use sp_std::prelude::*;
+use sp_runtime::MultiSignature;
 
 #[cfg(feature = "std")]
 use crate::{compose_extrinsic, Api};

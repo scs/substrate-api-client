@@ -8,12 +8,12 @@ edition = "2018"
 substrate-api-client = { path = "../.." }
 codec = { package = "parity-scale-codec", features = ["derive"], version = "1.0.0", default-features = false }
 
-[dependencies.primitives]
+[dependencies.sp-core]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "substrate-primitives"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-core"
 
 [dependencies.keyring]
 git = "https://github.com/paritytech/substrate"
-rev = "3bf9540e72df5ecb3955845764dfee7dcdbb26b5"
-package = "substrate-keyring"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+package = "sp-keyring"

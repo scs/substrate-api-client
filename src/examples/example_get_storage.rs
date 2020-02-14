@@ -18,7 +18,7 @@ use clap::{load_yaml, App};
 use codec::Encode;
 use keyring::AccountKeyring;
 
-use primitives::crypto::Pair;
+use sp_core::crypto::Pair;
 use substrate_api_client::{utils::hexstr_to_u256, Api};
 
 fn main() {

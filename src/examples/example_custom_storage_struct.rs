@@ -23,7 +23,7 @@ use clap::{load_yaml, App};
 use codec::{Decode, Encode};
 use keyring::AccountKeyring;
 use log::*;
-use primitives::{crypto::Pair, H256};
+use sp_core::{crypto::Pair, H256};
 
 use substrate_api_client::{
     compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, utils::*, Api,

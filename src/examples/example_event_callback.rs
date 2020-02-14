@@ -19,8 +19,8 @@ use std::sync::mpsc::channel;
 use clap::{load_yaml, App};
 use codec::Decode;
 use log::{debug, error};
-use primitives::sr25519;
-use primitives::H256 as Hash;
+use sp_core::sr25519;
+use sp_core::H256 as Hash;
 
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
@@ -51,7 +51,7 @@ fn main() {
                 for evr in &evts {
                     println!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
                     match &evr.event {
-                        Event::balances(be) => {
+                        Event::pallet_balances(be) => {
                             println!(">>>>>>>>>> balances event: {:?}", be);
                             match &be {
                                 balances::RawEvent::Transfer(transactor, dest, value, fee) => {
