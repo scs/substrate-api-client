@@ -11,6 +11,7 @@ hex             = { version = "0.4", default-features=false, optional = true }
 log             = { version = "0.4", optional = true }
 serde           = { version = "1.0", optional = true, features = ["derive"] }
 serde_json      = { version = "1.0", optional = true }
+thiserror = "1.0"
 primitive-types = { version = "0.6", default-features = false, features = ["codec"] }
 
 [dependencies.sp-core]
@@ -164,6 +165,10 @@ path = "src/examples/example_custom_storage_struct.rs"
 [[example]]
 name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
+
+[[example]]
+name = "example_generic_event_callback"
+path = "src/examples/example_generic_event_callback.rs"
 
 [[example]]
 name = "example_sudo"

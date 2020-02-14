@@ -17,28 +17,37 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "std")]
 use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Receiver};
 #[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 
-use balances::AccountData;
-use codec::{Decode, Encode};
+#[cfg(feature = "std")]
+use std::convert::TryFrom;
 
 #[cfg(feature = "std")]
-use log::{debug, info};
+use codec::{Decode, Encode, Error as CodecError};
+#[cfg(feature = "std")]
+use balances::AccountData;
 
+#[cfg(feature = "std")]
+use log::{info, error, debug};
+
+#[cfg(feature = "std")]
 use metadata::RuntimeMetadataPrefixed;
-use sp_core::crypto::Pair;
+#[cfg(feature = "std")]
 use sp_core::H256 as Hash;
+#[cfg(feature = "std")]
+use sp_core::crypto::Pair;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
 
 #[cfg(feature = "std")]
-use node_metadata::NodeMetadata;
+use node_metadata::Metadata;
 
 #[cfg(feature = "std")]
 use rpc::json_req;
@@ -46,19 +55,26 @@ use rpc::json_req;
 #[cfg(feature = "std")]
 use utils::*;
 
+#[cfg(feature = "std")]
 use primitive_types::U256;
+#[cfg(feature = "std")]
 use sp_version::RuntimeVersion;
 
 #[macro_use]
 pub mod extrinsic;
 #[cfg(feature = "std")]
 pub mod node_metadata;
+#[cfg(feature = "std")]
+pub mod events;
 
 #[cfg(feature = "std")]
 pub mod rpc;
 #[cfg(feature = "std")]
 pub mod utils;
 
+#[cfg(feature = "std")]
+use events::{RawEvent, RuntimeEvent, EventsDecoder};
+#[cfg(feature = "std")]
 use sp_runtime::{AccountId32, MultiSignature};
 
 #[cfg(feature = "std")]
@@ -71,7 +87,7 @@ where
     url: String,
     pub signer: Option<P>,
     pub genesis_hash: Hash,
-    pub metadata: NodeMetadata,
+    pub metadata: Metadata,
     pub runtime_version: RuntimeVersion,
 }
 
@@ -86,7 +102,7 @@ where
         info!("Got genesis hash: {:?}", genesis_hash);
 
         let meta = Self::_get_metadata(url.clone());
-        let metadata = node_metadata::parse_metadata(&meta);
+        let metadata = Metadata::try_from(meta).unwrap();
         info!("Metadata: {:?}", metadata);
 
         let runtime_version = Self::_get_runtime_version(url.clone());
@@ -251,5 +267,38 @@ where
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
         rpc::start_event_subscriber(self.url.clone(), jsonreq.clone(), sender.clone());
+    }
+
+    pub fn wait_for_event<E: Decode>(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<Result<E, CodecError>> {
+        self.wait_for_raw_event(module, variant, receiver)
+            .map(|raw| E::decode(&mut &raw.data[..]))
+    }
+
+    pub fn wait_for_raw_event(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<RawEvent> {
+        loop {
+            let event_str = receiver.recv().unwrap();
+
+            let _unhex = hexstr_to_vec(event_str).unwrap();
+            let mut _er_enc = _unhex.as_slice();
+
+            let event_decoder = EventsDecoder::try_from(self.metadata.clone()).unwrap();
+            let _events = event_decoder.decode_events(&mut _er_enc);
+            info!("wait for raw event");
+            match _events {
+                Ok(raw_events) => {
+                    for (phase, event) in raw_events.into_iter() {
+                        info!("Decoded Event: {:?}, {:?}", phase, event);
+                        match event {
+                            RuntimeEvent::Raw(raw)
+                                if raw.module == module && raw.variant == variant => {
+                                    return Some(raw)
+                                }
+                            _ => debug!("ignoring unsupported module event: {:?}", event),
+                        }
+                    }
+                }
+                Err(_) => error!("couldn't decode event record list"),
+            }
+        }
     }
 }

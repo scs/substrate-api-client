@@ -49,7 +49,7 @@ fn main() {
         match _events {
             Ok(evts) => {
                 for evr in &evts {
-                    println!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+                    println!("decoded: {:?} {:?}", evr.phase, evr.event);
                     match &evr.event {
                         Event::pallet_balances(be) => {
                             println!(">>>>>>>>>> balances event: {:?}", be);
@@ -59,6 +59,7 @@ fn main() {
                                     println!("Destination: {:?}", dest);
                                     println!("Value: {:?}", value);
                                     println!("Fee: {:?}", fee);
+                                    return;
                                 }
                                 _ => {
                                     debug!("ignoring unsupported balances event");

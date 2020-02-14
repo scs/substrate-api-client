@@ -28,11 +28,11 @@ use super::xt_primitives::*;
 
 pub const CONTRACTS_MODULE: &str = "Contract";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";
-pub const CONTRACTS_CREATE: &str = "create";
+pub const CONTRACTS_INSTANTIATE: &str = "instantiate";
 pub const CONTRACTS_CALL: &str = "call";
 
 pub type ContractPutCodeFn = ([u8; 2], Compact<u64>, Vec<u8>);
-pub type ContractCreateFn = ([u8; 2], Compact<u128>, Compact<u64>, Hash, Vec<u8>);
+pub type ContractInstantiateFn = ([u8; 2], Compact<u128>, Compact<u64>, Hash, Vec<u8>);
 pub type ContractCallFn = (
     [u8; 2],
     GenericAddress,
@@ -42,7 +42,7 @@ pub type ContractCallFn = (
 );
 
 pub type ContractPutCodeXt = UncheckedExtrinsicV4<ContractPutCodeFn>;
-pub type ContractCreateXt = UncheckedExtrinsicV4<ContractCreateFn>;
+pub type ContractInstantiateXt = UncheckedExtrinsicV4<ContractInstantiateFn>;
 pub type ContractCallXt = UncheckedExtrinsicV4<ContractCallFn>;
 
 #[cfg(feature = "std")]
@@ -61,17 +61,18 @@ where
         )
     }
 
-    pub fn contract_create(
+    pub fn contract_instantiate(
         &self,
         endowment: u128,
         gas_limit: u64,
         code_hash: Hash,
         data: Vec<u8>,
-    ) -> ContractCreateXt {
-        compose_extrinsic!(
+    ) -> ContractInstantiateXt {
+
+            compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
-            CONTRACTS_CREATE,
+            CONTRACTS_INSTANTIATE,
             Compact(endowment),
             Compact(gas_limit),
             code_hash,

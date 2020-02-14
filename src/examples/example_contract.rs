@@ -21,22 +21,23 @@
 //! *Note*: The runtime module here is not in the generic substrate node. Hence, this example
 //! must run against the customized node found in `https://github.com/scs/substrate-test-nodes`.
 
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
 use keyring::AccountKeyring;
-use log::*;
+use node_primitives::AccountId;
 use sp_core::H256 as Hash;
 use sp_std::prelude::*;
 
-// FIXME: this type doesn't include contract events -> example broken (would rely on test-node-runtime which we try
-// to avoid because of a cargo issue https://github.com/rust-lang/cargo/issues/6571)
-// If you'd like to use this in your crate, add your node_runtime to dependencies and add
-// use my_node_runtime::Event;
-use node_runtime::Event;
+use substrate_api_client::Api;
 
-use substrate_api_client::{extrinsic::xt_primitives::GenericAddress, utils::*, Api};
+// Lookup the details on the event from the metadata
+#[derive(Decode)]
+struct ContractInstantiatedEventArgs {
+    _from: AccountId,
+    deployed_at: AccountId,
+}
 
 fn main() {
     env_logger::init();
@@ -71,12 +72,17 @@ fn main() {
 
     // wait for the `contract.CodeStored(code_hash)` event, which returns code hash that is needed
     // to define what contract shall be instantiated afterwards.
-    println!("[+] Waiting for the contract.Stored event");
-    let code_hash = subcribe_to_code_stored_event(&events_out);
+    println!("[+] Waiting for the contract.CodeStored event");
+    let code_hash: Hash = api.wait_for_event(
+        "Contract",
+        "CodeStored",
+        &events_out)
+        .unwrap()
+        .unwrap();
     println!("[+] Event was received. Got code hash: {:?}\n", code_hash);
 
     // 2. Create an actual instance of the contract
-    let xt = api.contract_create(1_000, 500_000, code_hash, vec![1u8]);
+    let xt = api.contract_instantiate(1_000, 500_000, code_hash, vec![1u8]);
 
     println!(
         "[+] Creating a contract instance with extrinsic:\n\n{:?}\n",
@@ -92,14 +98,22 @@ fn main() {
     // Note: Trying to instantiate the same contract with the same data twice does not work. No event is
     // fired correspondingly.
     println!("[+] Waiting for the contract.Instantiated event");
-    let deployed_at = subscribe_to_code_instantiated_event(&events_out);
+
+    // Fixme: Somehow no events are thrown from this point. The example hangs here...
+    let args: ContractInstantiatedEventArgs = api.wait_for_event(
+        "Contract",
+        "Instantiated",
+        &events_out)
+        .unwrap()
+        .unwrap();
+
     println!(
         "[+] Event was received. Contract deployed at: {:?}\n",
-        deployed_at
+        args.deployed_at
     );
 
     // 3. Call the contract instance
-    let xt = api.contract_call(deployed_at, 500_000, 500_000, vec![1u8]);
+    let xt = api.contract_call(args.deployed_at.into(), 500_000, 500_000, vec![1u8]);
 
     // Currently, a contract call does not fire any events nor interact in any other fashion with
     // the outside world. Only node logs can supply information on the consequences of a contract
@@ -112,51 +126,6 @@ fn main() {
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
 
-fn subcribe_to_code_stored_event(events_out: &Receiver<String>) -> Hash {
-    loop {
-        let event_str = events_out.recv().unwrap();
-
-        let _unhex = hexstr_to_vec(event_str).unwrap();
-        let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
-        if let Ok(evts) = _events {
-            for evr in &evts {
-                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
-                if let Event::pallet_contracts(ce) = &evr.event {
-                    if let contracts::RawEvent::CodeStored(code_hash) = &ce {
-                        info!("Received Contract.CodeStored event");
-                        info!("Codehash: {:?}", code_hash);
-                        return code_hash.to_owned();
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> GenericAddress {
-    loop {
-        let event_str = events_out.recv().unwrap();
-
-        let _unhex = hexstr_to_vec(event_str).unwrap();
-        let mut _er_enc = _unhex.as_slice();
-        let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
-        if let Ok(evts) = _events {
-            for evr in &evts {
-                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
-                if let Event::pallet_contracts(ce) = &evr.event {
-                    if let contracts::RawEvent::Instantiated(from, deployed_at) = &ce {
-                        info!("Received Contract.Instantiated Event");
-                        info!("From: {:?}", from);
-                        info!("Deployed at: {:?}", deployed_at);
-                        return GenericAddress::from(deployed_at.to_owned());
-                    }
-                }
-            }
-        }
-    }
-}
-
 pub fn get_node_url_from_cli() -> String {
     let yml = load_yaml!("../../src/examples/cli.yml");
     let matches = App::from_yaml(yml).get_matches();
@@ -167,3 +136,53 @@ pub fn get_node_url_from_cli() -> String {
     println!("Interacting with node on {}", url);
     url
 }
+
+// Alternatively you could subscribe to the contracts events using the Event enum from the
+// node_runtime.
+//
+// use node_runtime::Event
+//
+//fn subcribe_to_code_stored_event(events_out: &Receiver<String>) -> Hash {
+//    loop {
+//        let event_str = events_out.recv().unwrap();
+//
+//        let _unhex = hexstr_to_vec(event_str).unwrap();
+//        let mut _er_enc = _unhex.as_slice();
+//        let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
+//        if let Ok(evts) = _events {
+//            for evr in &evts {
+//                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+//                if let Event::contracts(ce) = &evr.event {
+//                    if let contracts::RawEvent::CodeStored(code_hash) = &ce {
+//                        info!("Received Contract.CodeStored event");
+//                        info!("Codehash: {:?}", code_hash);
+//                        return code_hash.to_owned();
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//fn subscribe_to_code_instantiated_event(events_out: &Receiver<String>) -> GenericAddress {
+//    loop {
+//        let event_str = events_out.recv().unwrap();
+//
+//        let _unhex = hexstr_to_vec(event_str).unwrap();
+//        let mut _er_enc = _unhex.as_slice();
+//        let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
+//        if let Ok(evts) = _events {
+//            for evr in &evts {
+//                debug!("decoded: phase {:?} event {:?}", evr.phase, evr.event);
+//                if let Event::contracts(ce) = &evr.event {
+//                    if let contracts::RawEvent::Instantiated(from, deployed_at) = &ce {
+//                        info!("Received Contract.Instantiated Event");
+//                        info!("From: {:?}", from);
+//                        info!("Deployed at: {:?}", deployed_at);
+//                        return GenericAddress::from(deployed_at.to_owned());
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
