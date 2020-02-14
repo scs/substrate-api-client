@@ -56,8 +56,6 @@ use rpc::json_req;
 use utils::*;
 
 #[cfg(feature = "std")]
-use primitive_types::U256;
-#[cfg(feature = "std")]
 use sp_version::RuntimeVersion;
 
 #[macro_use]
@@ -148,7 +146,7 @@ where
     fn _get_nonce(url: String, signer: [u8; 32]) -> u32 {
         let result_str =
             Self::_get_storage(url, "System", "AccountNonce", Some(signer.encode())).unwrap();
-        let nonce = hexstr_to_u256(result_str).unwrap_or(U256::from_little_endian(&[0, 0, 0, 0]));
+        let nonce = hexstr_to_u256(result_str).unwrap_or_default();
         nonce.low_u32()
     }
 
@@ -180,7 +178,7 @@ where
     // low level access
     fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
-        rpc::get(url, jsonreq.clone(), result_in.clone());
+        rpc::get(url, jsonreq, result_in);
 
         Ok(result_out.recv().unwrap())
     }
@@ -254,8 +252,8 @@ where
         let (result_in, result_out) = channel();
         rpc::send_extrinsic_and_wait_until_finalized(
             self.url.clone(),
-            jsonreq.clone(),
-            result_in.clone(),
+            jsonreq,
+            result_in,
         );
 
         Ok(hexstr_to_hash(result_out.recv().unwrap()).unwrap())
@@ -266,7 +264,7 @@ where
         let key = storage_key_hash("System", "Events", None);
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
 
-        rpc::start_event_subscriber(self.url.clone(), jsonreq.clone(), sender.clone());
+        rpc::start_event_subscriber(self.url.clone(), jsonreq, sender);
     }
 
     pub fn wait_for_event<E: Decode>(&self, module: &str, variant: &str, receiver: &Receiver<String>) -> Option<Result<E, CodecError>> {

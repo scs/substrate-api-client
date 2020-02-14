@@ -27,8 +27,8 @@ fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<
     let mut key = twox_128(module.as_bytes()).to_vec();
     key.extend(&twox_128(storage_key_name.as_bytes()));
 
-    if param.is_some() {
-        key.extend(&blake2_256(&param.unwrap()));
+    if let Some(p) = param {
+        key.extend(&blake2_256(&p));
     }
 
     key
