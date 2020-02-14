@@ -147,7 +147,7 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
     let size = sp_std::mem::size_of::<T>();
     let reserve = match size {
         0..=0b0011_1111 => 1,
-        0b0011_1111..=0b0011_1111_1111_1111 => 2,
+        0b0100_0000..=0b0011_1111_1111_1111 => 2,
         _ => 4,
     };
     let mut v = Vec::with_capacity(reserve + size);
