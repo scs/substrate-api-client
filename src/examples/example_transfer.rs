@@ -18,7 +18,7 @@ use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
-use substrate_api_client::{extrinsic::xt_primitives::*, Api};
+use substrate_api_client::{extrinsic::xt_primitives::*, Api, XtStatus};
 
 fn main() {
     env_logger::init();
@@ -46,7 +46,7 @@ fn main() {
     println!("[+] Composed extrinsic: {:?}\n", xt);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased

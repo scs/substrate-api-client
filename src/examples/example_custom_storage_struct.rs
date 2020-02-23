@@ -25,7 +25,7 @@ use keyring::AccountKeyring;
 use log::*;
 use sp_core::{crypto::Pair, H256};
 use substrate_api_client::{
-    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, utils::*, Api,
+    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, utils::*, Api, XtStatus
 };
 
 // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
@@ -50,7 +50,7 @@ fn main() {
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty

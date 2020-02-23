@@ -18,8 +18,17 @@
 use std::sync::mpsc::Sender as ThreadOut;
 
 use crate::rpc::json_req::REQUEST_TRANSFER;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
+
+#[derive(Debug, PartialEq)]
+pub enum XtStatus {
+    Finalized,
+    Ready,
+    Future,
+    Error,
+    Unknown,
+}
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
 
@@ -78,51 +87,94 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
     Ok(())
 }
 
-pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+pub fn on_extrinsic_msg_until_finalized(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
     let retstr = msg.as_text().unwrap();
-    info!("got extrinsic msg {}", retstr);
-    let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
-    match value["id"].as_str() {
-        Some(idstr) => match idstr.parse::<u32>() {
-            Ok(req_id) => match req_id {
-                REQUEST_TRANSFER => match value.get("error") {
-                    Some(err) => error!("ERROR: {:?}", err),
-                    _ => debug!("no error"),
-                },
-                _ => debug!("Unknown request id"),
-            },
-            Err(_) => error!("error assigning request id"),
-        },
-        _ => {
-            // subscriptions
-            debug!("no id field found in response. must be subscription");
-            debug!("method: {:?}", value["method"].as_str());
-            match value["method"].as_str() {
-                Some("author_extrinsicUpdate") => {
-                    match value["params"]["result"].as_str() {
-                        Some(res) => debug!("author_extrinsicUpdate: {}", res),
-                        _ => {
-                            debug!(
-                                "author_extrinsicUpdate: finalized: {}",
-                                value["params"]["result"]["inBlock"].as_str().unwrap()
-                            );
-                            // return result to calling thread
-                            result
-                                .send(
-                                    value["params"]["result"]["inBlock"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
-                                )
-                                .unwrap();
-                            // we've reached the end of the flow. return
-                            out.close(CloseCode::Normal).unwrap();
-                        }
-                    }
-                }
-                _ => error!("unsupported method"),
-            }
-        }
+    debug!("got msg {}", retstr);
+    match parse_status(retstr) {
+        Some(XtStatus::Finalized) => end_process(out, result),
+        Some(XtStatus::Error) => end_process(out, result),
+        Some(XtStatus::Future) => warn!("extrinsic has 'future' status. Waiting for lower nonces"),
+        _ => ()
     };
     Ok(())
+}
+
+pub fn on_extrinsic_msg_until_ready(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+    let retstr = msg.as_text().unwrap();
+    debug!("got msg {}", retstr);
+    match parse_status(retstr) {
+        Some(XtStatus::Finalized) => end_process(out, result),
+        Some(XtStatus::Ready) => end_process(out, result),
+        Some(XtStatus::Future) => end_process(out, result),
+        Some(XtStatus::Error) => end_process(out, result),
+        _ => ()
+    };
+    Ok(())
+}
+
+fn end_process(out: Sender, result: ThreadOut<String>) {
+    // return result to calling thread
+    result.send("0x00".to_string()).unwrap();
+    out.close(CloseCode::Normal).unwrap();
+}
+
+fn parse_status(msg: &str) -> Option<XtStatus> {
+    let value: serde_json::Value = serde_json::from_str(msg).unwrap();
+    match value["error"].as_object() {
+        Some(obj) => {
+            error!("extrinsic error code {}: {}", 
+                        obj.get("code").unwrap().as_u64().unwrap(), 
+                        obj.get("message").unwrap().as_str().unwrap());
+            Some(XtStatus::Error)
+        },
+        None => {
+            match value["params"]["result"].as_object() {
+                Some(obj) => {
+                    if let Some(hash) = obj.get("finalized") {
+                        info!("finalized");
+                        Some(XtStatus::Finalized)
+                    } else {
+                        Some(XtStatus::Unknown)
+                    }
+                },
+                None => {
+                    match value["params"]["result"].as_str() {
+                        Some("ready") => Some(XtStatus::Ready),
+                        Some("future") => Some(XtStatus::Future),
+                        Some(&_) => Some(XtStatus::Unknown),
+                        None => None,
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extrinsic_status_parsed_correctly(){
+        let msg = "{\"jsonrpc\":\"2.0\",\"result\":7185,\"id\":\"3\"}";
+        assert_eq!(parse_status(msg), None);
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"ready\",\"subscription\":7185}}";
+        assert_eq!(parse_status(msg), Some(XtStatus::Ready));
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"finalized\":\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"},\"subscription\":7185}}";
+        assert_eq!(parse_status(msg), Some(XtStatus::Finalized));
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"future\",\"subscription\":2}}";
+        assert_eq!(parse_status(msg), Some(XtStatus::Future));
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
+        assert_eq!(parse_status(msg), Some(XtStatus::Error));
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":0},\"id\":\"4\"}";
+        assert_eq!(parse_status(msg), Some(XtStatus::Error));
+        
+        let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
+        assert_eq!(parse_status(msg), Some(XtStatus::Error));
+    }
 }
