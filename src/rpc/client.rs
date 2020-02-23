@@ -93,7 +93,10 @@ pub fn on_extrinsic_msg_until_finalized(msg: Message, out: Sender, result: Threa
     match parse_status(retstr) {
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Error, _) => end_process(out, result, None),
-        (XtStatus::Future, _) => warn!("extrinsic has 'future' status. Waiting for lower nonces"),
+        (XtStatus::Future, _) => { 
+            warn!("extrinsic has 'future' status. aborting");
+            end_process(out, result, None);
+        },
         _ => ()
     };
     Ok(())
