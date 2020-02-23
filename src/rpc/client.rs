@@ -91,9 +91,9 @@ pub fn on_extrinsic_msg_until_finalized(msg: Message, out: Sender, result: Threa
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
-        Some(XtStatus::Finalized) => end_process(out, result),
-        Some(XtStatus::Error) => end_process(out, result),
-        Some(XtStatus::Future) => warn!("extrinsic has 'future' status. Waiting for lower nonces"),
+        (XtStatus::Finalized, val) => end_process(out, result, val),
+        (XtStatus::Error, _) => end_process(out, result, None),
+        (XtStatus::Future, _) => warn!("extrinsic has 'future' status. Waiting for lower nonces"),
         _ => ()
     };
     Ok(())
@@ -103,46 +103,47 @@ pub fn on_extrinsic_msg_until_ready(msg: Message, out: Sender, result: ThreadOut
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
-        Some(XtStatus::Finalized) => end_process(out, result),
-        Some(XtStatus::Ready) => end_process(out, result),
-        Some(XtStatus::Future) => end_process(out, result),
-        Some(XtStatus::Error) => end_process(out, result),
+        (XtStatus::Finalized, val) => end_process(out, result, val),
+        (XtStatus::Ready, _) => end_process(out, result, None),
+        (XtStatus::Future, _) => end_process(out, result, None),
+        (XtStatus::Error, _) => end_process(out, result, None),
         _ => ()
     };
     Ok(())
 }
 
-fn end_process(out: Sender, result: ThreadOut<String>) {
+fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) {
     // return result to calling thread
-    result.send("0x00".to_string()).unwrap();
+    let val = value.unwrap_or("nix".to_string());
+    result.send(val).unwrap();
     out.close(CloseCode::Normal).unwrap();
 }
 
-fn parse_status(msg: &str) -> Option<XtStatus> {
+fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
     let value: serde_json::Value = serde_json::from_str(msg).unwrap();
     match value["error"].as_object() {
         Some(obj) => {
             error!("extrinsic error code {}: {}", 
                         obj.get("code").unwrap().as_u64().unwrap(), 
                         obj.get("message").unwrap().as_str().unwrap());
-            Some(XtStatus::Error)
+            (XtStatus::Error, None)
         },
         None => {
             match value["params"]["result"].as_object() {
                 Some(obj) => {
                     if let Some(hash) = obj.get("finalized") {
-                        info!("finalized");
-                        Some(XtStatus::Finalized)
+                        info!("finalized: {:?}", hash);
+                        (XtStatus::Finalized, Some( hash.to_string()))
                     } else {
-                        Some(XtStatus::Unknown)
+                        (XtStatus::Unknown, None)
                     }
                 },
                 None => {
                     match value["params"]["result"].as_str() {
-                        Some("ready") => Some(XtStatus::Ready),
-                        Some("future") => Some(XtStatus::Future),
-                        Some(&_) => Some(XtStatus::Unknown),
-                        None => None,
+                        Some("ready") => (XtStatus::Ready, None),
+                        Some("future") => (XtStatus::Future, None),
+                        Some(&_) => (XtStatus::Unknown, None),
+                        None => (XtStatus::Unknown, None),
                     }
                 }
             }

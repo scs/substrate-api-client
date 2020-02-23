@@ -306,8 +306,7 @@ where
                 );
                 let res = result_out.recv().unwrap();
                 info!("finalized: {}", res);
-                //Ok(Some(hexstr_to_hash(result_out.recv().unwrap()).unwrap()))
-                Ok(None)
+                Ok(Some(hexstr_to_hash(res).unwrap()))
             },
             XtStatus::Ready => {
                 rpc::send_extrinsic(
