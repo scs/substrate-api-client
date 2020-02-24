@@ -92,6 +92,11 @@ package = "sp-keyring"
 version = "2.33"
 features = ["yaml"] 
 
+[dev-dependencies.test_node_runtime]
+git = "https://github.com/scs/substrate-test-nodes"
+tag = "api-M1.5"
+package = "test-node-runtime"
+
 [features]
 default = ["std"]
 std = [
@@ -158,6 +163,10 @@ path = "src/examples/example_compose_extrinsic_offline.rs"
 [[example]]
 name = "example_generic_event_callback"
 path = "src/examples/example_generic_event_callback.rs"
+
+[[example]]
+name = "example_benchmark_bulk_xt"
+path = "src/examples/example_benchmark_bulk_xt.rs"
 
 [[example]]
 name = "example_sudo"
