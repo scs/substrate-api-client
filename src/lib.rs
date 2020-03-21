@@ -106,7 +106,7 @@ impl<P> Api<P>
     }
 
     fn _get_genesis_hash(url: String) -> Hash {
-        let jsonreq = json_req::chain_get_block_hash();
+        let jsonreq = json_req::chain_get_genesis_hash();
         let genesis_hash_str = Self::_get_request(url, jsonreq.to_string())
             .expect("Fetching genesis hash from node failed");
         hexstr_to_hash(genesis_hash_str).unwrap()
@@ -202,6 +202,18 @@ impl<P> Api<P>
             .get_storage("Balances", "FreeBalance", Some(id.to_owned().encode()))
             .unwrap();
         hexstr_to_u256(result_str).unwrap()
+    }
+
+    pub fn get_finalized_head(&self) -> WsResult<String> {
+        Self::_get_request(self.url.clone(), json_req::chain_get_finalized_head().to_string())
+    }
+
+    pub fn get_header(&self, hash: Hash) -> WsResult<String> {
+        Self::_get_request(self.url.clone(), json_req::chain_get_header(hash).to_string())
+    }
+
+    pub fn get_block(&self, hash: Hash) -> WsResult<String> {
+        Self::_get_request(self.url.clone(), json_req::chain_get_block(hash).to_string())
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
