@@ -26,7 +26,7 @@ use primitives::blake2_256;
 use primitives::twox_128;
 use primitives::H256 as Hash;
 
-fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Vec<u8> {
+pub fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Vec<u8> {
     let mut key = [module, storage_key_name].join(" ").as_bytes().to_vec();
     match param {
         Some(par) => {
