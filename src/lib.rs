@@ -239,6 +239,13 @@ where
         Self::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
     }
 
+    pub fn get_storage_by_key_hash(&self, hash: Vec<u8>) -> WsResult<String> {
+        let mut keyhash_str = hex::encode(hash);
+        keyhash_str.insert_str(0, "0x");
+        let jsonreq = json_req::state_get_storage(&keyhash_str);
+        Self::_get_request(self.url.clone(), jsonreq.to_string())
+    }
+
     pub fn get_storage_double_map(
         &self,
         storage_prefix: &str,
