@@ -65,10 +65,9 @@ pub mod events;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
+pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;
-#[cfg(feature = "std")]
-pub mod utils;
 
 #[cfg(feature = "std")]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};

@@ -17,6 +17,11 @@
 
 use balances::AccountData;
 use codec::{Decode, Error};
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec, string::ToString};
+
 use hex::FromHexError;
 use primitive_types::U256;
 use sp_core::blake2_256;
@@ -59,10 +64,10 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
         .to_string()
         .trim_start_matches("0x")
         .to_string();
-    match hexstr.as_str() {
-        "null" => Ok(vec![0u8]),
-        _ => hex::decode(&hexstr),
-    }
+	match hexstr.as_str() {
+		"null" => Ok([0u8].to_vec()),
+		_ => hex::decode(&hexstr),
+	}
 }
 
 pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
