@@ -53,7 +53,6 @@ pub mod extrinsic;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
-#[cfg(feature = "std")]
 pub mod utils;
 #[cfg(feature = "std")]
 pub mod rpc;

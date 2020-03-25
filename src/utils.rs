@@ -15,6 +15,11 @@
 
 */
 
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec, string::ToString};
+
 use hex::FromHexError;
 use primitive_types::U256;
 use primitives::blake2_256;
@@ -56,7 +61,7 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
         .trim_start_matches("0x")
         .to_string();
 	match hexstr.as_str() {
-		"null" => Ok(vec!(0u8)),
+		"null" => Ok([0u8].to_vec()),
 		_ => hex::decode(&hexstr),
 	}
 }
