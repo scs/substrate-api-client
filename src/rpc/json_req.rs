@@ -20,7 +20,7 @@ use node_primitives::Hash;
 
 pub const REQUEST_TRANSFER: u32 = 3;
 
-pub fn chain_get_header(hash: Hash) -> Value {
+pub fn chain_get_header(hash: Option<Hash>) -> Value {
     json!({
         "method": "chain_getHeader",
         "params": [hash],
@@ -29,15 +29,15 @@ pub fn chain_get_header(hash: Hash) -> Value {
     })
 }
 
-pub fn chain_get_block_hash(number: u32) -> Value {
+pub fn chain_get_block_hash(number: Option<u32>) -> Value {
     chain_get_block_hash_with_id(number, 1)
 }
 
 pub fn chain_get_genesis_hash() -> Value {
-    chain_get_block_hash(0)
+    chain_get_block_hash(Some(0))
 }
 
-pub fn chain_get_block_hash_with_id(number: u32, id: u32) -> Value {
+pub fn chain_get_block_hash_with_id(number: Option<u32>, id: u32) -> Value {
     json!({
         "method": "chain_getBlockHash",
         "params": [number],
@@ -46,7 +46,7 @@ pub fn chain_get_block_hash_with_id(number: u32, id: u32) -> Value {
     })
 }
 
-pub fn chain_get_block(hash: Hash) -> Value {
+pub fn chain_get_block(hash: Option<Hash>) -> Value {
     json!({
         "method": "chain_getBlock",
         "params": [hash],

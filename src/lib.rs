@@ -207,11 +207,11 @@ impl<P> Api<P>
         Self::_get_request(self.url.clone(), json_req::chain_get_finalized_head().to_string())
     }
 
-    pub fn get_header(&self, hash: Hash) -> WsResult<String> {
+    pub fn get_header(&self, hash: Option<Hash>) -> WsResult<String> {
         Self::_get_request(self.url.clone(), json_req::chain_get_header(hash).to_string())
     }
 
-    pub fn get_block(&self, hash: Hash) -> WsResult<String> {
+    pub fn get_block(&self, hash: Option<Hash>) -> WsResult<String> {
         Self::_get_request(self.url.clone(), json_req::chain_get_block(hash).to_string())
     }
 
