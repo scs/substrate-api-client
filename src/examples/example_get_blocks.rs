@@ -23,7 +23,6 @@ use clap::App;
 
 use primitives::sr25519;
 
-use substrate_api_client::node_metadata;
 use substrate_api_client::Api;
 use substrate_api_client::utils::hexstr_to_hash;
 
@@ -38,18 +37,28 @@ fn main() {
         .unwrap();
 
     println!(
-        "Finalized Head:\n {}",
+        "Finalized Head:\n {} \n",
         head
     );
 
     println!(
-        "Finalized header:\n {}",
-        api.get_header(head.clone()).unwrap()
+        "Finalized header:\n {} \n",
+        api.get_header(Some(head.clone())).unwrap()
     );
 
     println!(
-        "Finalized block:\n {}",
-        api.get_block(head).unwrap()
+        "Finalized block:\n {} \n",
+        api.get_block(Some(head)).unwrap()
+    );
+
+    println!(
+        "Latest Header: \n {} \n",
+        api.get_header(None).unwrap()
+    );
+
+    println!(
+        "Latest block: \n {} \n",
+        api.get_block(None).unwrap()
     );
 
 }
