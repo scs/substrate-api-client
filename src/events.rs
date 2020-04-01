@@ -94,10 +94,10 @@ impl TryFrom<Metadata> for EventsDecoder {
         decoder.register_type_size::<u32>("AuthorityIndex")?;
         decoder.register_type_size::<u64>("AuthorityWeight")?;
         decoder.register_type_size::<u32>("MemberCount")?;
-        decoder.register_type_size::<node_primitives::AccountId>("AccountId")?;
-        decoder.register_type_size::<node_primitives::BlockNumber>("BlockNumber")?;
-        decoder.register_type_size::<node_primitives::Hash>("Hash")?;
-        decoder.register_type_size::<node_primitives::Balance>("Balance")?;
+        decoder.register_type_size::<crate::AccountId>("AccountId")?;
+        decoder.register_type_size::<crate::BlockNumber>("BlockNumber")?;
+        decoder.register_type_size::<crate::Hash>("Hash")?;
+        decoder.register_type_size::<crate::Balance>("Balance")?;
         // VoteThreshold enum index
         decoder.register_type_size::<u8>("VoteThreshold")?;
 
@@ -234,7 +234,7 @@ impl EventsDecoder {
             log::debug!("Phase {:?}, Event: {:?}", phase, event);
 
             log::debug!("Decoding topics {:?}", input);
-            let _topics = Vec::<node_primitives::Hash>::decode(input)?;
+            let _topics = Vec::<crate::Hash>::decode(input)?;
             r.push((phase, event));
         }
         Ok(r)

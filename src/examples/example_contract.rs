@@ -26,17 +26,18 @@ use std::sync::mpsc::channel;
 use clap::{load_yaml, App};
 use codec::Decode;
 use keyring::AccountKeyring;
-use node_primitives::AccountId;
 use sp_core::H256 as Hash;
+use sp_runtime::AccountId32;
 use sp_std::prelude::*;
 
-use substrate_api_client::Api;
+use substrate_api_client::{Api};
+
 
 // Lookup the details on the event from the metadata
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
-    _from: AccountId,
-    deployed_at: AccountId,
+    _from: AccountId32,
+    deployed_at: AccountId32,
 }
 
 fn main() {

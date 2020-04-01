@@ -23,6 +23,7 @@ use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use crate::{compose_extrinsic, Api};
+use sp_runtime::AccountId32;
 
 use super::xt_primitives::*;
 

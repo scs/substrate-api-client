@@ -19,10 +19,8 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use node_primitives::AccountId;
 use sp_core::sr25519;
-
-use substrate_api_client::Api;
+use substrate_api_client::{Api, AccountId};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]

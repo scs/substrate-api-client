@@ -40,8 +40,6 @@ use log::{debug, error, info};
 use metadata::RuntimeMetadataPrefixed;
 #[cfg(feature = "std")]
 use sp_core::crypto::Pair;
-#[cfg(feature = "std")]
-use sp_core::H256 as Hash;
 
 #[cfg(feature = "std")]
 use ws::Result as WsResult;
@@ -73,6 +71,25 @@ pub mod rpc;
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
 use sp_runtime::{AccountId32, MultiSignature};
+
+use indices::Address;
+use sp_runtime::traits::Verify;
+/// The signature type used by accounts/transactions.
+pub type AccountSignature = sp_core::sr25519::Signature;
+/// An identifier for an account on this system.
+pub type AccountId = <AccountSignature as Verify>::Signer;
+
+pub type AccountIndex = u64;
+
+pub type GenericAddress = Address<AccountId>;
+
+pub use sp_core::H256 as Hash;
+/// The block number type used in this runtime.
+pub type BlockNumber = u64;
+/// Index of a transaction.
+pub type Index = u64;
+
+pub type Balance = u128;
 
 #[cfg(feature = "std")]
 #[derive(Clone)]

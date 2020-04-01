@@ -21,7 +21,7 @@ use super::xt_primitives::*;
 #[cfg(feature = "std")]
 use crate::{compose_extrinsic, Api};
 use sp_core::crypto::Pair;
-use sp_runtime::MultiSignature;
+use sp_runtime::{AccountId32, MultiSignature};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";

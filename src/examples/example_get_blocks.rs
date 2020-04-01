@@ -21,7 +21,7 @@ extern crate clap;
 
 use clap::App;
 
-use primitives::sr25519;
+use sp_core::sr25519;
 
 use substrate_api_client::Api;
 use substrate_api_client::utils::hexstr_to_hash;
