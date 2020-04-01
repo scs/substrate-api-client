@@ -70,18 +70,7 @@ pub mod rpc;
 #[cfg(feature = "std")]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
-use sp_runtime::{AccountId32, MultiSignature};
-
-use indices::Address;
-use sp_runtime::traits::Verify;
-/// The signature type used by accounts/transactions.
-pub type AccountSignature = sp_core::sr25519::Signature;
-/// An identifier for an account on this system.
-pub type AccountId = <AccountSignature as Verify>::Signer;
-
-pub type AccountIndex = u64;
-
-pub type GenericAddress = Address<AccountId>;
+use sp_runtime::{AccountId32 as AccountId, MultiSignature};
 
 pub use sp_core::H256 as Hash;
 /// The block number type used in this runtime.
@@ -222,7 +211,7 @@ where
         }
     }
 
-    pub fn get_account_data(&self, address: &AccountId32) -> Option<AccountData<u128>> {
+    pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData<u128>> {
         let id: &[u8; 32] = address.as_ref();
         let result_str = self
             .get_storage("Balances", "Account", Some(id.to_owned().encode()))

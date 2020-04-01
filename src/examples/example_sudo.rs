@@ -20,7 +20,6 @@ use clap::{load_yaml, App};
 use codec::Compact;
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
-use sp_runtime::AccountId32;
 use substrate_api_client::{
     compose_call, compose_extrinsic,
     extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},

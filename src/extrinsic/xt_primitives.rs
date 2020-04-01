@@ -26,10 +26,11 @@ use sp_core::H256;
 use sp_core::blake2_256;
 use sp_runtime::{generic::Era, MultiSignature};
 
-use crate::AccountIndex;
-use sp_runtime::{AccountId32};
+pub use sp_runtime::AccountId32 as AccountId;
 
-pub type GenericAddress = Address<AccountId32, AccountIndex>;
+pub type AccountIndex = u64;
+
+pub type GenericAddress = Address<AccountId, AccountIndex>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The

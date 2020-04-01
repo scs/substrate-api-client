@@ -89,7 +89,7 @@ macro_rules! compose_extrinsic_offline {
 
         UncheckedExtrinsicV4::new_signed(
             $call,
-            GenericAddress::from(AccountId32::from(arr)),
+            GenericAddress::from(AccountId::from(arr)),
             signature.into(),
             extra,
         )

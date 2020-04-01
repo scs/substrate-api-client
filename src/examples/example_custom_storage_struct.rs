@@ -24,8 +24,6 @@ use codec::{Decode, Encode};
 use keyring::AccountKeyring;
 use log::*;
 use sp_core::{crypto::Pair, H256};
-use sp_runtime::AccountId32;
-
 use substrate_api_client::{
     compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, utils::*, Api,
 };
