@@ -185,7 +185,7 @@ where
                 let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
                 if let Some(info) = self.get_account_info(&accountid) {
                     Ok(info.nonce)
-                } else { Err("nonce error") }
+                } else { Ok(0) }
             }
             None => Err("Can't get )nonce when no signer is set"),
         }

@@ -37,8 +37,8 @@ fn main() {
     let result_str = api
         .get_storage("System", "BlockHash", Some(42_u32.encode()))
         .unwrap();
-    let result = hexstr_to_hash(result_str).unwrap();
-    println!("[+] block hash for locknumber 42 is {}", result); 
+    let result = hexstr_to_hash(result_str);
+    println!("[+] block hash for blocknumber 42 is {:?}", result); 
 
     // get Alice's AccountNonce with api.get_nonce()
     let signer = AccountKeyring::Alice.pair();
