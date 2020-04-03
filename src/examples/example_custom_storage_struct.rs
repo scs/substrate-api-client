@@ -56,7 +56,7 @@ fn main() {
     // Get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
     // event similar to what we do in the example_contract.
     let res_str = api
-        .get_storage("Kitty", "KittyIndex", Some(from.public().encode()))
+        .get_storage_map("Kitty", "KittyIndex", from.public())
         .unwrap();
 
     let index = hexstr_to_u64(res_str).unwrap();
@@ -64,7 +64,7 @@ fn main() {
 
     // get the Kitty
     let res_str = api
-        .get_storage("Kitty", "Kitties", Some(index.encode()))
+        .get_storage_map("Kitty", "Kitties", index)
         .unwrap();
 
     let res_vec = hexstr_to_vec(res_str).unwrap();

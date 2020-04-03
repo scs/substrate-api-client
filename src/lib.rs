@@ -200,72 +200,13 @@ where
             .key(address.clone());
         info!("storagekey {:?}",storagekey);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
-        info!("rpc result is {}", res);
-        let info = hexstr_to_vec(res).unwrap();
-        Decode::decode(&mut &info[..]).ok()
+        self.get_storage_by_key_hash(storagekey.0)
     }
 
     pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
         if let Some(info) = self.get_account_info(address) {
             Some(info.data)
         } else { None }
-        /*
-        let id: &[u8; 32] = address.as_ref();
-        info!("testing Sudo Key");
-        let storagekey: sp_core::storage::StorageKey = self.metadata
-            .module("Sudo").unwrap()
-            .storage("Key").unwrap()
-            .get_value().unwrap()
-            .key();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
-        info!("rpc result is {}", res);
-        let sudoer: AccountId = Decode::decode(&mut &hexstr_to_vec(res).unwrap()[..]).unwrap();
-        use sp_core::crypto::Ss58Codec;
-        info!("sodoer is {}", sudoer.to_ss58check());
-
-        info!("testing EncointerScheduler PhaseDurations");
-        let storagekey: sp_core::storage::StorageKey = self.metadata
-            .module("EncointerScheduler").unwrap()
-            .storage("PhaseDurations").unwrap()
-            .get_map::<u8, u64>().unwrap()
-            .key(0u8);
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
-        info!("rpc result is {}", res);
-        let d: u64 = hexstr_to_u64(res).unwrap();
-        info!("phase duration is {}", d);
-
-        info!("get_account_data called");
-        let storagekey: sp_core::storage::StorageKey = self.metadata
-            .module("System").unwrap()
-            .storage("Account").unwrap()
-            .get_map::<AccountId,AccountInfo>().unwrap()
-            .key(address.clone());
-        info!("storagekey {:?}",storagekey);
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
-        info!("rpc result is {}", res);
-        let bal = hexstr_to_vec(res).unwrap();
-        let bal: AccountInfo<u32, AccountData<u128>> = Decode::decode(&mut &bal[..]).unwrap();
-        info!("Balance is {}", bal.data.free);
-        Some(bal.data)
-        */
-
-/*
-        if let Ok(result_str) = self.get_storage_by_key_hash(storagekey.0) {
-            info!("result: {}", result_str);
-            hexstr_to_account_data(result_str).ok()
-        } else {
-            None
-        }
-  */
-        //let result_str = self
-        //    .get_storage("Balances", "Account", Some(id.to_owned().encode()))
-        //    .unwrap();
-
-        //hexstr_to_account_data(result_str).ok()
     }
 
     pub fn get_finalized_head(&self) -> WsResult<String> {
@@ -284,50 +225,64 @@ where
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
-    pub fn get_storage(
+    pub fn get_storage_value<V:Decode+Clone>(
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
-        param: Option<Vec<u8>>,
-    ) -> WsResult<String> {
-        let storagekey: sp_core::storage::StorageKey = match param {
-            Some(p) => {
-                 self.metadata
-                .module(storage_prefix).unwrap()
-                .storage(storage_key_name).unwrap()
-                .get_map::<Vec<u8>, Vec<u8>>().unwrap()
-                .key(p)
-            },
-            None => {
-                self.metadata
+    ) -> Option<V> {
+        let storagekey: sp_core::storage::StorageKey = self.metadata
                 .module(storage_prefix).unwrap()
                 .storage(storage_key_name).unwrap()
                 .get_value().unwrap()
-                .key()
-            }
-        };
+                .key();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey.0)
     }
 
-    pub fn get_storage_by_key_hash(&self, hash: Vec<u8>) -> WsResult<String> {
-        let mut keyhash_str = hex::encode(hash);
-        keyhash_str.insert_str(0, "0x");
-        let jsonreq = json_req::state_get_storage(&keyhash_str);
-        Self::_get_request(self.url.clone(), jsonreq.to_string())
-    }
-
-    pub fn get_storage_double_map(
+    pub fn get_storage_map<K:Encode, V:Decode+Clone>(
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
-        first: Vec<u8>,
-        second: Vec<u8>,
-    ) -> WsResult<String> {
+        map_key: K,
+    ) -> Option<V> {
         let storagekey: sp_core::storage::StorageKey = self.metadata
                 .module(storage_prefix).unwrap()
                 .storage(storage_key_name).unwrap()
-                .get_double_map::<Vec<u8>, Vec<u8>, Vec<u8>>().unwrap()
+                .get_map::<K, V>().unwrap()
+                .key(map_key);
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_by_key_hash(storagekey.0)
+    }
+
+    pub fn get_storage_by_key_hash<V:Decode+Clone>(&self, hash: Vec<u8>) -> Option<V> {
+        let mut keyhash_str = hex::encode(hash);
+        keyhash_str.insert_str(0, "0x");
+        let jsonreq = json_req::state_get_storage(&keyhash_str);
+        if let Ok(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
+            info!("storage hex = {}", hexstr);
+            let hexstr = hexstr
+            .trim_matches('\"')
+            .to_string()
+            .trim_start_matches("0x")
+            .to_string();
+            match hexstr.as_str() {
+                "null" => None,
+                _ => Some(Decode::decode(&mut &hex::decode(&hexstr).unwrap()[..]).unwrap()),
+            }
+        } else { None }
+    }
+
+    pub fn get_storage_double_map<K: Encode,Q: Encode, V:Decode+Clone> (
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        first: K,
+        second: Q,
+    ) -> Option<V> {
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+                .module(storage_prefix).unwrap()
+                .storage(storage_key_name).unwrap()
+                .get_double_map::<K, Q, u32>().unwrap()
                 .key(first, second);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey.0)
