@@ -19,7 +19,7 @@ use codec::Encode;
 use keyring::AccountKeyring;
 
 use sp_core::crypto::Pair;
-use substrate_api_client::{utils::hexstr_to_u256, Api};
+use substrate_api_client::{utils::{hexstr_to_u256, hexstr_to_hash}, Api};
 
 fn main() {
     env_logger::init();
@@ -32,23 +32,16 @@ fn main() {
     let result = hexstr_to_u256(result_str).unwrap();
     println!("[+] TotalIssuance is {}", result);
 
-    // get Alice's AccountNonce
+    // get StorageMap
     let accountid = AccountKeyring::Alice.to_account_id();
     let result_str = api
-        .get_storage("System", "AccountNonce", Some(accountid.encode()))
+        .get_storage("System", "BlockHash", Some(42_u32.encode()))
         .unwrap();
-    let result = hexstr_to_u256(result_str).unwrap();
-    println!("[+] Alice's Account Nonce is {}", result.low_u32());
-
-    // get Alice's AccountNonce with the AccountKey
-    let signer = AccountKeyring::Alice.pair();
-    let result_str = api
-        .get_storage("System", "AccountNonce", Some(signer.public().encode()))
-        .unwrap();
-    let result = hexstr_to_u256(result_str).unwrap();
-    println!("[+] Alice's Account Nonce is {}", result.low_u32());
+    let result = hexstr_to_hash(result_str).unwrap();
+    println!("[+] block hash for locknumber 42 is {}", result); 
 
     // get Alice's AccountNonce with api.get_nonce()
+    let signer = AccountKeyring::Alice.pair();
     api.signer = Some(signer);
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 }

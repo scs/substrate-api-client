@@ -157,38 +157,6 @@ where
         RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
     }
 
-    fn _get_nonce(url: String, signer: [u8; 32]) -> u32 {
-        let result_str =
-            Self::_get_storage(url, "System", "AccountNonce", Some(signer.encode())).unwrap();
-        let nonce = hexstr_to_u256(result_str).unwrap_or_default();
-        nonce.low_u32()
-    }
-
-    fn _get_storage(
-        url: String,
-        module: &str,
-        storage_key_name: &str,
-        param: Option<Vec<u8>>,
-    ) -> WsResult<String> {
-        let keyhash = storage_key_hash(module, storage_key_name, param);
-        debug!("with storage key: {}", keyhash);
-        let jsonreq = json_req::state_get_storage(&keyhash);
-        Self::_get_request(url, jsonreq.to_string())
-    }
-
-    fn _get_storage_double_map(
-        url: String,
-        module: &str,
-        storage_key_name: &str,
-        first: Vec<u8>,
-        second: Vec<u8>,
-    ) -> WsResult<String> {
-        let keyhash = storage_key_hash_double_map(module, storage_key_name, first, second);
-        debug!("with storage key: {}", keyhash);
-        let jsonreq = json_req::state_get_storage(&keyhash);
-        Self::_get_request(url, jsonreq.to_string())
-    }
-
     // low level access
     fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
@@ -218,11 +186,6 @@ where
                 if let Some(info) = self.get_account_info(&accountid) {
                     Ok(info.nonce)
                 } else { Err("nonce error") }
-                /*
-                let mut arr: [u8; 32] = Default::default();
-                arr.clone_from_slice(key.to_owned().public().as_ref());
-                Ok(Self::_get_nonce(self.url.clone(), arr))
-                */
             }
             None => Err("Can't get )nonce when no signer is set"),
         }
@@ -323,11 +286,28 @@ where
 
     pub fn get_storage(
         &self,
-        storage_prefix: &str,
-        storage_key_name: &str,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
         param: Option<Vec<u8>>,
     ) -> WsResult<String> {
-        Self::_get_storage(self.url.clone(), storage_prefix, storage_key_name, param)
+        let storagekey: sp_core::storage::StorageKey = match param {
+            Some(p) => {
+                 self.metadata
+                .module(storage_prefix).unwrap()
+                .storage(storage_key_name).unwrap()
+                .get_map::<Vec<u8>, Vec<u8>>().unwrap()
+                .key(p)
+            },
+            None => {
+                self.metadata
+                .module(storage_prefix).unwrap()
+                .storage(storage_key_name).unwrap()
+                .get_value().unwrap()
+                .key()
+            }
+        };
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_by_key_hash(storagekey.0)
     }
 
     pub fn get_storage_by_key_hash(&self, hash: Vec<u8>) -> WsResult<String> {
@@ -339,18 +319,18 @@ where
 
     pub fn get_storage_double_map(
         &self,
-        storage_prefix: &str,
-        storage_key_name: &str,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
         first: Vec<u8>,
         second: Vec<u8>,
     ) -> WsResult<String> {
-        Self::_get_storage_double_map(
-            self.url.clone(),
-            storage_prefix,
-            storage_key_name,
-            first,
-            second,
-        )
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+                .module(storage_prefix).unwrap()
+                .storage(storage_key_name).unwrap()
+                .get_double_map::<Vec<u8>, Vec<u8>, Vec<u8>>().unwrap()
+                .key(first, second);
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_by_key_hash(storagekey.0)
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String) -> WsResult<Hash> {
@@ -361,7 +341,6 @@ where
         let (result_in, result_out) = channel();
         rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
         let hexstr = result_out.recv().unwrap();
-        info!("got {}", hexstr);
         Ok(hexstr_to_hash(hexstr).unwrap())
     }
 
