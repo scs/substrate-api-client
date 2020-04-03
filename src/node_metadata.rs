@@ -360,8 +360,8 @@ impl<K: Encode, Q: Encode, V: Decode + Clone> StorageDoubleMap<K, Q, V> {
     pub fn key(&self, key1: K, key2: Q) -> StorageKey {
         let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
-        for encoded_key in [key1.encode(), key2.encode()].iter() {
-            let hash = match self.hasher {
+        for (encoded_key, hasher) in [(key1.encode(), self.hasher.clone()), (key2.encode(), self.key2_hasher.clone())].iter() {
+            let hash = match hasher {
                 StorageHasher::Identity => encoded_key.to_vec(),
                 StorageHasher::Blake2_128 => sp_core::blake2_128(&encoded_key).to_vec(),
                 StorageHasher::Blake2_128Concat => {

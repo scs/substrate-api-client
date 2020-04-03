@@ -17,7 +17,6 @@
 use clap::{load_yaml, App};
 use codec::Encode;
 use keyring::AccountKeyring;
-
 use sp_core::crypto::Pair;
 use substrate_api_client::{utils::{hexstr_to_u256, hexstr_to_hash}, Api};
 
@@ -39,6 +38,13 @@ fn main() {
         .unwrap();
     let result = hexstr_to_hash(result_str);
     println!("[+] block hash for blocknumber 42 is {:?}", result); 
+
+    // get StorageDoubleMap
+    let result_str = api
+        .get_storage_double_map("TemplateModule", "SomeDoubleMap", 1_u32.encode(), 2_u32.encode())
+        .unwrap();
+    let result = hexstr_to_u256(result_str);
+    println!("[+] some double map (1,2) should be 3. Is {:?}", result); 
 
     // get Alice's AccountNonce with api.get_nonce()
     let signer = AccountKeyring::Alice.pair();

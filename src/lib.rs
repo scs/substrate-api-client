@@ -115,7 +115,7 @@ where
 
         let meta = Self::_get_metadata(url.clone());
         let metadata = Metadata::try_from(meta).unwrap();
-        info!("Metadata: {:?}", metadata);
+        debug!("Metadata: {:?}", metadata);
 
         let runtime_version = Self::_get_runtime_version(url.clone());
         info!("Runtime Version: {:?}", runtime_version);
