@@ -1,19 +1,19 @@
-/*
-   Copyright 2019 Supercomputing Systems AG
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-*/
+// Copyright 2019 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
+// This file is part of substrate-subxt.
+//
+// subxt is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// subxt is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with substrate-subxt.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, str::FromStr};
 
@@ -25,6 +25,7 @@ use metadata::{
 };
 use serde::ser::Serialize;
 use sp_core::storage::StorageKey;
+use log::*;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MetadataError {
@@ -237,6 +238,8 @@ impl StorageMetadata {
                 let hasher = hasher.to_owned();
                 let default = Decode::decode(&mut &self.default[..])
                     .map_err(|_| MetadataError::MapValueTypeError)?;
+
+                info!("map for '{}' '{}' has hasher {:?}", self.module_prefix, self.storage_prefix, hasher);
                 Ok(StorageMap {
                     _marker: PhantomData,
                     module_prefix,
@@ -247,6 +250,33 @@ impl StorageMetadata {
             }
             _ => Err(MetadataError::StorageTypeError),
         }
+    }
+    pub fn get_value(&self) -> Result<StorageValue, MetadataError> {
+        match &self.ty {
+            StorageEntryType::Plain { .. } => {
+                let module_prefix = self.module_prefix.as_bytes().to_vec();
+                let storage_prefix = self.storage_prefix.as_bytes().to_vec();
+                Ok(StorageValue {
+                    module_prefix,
+                    storage_prefix,
+                })
+            }
+            _ => Err(MetadataError::StorageTypeError),
+        }       
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct StorageValue {
+    module_prefix: Vec<u8>,
+    storage_prefix: Vec<u8>,
+}
+
+impl StorageValue {
+    pub fn key(&self) -> StorageKey {
+        let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
+        bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
+        StorageKey(bytes)
     }
 }
 
@@ -265,12 +295,14 @@ impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
         let encoded_key = key.encode();
         let hash = match self.hasher {
+            StorageHasher::Identity => encoded_key.to_vec(),
             StorageHasher::Blake2_128 => sp_core::blake2_128(&encoded_key).to_vec(),
             StorageHasher::Blake2_128Concat => {
                 // copied from substrate Blake2_128Concat::hash since StorageHasher is not public
-                sp_core::blake2_128(&encoded_key)
+                let x: &[u8] = &encoded_key[..];
+                sp_core::blake2_128(x)
                     .iter()
-                    .chain(&encoded_key)
+                    .chain(x.into_iter())
                     .cloned()
                     .collect::<Vec<_>>()
             }
@@ -278,7 +310,6 @@ impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
             StorageHasher::Twox128 => sp_core::twox_128(&encoded_key).to_vec(),
             StorageHasher::Twox256 => sp_core::twox_256(&encoded_key).to_vec(),
             StorageHasher::Twox64Concat => sp_core::twox_64(&encoded_key).to_vec(),
-            StorageHasher::Identity => encoded_key,
         };
         bytes.extend(hash);
         StorageKey(bytes)

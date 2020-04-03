@@ -29,7 +29,9 @@ use std::sync::mpsc::{channel, Receiver};
 use std::convert::TryFrom;
 
 #[cfg(feature = "std")]
-use balances::AccountData;
+use balances::AccountData as AccountDataGen;
+#[cfg(feature = "std")]
+use system::AccountInfo as AccountInfoGen;
 #[cfg(feature = "std")]
 use codec::{Decode, Encode, Error as CodecError};
 
@@ -70,15 +72,22 @@ pub mod rpc;
 #[cfg(feature = "std")]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
-use sp_runtime::{AccountId32 as AccountId, MultiSignature};
+use sp_runtime::{AccountId32 as AccountId, MultiSigner, MultiSignature, traits::{Verify, IdentifyAccount}};
 
 pub use sp_core::H256 as Hash;
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;
 /// Index of a transaction.
-pub type Index = u64;
+//fixme: make generic
+pub type Index = u32;
 
+//fixme: make generic
 pub type Balance = u128;
+
+pub type AccountData = AccountDataGen<Balance>;
+pub type AccountInfo = AccountInfoGen<Index, AccountData>;
+
+type AccountPublic = <MultiSignature as Verify>::Signer;
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
@@ -202,22 +211,98 @@ where
 
     pub fn get_nonce(&self) -> Result<u32, &str> {
         match &self.signer {
-            Some(key) => {
+            Some(pair) => {
+                let mut arr: [u8; 32] = Default::default();
+                arr.clone_from_slice(pair.to_owned().public().as_ref());
+                let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
+                if let Some(info) = self.get_account_info(&accountid) {
+                    Ok(info.nonce)
+                } else { Err("nonce error") }
+                /*
                 let mut arr: [u8; 32] = Default::default();
                 arr.clone_from_slice(key.to_owned().public().as_ref());
                 Ok(Self::_get_nonce(self.url.clone(), arr))
+                */
             }
-            None => Err("Can't get nonce when no signer is set"),
+            None => Err("Can't get )nonce when no signer is set"),
         }
     }
 
-    pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData<u128>> {
+    pub fn get_account_info(&self, address: &AccountId) -> Option<AccountInfo> {
         let id: &[u8; 32] = address.as_ref();
-        let result_str = self
-            .get_storage("Balances", "Account", Some(id.to_owned().encode()))
-            .unwrap();
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+            .module("System").unwrap()
+            .storage("Account").unwrap()
+            .get_map::<AccountId,AccountInfo>().unwrap()
+            .key(address.clone());
+        info!("storagekey {:?}",storagekey);
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
+        info!("rpc result is {}", res);
+        let info = hexstr_to_vec(res).unwrap();
+        Decode::decode(&mut &info[..]).ok()
+    }
 
-        hexstr_to_account_data(result_str).ok()
+    pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
+        if let Some(info) = self.get_account_info(address) {
+            Some(info.data)
+        } else { None }
+        /*
+        let id: &[u8; 32] = address.as_ref();
+        info!("testing Sudo Key");
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+            .module("Sudo").unwrap()
+            .storage("Key").unwrap()
+            .get_value().unwrap()
+            .key();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
+        info!("rpc result is {}", res);
+        let sudoer: AccountId = Decode::decode(&mut &hexstr_to_vec(res).unwrap()[..]).unwrap();
+        use sp_core::crypto::Ss58Codec;
+        info!("sodoer is {}", sudoer.to_ss58check());
+
+        info!("testing EncointerScheduler PhaseDurations");
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+            .module("EncointerScheduler").unwrap()
+            .storage("PhaseDurations").unwrap()
+            .get_map::<u8, u64>().unwrap()
+            .key(0u8);
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
+        info!("rpc result is {}", res);
+        let d: u64 = hexstr_to_u64(res).unwrap();
+        info!("phase duration is {}", d);
+
+        info!("get_account_data called");
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+            .module("System").unwrap()
+            .storage("Account").unwrap()
+            .get_map::<AccountId,AccountInfo>().unwrap()
+            .key(address.clone());
+        info!("storagekey {:?}",storagekey);
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        let res = self.get_storage_by_key_hash(storagekey.0).unwrap();
+        info!("rpc result is {}", res);
+        let bal = hexstr_to_vec(res).unwrap();
+        let bal: AccountInfo<u32, AccountData<u128>> = Decode::decode(&mut &bal[..]).unwrap();
+        info!("Balance is {}", bal.data.free);
+        Some(bal.data)
+        */
+
+/*
+        if let Ok(result_str) = self.get_storage_by_key_hash(storagekey.0) {
+            info!("result: {}", result_str);
+            hexstr_to_account_data(result_str).ok()
+        } else {
+            None
+        }
+  */
+        //let result_str = self
+        //    .get_storage("Balances", "Account", Some(id.to_owned().encode()))
+        //    .unwrap();
+
+        //hexstr_to_account_data(result_str).ok()
     }
 
     pub fn get_finalized_head(&self) -> WsResult<String> {
@@ -275,8 +360,9 @@ where
 
         let (result_in, result_out) = channel();
         rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
-
-        Ok(hexstr_to_hash(result_out.recv().unwrap()).unwrap())
+        let hexstr = result_out.recv().unwrap();
+        info!("got {}", hexstr);
+        Ok(hexstr_to_hash(hexstr).unwrap())
     }
 
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {

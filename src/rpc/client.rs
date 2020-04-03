@@ -82,6 +82,7 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
 
 pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
     let retstr = msg.as_text().unwrap();
+    info!("got json msg {}", retstr);
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
         Some(idstr) => match idstr.parse::<u32>() {
@@ -105,12 +106,12 @@ pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) ->
                         _ => {
                             debug!(
                                 "author_extrinsicUpdate: finalized: {}",
-                                value["params"]["result"]["finalized"].as_str().unwrap()
+                                value["params"]["result"]["inBlock"].as_str().unwrap()
                             );
                             // return result to calling thread
                             result
                                 .send(
-                                    value["params"]["result"]["finalized"]
+                                    value["params"]["result"]["inBlock"]
                                         .as_str()
                                         .unwrap()
                                         .to_string(),

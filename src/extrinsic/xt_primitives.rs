@@ -21,7 +21,7 @@ use sp_std::prelude::*;
 use std::fmt;
 
 use codec::{Compact, Decode, Encode};
-use indices::address::Address;
+//use indices::address::Address;
 use sp_core::H256;
 use sp_core::blake2_256;
 use sp_runtime::{generic::Era, MultiSignature};
@@ -30,7 +30,7 @@ pub use sp_runtime::AccountId32 as AccountId;
 
 pub type AccountIndex = u64;
 
-pub type GenericAddress = Address<AccountId, AccountIndex>;
+pub type GenericAddress = AccountId; //Address<AccountId, AccountIndex>;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The

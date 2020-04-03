@@ -26,10 +26,10 @@ features = ["derive"]
 version = "1.3.0"
 default-features = false
 
-[dependencies.indices]
-version = '2.0.0-alpha.5'
-package = "pallet-indices"
-default-features=false
+#[dependencies.indices]
+#version = '2.0.0-alpha.5'
+#package = "pallet-indices"
+#default-features=false
 
 [dependencies.runtime_io]
 version = '2.0.0-alpha.5'
@@ -71,10 +71,11 @@ version = '2.0.0-alpha.5'
 package = "sp-std"
 default-features = false
 
-[dev-dependencies.node_template_runtime]
+[dependencies.node_template_runtime]
 git = "https://github.com/substrate-developer-hub/substrate-node-template"
 version = '2.0.0-alpha.5'
 package = "node-template-runtime"
+default-features = false
 
 [dev-dependencies.contracts]
 version = '2.0.0-alpha.5'
@@ -83,7 +84,7 @@ package = "pallet-contracts"
 [dev-dependencies]
 wabt = "0.9.0"
 
-[dev-dependencies.keyring]
+[dependencies.keyring]
 version = '2.0.0-alpha.5'
 package = "sp-keyring"
 
@@ -104,7 +105,7 @@ std = [
 	"sp-version/std",
 	"metadata/std",
 	"runtime_io/std",
-	"indices/std",
+#	"indices/std",
 	"sp-core/std",
 	"serde/std",
 	"serde_json",
@@ -113,6 +114,7 @@ std = [
 	"ws",
 	"hex/std",
 	"primitive-types/std",
+	"node_template_runtime/std",
 ]
 # need to add this for the app_crypto macro
 full_crypto = []
