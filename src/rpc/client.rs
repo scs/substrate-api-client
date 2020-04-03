@@ -43,8 +43,7 @@ impl Handler for RpcClient {
 }
 
 pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
-    info!("Got get_request_msg");
-    debug!("{}", msg);
+    info!("Got get_request_msg {}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
@@ -54,8 +53,7 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
 }
 
 pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>) -> Result<()> {
-    info!("got on_subscription_msg");
-    debug!("{}", msg);
+    info!("got on_subscription_msg {}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
@@ -82,7 +80,7 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
 
 pub fn on_extrinsic_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
     let retstr = msg.as_text().unwrap();
-    info!("got json msg {}", retstr);
+    info!("got extrinsic msg {}", retstr);
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
         Some(idstr) => match idstr.parse::<u32>() {
