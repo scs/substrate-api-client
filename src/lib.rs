@@ -282,7 +282,7 @@ where
         let storagekey: sp_core::storage::StorageKey = self.metadata
                 .module(storage_prefix).unwrap()
                 .storage(storage_key_name).unwrap()
-                .get_double_map::<K, Q, u32>().unwrap()
+                .get_double_map::<K, Q, V>().unwrap()
                 .key(first, second);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey.0)
