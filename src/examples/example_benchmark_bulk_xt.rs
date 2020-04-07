@@ -20,8 +20,8 @@
 use clap::{load_yaml, App};
 
 use keyring::AccountKeyring;
-use test_node_runtime::{BalancesCall, Call};
-use primitives::crypto::Pair;
+use node_template_runtime::{BalancesCall, Call};
+use sp_core::crypto::Pair;
 
 use substrate_api_client::{
     compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus
@@ -49,7 +49,7 @@ fn main() {
         // compose the extrinsic with all the element
         let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
-            Call::Balances(BalancesCall::transfer(to.clone().into(), 1_000_000)),
+            Call::Balances(BalancesCall::transfer(to.clone(), 1_000_000)),
             nonce,
             api.genesis_hash,
             api.runtime_version.spec_version
