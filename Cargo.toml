@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 env_logger      = { version = "0.7", optional = true }
-ws              = { version = "0.7", optional = true }
+ws              = { version = "0.7", optional = true, features = ["ssl"] }
 hex             = { version = "0.4", default-features = false }
 log             = { version = "0.4", optional = true }
 serde           = { version = "1.0", optional = true, features = ["derive"] }
