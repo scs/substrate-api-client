@@ -278,6 +278,7 @@ impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
             StorageHasher::Twox128 => sp_core::twox_128(&encoded_key).to_vec(),
             StorageHasher::Twox256 => sp_core::twox_256(&encoded_key).to_vec(),
             StorageHasher::Twox64Concat => sp_core::twox_64(&encoded_key).to_vec(),
+            StorageHasher::Identity => sp_core::blake2_256(&encoded_key).to_vec(),
         };
         bytes.extend(hash);
         StorageKey(bytes)
