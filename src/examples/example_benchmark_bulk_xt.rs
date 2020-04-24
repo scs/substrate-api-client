@@ -44,8 +44,8 @@ fn main() {
     let to = AccountKeyring::Bob.to_account_id();
 
     let mut nonce = api.get_nonce().unwrap();
-
-    loop {
+    let first_nonce = nonce;
+    while nonce < first_nonce + 500 {
         // compose the extrinsic with all the element
         let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
@@ -56,7 +56,7 @@ fn main() {
         );
         // send and watch extrinsic until finalized
         println!("sending extrinsic with nonce {}", nonce);
-        let blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
+        let _blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
         
         nonce += 1;
     }

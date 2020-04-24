@@ -15,7 +15,7 @@ thiserror 		= { version = "1.0", optional =true }
 primitive-types = { version = "0.6.1", optional = true, features = ["codec"] }
 
 [dependencies.sp-core]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "sp-core"
 default-features = false
 features = ["full_crypto"]
@@ -27,48 +27,48 @@ version = "1.3.0"
 default-features = false
 
 [dependencies.runtime_io]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "sp-io"
 default-features=false
 
 [dependencies.metadata]
-version = '11.0.0-alpha.5'
+version = '11.0.0-alpha.6'
 package = "frame-metadata"
 default-features=false
 
 [dependencies.sp-version]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "sp-version"
 default-features=false
 
 [dependencies.balances]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "pallet-balances"
 default-features=false
 
 [dependencies.system]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "frame-system"
 default-features=false
 
 [dependencies.sp-runtime]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "sp-runtime"
 default-features=false
 
 [dependencies.support]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "frame-support"
 default-features=false
 
 [dependencies.sp-std]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "sp-std"
 default-features = false
 
 [dependencies.node_template_runtime]
 git = "https://github.com/scs/substrate-node-template"
-branch = 'test-api-client'
+tag = 'v2.0.0-alpha.6-api-client'
 package = "node-template-runtime"
 default-features = false
 
@@ -76,11 +76,11 @@ default-features = false
 wabt = "0.9.0"
 
 [dev-dependencies.contracts]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "pallet-contracts"
 
 [dev-dependencies.keyring]
-version = '2.0.0-alpha.5'
+version = '2.0.0-alpha.6'
 package = "sp-keyring"
 
 [dev-dependencies.clap] 
@@ -139,14 +139,6 @@ name = "example_print_metadata"
 path = "src/examples/example_print_metadata.rs"
 
 [[example]]
-name = "example_contract"
-path = "src/examples/example_contract.rs"
-
-[[example]]
-name = "example_custom_storage_struct"
-path = "src/examples/example_custom_storage_struct.rs"
-
-[[example]]
 name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
 
@@ -161,3 +153,13 @@ path = "src/examples/example_benchmark_bulk_xt.rs"
 [[example]]
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
+
+# DEPTRECATED. might work but too much work to maintain, sorry
+
+#[[example]]
+#name = "example_contract"
+#path = "src/examples/example_contract.rs"
+
+#[[example]]
+#name = "example_custom_storage_struct"
+#path = "src/examples/example_custom_storage_struct.rs"

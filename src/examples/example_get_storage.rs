@@ -15,10 +15,9 @@
 
 ///! Very simple example that shows how to get some simple storage values.
 use clap::{load_yaml, App};
-use codec::Encode;
+
 use keyring::AccountKeyring;
-use sp_core::crypto::Pair;
-use substrate_api_client::{utils::{hexstr_to_u256, hexstr_to_hash}, Api, Hash};
+use substrate_api_client::{Api, Hash};
 
 fn main() {
     env_logger::init();
@@ -31,7 +30,6 @@ fn main() {
     println!("[+] TotalIssuance is {}", result);
 
     // get StorageMap
-    let accountid = AccountKeyring::Alice.to_account_id();
     let result: Hash = api
         .get_storage_map("System", "BlockHash", 1u32).or(Some(Hash::default()))
         .unwrap();

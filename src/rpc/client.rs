@@ -16,8 +16,6 @@
 */
 
 use std::sync::mpsc::Sender as ThreadOut;
-
-use crate::rpc::json_req::REQUEST_TRANSFER;
 use log::{debug, error, info, warn};
 use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 
