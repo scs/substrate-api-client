@@ -32,9 +32,9 @@ To execute the examples, a running substrate node is needed. The examples have b
 
 To build the test node, execute the following steps:
 
-    git clone https://github.com/scs/substrate-test-nodes
+    git clone https://github.com/scs/substrate-node-template
     cd substrate-test-nodes/
-    git checkout api-M1.1
+    git checkout v2.0.0-alpha.6-api-client
     cargo build --release
 
 Run the node:
