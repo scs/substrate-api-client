@@ -26,11 +26,12 @@ use std::sync::mpsc::channel;
 use clap::{load_yaml, App};
 use codec::Decode;
 use keyring::AccountKeyring;
-use node_primitives::AccountId;
 use sp_core::H256 as Hash;
+use sp_runtime::AccountId32 as AccountId;
 use sp_std::prelude::*;
 
-use substrate_api_client::Api;
+use substrate_api_client::{Api, XtStatus};
+
 
 // Lookup the details on the event from the metadata
 #[derive(Decode)]
@@ -63,7 +64,7 @@ fn main() {
         "[+] Putting contract code on chain with extrinsic:\n\n{:?}\n",
         xt
     );
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // setup the events listener for our chain.
@@ -86,7 +87,7 @@ fn main() {
         "[+] Creating a contract instance with extrinsic:\n\n{:?}\n",
         xt
     );
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Now if the contract has been instantiated successfully, the following events are fired:
@@ -118,7 +119,7 @@ fn main() {
         "[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n",
         xt
     );
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
 

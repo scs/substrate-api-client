@@ -16,19 +16,51 @@
 */
 
 use serde_json::{json, Value};
+use crate::Hash;
 
 pub const REQUEST_TRANSFER: u32 = 3;
 
-pub fn chain_get_block_hash() -> Value {
-    chain_get_block_hash_with_id(1)
+pub fn chain_get_header(hash: Option<Hash>) -> Value {
+    json!({
+        "method": "chain_getHeader",
+        "params": [hash],
+        "jsonrpc": "2.0",
+        "id":"1"
+    })
 }
 
-pub fn chain_get_block_hash_with_id(id: u32) -> Value {
+pub fn chain_get_block_hash(number: Option<u32>) -> Value {
+    chain_get_block_hash_with_id(number, 1)
+}
+
+pub fn chain_get_genesis_hash() -> Value {
+    chain_get_block_hash(Some(0))
+}
+
+pub fn chain_get_block_hash_with_id(number: Option<u32>, id: u32) -> Value {
     json!({
-    "method": "chain_getBlockHash",
-    "params": [0],
-    "jsonrpc": "2.0",
-    "id": id.to_string(),
+        "method": "chain_getBlockHash",
+        "params": [number],
+        "jsonrpc": "2.0",
+        "id": id.to_string(),
+    })
+}
+
+pub fn chain_get_block(hash: Option<Hash>) -> Value {
+    json!({
+        "method": "chain_getBlock",
+        "params": [hash],
+        "jsonrpc": "2.0",
+        "id":"1"
+    })
+}
+
+pub fn chain_get_finalized_head() -> Value {
+    json!({
+        "method": "chain_getFinalizedHead",
+        "params": null,
+        "jsonrpc": "2.0",
+        "id":"1"
     })
 }
 

@@ -24,14 +24,13 @@ use codec::{Decode, Encode};
 use keyring::AccountKeyring;
 use log::*;
 use sp_core::{crypto::Pair, H256};
-
 use substrate_api_client::{
-    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, utils::*, Api,
+    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus
 };
 
 // The custom struct that is to be decoded. The user must know the structure for this to work, which can fortunately
 // be looked up from the node metadata and printed with the `example_print_metadata`.
-#[derive(Encode, Decode, Debug)]
+#[derive(Encode, Decode, Debug, Clone)]
 struct Kitty {
     id: H256,
     price: u128,
@@ -51,27 +50,20 @@ fn main() {
     println!("[+] Composed extrinsic to create Kitty:\n\n {:?}", xt);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // Get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
     // event similar to what we do in the example_contract.
-    let res_str = api
-        .get_storage("Kitty", "KittyIndex", Some(from.public().encode()))
+    let index: u64 = api
+        .get_storage_map("Kitty", "KittyIndex", from.public())
         .unwrap();
-
-    let index = hexstr_to_u64(res_str).unwrap();
     println!("[+] Alice's Kitty is at index : {}\n", index);
 
     // get the Kitty
-    let res_str = api
-        .get_storage("Kitty", "Kitties", Some(index.encode()))
+    let kitty: Kitty = api
+        .get_storage_map("Kitty", "Kitties", index)
         .unwrap();
-
-    let res_vec = hexstr_to_vec(res_str).unwrap();
-
-    // type annotations are needed here to know that to decode into.
-    let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
     println!("[+] Cute decoded Kitty: {:?}\n", kitty);
 }
 

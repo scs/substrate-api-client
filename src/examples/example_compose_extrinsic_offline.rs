@@ -19,11 +19,11 @@
 use clap::{load_yaml, App};
 
 use keyring::AccountKeyring;
-use node_runtime::{BalancesCall, Call};
+use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api,
+    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus
 };
 
 fn main() {
@@ -54,8 +54,8 @@ fn main() {
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    let blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
+    println!("[+] Transaction got finalized in block {:?}", blockh);
 }
 
 pub fn get_node_url_from_cli() -> String {

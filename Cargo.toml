@@ -6,17 +6,16 @@ edition = "2018"
 
 [dependencies]
 env_logger      = { version = "0.7", optional = true }
-ws              = { version = "0.7", optional = true }
-hex             = { version = "0.4", default-features=false, optional = true }
+ws              = { version = "0.7", optional = true, features = ["ssl"] }
+hex             = { version = "0.4", default-features = false }
 log             = { version = "0.4", optional = true }
 serde           = { version = "1.0", optional = true, features = ["derive"] }
 serde_json      = { version = "1.0", optional = true }
-thiserror = "1.0"
-primitive-types = { version = "0.6", default-features = false, features = ["codec"] }
+thiserror 		= { version = "1.0", optional =true }
+primitive-types = { version = "0.6.1", optional = true, features = ["codec"] }
 
 [dependencies.sp-core]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-core"
 default-features = false
 features = ["full_crypto"]
@@ -24,85 +23,64 @@ features = ["full_crypto"]
 [dependencies.codec]
 package = "parity-scale-codec"
 features = ["derive"]
-version = "1.0.0"
+version = "1.3.0"
 default-features = false
 
-[dependencies.indices]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
-package = "pallet-indices"
-default-features=false
-
 [dependencies.runtime_io]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-io"
 default-features=false
 
 [dependencies.metadata]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '11.0.0-alpha.6'
 package = "frame-metadata"
 default-features=false
 
 [dependencies.sp-version]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-version"
 default-features=false
 
 [dependencies.balances]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "pallet-balances"
 default-features=false
 
 [dependencies.system]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "frame-system"
 default-features=false
 
 [dependencies.sp-runtime]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-runtime"
 default-features=false
 
 [dependencies.support]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "frame-support"
 default-features=false
 
 [dependencies.sp-std]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-std"
 default-features = false
 
-[dev-dependencies.node_runtime]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
-package = "node-runtime"
-
-[dependencies.node_primitives]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
-package = "node-primitives"
-default-features=false
-
-[dev-dependencies.contracts]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
-package = "pallet-contracts"
+[dependencies.node_template_runtime]
+git = "https://github.com/scs/substrate-node-template"
+tag = 'v2.0.0-alpha.6-api-client'
+package = "node-template-runtime"
+default-features = false
 
 [dev-dependencies]
 wabt = "0.9.0"
 
+[dev-dependencies.contracts]
+version = '2.0.0-alpha.6'
+package = "pallet-contracts"
+
 [dev-dependencies.keyring]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-keyring"
 
 [dev-dependencies.clap] 
@@ -114,22 +92,24 @@ default = ["std"]
 std = [
 	"sp-core/std",
 	"codec/std",
+	"runtime_io/std",	
+	"metadata/std",
+	"sp-version/std",
+	"balances/std",
+	"system/std",
     "sp-runtime/std",
 	"support/std",
 	"sp-runtime/std",
-	"system/std",
-	"balances/std",
-	"sp-version/std",
-	"metadata/std",
-	"runtime_io/std",
-	"indices/std",
-	"sp-core/std",
+	"sp-std/std",
 	"serde/std",
+	"node_template_runtime/std",	
 	"serde_json",
 	"env_logger",
 	"log",
 	"ws",
-	"hex",
+	"hex/std",
+	"primitive-types",
+	"thiserror",
 ]
 # need to add this for the app_crypto macro
 full_crypto = []
@@ -137,6 +117,10 @@ full_crypto = []
 [[example]]
 name = "example_get_storage"
 path = "src/examples/example_get_storage.rs"
+
+[[example]]
+name = "example_get_blocks"
+path = "src/examples/example_get_blocks.rs"
 
 [[example]]
 name = "example_transfer"
@@ -155,14 +139,6 @@ name = "example_print_metadata"
 path = "src/examples/example_print_metadata.rs"
 
 [[example]]
-name = "example_contract"
-path = "src/examples/example_contract.rs"
-
-[[example]]
-name = "example_custom_storage_struct"
-path = "src/examples/example_custom_storage_struct.rs"
-
-[[example]]
 name = "example_compose_extrinsic_offline"
 path = "src/examples/example_compose_extrinsic_offline.rs"
 
@@ -171,5 +147,19 @@ name = "example_generic_event_callback"
 path = "src/examples/example_generic_event_callback.rs"
 
 [[example]]
+name = "example_benchmark_bulk_xt"
+path = "src/examples/example_benchmark_bulk_xt.rs"
+
+[[example]]
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
+
+# DEPTRECATED. might work but too much work to maintain, sorry
+
+#[[example]]
+#name = "example_contract"
+#path = "src/examples/example_contract.rs"
+
+#[[example]]
+#name = "example_custom_storage_struct"
+#path = "src/examples/example_custom_storage_struct.rs"

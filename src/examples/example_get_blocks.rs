@@ -13,38 +13,54 @@
     limitations under the License.
 */
 
-///! Very simple example that shows how to get some simple storage values.
-use clap::{load_yaml, App};
+///! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
+///! debugging tool.
 
-use keyring::AccountKeyring;
-use substrate_api_client::{Api, Hash};
+#[macro_use]
+extern crate clap;
+
+use clap::App;
+
+use sp_core::sr25519;
+
+use substrate_api_client::Api;
+use substrate_api_client::utils::hexstr_to_hash;
 
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let mut api = Api::new(format!("ws://{}", url));
+    let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
-    // get some plain storage value
-    let result: u128 = api.get_storage_value("Balances", "TotalIssuance").unwrap();
-    println!("[+] TotalIssuance is {}", result);
-
-    // get StorageMap
-    let result: Hash = api
-        .get_storage_map("System", "BlockHash", 1u32).or(Some(Hash::default()))
+    let head = api.get_finalized_head()
+        .map(|h_str| hexstr_to_hash(h_str).unwrap())
         .unwrap();
-    println!("[+] block hash for blocknumber 42 is {:?}", result); 
 
-    // get StorageDoubleMap
-    let result: u32 = api
-        .get_storage_double_map("TemplateModule", "SomeDoubleMap", 1_u32, 2_u32).or(Some(0))
-        .unwrap();
-    println!("[+] some double map (1,2) should be 3. Is {:?}", result); 
+    println!(
+        "Finalized Head:\n {} \n",
+        head
+    );
 
-    // get Alice's AccountNonce with api.get_nonce()
-    let signer = AccountKeyring::Alice.pair();
-    api.signer = Some(signer);
-    println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
+    println!(
+        "Finalized header:\n {} \n",
+        api.get_header(Some(head.clone())).unwrap()
+    );
+
+    println!(
+        "Finalized block:\n {} \n",
+        api.get_block(Some(head)).unwrap()
+    );
+
+    println!(
+        "Latest Header: \n {} \n",
+        api.get_header(None).unwrap()
+    );
+
+    println!(
+        "Latest block: \n {} \n",
+        api.get_block(None).unwrap()
+    );
+
 }
 
 pub fn get_node_url_from_cli() -> String {
