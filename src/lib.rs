@@ -189,7 +189,7 @@ where
                     Ok(info.nonce)
                 } else { Ok(0) }
             }
-            None => Err("Can't get )nonce when no signer is set"),
+            None => Err("Can't get nonce when no signer is set"),
         }
     }
 

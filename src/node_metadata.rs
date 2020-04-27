@@ -318,25 +318,7 @@ impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
     pub fn key(&self, key: K) -> StorageKey {
         let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
-        let encoded_key = key.encode();
-        let hash = match self.hasher {
-            StorageHasher::Identity => encoded_key.to_vec(),
-            StorageHasher::Blake2_128 => sp_core::blake2_128(&encoded_key).to_vec(),
-            StorageHasher::Blake2_128Concat => {
-                // copied from substrate Blake2_128Concat::hash since StorageHasher is not public
-                let x: &[u8] = &encoded_key[..];
-                sp_core::blake2_128(x)
-                    .iter()
-                    .chain(x.into_iter())
-                    .cloned()
-                    .collect::<Vec<_>>()
-            }
-            StorageHasher::Blake2_256 => sp_core::blake2_256(&encoded_key).to_vec(),
-            StorageHasher::Twox128 => sp_core::twox_128(&encoded_key).to_vec(),
-            StorageHasher::Twox256 => sp_core::twox_256(&encoded_key).to_vec(),
-            StorageHasher::Twox64Concat => sp_core::twox_64(&encoded_key).to_vec(),
-        };
-        bytes.extend(hash);
+        bytes.extend(key_hash(&key, &self.hasher));
         StorageKey(bytes)
     }
 
@@ -360,26 +342,8 @@ impl<K: Encode, Q: Encode, V: Decode + Clone> StorageDoubleMap<K, Q, V> {
     pub fn key(&self, key1: K, key2: Q) -> StorageKey {
         let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
-        for (encoded_key, hasher) in [(key1.encode(), self.hasher.clone()), (key2.encode(), self.key2_hasher.clone())].iter() {
-            let hash = match hasher {
-                StorageHasher::Identity => encoded_key.to_vec(),
-                StorageHasher::Blake2_128 => sp_core::blake2_128(&encoded_key).to_vec(),
-                StorageHasher::Blake2_128Concat => {
-                    // copied from substrate Blake2_128Concat::hash since StorageHasher is not public
-                    let x: &[u8] = &encoded_key[..];
-                    sp_core::blake2_128(x)
-                        .iter()
-                        .chain(x.into_iter())
-                        .cloned()
-                        .collect::<Vec<_>>()
-                }
-                StorageHasher::Blake2_256 => sp_core::blake2_256(&encoded_key).to_vec(),
-                StorageHasher::Twox128 => sp_core::twox_128(&encoded_key).to_vec(),
-                StorageHasher::Twox256 => sp_core::twox_256(&encoded_key).to_vec(),
-                StorageHasher::Twox64Concat => sp_core::twox_64(&encoded_key).to_vec(),
-            };
-            bytes.extend(hash);
-        }
+        bytes.extend(key_hash(&key1, &self.hasher));
+        bytes.extend(key_hash(&key2, &self.key2_hasher));
         StorageKey(bytes)
     }
 
@@ -578,4 +542,26 @@ fn convert_entry(
         ty: entry.ty,
         default,
     })
+}
+
+/// genertes the key's hash depending on the StorageHasher selected
+fn key_hash<K: Encode>(key: &K, hasher: &StorageHasher) -> Vec<u8> {
+    let encoded_key = key.encode();
+    match hasher {
+        StorageHasher::Identity => encoded_key.to_vec(),
+        StorageHasher::Blake2_128 => sp_core::blake2_128(&encoded_key).to_vec(),
+        StorageHasher::Blake2_128Concat => {
+            // copied from substrate Blake2_128Concat::hash since StorageHasher is not public
+            let x: &[u8] = encoded_key.as_slice();
+            sp_core::blake2_128(x)
+                .iter()
+                .chain(x.into_iter())
+                .cloned()
+                .collect::<Vec<_>>()
+        }
+        StorageHasher::Blake2_256 => sp_core::blake2_256(&encoded_key).to_vec(),
+        StorageHasher::Twox128 => sp_core::twox_128(&encoded_key).to_vec(),
+        StorageHasher::Twox256 => sp_core::twox_256(&encoded_key).to_vec(),
+        StorageHasher::Twox64Concat => sp_core::twox_64(&encoded_key).to_vec(),
+    }
 }
