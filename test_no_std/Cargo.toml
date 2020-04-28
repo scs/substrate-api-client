@@ -20,16 +20,13 @@ default-features=false
 features=["full_crypto"]
 
 [dependencies.application-crypto]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
+version = '2.0.0-alpha.6'
 package = "sp-application-crypto"
 default-features = false
 features = ["full_crypto"]
 
 [dependencies.sp-io]
-git = "https://github.com/paritytech/substrate"
-rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
-package = 'sp-io'
+version = '2.0.0-alpha.6'
 default-features=false
 features = ["disable_oom", "disable_panic_handler"]
 

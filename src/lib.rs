@@ -28,10 +28,9 @@ use std::sync::mpsc::{channel, Receiver};
 #[cfg(feature = "std")]
 use std::convert::TryFrom;
 
-#[cfg(feature = "std")]
 use balances::AccountData as AccountDataGen;
-#[cfg(feature = "std")]
 use system::AccountInfo as AccountInfoGen;
+
 #[cfg(feature = "std")]
 use codec::{Decode, Encode, Error as CodecError};
 
@@ -52,7 +51,6 @@ use node_metadata::Metadata;
 #[cfg(feature = "std")]
 use rpc::json_req;
 
-#[cfg(feature = "std")]
 use utils::*;
 
 #[cfg(feature = "std")]
@@ -65,8 +63,8 @@ pub mod events;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
-#[cfg(feature = "std")]
 pub mod utils;
+
 #[cfg(feature = "std")]
 pub mod rpc;
 
@@ -255,6 +253,22 @@ where
         self.get_storage_by_key_hash(storagekey.0)
     }
 
+    pub fn get_storage_double_map<K: Encode,Q: Encode, V:Decode+Clone> (
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        first: K,
+        second: Q,
+    ) -> Option<V> {
+        let storagekey: sp_core::storage::StorageKey = self.metadata
+                .module(storage_prefix).unwrap()
+                .storage(storage_key_name).unwrap()
+                .get_double_map::<K, Q, V>().unwrap()
+                .key(first, second);
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_by_key_hash(storagekey.0)
+    }
+
     pub fn get_storage_by_key_hash<V:Decode+Clone>(&self, hash: Vec<u8>) -> Option<V> {
         let mut keyhash_str = hex::encode(hash);
         keyhash_str.insert_str(0, "0x");
@@ -271,22 +285,6 @@ where
                 _ => Some(Decode::decode(&mut &hex::decode(&hexstr).unwrap()[..]).unwrap()),
             }
         } else { None }
-    }
-
-    pub fn get_storage_double_map<K: Encode,Q: Encode, V:Decode+Clone> (
-        &self,
-        storage_prefix: &'static str,
-        storage_key_name: &'static str,
-        first: K,
-        second: Q,
-    ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self.metadata
-                .module(storage_prefix).unwrap()
-                .storage(storage_key_name).unwrap()
-                .get_double_map::<K, Q, V>().unwrap()
-                .key(first, second);
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
     }
 
     pub fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> WsResult<Option<Hash>> {
@@ -322,9 +320,8 @@ where
 
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {
         debug!("subscribing to events");
-        let key = storage_key_hash("System", "Events", None);
+        let key = storage_value_key_hex("System", "Events");
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
-
         rpc::start_event_subscriber(self.url.clone(), jsonreq, sender);
     }
 

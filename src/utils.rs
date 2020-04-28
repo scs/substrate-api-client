@@ -23,37 +23,20 @@ extern crate alloc;
 use alloc::{string::String, vec::Vec, string::ToString};
 
 use hex::FromHexError;
-use primitive_types::U256;
 use sp_core::blake2_256;
 use sp_core::twox_128;
 use sp_core::H256 as Hash;
 
-fn storage_key_hash_vec(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> Vec<u8> {
+pub fn storage_value_key_vec(module: &str, storage_key_name: &str) -> Vec<u8> {
     let mut key = twox_128(module.as_bytes()).to_vec();
     key.extend(&twox_128(storage_key_name.as_bytes()));
-
-    if let Some(p) = param {
-        key.extend(&blake2_256(&p));
-    }
-
     key
 }
 
-pub fn storage_key_hash(module: &str, storage_key_name: &str, param: Option<Vec<u8>>) -> String {
-    let mut keyhash_str = hex::encode(storage_key_hash_vec(module, storage_key_name, param));
-    keyhash_str.insert_str(0, "0x");
-    keyhash_str
-}
-
-pub fn storage_key_hash_double_map(
-    module: &str,
-    storage_key_name: &str,
-    first: Vec<u8>,
-    second: Vec<u8>,
-) -> String {
-    let mut keyhash = storage_key_hash_vec(module, storage_key_name, Some(first));
-    keyhash.extend(&blake2_256(&second).to_vec());
-    let mut keyhash_str = hex::encode(keyhash);
+pub fn storage_value_key_hex(module: &str, storage_key_name: &str) -> String {
+    let mut key = storage_value_key_vec(module, storage_key_name);
+    
+    let mut keyhash_str = hex::encode(key);
     keyhash_str.insert_str(0, "0x");
     keyhash_str
 }
@@ -68,38 +51,6 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
 		"null" => Ok([0u8].to_vec()),
 		_ => hex::decode(&hexstr),
 	}
-}
-
-pub fn hexstr_to_u64(hexstr: String) -> Result<u64, FromHexError> {
-    let vec = hexstr_to_vec(hexstr)?;
-    match vec.len() {
-        1 | 2 | 4 | 8 => {
-            let mut h: [u8; 8] = Default::default();
-            h[..vec.len()].copy_from_slice(&vec);
-            Ok(u64::from_le_bytes(h))
-        }
-        _ => match vec.iter().sum() {
-            0 => Ok(0u64),
-            _ => Err(hex::FromHexError::InvalidStringLength),
-        },
-    }
-}
-
-pub fn hexstr_to_u256(hexstr: String) -> Result<U256, FromHexError> {
-    let vec = hexstr_to_vec(hexstr)?;
-    match vec.len() {
-        1 | 2 | 4 | 8 | 16 | 32 => Ok(U256::from_little_endian(&vec[..])),
-        _ => match vec.iter().sum() {
-            0 => Ok(U256::from(0)),
-            _ => Err(hex::FromHexError::InvalidStringLength),
-        },
-    }
-}
-
-pub fn hexstr_to_account_data(hexstr: String) -> Result<AccountData<u128>, Error> {
-    let vec = hexstr_to_vec(hexstr).map_err(|_| "FromHexError: InvalidStringLength")?;
-
-    Decode::decode(&mut vec.as_slice())
 }
 
 pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
