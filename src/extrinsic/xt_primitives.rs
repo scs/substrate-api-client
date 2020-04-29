@@ -22,8 +22,8 @@ use std::fmt;
 
 use codec::{Compact, Decode, Encode, Error, Input};
 //use indices::address::Address;
-use sp_core::H256;
 use sp_core::blake2_256;
+use sp_core::H256;
 use sp_runtime::{generic::Era, MultiSignature};
 
 pub use sp_runtime::AccountId32 as AccountId;
@@ -61,8 +61,8 @@ pub type AdditionalSigned = (u32, H256, H256, (), (), (), ());
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
 impl<Call> SignedPayload<Call>
-    where
-        Call: Encode + Decode,
+where
+    Call: Encode + Decode,
 {
     pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
         Self((call, extra, additional_signed))
@@ -85,8 +85,7 @@ impl<Call> SignedPayload<Call>
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
 #[derive(Clone, PartialEq)]
-pub struct UncheckedExtrinsicV4<Call>
-{
+pub struct UncheckedExtrinsicV4<Call> {
     pub signature: Option<(GenericAddress, MultiSignature, GenericExtra)>,
     pub function: Call,
 }
@@ -117,8 +116,8 @@ where
 
 #[cfg(feature = "std")]
 impl<Call> fmt::Debug for UncheckedExtrinsicV4<Call>
-    where
-        Call: fmt::Debug,
+where
+    Call: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -133,8 +132,8 @@ impl<Call> fmt::Debug for UncheckedExtrinsicV4<Call>
 const V4: u8 = 4;
 
 impl<Call> Encode for UncheckedExtrinsicV4<Call>
-    where
-        Call: Encode,
+where
+    Call: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {
@@ -153,8 +152,8 @@ impl<Call> Encode for UncheckedExtrinsicV4<Call>
 }
 
 impl<Call> Decode for UncheckedExtrinsicV4<Call>
-    where
-        Call: Decode + Encode
+where
+    Call: Decode + Encode,
 {
     fn decode<I: Input>(input: &mut I) -> Result<Self, Error> {
         // This is a little more complicated than usual since the binary format must be compatible
@@ -172,7 +171,11 @@ impl<Call> Decode for UncheckedExtrinsicV4<Call>
         }
 
         Ok(UncheckedExtrinsicV4 {
-            signature: if is_signed { Some(Decode::decode(input)?) } else { None },
+            signature: if is_signed {
+                Some(Decode::decode(input)?)
+            } else {
+                None
+            },
             function: Decode::decode(input)?,
         })
     }
@@ -213,7 +216,7 @@ mod tests {
             vec![1, 1, 1],
             GenericAddress::default(),
             MultiSignature::default(),
-            GenericExtra::default()
+            GenericExtra::default(),
         );
 
         let xt_enc = xt.encode();

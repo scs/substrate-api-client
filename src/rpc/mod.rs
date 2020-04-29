@@ -20,8 +20,8 @@ use std::thread;
 
 use ws::connect;
 
-use client::*;
 pub use client::XtStatus;
+use client::*;
 
 mod client;
 pub mod json_req;
@@ -30,11 +30,7 @@ pub fn get(url: String, json_req: String, result_in: ThreadOut<String>) {
     start_rpc_client_thread(url, json_req, result_in, on_get_request_msg)
 }
 
-pub fn send_extrinsic(
-    url: String,
-    json_req: String,
-    result_in: ThreadOut<String>,
-) {
+pub fn send_extrinsic(url: String, json_req: String, result_in: ThreadOut<String>) {
     start_rpc_client_thread(url, json_req, result_in, on_extrinsic_msg_until_ready)
 }
 

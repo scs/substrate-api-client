@@ -23,7 +23,7 @@ use sp_core::crypto::Pair;
 use substrate_api_client::{
     compose_call, compose_extrinsic,
     extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
-    Api, XtStatus
+    Api, XtStatus,
 };
 
 fn main() {
@@ -49,7 +49,9 @@ fn main() {
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
+    let tx_hash = api
+        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
 

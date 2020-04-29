@@ -23,8 +23,8 @@ use clap::App;
 
 use sp_core::sr25519;
 
-use substrate_api_client::Api;
 use substrate_api_client::utils::hexstr_to_hash;
+use substrate_api_client::Api;
 
 fn main() {
     env_logger::init();
@@ -32,14 +32,12 @@ fn main() {
 
     let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
-    let head = api.get_finalized_head()
+    let head = api
+        .get_finalized_head()
         .map(|h_str| hexstr_to_hash(h_str).unwrap())
         .unwrap();
 
-    println!(
-        "Finalized Head:\n {} \n",
-        head
-    );
+    println!("Finalized Head:\n {} \n", head);
 
     println!(
         "Finalized header:\n {} \n",
@@ -51,16 +49,9 @@ fn main() {
         api.get_block(Some(head)).unwrap()
     );
 
-    println!(
-        "Latest Header: \n {} \n",
-        api.get_header(None).unwrap()
-    );
+    println!("Latest Header: \n {} \n", api.get_header(None).unwrap());
 
-    println!(
-        "Latest block: \n {} \n",
-        api.get_block(None).unwrap()
-    );
-
+    println!("Latest block: \n {} \n", api.get_block(None).unwrap());
 }
 
 pub fn get_node_url_from_cli() -> String {

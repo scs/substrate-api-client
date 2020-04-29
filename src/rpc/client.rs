@@ -15,8 +15,8 @@
 
 */
 
-use std::sync::mpsc::Sender as ThreadOut;
 use log::{debug, error, info, warn};
+use std::sync::mpsc::Sender as ThreadOut;
 use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 
 #[derive(Debug, PartialEq)]
@@ -85,22 +85,30 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
     Ok(())
 }
 
-pub fn on_extrinsic_msg_until_finalized(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+pub fn on_extrinsic_msg_until_finalized(
+    msg: Message,
+    out: Sender,
+    result: ThreadOut<String>,
+) -> Result<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Error, _) => end_process(out, result, None),
-        (XtStatus::Future, _) => { 
+        (XtStatus::Future, _) => {
             warn!("extrinsic has 'future' status. aborting");
             end_process(out, result, None);
-        },
-        _ => ()
+        }
+        _ => (),
     };
     Ok(())
 }
 
-pub fn on_extrinsic_msg_until_ready(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+pub fn on_extrinsic_msg_until_ready(
+    msg: Message,
+    out: Sender,
+    result: ThreadOut<String>,
+) -> Result<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
@@ -108,7 +116,7 @@ pub fn on_extrinsic_msg_until_ready(msg: Message, out: Sender, result: ThreadOut
         (XtStatus::Ready, _) => end_process(out, result, None),
         (XtStatus::Future, _) => end_process(out, result, None),
         (XtStatus::Error, _) => end_process(out, result, None),
-        _ => ()
+        _ => (),
     };
     Ok(())
 }
@@ -124,31 +132,29 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
     let value: serde_json::Value = serde_json::from_str(msg).unwrap();
     match value["error"].as_object() {
         Some(obj) => {
-            error!("extrinsic error code {}: {}", 
-                        obj.get("code").unwrap().as_u64().unwrap(), 
-                        obj.get("message").unwrap().as_str().unwrap());
+            error!(
+                "extrinsic error code {}: {}",
+                obj.get("code").unwrap().as_u64().unwrap(),
+                obj.get("message").unwrap().as_str().unwrap()
+            );
             (XtStatus::Error, None)
-        },
-        None => {
-            match value["params"]["result"].as_object() {
-                Some(obj) => {
-                    if let Some(hash) = obj.get("finalized") {
-                        info!("finalized: {:?}", hash);
-                        (XtStatus::Finalized, Some( hash.to_string()))
-                    } else {
-                        (XtStatus::Unknown, None)
-                    }
-                },
-                None => {
-                    match value["params"]["result"].as_str() {
-                        Some("ready") => (XtStatus::Ready, None),
-                        Some("future") => (XtStatus::Future, None),
-                        Some(&_) => (XtStatus::Unknown, None),
-                        None => (XtStatus::Unknown, None),
-                    }
+        }
+        None => match value["params"]["result"].as_object() {
+            Some(obj) => {
+                if let Some(hash) = obj.get("finalized") {
+                    info!("finalized: {:?}", hash);
+                    (XtStatus::Finalized, Some(hash.to_string()))
+                } else {
+                    (XtStatus::Unknown, None)
                 }
             }
-        }
+            None => match value["params"]["result"].as_str() {
+                Some("ready") => (XtStatus::Ready, None),
+                Some("future") => (XtStatus::Future, None),
+                Some(&_) => (XtStatus::Unknown, None),
+                None => (XtStatus::Unknown, None),
+            },
+        },
     }
 }
 
@@ -157,7 +163,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn extrinsic_status_parsed_correctly(){
+    fn extrinsic_status_parsed_correctly() {
         let msg = "{\"jsonrpc\":\"2.0\",\"result\":7185,\"id\":\"3\"}";
         assert_eq!(parse_status(msg), (XtStatus::Unknown, None));
 
@@ -165,7 +171,16 @@ mod tests {
         assert_eq!(parse_status(msg), (XtStatus::Ready, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"finalized\":\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"},\"subscription\":7185}}";
-        assert_eq!(parse_status(msg), (XtStatus::Finalized, Some("\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"".to_string())));
+        assert_eq!(
+            parse_status(msg),
+            (
+                XtStatus::Finalized,
+                Some(
+                    "\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\""
+                        .to_string()
+                )
+            )
+        );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"future\",\"subscription\":2}}";
         assert_eq!(parse_status(msg), (XtStatus::Future, None));
@@ -175,7 +190,7 @@ mod tests {
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":0},\"id\":\"4\"}";
         assert_eq!(parse_status(msg), (XtStatus::Error, None));
-        
+
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
         assert_eq!(parse_status(msg), (XtStatus::Error, None));
     }

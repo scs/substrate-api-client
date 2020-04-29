@@ -1,4 +1,3 @@
-
 // Copyright 2019 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
 // This file is part of substrate-subxt.
 //
@@ -19,13 +18,13 @@ use std::{collections::HashMap, convert::TryFrom, marker::PhantomData, str::From
 
 use codec::{Decode, Encode};
 
+use log::*;
 use metadata::{
     DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed, StorageEntryModifier,
     StorageEntryType, StorageHasher, META_RESERVED,
 };
 use serde::ser::Serialize;
 use sp_core::storage::StorageKey;
-use log::*;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MetadataError {
@@ -230,18 +229,27 @@ pub struct StorageMetadata {
 }
 
 impl StorageMetadata {
-    pub fn get_double_map<K: Encode, Q:Encode, V: Decode + Clone>(&self) -> Result<StorageDoubleMap<K, Q, V>, MetadataError> {
+    pub fn get_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
+        &self,
+    ) -> Result<StorageDoubleMap<K, Q, V>, MetadataError> {
         match &self.ty {
-            StorageEntryType::DoubleMap { hasher, key2_hasher, .. } => {
+            StorageEntryType::DoubleMap {
+                hasher,
+                key2_hasher,
+                ..
+            } => {
                 let module_prefix = self.module_prefix.as_bytes().to_vec();
                 let storage_prefix = self.storage_prefix.as_bytes().to_vec();
                 let hasher1 = hasher.to_owned();
                 let hasher2 = key2_hasher.to_owned();
-                
+
                 let default = Decode::decode(&mut &self.default[..])
                     .map_err(|_| MetadataError::MapValueTypeError)?;
 
-                info!("map for '{}' '{}' has hasher1 {:?} hasher2 {:?}", self.module_prefix, self.storage_prefix, hasher1, hasher2);
+                info!(
+                    "map for '{}' '{}' has hasher1 {:?} hasher2 {:?}",
+                    self.module_prefix, self.storage_prefix, hasher1, hasher2
+                );
                 Ok(StorageDoubleMap {
                     _marker: PhantomData,
                     _marker2: PhantomData,
@@ -264,7 +272,10 @@ impl StorageMetadata {
                 let default = Decode::decode(&mut &self.default[..])
                     .map_err(|_| MetadataError::MapValueTypeError)?;
 
-                info!("map for '{}' '{}' has hasher {:?}", self.module_prefix, self.storage_prefix, hasher);
+                info!(
+                    "map for '{}' '{}' has hasher {:?}",
+                    self.module_prefix, self.storage_prefix, hasher
+                );
                 Ok(StorageMap {
                     _marker: PhantomData,
                     module_prefix,
@@ -287,7 +298,7 @@ impl StorageMetadata {
                 })
             }
             _ => Err(MetadataError::StorageTypeError),
-        }       
+        }
     }
 }
 

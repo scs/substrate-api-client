@@ -24,7 +24,7 @@ use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus
+    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {
@@ -56,11 +56,12 @@ fn main() {
         );
         // send and watch extrinsic until finalized
         println!("sending extrinsic with nonce {}", nonce);
-        let _blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
-        
+        let _blockh = api
+            .send_extrinsic(xt.hex_encode(), XtStatus::Ready)
+            .unwrap();
+
         nonce += 1;
     }
-    
 }
 
 pub fn get_node_url_from_cli() -> String {

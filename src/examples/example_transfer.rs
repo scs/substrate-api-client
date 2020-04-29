@@ -46,7 +46,9 @@ fn main() {
     println!("[+] Composed extrinsic: {:?}\n", xt);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
+    let tx_hash = api
+        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased

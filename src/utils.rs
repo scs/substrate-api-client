@@ -18,7 +18,7 @@
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 #[cfg(not(feature = "std"))]
-use alloc::{string::String, vec::Vec, string::ToString};
+use alloc::{string::String, string::ToString, vec::Vec};
 
 use hex::FromHexError;
 use sp_core::twox_128;
@@ -32,7 +32,7 @@ pub fn storage_value_key_vec(module: &str, storage_key_name: &str) -> Vec<u8> {
 
 pub fn storage_value_key_hex(module: &str, storage_key_name: &str) -> String {
     let key = storage_value_key_vec(module, storage_key_name);
-    
+
     let mut keyhash_str = hex::encode(key);
     keyhash_str.insert_str(0, "0x");
     keyhash_str
@@ -44,10 +44,10 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
         .to_string()
         .trim_start_matches("0x")
         .to_string();
-	match hexstr.as_str() {
-		"null" => Ok([0u8].to_vec()),
-		_ => hex::decode(&hexstr),
-	}
+    match hexstr.as_str() {
+        "null" => Ok([0u8].to_vec()),
+        _ => hex::decode(&hexstr),
+    }
 }
 
 pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {

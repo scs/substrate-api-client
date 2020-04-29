@@ -23,7 +23,7 @@ use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus
+    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {
@@ -54,7 +54,9 @@ fn main() {
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
     // send and watch extrinsic until finalized
-    let blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
+    let blockh = api
+        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .unwrap();
     println!("[+] Transaction got finalized in block {:?}", blockh);
 }
 

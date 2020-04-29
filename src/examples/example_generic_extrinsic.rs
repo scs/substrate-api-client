@@ -21,7 +21,7 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus
+    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {
@@ -48,7 +48,9 @@ fn main() {
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
     // send and watch extrinsic until finalized
-    let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
+    let tx_hash = api
+        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
 }
 

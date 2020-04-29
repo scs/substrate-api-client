@@ -15,8 +15,8 @@
 
 */
 
-use serde_json::{json, Value};
 use crate::Hash;
+use serde_json::{json, Value};
 
 pub const REQUEST_TRANSFER: u32 = 3;
 
