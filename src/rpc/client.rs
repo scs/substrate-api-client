@@ -159,24 +159,24 @@ mod tests {
     #[test]
     fn extrinsic_status_parsed_correctly(){
         let msg = "{\"jsonrpc\":\"2.0\",\"result\":7185,\"id\":\"3\"}";
-        assert_eq!(parse_status(msg), None);
+        assert_eq!(parse_status(msg), (XtStatus::Unknown, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"ready\",\"subscription\":7185}}";
-        assert_eq!(parse_status(msg), Some(XtStatus::Ready));
+        assert_eq!(parse_status(msg), (XtStatus::Ready, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"finalized\":\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"},\"subscription\":7185}}";
-        assert_eq!(parse_status(msg), Some(XtStatus::Finalized));
+        assert_eq!(parse_status(msg), (XtStatus::Finalized, Some("\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"".to_string())));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"future\",\"subscription\":2}}";
-        assert_eq!(parse_status(msg), Some(XtStatus::Future));
+        assert_eq!(parse_status(msg), (XtStatus::Future, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
-        assert_eq!(parse_status(msg), Some(XtStatus::Error));
+        assert_eq!(parse_status(msg), (XtStatus::Error, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":0},\"id\":\"4\"}";
-        assert_eq!(parse_status(msg), Some(XtStatus::Error));
+        assert_eq!(parse_status(msg), (XtStatus::Error, None));
         
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
-        assert_eq!(parse_status(msg), Some(XtStatus::Error));
+        assert_eq!(parse_status(msg), (XtStatus::Error, None));
     }
 }
