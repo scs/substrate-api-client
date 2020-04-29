@@ -15,15 +15,12 @@
 
 */
 
-use balances::AccountData;
-use codec::{Decode, Error};
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::{string::String, vec::Vec, string::ToString};
 
 use hex::FromHexError;
-use sp_core::blake2_256;
 use sp_core::twox_128;
 use sp_core::H256 as Hash;
 
@@ -34,7 +31,7 @@ pub fn storage_value_key_vec(module: &str, storage_key_name: &str) -> Vec<u8> {
 }
 
 pub fn storage_value_key_hex(module: &str, storage_key_name: &str) -> String {
-    let mut key = storage_value_key_vec(module, storage_key_name);
+    let key = storage_value_key_vec(module, storage_key_name);
     
     let mut keyhash_str = hex::encode(key);
     keyhash_str.insert_str(0, "0x");
@@ -68,71 +65,71 @@ pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::*;
-
-    #[test]
-    fn test_hextstr_to_vec() {
-        assert_eq!(hexstr_to_vec("0x01020a".to_string()), Ok(vec!(1, 2, 10)));
-        assert_eq!(hexstr_to_vec("null".to_string()), Ok(vec!(0u8)));
-        assert_eq!(
-            hexstr_to_vec("0x0q".to_string()),
-            Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
-        );
-    }
-
-    #[test]
-    fn test_hextstr_to_u64() {
-        assert_eq!(hexstr_to_u64("0x0100000000000000".to_string()), Ok(1u64));
-        assert_eq!(hexstr_to_u64("0x01000000".to_string()), Ok(1u64));
-        assert_eq!(hexstr_to_u64("null".to_string()), Ok(0u64));
-        assert_eq!(
-            hexstr_to_u64("0x010000000000000000".to_string()),
-            Err(hex::FromHexError::InvalidStringLength)
-        );
-        assert_eq!(
-            hexstr_to_u64("0x0q".to_string()),
-            Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
-        );
-    }
-
-    #[test]
-    fn test_hextstr_to_u256() {
-        assert_eq!(
-            hexstr_to_u256(
-                "0x0100000000000000000000000000000000000000000000000000000000000000".to_string()
-            ),
-            Ok(U256::from(1))
-        );
-        assert_eq!(hexstr_to_u256("0x01000000".to_string()), Ok(U256::from(1)));
-        assert_eq!(hexstr_to_u256("null".to_string()), Ok(U256::from(0)));
-        assert_eq!(
-            hexstr_to_u256("0x010000000000000000".to_string()),
-            Err(hex::FromHexError::InvalidStringLength)
-        );
-        assert_eq!(
-            hexstr_to_u256("0x0q".to_string()),
-            Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
-        );
-    }
-
-    #[test]
-    fn test_hextstr_to_hash() {
-        assert_eq!(
-            hexstr_to_hash(
-                "0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
-            ),
-            Ok(Hash::from([0u8; 32]))
-        );
-        assert_eq!(
-            hexstr_to_hash("0x010000000000000000".to_string()),
-            Err(hex::FromHexError::InvalidStringLength)
-        );
-        assert_eq!(
-            hexstr_to_hash("0x0q".to_string()),
-            Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
-        );
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     // Note this useful idiom: importing names from outer (for mod tests) scope.
+//     use super::*;
+//
+//     #[test]
+//     fn test_hextstr_to_vec() {
+//         assert_eq!(hexstr_to_vec("0x01020a".to_string()), Ok(vec!(1, 2, 10)));
+//         assert_eq!(hexstr_to_vec("null".to_string()), Ok(vec!(0u8)));
+//         assert_eq!(
+//             hexstr_to_vec("0x0q".to_string()),
+//             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
+//         );
+//     }
+//
+//     #[test]
+//     fn test_hextstr_to_u64() {
+//         assert_eq!(hexstr_to_u64("0x0100000000000000".to_string()), Ok(1u64));
+//         assert_eq!(hexstr_to_u64("0x01000000".to_string()), Ok(1u64));
+//         assert_eq!(hexstr_to_u64("null".to_string()), Ok(0u64));
+//         assert_eq!(
+//             hexstr_to_u64("0x010000000000000000".to_string()),
+//             Err(hex::FromHexError::InvalidStringLength)
+//         );
+//         assert_eq!(
+//             hexstr_to_u64("0x0q".to_string()),
+//             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
+//         );
+//     }
+//
+//     #[test]
+//     fn test_hextstr_to_u256() {
+//         assert_eq!(
+//             hexstr_to_u256(
+//                 "0x0100000000000000000000000000000000000000000000000000000000000000".to_string()
+//             ),
+//             Ok(U256::from(1))
+//         );
+//         assert_eq!(hexstr_to_u256("0x01000000".to_string()), Ok(U256::from(1)));
+//         assert_eq!(hexstr_to_u256("null".to_string()), Ok(U256::from(0)));
+//         assert_eq!(
+//             hexstr_to_u256("0x010000000000000000".to_string()),
+//             Err(hex::FromHexError::InvalidStringLength)
+//         );
+//         assert_eq!(
+//             hexstr_to_u256("0x0q".to_string()),
+//             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
+//         );
+//     }
+//
+//     #[test]
+//     fn test_hextstr_to_hash() {
+//         assert_eq!(
+//             hexstr_to_hash(
+//                 "0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
+//             ),
+//             Ok(Hash::from([0u8; 32]))
+//         );
+//         assert_eq!(
+//             hexstr_to_hash("0x010000000000000000".to_string()),
+//             Err(hex::FromHexError::InvalidStringLength)
+//         );
+//         assert_eq!(
+//             hexstr_to_hash("0x0q".to_string()),
+//             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
+//         );
+//     }
+// }

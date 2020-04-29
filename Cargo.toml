@@ -98,7 +98,6 @@ std = [
 	"system/std",
     "sp-runtime/std",
 	"support/std",
-	"sp-runtime/std",
 	"sp-std/std",
 	"serde/std",
 	"serde_json",

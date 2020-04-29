@@ -51,6 +51,7 @@ use node_metadata::Metadata;
 #[cfg(feature = "std")]
 use rpc::json_req;
 
+#[cfg(feature = "std")]
 use utils::*;
 
 #[cfg(feature = "std")]
@@ -297,8 +298,8 @@ where
             XtStatus::Finalized => {
                 rpc::send_extrinsic_and_wait_until_finalized(
                     self.url.clone(),
-                    jsonreq.clone(),
-                    result_in.clone(),
+                    jsonreq,
+                    result_in,
                 );
                 let res = result_out.recv().unwrap();
                 info!("finalized: {}", res);
@@ -307,8 +308,8 @@ where
             XtStatus::Ready => {
                 rpc::send_extrinsic(
                     self.url.clone(),
-                    jsonreq.clone(),
-                    result_in.clone(),
+                    jsonreq,
+                    result_in,
                 );
                 let res = result_out.recv().unwrap();
                 info!("ready: {}", res);

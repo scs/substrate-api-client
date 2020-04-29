@@ -555,7 +555,7 @@ fn key_hash<K: Encode>(key: &K, hasher: &StorageHasher) -> Vec<u8> {
             let x: &[u8] = encoded_key.as_slice();
             sp_core::blake2_128(x)
                 .iter()
-                .chain(x.into_iter())
+                .chain(x.iter())
                 .cloned()
                 .collect::<Vec<_>>()
         }
