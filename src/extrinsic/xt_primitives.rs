@@ -20,7 +20,7 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use std::fmt;
 
-use codec::{Compact, Decode, Encode};
+use codec::{Compact, Decode, Encode, Error, Input};
 //use indices::address::Address;
 use sp_core::H256;
 use sp_core::blake2_256;
@@ -47,6 +47,12 @@ impl GenericExtra {
     }
 }
 
+impl Default for GenericExtra {
+    fn default() -> Self {
+        Self::new(0)
+    }
+}
+
 /// additionalSigned fields of the respective SignedExtra fields.
 /// Order is the same as declared in the extra.
 pub type AdditionalSigned = (u32, H256, H256, (), (), (), ());
@@ -55,8 +61,8 @@ pub type AdditionalSigned = (u32, H256, H256, (), (), (), ());
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
 impl<Call> SignedPayload<Call>
-where
-    Call: Encode,
+    where
+        Call: Encode + Decode,
 {
     pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
         Self((call, extra, additional_signed))
@@ -78,10 +84,8 @@ where
 
 /// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct UncheckedExtrinsicV4<Call>
-where
-    Call: Encode,
 {
     pub signature: Option<(GenericAddress, MultiSignature, GenericExtra)>,
     pub function: Call,
@@ -113,8 +117,8 @@ where
 
 #[cfg(feature = "std")]
 impl<Call> fmt::Debug for UncheckedExtrinsicV4<Call>
-where
-    Call: fmt::Debug + Encode,
+    where
+        Call: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -126,22 +130,50 @@ where
     }
 }
 
+const V4: u8 = 4;
+
 impl<Call> Encode for UncheckedExtrinsicV4<Call>
-where
-    Call: Encode,
+    where
+        Call: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {
             match self.signature.as_ref() {
                 Some(s) => {
-                    v.push(4 as u8 | 0b1000_0000);
+                    v.push(V4 | 0b1000_0000);
                     s.encode_to(v);
                 }
                 None => {
-                    v.push(4 as u8 & 0b0111_1111);
+                    v.push(V4 & 0b0111_1111);
                 }
             }
             self.function.encode_to(v);
+        })
+    }
+}
+
+impl<Call> Decode for UncheckedExtrinsicV4<Call>
+    where
+        Call: Decode + Encode
+{
+    fn decode<I: Input>(input: &mut I) -> Result<Self, Error> {
+        // This is a little more complicated than usual since the binary format must be compatible
+        // with substrate's generic `Vec<u8>` type. Basically this just means accepting that there
+        // will be a prefix of vector length (we don't need
+        // to use this).
+        let _length_do_not_remove_me_see_above: Vec<()> = Decode::decode(input)?;
+
+        let version = input.read_byte()?;
+
+        let is_signed = version & 0b1000_0000 != 0;
+        let version = version & 0b0111_1111;
+        if version != V4 {
+            return Err("Invalid transaction version".into());
+        }
+
+        Ok(UncheckedExtrinsicV4 {
+            signature: if is_signed { Some(Decode::decode(input)?) } else { None },
+            function: Decode::decode(input)?,
         })
     }
 }
@@ -167,4 +199,24 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
     });
 
     v
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::extrinsic::xt_primitives::{GenericAddress, GenericExtra};
+    use sp_runtime::MultiSignature;
+
+    #[test]
+    fn encode_decode_roundtrip_works() {
+        let xt = UncheckedExtrinsicV4::new_signed(
+            vec![1, 1, 1],
+            GenericAddress::default(),
+            MultiSignature::default(),
+            GenericExtra::default()
+        );
+
+        let xt_enc = xt.encode();
+        assert_eq!(xt, Decode::decode(&mut xt_enc.as_slice()).unwrap())
+    }
 }
