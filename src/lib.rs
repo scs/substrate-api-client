@@ -259,7 +259,7 @@ where
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
-    pub fn get_storage_value<V: Decode + Clone>(
+    pub fn get_storage_value<V: Decode>(
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
@@ -316,7 +316,7 @@ where
         self.get_storage_by_key_hash(storagekey.0)
     }
 
-    pub fn get_storage_by_key_hash<V: Decode + Clone>(&self, hash: Vec<u8>) -> Option<V> {
+    pub fn get_storage_by_key_hash<V: Decode>(&self, hash: Vec<u8>) -> Option<V> {
         let mut keyhash_str = hex::encode(hash);
         keyhash_str.insert_str(0, "0x");
         let jsonreq = json_req::state_get_storage(&keyhash_str);
