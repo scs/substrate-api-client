@@ -29,7 +29,6 @@ struct TransferEventArgs {
     from: AccountId,
     to: AccountId,
     value: u128,
-    fee: u128,
 }
 
 fn main() {
@@ -50,7 +49,6 @@ fn main() {
     println!("Transactor: {:?}", args.from);
     println!("Destination: {:?}", args.to);
     println!("Value: {:?}", args.value);
-    println!("Fee: {:?}", args.fee);
 }
 
 pub fn get_node_url_from_cli() -> String {
