@@ -77,6 +77,8 @@ use sp_runtime::{AccountId32 as AccountId, MultiSignature};
 pub use sp_core::H256 as Hash;
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;
+/// The timestamp moment type used in this runtime.
+pub type Moment = u64;
 /// Index of a transaction.
 //fixme: make generic
 pub type Index = u32;
