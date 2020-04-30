@@ -25,6 +25,8 @@ use sp_core::sr25519;
 
 use substrate_api_client::utils::hexstr_to_hash;
 use substrate_api_client::Api;
+use node_template_runtime::opaque::{Header};
+use node_template_runtime::Block;
 
 fn main() {
     env_logger::init();
@@ -39,19 +41,15 @@ fn main() {
 
     println!("Finalized Head:\n {} \n", head);
 
-    println!(
-        "Finalized header:\n {} \n",
-        api.get_header(Some(head.clone())).unwrap()
-    );
+    let h: Header = api.get_header(Some(head.clone())).unwrap();
+    println!("Finalized header:\n {:?} \n", h);
 
-    println!(
-        "Finalized block:\n {} \n",
-        api.get_block(Some(head)).unwrap()
-    );
+    let b: Block = api.get_block(Some(head)).unwrap();
+    println!("Finalized block:\n {:?} \n",b);
 
-    println!("Latest Header: \n {} \n", api.get_header(None).unwrap());
+    println!("Latest Header: \n {:?} \n", api.get_header::<Header>(None).unwrap());
 
-    println!("Latest block: \n {} \n", api.get_block(None).unwrap());
+    println!("Latest block: \n {:?} \n", api.get_block::<Block>(None).unwrap());
 }
 
 pub fn get_node_url_from_cli() -> String {

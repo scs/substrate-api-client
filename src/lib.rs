@@ -85,6 +85,14 @@ pub type Index = u32;
 
 #[cfg(feature = "std")]
 pub use rpc::XtStatus;
+#[cfg(feature = "std")]
+use sp_runtime::{
+    traits::{Block, Header},
+    DeserializeOwned,
+};
+
+#[cfg(feature = "std")]
+use serde_json::Value;
 
 //fixme: make generic
 pub type Balance = u128;
@@ -226,18 +234,25 @@ where
         )
     }
 
-    pub fn get_header(&self, hash: Option<Hash>) -> WsResult<String> {
+    pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
+        where H: Header + DeserializeOwned
+    {
         Self::_get_request(
             self.url.clone(),
-            json_req::chain_get_header(hash).to_string(),
-        )
+            json_req::chain_get_header(hash).to_string())
+            .map(|h| serde_json::from_str(&h).unwrap())
+            .ok()
     }
 
-    pub fn get_block(&self, hash: Option<Hash>) -> WsResult<String> {
+    pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
+        where B: Block + DeserializeOwned
+    {
         Self::_get_request(
             self.url.clone(),
-            json_req::chain_get_block(hash).to_string(),
-        )
+            json_req::chain_get_block(hash).to_string())
+            .map(|s| serde_json::from_str(&s).unwrap())
+            .map(|b: Value| serde_json::from_value(b["block"].clone()).unwrap())
+            .ok()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
