@@ -23,9 +23,9 @@ use clap::App;
 
 use sp_core::sr25519;
 
-use substrate_api_client::Api;
-use node_template_runtime::opaque::{Header};
+use node_template_runtime::opaque::Header;
 use node_template_runtime::Block;
+use substrate_api_client::Api;
 
 fn main() {
     env_logger::init();
@@ -33,9 +33,7 @@ fn main() {
 
     let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
-    let head = api
-        .get_finalized_head()
-        .unwrap();
+    let head = api.get_finalized_head().unwrap();
 
     println!("Finalized Head:\n {} \n", head);
 
@@ -43,11 +41,17 @@ fn main() {
     println!("Finalized header:\n {:?} \n", h);
 
     let b: Block = api.get_block(Some(head)).unwrap();
-    println!("Finalized block:\n {:?} \n",b);
+    println!("Finalized block:\n {:?} \n", b);
 
-    println!("Latest Header: \n {:?} \n", api.get_header::<Header>(None).unwrap());
+    println!(
+        "Latest Header: \n {:?} \n",
+        api.get_header::<Header>(None).unwrap()
+    );
 
-    println!("Latest block: \n {:?} \n", api.get_block::<Block>(None).unwrap());
+    println!(
+        "Latest block: \n {:?} \n",
+        api.get_block::<Block>(None).unwrap()
+    );
 }
 
 pub fn get_node_url_from_cli() -> String {
