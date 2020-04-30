@@ -227,11 +227,11 @@ where
         }
     }
 
-    pub fn get_finalized_head(&self) -> WsResult<String> {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_finalized_head().to_string(),
-        )
+    pub fn get_finalized_head(&self) -> Option<Hash> {
+        Self::_get_request(self.url.clone(),
+            json_req::chain_get_finalized_head().to_string())
+            .map(|h_str| hexstr_to_hash(h_str).unwrap())
+            .ok()
     }
 
     pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
