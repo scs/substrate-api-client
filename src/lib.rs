@@ -360,13 +360,25 @@ where
                 info!("finalized: {}", res);
                 Ok(Some(hexstr_to_hash(res).unwrap()))
             }
+            XtStatus::InBlock => {
+                rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
+                let res = result_out.recv().unwrap();
+                info!("inBlock: {}", res);
+                Ok(Some(hexstr_to_hash(res).unwrap()))
+            }
+            XtStatus::Broadcast => {
+                rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
+                let res = result_out.recv().unwrap();
+                info!("broadcast: {}", res);
+                Ok(None)
+            }
             XtStatus::Ready => {
                 rpc::send_extrinsic(self.url.clone(), jsonreq, result_in);
                 let res = result_out.recv().unwrap();
                 info!("ready: {}", res);
                 Ok(None)
             }
-            _ => panic!("can only wait for finalized or ready extrinsic status"),
+            _ => panic!("can only wait for finalized, in block, broadcast and ready extrinsic status"),
         }
     }
 
