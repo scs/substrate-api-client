@@ -109,8 +109,12 @@ where
     #[cfg(feature = "std")]
     pub fn hex_encode(&self) -> String {
         let mut hex_str = hex::encode(self.encode());
-        hex_str.insert_str(0, "0x");
-        hex_str
+        if hex_str.len() % 2 == 0 {
+            hex_str.insert_str(0, "0x");
+            hex_str
+        } else {
+            "".to_string()
+        }
     }
 }
 
