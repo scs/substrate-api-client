@@ -128,7 +128,7 @@ fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) {
         result.clone(),
         value.clone()
     );
-    let val = value.unwrap();
+    let val = value.unwrap_or_else(|| "".to_string());
     result.send(val).unwrap();
     out.close(CloseCode::Normal).unwrap();
 }
