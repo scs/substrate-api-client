@@ -22,6 +22,8 @@ use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 #[derive(Debug, PartialEq)]
 pub enum XtStatus {
     Finalized,
+    InBlock,
+    Broadcast,
     Ready,
     Future,
     Error,
@@ -85,6 +87,41 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
     Ok(())
 }
 
+pub fn on_extrinsic_msg_until_in_block(
+    msg: Message,
+    out: Sender,
+    result: ThreadOut<String>,
+) -> Result<()> {
+    let retstr = msg.as_text().unwrap();
+    debug!("got msg {}", retstr);
+    match parse_status(retstr) {
+        (XtStatus::Finalized, val) => end_process(out, result, val),
+        (XtStatus::InBlock, val) => end_process(out, result, val),
+        (XtStatus::Future, _) => end_process(out, result, None),
+        (XtStatus::Error, e) => end_process(out, result, e),
+        _ => (),
+    };
+    Ok(())
+}
+
+
+pub fn on_extrinsic_msg_until_broadcast(
+    msg: Message,
+    out: Sender,
+    result: ThreadOut<String>,
+) -> Result<()> {
+    let retstr = msg.as_text().unwrap();
+    debug!("got msg {}", retstr);
+    match parse_status(retstr) {
+        (XtStatus::Finalized, val) => end_process(out, result, val),
+        (XtStatus::Broadcast, _) => end_process(out, result, None),
+        (XtStatus::Future, _) => end_process(out, result, None),
+        (XtStatus::Error, e) => end_process(out, result, e),
+        _ => (),
+    };
+    Ok(())
+}
+
 pub fn on_extrinsic_msg_until_finalized(
     msg: Message,
     out: Sender,
@@ -114,6 +151,8 @@ pub fn on_extrinsic_msg_until_ready(
     match parse_status(retstr) {
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Ready, _) => end_process(out, result, None),
+        (XtStatus::InBlock, _) => end_process(out, result, None),
+        (XtStatus::Broadcast, _) => end_process(out, result, None),
         (XtStatus::Future, _) => end_process(out, result, None),
         (XtStatus::Error, e) => end_process(out, result, e),
         _ => (),
@@ -150,7 +189,16 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
                 if let Some(hash) = obj.get("finalized") {
                     info!("finalized: {:?}", hash);
                     (XtStatus::Finalized, Some(hash.to_string()))
-                } else {
+                }
+                else if let Some(hash) = obj.get("inBlock") {
+                    info!("inBlock: {:?}", hash);
+                    (XtStatus::InBlock, Some(hash.to_string()))
+                }
+                else if let Some(hash) = obj.get("broadcast") {
+                    info!("Broadcast: {:?}", array);
+                    (XtStatus::Broadcast, Some(array.to_string()))
+                }                    
+                else {
                     (XtStatus::Unknown, None)
                 }
             }
@@ -187,6 +235,29 @@ mod tests {
                 )
             )
         );
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"broadcast\":[\"QmfSF4VYWNqNf5KYHpDEdY8Rt1nPUgSkMweDkYzhSWirGY\",\"Qmchhx9SRFeNvqjUK4ZVQ9jH4zhARFkutf9KhbbAmZWBLx\",\"QmQJAqr98EF1X3YfjVKNwQUG9RryqX4Hv33RqGChbz3Ncg\"]},\"subscription\":232}}";
+        assert_eq!(parse_status(msg), (XtStatus::Broadcast, None));         assert_eq!(
+            parse_status(msg), (
+                XtStatus::Broadcast,
+                Some(
+                    "[\"QmfSF4VYWNqNf5KYHpDEdY8Rt1nPUgSkMweDkYzhSWirGY\",\"Qmchhx9SRFeNvqjUK4ZVQ9jH4zhARFkutf9KhbbAmZWBLx\",\"QmQJAqr98EF1X3YfjVKNwQUG9RryqX4Hv33RqGChbz3Ncg\"]"
+                        .to_string()
+                )
+            )
+        );
+
+        let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"inBlock\":\"0x3104d362365ff5ddb61845e1de441b56c6722e94c1aee362f8aa8ba75bd7a3aa\"},\"subscription\":232}}";
+        assert_eq!(
+            parse_status(msg), (
+                XtStatus::InBlock, 
+                Some(
+                    "\"0x3104d362365ff5ddb61845e1de441b56c6722e94c1aee362f8aa8ba75bd7a3aa\""
+                        .to_string()
+                )
+            )
+        );
+
 
         let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"future\",\"subscription\":2}}";
         assert_eq!(parse_status(msg), (XtStatus::Future, None));
