@@ -123,12 +123,12 @@ pub fn on_extrinsic_msg_until_ready(
 
 fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) {
     // return result to calling thread
-    println!(
+    debug!(
         "Thread end result :{:?} value:{:?}",
         result.clone(),
         value.clone()
     );
-    let val = value.unwrap_or_else(|| "nix".to_string());
+    let val = value.unwrap();
     result.send(val).unwrap();
     out.close(CloseCode::Normal).unwrap();
 }
