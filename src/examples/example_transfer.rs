@@ -45,11 +45,11 @@ fn main() {
 
     println!("[+] Composed extrinsic: {:?}\n", xt);
 
-    // send and watch extrinsic until finalized
+    // send and watch extrinsic until InBlock
     let tx_hash = api
-        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
+    println!("[+] Transaction got inBlock. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
     let bob = api.get_account_data(&to).unwrap();
