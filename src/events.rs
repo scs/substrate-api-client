@@ -64,6 +64,7 @@ pub enum EventsError {
     TypeSizeUnavailable(String),
 }
 
+#[derive(Clone)]
 pub struct EventsDecoder {
     metadata: Metadata,
     type_sizes: HashMap<String, usize>,
