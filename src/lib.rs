@@ -75,6 +75,7 @@ use events::{EventsDecoder, RawEvent, RuntimeEvent};
 use sp_runtime::{AccountId32 as AccountId, MultiSignature};
 
 pub use sp_core::H256 as Hash;
+
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;
 /// The timestamp moment type used in this runtime.
@@ -85,6 +86,14 @@ pub type Index = u32;
 
 #[cfg(feature = "std")]
 pub use rpc::XtStatus;
+#[cfg(feature = "std")]
+use sp_runtime::{
+    traits::{Block, Header},
+    DeserializeOwned,
+};
+
+#[cfg(feature = "std")]
+use serde_json::Value;
 
 //fixme: make generic
 pub type Balance = u128;
@@ -219,32 +228,45 @@ where
         }
     }
 
-    pub fn get_finalized_head(&self) -> WsResult<String> {
+    pub fn get_finalized_head(&self) -> Option<Hash> {
         Self::_get_request(
             self.url.clone(),
             json_req::chain_get_finalized_head().to_string(),
         )
+        .map(|h_str| hexstr_to_hash(h_str).unwrap())
+        .ok()
     }
 
-    pub fn get_header(&self, hash: Option<Hash>) -> WsResult<String> {
+    pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
+    where
+        H: Header + DeserializeOwned,
+    {
         Self::_get_request(
             self.url.clone(),
             json_req::chain_get_header(hash).to_string(),
         )
+        .map(|h| serde_json::from_str(&h).unwrap())
+        .ok()
     }
 
-    pub fn get_block(&self, hash: Option<Hash>) -> WsResult<String> {
+    pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
+    where
+        B: Block + DeserializeOwned,
+    {
         Self::_get_request(
             self.url.clone(),
             json_req::chain_get_block(hash).to_string(),
         )
+        .map(|s| serde_json::from_str(&s).unwrap())
+        .map(|b: Value| serde_json::from_value(b["block"].clone()).unwrap())
+        .ok()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
-    pub fn get_storage_value<V: Decode + Clone>(
+    pub fn get_storage_value<V: Decode>(
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
@@ -301,7 +323,7 @@ where
         self.get_storage_by_key_hash(storagekey.0)
     }
 
-    pub fn get_storage_by_key_hash<V: Decode + Clone>(&self, hash: Vec<u8>) -> Option<V> {
+    pub fn get_storage_by_key_hash<V: Decode>(&self, hash: Vec<u8>) -> Option<V> {
         let mut keyhash_str = hex::encode(hash);
         keyhash_str.insert_str(0, "0x");
         let jsonreq = json_req::state_get_storage(&keyhash_str);

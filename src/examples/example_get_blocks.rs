@@ -23,7 +23,8 @@ use clap::App;
 
 use sp_core::sr25519;
 
-use substrate_api_client::utils::hexstr_to_hash;
+use node_template_runtime::opaque::Header;
+use node_template_runtime::Block;
 use substrate_api_client::Api;
 
 fn main() {
@@ -32,26 +33,25 @@ fn main() {
 
     let api = Api::<sr25519::Pair>::new(format!("ws://{}", url));
 
-    let head = api
-        .get_finalized_head()
-        .map(|h_str| hexstr_to_hash(h_str).unwrap())
-        .unwrap();
+    let head = api.get_finalized_head().unwrap();
 
     println!("Finalized Head:\n {} \n", head);
 
+    let h: Header = api.get_header(Some(head.clone())).unwrap();
+    println!("Finalized header:\n {:?} \n", h);
+
+    let b: Block = api.get_block(Some(head)).unwrap();
+    println!("Finalized block:\n {:?} \n", b);
+
     println!(
-        "Finalized header:\n {} \n",
-        api.get_header(Some(head.clone())).unwrap()
+        "Latest Header: \n {:?} \n",
+        api.get_header::<Header>(None).unwrap()
     );
 
     println!(
-        "Finalized block:\n {} \n",
-        api.get_block(Some(head)).unwrap()
+        "Latest block: \n {:?} \n",
+        api.get_block::<Block>(None).unwrap()
     );
-
-    println!("Latest Header: \n {} \n", api.get_header(None).unwrap());
-
-    println!("Latest block: \n {} \n", api.get_block(None).unwrap());
 }
 
 pub fn get_node_url_from_cli() -> String {
