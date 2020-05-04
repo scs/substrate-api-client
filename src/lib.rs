@@ -381,9 +381,10 @@ where
         &self,
         module: &str,
         variant: &str,
+        decoder: Option<EventsDecoder>,
         receiver: &Receiver<String>,
     ) -> Option<Result<E, CodecError>> {
-        self.wait_for_raw_event(module, variant, receiver)
+        self.wait_for_raw_event(module, variant, decoder, receiver)
             .map(|raw| E::decode(&mut &raw.data[..]))
     }
 
@@ -391,15 +392,18 @@ where
         &self,
         module: &str,
         variant: &str,
+        decoder: Option<EventsDecoder>,
         receiver: &Receiver<String>,
     ) -> Option<RawEvent> {
+        let event_decoder =
+            decoder.unwrap_or_else(|| EventsDecoder::try_from(self.metadata.clone()).unwrap());
+
         loop {
             let event_str = receiver.recv().unwrap();
 
             let _unhex = hexstr_to_vec(event_str).unwrap();
             let mut _er_enc = _unhex.as_slice();
 
-            let event_decoder = EventsDecoder::try_from(self.metadata.clone()).unwrap();
             let _events = event_decoder.decode_events(&mut _er_enc);
             info!("wait for raw event");
             match _events {

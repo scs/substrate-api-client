@@ -42,7 +42,7 @@ fn main() {
 
     api.subscribe_events(events_in.clone());
     let args: TransferEventArgs = api
-        .wait_for_event("Balances", "Transfer", &events_out)
+        .wait_for_event("Balances", "Transfer", None, &events_out)
         .unwrap()
         .unwrap();
 
