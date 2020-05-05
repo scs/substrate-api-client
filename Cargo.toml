@@ -11,7 +11,7 @@ hex             = { version = "0.4", default-features = false }
 log             = { version = "0.4", optional = true }
 serde           = { version = "1.0", optional = true, features = ["derive"] }
 serde_json      = { version = "1.0", optional = true }
-thiserror 		= { version = "1.0", optional =true }
+thiserror       = { version = "1.0", optional =true }
 primitive-types = { version = "0.6.1", optional = true, features = ["codec"] }
 
 [dependencies.sp-core]
@@ -82,21 +82,21 @@ package = "pallet-contracts"
 version = '2.0.0-alpha.7'
 package = "sp-keyring"
 
-[dev-dependencies.clap] 
+[dev-dependencies.clap]
 version = "2.33"
-features = ["yaml"] 
+features = ["yaml"]
 
 [features]
 default = ["std"]
 std = [
 	"sp-core/std",
 	"codec/std",
-	"runtime_io/std",	
+	"runtime_io/std",
 	"metadata/std",
 	"sp-version/std",
 	"balances/std",
 	"system/std",
-    "sp-runtime/std",
+        "sp-runtime/std",
 	"support/std",
 	"sp-std/std",
 	"serde/std",
@@ -151,7 +151,7 @@ path = "src/examples/example_benchmark_bulk_xt.rs"
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
 
-# DEPTRECATED. might work but too much work to maintain, sorry
+# DEPRECATED. might work but too much work to maintain, sorry
 
 #[[example]]
 #name = "example_contract"

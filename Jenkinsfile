@@ -10,9 +10,16 @@ pipeline {
   }
   options {
     timeout(time: 2, unit: 'HOURS')
-    buildDiscarder(logRotator(numToKeepStr: '14'))
+    buildDiscarder(logRotator(numToKeepStr: '3'))
   }
   stages {
+    stage('Start substrate-test-nodes') {
+      steps {
+        copyArtifacts fingerprintArtifacts: true, projectName: 'substraTEE/substrate-api-client-test-node/master', selector: lastCompleted()
+        sh 'target/release/node-template purge-chain --dev -y'
+        sh 'target/release/node-template --dev &'
+      }
+    }
     stage('Build') {
       steps {
         sh 'cargo build --message-format json > ${WORKSPACE}/build_debug.log'
@@ -33,14 +40,6 @@ pipeline {
         sh 'cargo build --release --examples --message-format json > ${WORKSPACE}/build_examples_release.log'
       }
     }
-    stage('Start substrate-test-nodes') {
-      steps {
-        copyArtifacts fingerprintArtifacts: true, projectName: 'substraTEE/substrate-api-client-test-node/master', selector: lastCompleted()
-        sh 'target/release/substrate-test-node purge-chain --dev -y'
-        sh 'target/release/substrate-test-node --dev &'
-        sh 'sleep 10'
-      }
-    }
     stage('Unit tests') {
       options {
         timeout(time: 5, unit: 'MINUTES')
@@ -56,7 +55,7 @@ pipeline {
         timeout(time: 1, unit: 'MINUTES')
       }
       steps {
-        // run only working examples
+        // run examples
         sh 'target/release/examples/example_generic_extrinsic'
         sh 'target/release/examples/example_print_metadata'
         sh 'target/release/examples/example_transfer'
