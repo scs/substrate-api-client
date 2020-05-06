@@ -67,8 +67,8 @@ package = "sp-std"
 default-features = false
 
 [dev-dependencies.node_template_runtime]
-git = "https://github.com/scs/substrate-node-template"
-tag = 'v2.0.0-alpha.6-api-client'
+git = "https://github.com/scs/substrate-api-client-test-node"
+tag = 'v2.0.0-alpha.6'
 package = "node-template-runtime"
 
 [dev-dependencies]
