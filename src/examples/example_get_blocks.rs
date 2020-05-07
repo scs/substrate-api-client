@@ -24,7 +24,7 @@ use clap::App;
 use sp_core::sr25519;
 
 use node_template_runtime::opaque::Header;
-use node_template_runtime::Block;
+use node_template_runtime::{Block, SignedBlock};
 use substrate_api_client::Api;
 
 fn main() {
@@ -40,8 +40,8 @@ fn main() {
     let h: Header = api.get_header(Some(head.clone())).unwrap();
     println!("Finalized header:\n {:?} \n", h);
 
-    let b: Block = api.get_block(Some(head)).unwrap();
-    println!("Finalized block:\n {:?} \n", b);
+    let b: SignedBlock = api.get_signed_block(Some(head)).unwrap();
+    println!("Finalized signed block:\n {:?} \n", b);
 
     println!(
         "Latest Header: \n {:?} \n",

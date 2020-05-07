@@ -72,7 +72,7 @@ pub mod rpc;
 #[cfg(feature = "std")]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
-use sp_runtime::{AccountId32 as AccountId, MultiSignature};
+use sp_runtime::{AccountId32 as AccountId, MultiSignature, generic::SignedBlock};
 
 pub use sp_core::H256 as Hash;
 
@@ -91,9 +91,6 @@ use sp_runtime::{
     traits::{Block, Header},
     DeserializeOwned,
 };
-
-#[cfg(feature = "std")]
-use serde_json::Value;
 
 //fixme: make generic
 pub type Balance = u128;
@@ -253,13 +250,24 @@ where
     where
         B: Block + DeserializeOwned,
     {
+        Self::get_signed_block(self, hash)
+            .map(|signed_block| signed_block.block)
+    }
+
+    /// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
+    /// The interval at which finality proofs are provided is set via the
+    /// the `GrandpaConfig.justification_period` in a node's service.rs.
+    /// The Justification may be none.
+    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> Option<SignedBlock<B>>
+        where
+            B: Block + DeserializeOwned,
+    {
         Self::_get_request(
             self.url.clone(),
             json_req::chain_get_block(hash).to_string(),
         )
-        .map(|s| serde_json::from_str(&s).unwrap())
-        .map(|b: Value| serde_json::from_value(b["block"].clone()).unwrap())
-        .ok()
+            .map(|b| serde_json::from_str(&b).unwrap())
+            .ok()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
@@ -324,6 +332,11 @@ where
     }
 
     pub fn get_storage_by_key_hash<V: Decode>(&self, hash: Vec<u8>) -> Option<V> {
+        self.get_opaque_storage_by_key_hash(hash)
+            .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
+    }
+
+    pub fn get_opaque_storage_by_key_hash(&self, hash: Vec<u8>) -> Option<Vec<u8>> {
         let mut keyhash_str = hex::encode(hash);
         keyhash_str.insert_str(0, "0x");
         let jsonreq = json_req::state_get_storage(&keyhash_str);
@@ -336,7 +349,7 @@ where
                 .to_string();
             match hexstr.as_str() {
                 "null" => None,
-                _ => Some(Decode::decode(&mut &hex::decode(&hexstr).unwrap()[..]).unwrap()),
+                _ => Some(hex::decode(&hexstr).unwrap()),
             }
         } else {
             None
