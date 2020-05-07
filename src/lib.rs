@@ -332,6 +332,11 @@ where
     }
 
     pub fn get_storage_by_key_hash<V: Decode>(&self, hash: Vec<u8>) -> Option<V> {
+        self.get_opaque_storage_by_key_hash(hash)
+            .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
+    }
+
+    pub fn get_opaque_storage_by_key_hash(&self, hash: Vec<u8>) -> Option<Vec<u8>> {
         let mut keyhash_str = hex::encode(hash);
         keyhash_str.insert_str(0, "0x");
         let jsonreq = json_req::state_get_storage(&keyhash_str);
@@ -344,7 +349,7 @@ where
                 .to_string();
             match hexstr.as_str() {
                 "null" => None,
-                _ => Some(Decode::decode(&mut &hex::decode(&hexstr).unwrap()[..]).unwrap()),
+                _ => Some(hex::decode(&hexstr).unwrap()),
             }
         } else {
             None
