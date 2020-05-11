@@ -21,9 +21,7 @@ use codec::Compact;
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 use substrate_api_client::{
-    compose_call, compose_extrinsic,
-    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
-    Api, XtStatus,
+    compose_call, compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {
@@ -32,27 +30,29 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let sudoer = AccountKeyring::Alice.pair();
-    let api = Api::new(format!("ws://{}", url)).set_signer(sudoer.clone());
+    let api = Api::new(format!("ws://{}", url)).set_signer(sudoer);
 
     // set the recipient of newly issued funds
     let to = AccountKeyring::Bob.to_account_id();
 
     // this call can only be called by sudo
+    #[allow(clippy::redundant_clone)]
     let call = compose_call!(
         api.metadata.clone(),
         "Balances",
         "set_balance",
-        GenericAddress::from(to.clone()),
+        to,
         Compact(42 as u128),
         Compact(42 as u128)
     );
+    #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
 
     // send and watch extrinsic until finalized
     let tx_hash = api
-        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+    println!("[+] Transaction got included. Hash: {:?}", tx_hash);
 }
 
 pub fn get_node_url_from_cli() -> String {

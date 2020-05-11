@@ -47,6 +47,7 @@ fn main() {
     let first_nonce = nonce;
     while nonce < first_nonce + 500 {
         // compose the extrinsic with all the element
+        #[allow(clippy::redundant_clone)]
         let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
             Call::Balances(BalancesCall::transfer(to.clone(), 1_000_000)),

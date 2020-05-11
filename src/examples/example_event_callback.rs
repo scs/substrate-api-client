@@ -38,7 +38,7 @@ fn main() {
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
-    api.subscribe_events(events_in.clone());
+    api.subscribe_events(events_in);
 
     loop {
         let event_str = events_out.recv().unwrap();

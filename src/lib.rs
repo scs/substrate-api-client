@@ -72,7 +72,7 @@ pub mod rpc;
 #[cfg(feature = "std")]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
-use sp_runtime::{AccountId32 as AccountId, MultiSignature, generic::SignedBlock};
+use sp_runtime::{generic::SignedBlock, AccountId32 as AccountId, MultiSignature};
 
 pub use sp_core::H256 as Hash;
 
@@ -250,8 +250,7 @@ where
     where
         B: Block + DeserializeOwned,
     {
-        Self::get_signed_block(self, hash)
-            .map(|signed_block| signed_block.block)
+        Self::get_signed_block(self, hash).map(|signed_block| signed_block.block)
     }
 
     /// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
@@ -259,15 +258,15 @@ where
     /// the `GrandpaConfig.justification_period` in a node's service.rs.
     /// The Justification may be none.
     pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> Option<SignedBlock<B>>
-        where
-            B: Block + DeserializeOwned,
+    where
+        B: Block + DeserializeOwned,
     {
         Self::_get_request(
             self.url.clone(),
             json_req::chain_get_block(hash).to_string(),
         )
-            .map(|b| serde_json::from_str(&b).unwrap())
-            .ok()
+        .map(|b| serde_json::from_str(&b).unwrap())
+        .ok()
     }
 
     pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
@@ -391,7 +390,9 @@ where
                 info!("ready: {}", res);
                 Ok(None)
             }
-            _ => panic!("can only wait for finalized, in block, broadcast and ready extrinsic status"),
+            _ => panic!(
+                "can only wait for finalized, in block, broadcast and ready extrinsic status"
+            ),
         }
     }
 

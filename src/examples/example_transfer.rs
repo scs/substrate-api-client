@@ -18,7 +18,7 @@ use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
-use substrate_api_client::{extrinsic::xt_primitives::*, Api, XtStatus};
+use substrate_api_client::{Api, XtStatus};
 
 fn main() {
     env_logger::init();
@@ -32,13 +32,13 @@ fn main() {
 
     match api.get_account_data(&to) {
         Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
-        None => println!("[+] Bob's Free Balance is is {}\n", 0),
+        None => println!("[+] Bob's Free Balance is is 0\n"),
     }
     // generate extrinsic
-    let xt = api.balance_transfer(GenericAddress::from(to.clone()), 1000);
+    let xt = api.balance_transfer(to.clone(), 1000);
 
     println!(
-        "Sending an extrinsic from Alice (Key = {:?}),\n\nto Bob (Key = {:?})\n",
+        "Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
         from.public(),
         to
     );
@@ -47,9 +47,9 @@ fn main() {
 
     // send and watch extrinsic until finalized
     let tx_hash = api
-        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
-    println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
+    println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
     let bob = api.get_account_data(&to).unwrap();

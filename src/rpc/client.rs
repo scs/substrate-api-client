@@ -159,11 +159,7 @@ pub fn on_extrinsic_msg_until_ready(
 
 fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) {
     // return result to calling thread
-    debug!(
-        "Thread end result :{:?} value:{:?}",
-        result.clone(),
-        value.clone()
-    );
+    debug!("Thread end result :{:?} value:{:?}", result, value);
     let val = value.unwrap_or_else(|| "".to_string());
     result.send(val).unwrap();
     out.close(CloseCode::Normal).unwrap();
@@ -177,7 +173,7 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
             error!(
                 "extrinsic error code {}: {}",
                 obj.get("code").unwrap().as_u64().unwrap(),
-                error_message.clone()
+                error_message
             );
             (XtStatus::Error, Some(error_message))
         }
@@ -258,15 +254,35 @@ mod tests {
         assert_eq!(parse_status(msg), (XtStatus::Future, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
-        assert_eq!(parse_status(msg), (XtStatus::Error, Some("Parse error".into())));
+        assert_eq!(
+            parse_status(msg),
+            (XtStatus::Error, Some("Parse error".into()))
+        );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":0},\"id\":\"4\"}";
-        assert_eq!(parse_status(msg), (XtStatus::Error, Some("Invalid Transaction".into())));
+        assert_eq!(
+            parse_status(msg),
+            (XtStatus::Error, Some("Invalid Transaction".into()))
+        );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
-        assert_eq!(parse_status(msg), (XtStatus::Error, Some("Extrinsic has invalid format.".into())));
+        assert_eq!(
+            parse_status(msg),
+            (
+                XtStatus::Error,
+                Some("Extrinsic has invalid format.".into())
+            )
+        );
 
         let msg = r#"{"jsonrpc":"2.0","error":{"code":1002,"message":"Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))","data":"RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"},"id":"3"}"#;
-        assert_eq!(parse_status(msg), (XtStatus::Error, Some("Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))".into())));
+        assert_eq!(
+            parse_status(msg),
+            (
+                XtStatus::Error,
+                Some(
+                    "Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))".into()
+                )
+            )
+        );
     }
 }
