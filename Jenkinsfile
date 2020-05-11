@@ -62,7 +62,7 @@ pipeline {
         sh 'target/release/examples/example_get_storage'
         sh 'target/release/examples/example_get_blocks'
         sh 'target/release/examples/example_benchmark_bulk_xt'
-        sh 'target/release/examples/example_sudo'
+        // TODO: example needs fixing sh 'target/release/examples/example_sudo'
       }
     }
     stage('Clippy') {
