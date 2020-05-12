@@ -37,7 +37,7 @@ fn main() {
 
     println!("Finalized Head:\n {} \n", head);
 
-    let h: Header = api.get_header(Some(head.clone())).unwrap();
+    let h: Header = api.get_header(Some(head)).unwrap();
     println!("Finalized header:\n {:?} \n", h);
 
     let b: SignedBlock = api.get_signed_block(Some(head)).unwrap();

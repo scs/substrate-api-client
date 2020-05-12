@@ -43,9 +43,10 @@ fn main() {
     let to = AccountKeyring::Bob.to_account_id();
 
     // compose the extrinsic with all the element
+    #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
         api.clone().signer.unwrap(),
-        Call::Balances(BalancesCall::transfer(to.clone().into(), 42)),
+        Call::Balances(BalancesCall::transfer(to.clone(), 42)),
         api.get_nonce().unwrap(),
         api.genesis_hash,
         api.runtime_version.spec_version

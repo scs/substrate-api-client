@@ -37,13 +37,9 @@ fn main() {
 
     // call Balances::transfer
     // the names are given as strings
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
-        api.clone(),
-        "Balances",
-        "transfer",
-        GenericAddress::from(to.clone()),
-        Compact(42 as u128)
-    );
+    #[allow(clippy::redundant_clone)]
+    let xt: UncheckedExtrinsicV4<_> =
+        compose_extrinsic!(api.clone(), "Balances", "transfer", to, Compact(42 as u128));
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 

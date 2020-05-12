@@ -40,7 +40,7 @@ fn main() {
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
 
-    api.subscribe_events(events_in.clone());
+    api.subscribe_events(events_in);
     let args: TransferEventArgs = api
         .wait_for_event("Balances", "Transfer", None, &events_out)
         .unwrap()

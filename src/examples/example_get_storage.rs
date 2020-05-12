@@ -32,7 +32,7 @@ fn main() {
     // get StorageMap
     let result: Hash = api
         .get_storage_map("System", "BlockHash", 1u32)
-        .or(Some(Hash::default()))
+        .or_else(|| Some(Hash::default()))
         .unwrap();
     println!("[+] block hash for blocknumber 42 is {:?}", result);
 

@@ -43,7 +43,8 @@ fn main() {
     // print full substrate metadata json formatted
     println!(
         "{}",
-        Metadata::pretty_format(&api.get_metadata()).unwrap_or("pretty format failed".to_string())
+        Metadata::pretty_format(&api.get_metadata())
+            .unwrap_or_else(|| "pretty format failed".to_string())
     )
 }
 
