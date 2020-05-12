@@ -400,7 +400,13 @@ where
         debug!("subscribing to events");
         let key = storage_value_key_hex("System", "Events");
         let jsonreq = json_req::state_subscribe_storage(&key).to_string();
-        rpc::start_event_subscriber(self.url.clone(), jsonreq, sender);
+        rpc::start_subcriber(self.url.clone(), jsonreq, sender);
+    }
+
+    pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) {
+        debug!("subscribing to finalized heads");
+        let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
+        rpc::start_subcriber(self.url.clone(), jsonreq, sender)
     }
 
     pub fn wait_for_event<E: Decode>(

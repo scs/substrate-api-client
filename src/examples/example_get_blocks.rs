@@ -23,9 +23,9 @@ use clap::App;
 
 use sp_core::sr25519;
 
-use node_template_runtime::opaque::Header;
-use node_template_runtime::{Block, SignedBlock};
+use node_template_runtime::{Block, SignedBlock, Header};
 use substrate_api_client::Api;
+use std::sync::mpsc::channel;
 
 fn main() {
     env_logger::init();
@@ -52,6 +52,17 @@ fn main() {
         "Latest block: \n {:?} \n",
         api.get_block::<Block>(None).unwrap()
     );
+
+    println!("Subscribing to finalized heads");
+    let (sender, receiver) = channel();
+    api.subscribe_finalized_heads(sender);
+
+    loop {
+        let head: Header = receiver.recv()
+            .map(|header| serde_json::from_str(&header).unwrap())
+            .unwrap();
+        println!("Got new Block {:?}", head);
+    }
 }
 
 pub fn get_node_url_from_cli() -> String {

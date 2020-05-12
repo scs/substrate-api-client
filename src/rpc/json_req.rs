@@ -64,6 +64,15 @@ pub fn chain_get_finalized_head() -> Value {
     })
 }
 
+pub fn chain_subscribe_finalized_heads() -> Value {
+    json!({
+        "method": "chain_subscribeFinalizedHeads",
+        "params": null,
+        "jsonrpc": "2.0",
+        "id":"1"
+    })
+}
+
 pub fn state_get_metadata() -> Value {
     state_get_metadata_with_id(1)
 }
