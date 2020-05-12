@@ -57,7 +57,7 @@ fn main() {
     let (sender, receiver) = channel();
     api.subscribe_finalized_heads(sender);
 
-    loop {
+    for _ in 0..5 {
         let head: Header = receiver.recv()
             .map(|header| serde_json::from_str(&header).unwrap())
             .unwrap();
