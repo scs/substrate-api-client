@@ -79,7 +79,7 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
                         Some(change_set) => result.send(change_set.to_owned()).unwrap(),
                         None => println!("No events happened"),
                     };
-                },
+                }
                 Some("chain_finalizedHead") => {
                     serde_json::to_string(&value["params"]["result"])
                         .map(|head| result.send(head).unwrap())

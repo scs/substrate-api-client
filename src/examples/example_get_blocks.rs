@@ -23,9 +23,9 @@ use clap::App;
 
 use sp_core::sr25519;
 
-use node_template_runtime::{Block, SignedBlock, Header};
-use substrate_api_client::Api;
+use node_template_runtime::{Block, Header, SignedBlock};
 use std::sync::mpsc::channel;
+use substrate_api_client::Api;
 
 fn main() {
     env_logger::init();
@@ -58,7 +58,8 @@ fn main() {
     api.subscribe_finalized_heads(sender);
 
     for _ in 0..5 {
-        let head: Header = receiver.recv()
+        let head: Header = receiver
+            .recv()
             .map(|header| serde_json::from_str(&header).unwrap())
             .unwrap();
         println!("Got new Block {:?}", head);
