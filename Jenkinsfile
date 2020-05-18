@@ -15,7 +15,7 @@ pipeline {
   stages {
     stage('Start substrate-test-nodes') {
       steps {
-        copyArtifacts fingerprintArtifacts: true, projectName: 'substraTEE/substrate-api-client-test-node/master', selector: lastCompleted()
+        copyArtifacts fingerprintArtifacts: true, projectName: 'substraTEE/substrate-api-client-test-node_nightly', selector: lastCompleted()
         sh 'target/release/node-template purge-chain --dev -y'
         sh 'target/release/node-template --dev &'
       }
