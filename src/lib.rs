@@ -105,7 +105,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    url: String,
+    pub url: String,
     pub signer: Option<P>,
     pub genesis_hash: Hash,
     pub metadata: Metadata,
