@@ -21,21 +21,14 @@ extern crate alloc;
 use alloc::{string::String, string::ToString, vec::Vec};
 
 use hex::FromHexError;
+use sp_core::storage::StorageKey;
 use sp_core::twox_128;
 use sp_core::H256 as Hash;
 
-pub fn storage_value_key_vec(module: &str, storage_key_name: &str) -> Vec<u8> {
+pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
     let mut key = twox_128(module.as_bytes()).to_vec();
     key.extend(&twox_128(storage_key_name.as_bytes()));
-    key
-}
-
-pub fn storage_value_key_hex(module: &str, storage_key_name: &str) -> String {
-    let key = storage_value_key_vec(module, storage_key_name);
-
-    let mut keyhash_str = hex::encode(key);
-    keyhash_str.insert_str(0, "0x");
-    keyhash_str
+    StorageKey(key)
 }
 
 pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {

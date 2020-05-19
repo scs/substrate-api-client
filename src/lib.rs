@@ -64,6 +64,9 @@ pub mod events;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
+#[cfg(feature = "std")]
+use sp_core::storage::StorageKey;
+
 pub mod utils;
 
 #[cfg(feature = "std")]
@@ -214,7 +217,7 @@ where
             .key(address.clone());
         info!("storagekey {:?}", storagekey);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey)
     }
 
     pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
@@ -288,7 +291,7 @@ where
             .unwrap()
             .key();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey)
     }
 
     pub fn get_storage_map<K: Encode, V: Decode + Clone>(
@@ -307,7 +310,7 @@ where
             .unwrap()
             .key(map_key);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey)
     }
 
     pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
@@ -327,18 +330,16 @@ where
             .unwrap()
             .key(first, second);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey)
     }
 
-    pub fn get_storage_by_key_hash<V: Decode>(&self, hash: Vec<u8>) -> Option<V> {
-        self.get_opaque_storage_by_key_hash(hash)
+    pub fn get_storage_by_key_hash<V: Decode>(&self, key: StorageKey) -> Option<V> {
+        self.get_opaque_storage_by_key_hash(key)
             .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
     }
 
-    pub fn get_opaque_storage_by_key_hash(&self, hash: Vec<u8>) -> Option<Vec<u8>> {
-        let mut keyhash_str = hex::encode(hash);
-        keyhash_str.insert_str(0, "0x");
-        let jsonreq = json_req::state_get_storage(&keyhash_str);
+    pub fn get_opaque_storage_by_key_hash(&self, key: StorageKey) -> Option<Vec<u8>> {
+        let jsonreq = json_req::state_get_storage_key(key);
         if let Ok(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
             info!("storage hex = {}", hexstr);
             let hexstr = hexstr
@@ -398,8 +399,8 @@ where
 
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {
         debug!("subscribing to events");
-        let key = storage_value_key_hex("System", "Events");
-        let jsonreq = json_req::state_subscribe_storage(&key).to_string();
+        let key = storage_key("System", "Events");
+        let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
         rpc::start_subcriber(self.url.clone(), jsonreq, sender);
     }
 
