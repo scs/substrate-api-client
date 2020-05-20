@@ -1886,7 +1886,7 @@ dependencies = [
  "parking_lot 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-chain-spec 2.0.0-alpha.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-chain-spec 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-core 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-rpc 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-runtime 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2063,7 +2063,7 @@ dependencies = [
 
 [[package]]
 name = "sp-chain-spec"
-version = "2.0.0-alpha.8"
+version = "2.0.0-alpha.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3201,7 +3201,7 @@ dependencies = [
 "checksum sp-application-crypto 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "f2997e5072ef4fa6ac54658b0e79149095ececd89e3bd693f8fed90ad69862e8"
 "checksum sp-arithmetic 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "35ee0e06a6d46a3d6fb8706dfa2ca593b60a06c248fbd5173ab56070c209612e"
 "checksum sp-block-builder 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "e4b654cf89dd73ad85848b2c7e60812f231ba2785aeec9c4708a434323fecf9a"
-"checksum sp-chain-spec 2.0.0-alpha.8 (registry+https://github.com/rust-lang/crates.io-index)" = "b9af65a2d6c4c46b027132dd334a5fbe6996cc9b2c2a8371d991cabb42f72c75"
+"checksum sp-chain-spec 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "2997456fa5b605fec06c5f2267a0e7cb44708b210548b1a557ce89b07bc04211"
 "checksum sp-consensus-aura 0.8.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "3dc4bdd9859ad3917bf8c4a40ec422259b9b538d9e8ba545dfd6870cd6a88ba5"
 "checksum sp-core 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "a4d4e7309949c9ce65a0347b20bbc89cc09efee55b1918c3253392286dab0df9"
 "checksum sp-debug-derive 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "b2c4cb00ba7694df96793cf024418e6a75d5f224716460961b5c9dbfa621c0e8"
