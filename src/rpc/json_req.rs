@@ -17,7 +17,7 @@
 
 use crate::Hash;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{json, to_value, Value};
 use sp_core::storage::StorageKey;
 
 pub const REQUEST_TRANSFER: u32 = 3;
@@ -75,20 +75,28 @@ pub fn state_subscribe_storage_with_id(key: Vec<StorageKey>, id: u32) -> Value {
     json_req("state_subscribeStorage", vec![key], id)
 }
 
-pub fn state_get_storage(key: StorageKey) -> Value {
-    state_get_storage_with_id(key, 1)
+pub fn state_get_storage(key: StorageKey, at_block: Option<Hash>) -> Value {
+    json_req(
+        "state_getStorage",
+        vec![to_value(key).unwrap(), to_value(at_block).unwrap()],
+        1,
+    )
 }
 
-pub fn state_get_storage_key(key: StorageKey) -> Value {
-    json_req("state_getStorage", vec![key], 1)
+pub fn state_get_storage_with_id(key: StorageKey, at_block: Option<Hash>, id: u32) -> Value {
+    json_req(
+        "state_getStorage",
+        vec![to_value(key).unwrap(), to_value(at_block).unwrap()],
+        id,
+    )
 }
 
-pub fn state_get_storage_with_id(key: StorageKey, id: u32) -> Value {
-    json_req("state_getStorage", vec![key], id)
-}
-
-pub fn state_get_read_proof(keys: Vec<StorageKey>) -> Value {
-    json_req("state_getReadProof", vec![keys], 1)
+pub fn state_get_read_proof(keys: Vec<StorageKey>, at_block: Option<Hash>) -> Value {
+    json_req(
+        "state_getReadProof",
+        vec![to_value(keys).unwrap(), to_value(at_block).unwrap()],
+        1,
+    )
 }
 
 pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
