@@ -208,13 +208,8 @@ where
     pub fn get_account_info(&self, address: &AccountId) -> Option<AccountInfo> {
         let storagekey: sp_core::storage::StorageKey = self
             .metadata
-            .module("System")
-            .unwrap()
-            .storage("Account")
-            .unwrap()
-            .get_map::<AccountId, AccountInfo>()
-            .unwrap()
-            .key(address.clone());
+            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())
+            .unwrap();
         info!("storagekey {:?}", storagekey);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey)
@@ -281,15 +276,10 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
     ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self
+        let storagekey = self
             .metadata
-            .module(storage_prefix)
-            .unwrap()
-            .storage(storage_key_name)
-            .unwrap()
-            .get_value()
-            .unwrap()
-            .key();
+            .storage_value_key(storage_prefix, storage_key_name)
+            .unwrap();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey)
     }
@@ -300,15 +290,10 @@ where
         storage_key_name: &'static str,
         map_key: K,
     ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self
+        let storagekey = self
             .metadata
-            .module(storage_prefix)
-            .unwrap()
-            .storage(storage_key_name)
-            .unwrap()
-            .get_map::<K, V>()
-            .unwrap()
-            .key(map_key);
+            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
+            .unwrap();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey)
     }
@@ -320,15 +305,10 @@ where
         first: K,
         second: Q,
     ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self
+        let storagekey = self
             .metadata
-            .module(storage_prefix)
-            .unwrap()
-            .storage(storage_key_name)
-            .unwrap()
-            .get_double_map::<K, Q, V>()
-            .unwrap()
-            .key(first, second);
+            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
+            .unwrap();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey)
     }
