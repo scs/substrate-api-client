@@ -170,11 +170,16 @@ where
     }
 
     // low level access
-    fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
+    fn _get_request(url: String, jsonreq: String) -> Option<String> {
         let (result_in, result_out) = channel();
         rpc::get(url, jsonreq, result_in);
 
-        Ok(result_out.recv().unwrap())
+        let str = result_out.recv().unwrap();
+
+        match &str[..] {
+            "null" => None,
+            _ => Some(str),
+        }
     }
 
     pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
@@ -229,7 +234,6 @@ where
             json_req::chain_get_finalized_head().to_string(),
         )
         .map(|h_str| hexstr_to_hash(h_str).unwrap())
-        .ok()
     }
 
     pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
@@ -241,7 +245,6 @@ where
             json_req::chain_get_header(hash).to_string(),
         )
         .map(|h| serde_json::from_str(&h).unwrap())
-        .ok()
     }
 
     pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
@@ -264,10 +267,9 @@ where
             json_req::chain_get_block(hash).to_string(),
         )
         .map(|b| serde_json::from_str(&b).unwrap())
-        .ok()
     }
 
-    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
+    pub fn get_request(&self, jsonreq: String) -> Option<String> {
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
@@ -320,17 +322,10 @@ where
 
     pub fn get_opaque_storage_by_key_hash(&self, key: StorageKey) -> Option<Vec<u8>> {
         let jsonreq = json_req::state_get_storage_key(key);
-        if let Ok(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
+        Self::_get_request(self.url.clone(), jsonreq.to_string());
+        if let Some(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
             info!("storage hex = {}", hexstr);
-            let hexstr = hexstr
-                .trim_matches('\"')
-                .to_string()
-                .trim_start_matches("0x")
-                .to_string();
-            match hexstr.as_str() {
-                "null" => None,
-                _ => Some(hex::decode(&hexstr).unwrap()),
-            }
+            hexstr_to_vec(hexstr).ok()
         } else {
             None
         }

@@ -37,10 +37,8 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
         .to_string()
         .trim_start_matches("0x")
         .to_string();
-    match hexstr.as_str() {
-        "null" => Ok([0u8].to_vec()),
-        _ => hex::decode(&hexstr),
-    }
+
+    hex::decode(&hexstr)
 }
 
 pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
