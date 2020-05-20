@@ -67,6 +67,9 @@ pub mod node_metadata;
 #[cfg(feature = "std")]
 use sp_core::storage::StorageKey;
 
+#[cfg(feature = "std")]
+use sc_rpc_api::state::ReadProof;
+
 pub mod utils;
 
 #[cfg(feature = "std")]
@@ -329,6 +332,54 @@ where
         } else {
             None
         }
+    }
+
+    pub fn get_storage_value_proof(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+    ) -> Option<ReadProof<Hash>> {
+        let storagekey = self
+            .metadata
+            .storage_value_key(storage_prefix, storage_key_name)
+            .unwrap();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_proof_by_keys(vec![storagekey])
+    }
+
+    pub fn get_storage_map_proof<K: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        map_key: K,
+    ) -> Option<ReadProof<Hash>> {
+        let storagekey = self
+            .metadata
+            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
+            .unwrap();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_proof_by_keys(vec![storagekey])
+    }
+
+    pub fn get_storage_double_map_proof<K: Encode, Q: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        first: K,
+        second: Q,
+    ) -> Option<ReadProof<Hash>> {
+        let storagekey = self
+            .metadata
+            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
+            .unwrap();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_proof_by_keys(vec![storagekey])
+    }
+
+    pub fn get_storage_proof_by_keys(&self, keys: Vec<StorageKey>) -> Option<ReadProof<Hash>> {
+        let jsonreq = json_req::state_get_read_proof(keys);
+        Self::_get_request(self.url.clone(), jsonreq.to_string())
+            .map(|proof| serde_json::from_str(&proof).unwrap())
     }
 
     pub fn send_extrinsic(

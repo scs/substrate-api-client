@@ -87,6 +87,10 @@ pub fn state_get_storage_with_id(key: StorageKey, id: u32) -> Value {
     json_req("state_getStorage", vec![key], id)
 }
 
+pub fn state_get_read_proof(keys: Vec<StorageKey>) -> Value {
+    json_req("state_getReadProof", vec![keys], 1)
+}
+
 pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
     author_submit_and_watch_extrinsic_with_id(xthex_prefixed, REQUEST_TRANSFER)
 }

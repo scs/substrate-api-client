@@ -29,6 +29,11 @@ fn main() {
     let result: u128 = api.get_storage_value("Balances", "TotalIssuance").unwrap();
     println!("[+] TotalIssuance is {}", result);
 
+    let proof = api
+        .get_storage_value_proof("Balances", "TotalIssuance")
+        .unwrap();
+    println!("[+] StorageValueProof: {:?}", proof);
+
     // get StorageMap
     let result: Hash = api
         .get_storage_map("System", "BlockHash", 1u32)

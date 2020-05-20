@@ -66,6 +66,9 @@ version = '2.0.0-alpha.7'
 package = "sp-std"
 default-features = false
 
+[dependencies.sc-rpc-api]
+version = '0.8.0-alpha.7'
+
 [dev-dependencies.node_template_runtime]
 git = "https://github.com/scs/substrate-api-client-test-node"
 tag = 'v2.0.0-alpha.7'
