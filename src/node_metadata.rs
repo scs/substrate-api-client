@@ -146,6 +146,45 @@ impl Metadata {
             m.print()
         }
     }
+
+    pub fn storage_value_key(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+    ) -> Result<StorageKey, MetadataError> {
+        Ok(self
+            .module(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_value()?
+            .key())
+    }
+
+    pub fn storage_map_key<K: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        map_key: K,
+    ) -> Result<StorageKey, MetadataError> {
+        Ok(self
+            .module(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_map::<K, V>()?
+            .key(map_key))
+    }
+
+    pub fn storage_double_map_key<K: Encode, Q: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        first: K,
+        second: Q,
+    ) -> Result<StorageKey, MetadataError> {
+        Ok(self
+            .module(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_double_map::<K, Q, V>()?
+            .key(first, second))
+    }
 }
 
 #[derive(Clone, Debug)]

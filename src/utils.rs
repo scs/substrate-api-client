@@ -21,21 +21,14 @@ extern crate alloc;
 use alloc::{string::String, string::ToString, vec::Vec};
 
 use hex::FromHexError;
+use sp_core::storage::StorageKey;
 use sp_core::twox_128;
 use sp_core::H256 as Hash;
 
-pub fn storage_value_key_vec(module: &str, storage_key_name: &str) -> Vec<u8> {
+pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
     let mut key = twox_128(module.as_bytes()).to_vec();
     key.extend(&twox_128(storage_key_name.as_bytes()));
-    key
-}
-
-pub fn storage_value_key_hex(module: &str, storage_key_name: &str) -> String {
-    let key = storage_value_key_vec(module, storage_key_name);
-
-    let mut keyhash_str = hex::encode(key);
-    keyhash_str.insert_str(0, "0x");
-    keyhash_str
+    StorageKey(key)
 }
 
 pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
@@ -44,10 +37,8 @@ pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
         .to_string()
         .trim_start_matches("0x")
         .to_string();
-    match hexstr.as_str() {
-        "null" => Ok([0u8].to_vec()),
-        _ => hex::decode(&hexstr),
-    }
+
+    hex::decode(&hexstr)
 }
 
 pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
@@ -73,7 +64,10 @@ mod tests {
     #[test]
     fn test_hextstr_to_vec() {
         assert_eq!(hexstr_to_vec("0x01020a".to_string()), Ok(vec!(1, 2, 10)));
-        assert_eq!(hexstr_to_vec("null".to_string()), Ok(vec!(0u8)));
+        assert_eq!(
+            hexstr_to_vec("null".to_string()),
+            Err(hex::FromHexError::InvalidHexCharacter { c: 'n', index: 0 })
+        );
         assert_eq!(
             hexstr_to_vec("0x0q".to_string()),
             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })

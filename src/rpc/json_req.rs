@@ -16,17 +16,14 @@
 */
 
 use crate::Hash;
-use serde_json::{json, Value};
+use serde::Serialize;
+use serde_json::{json, to_value, Value};
+use sp_core::storage::StorageKey;
 
 pub const REQUEST_TRANSFER: u32 = 3;
 
 pub fn chain_get_header(hash: Option<Hash>) -> Value {
-    json!({
-        "method": "chain_getHeader",
-        "params": [hash],
-        "jsonrpc": "2.0",
-        "id":"1"
-    })
+    json_req("chain_getHeader", vec![hash], 1)
 }
 
 pub fn chain_get_block_hash(number: Option<u32>) -> Value {
@@ -38,39 +35,19 @@ pub fn chain_get_genesis_hash() -> Value {
 }
 
 pub fn chain_get_block_hash_with_id(number: Option<u32>, id: u32) -> Value {
-    json!({
-        "method": "chain_getBlockHash",
-        "params": [number],
-        "jsonrpc": "2.0",
-        "id": id.to_string(),
-    })
+    json_req("chain_getBlockHash", vec![number], id)
 }
 
 pub fn chain_get_block(hash: Option<Hash>) -> Value {
-    json!({
-        "method": "chain_getBlock",
-        "params": [hash],
-        "jsonrpc": "2.0",
-        "id":"1"
-    })
+    json_req("chain_getBlock", vec![hash], 1)
 }
 
 pub fn chain_get_finalized_head() -> Value {
-    json!({
-        "method": "chain_getFinalizedHead",
-        "params": null,
-        "jsonrpc": "2.0",
-        "id":"1"
-    })
+    json_req("chain_getFinalizedHead", Value::Null, 1)
 }
 
 pub fn chain_subscribe_finalized_heads() -> Value {
-    json!({
-        "method": "chain_subscribeFinalizedHeads",
-        "params": null,
-        "jsonrpc": "2.0",
-        "id":"1"
-    })
+    json_req("chain_subscribeFinalizedHeads", Value::Null, 1)
 }
 
 pub fn state_get_metadata() -> Value {
@@ -78,12 +55,7 @@ pub fn state_get_metadata() -> Value {
 }
 
 pub fn state_get_metadata_with_id(id: u32) -> Value {
-    json!({
-        "method": "state_getMetadata",
-        "params": null,
-        "jsonrpc": "2.0",
-        "id": id.to_string(),
-    })
+    json_req("state_getMetadata", Value::Null, id)
 }
 
 pub fn state_get_runtime_version() -> Value {
@@ -91,33 +63,40 @@ pub fn state_get_runtime_version() -> Value {
 }
 
 pub fn state_get_runtime_version_with_id(id: u32) -> Value {
-    json!({
-        "method": "state_getRuntimeVersion",
-        "params": null,
-        "jsonrpc": "2.0",
-        "id": id.to_string(),
-    })
+    json_req("state_getRuntimeVersion", Value::Null, id)
 }
 
-pub fn state_subscribe_storage(key: &str) -> Value {
+pub fn state_subscribe_storage(key: Vec<StorageKey>) -> Value {
     state_subscribe_storage_with_id(key, 1)
 }
 
-pub fn state_subscribe_storage_with_id(key: &str, id: u32) -> Value {
-    json!({
-        "method": "state_subscribeStorage",
-        "params": [[key]],
-        "jsonrpc": "2.0",
-        "id": id.to_string(),
-    })
+pub fn state_subscribe_storage_with_id(key: Vec<StorageKey>, id: u32) -> Value {
+    // don't know why we need an additional vec here...
+    json_req("state_subscribeStorage", vec![key], id)
 }
 
-pub fn state_get_storage(key_hash: &str) -> Value {
-    state_get_storage_with_id(key_hash, 1)
+pub fn state_get_storage(key: StorageKey, at_block: Option<Hash>) -> Value {
+    json_req(
+        "state_getStorage",
+        vec![to_value(key).unwrap(), to_value(at_block).unwrap()],
+        1,
+    )
 }
 
-pub fn state_get_storage_with_id(key_hash: &str, id: u32) -> Value {
-    json_req("state_getStorage", key_hash, id)
+pub fn state_get_storage_with_id(key: StorageKey, at_block: Option<Hash>, id: u32) -> Value {
+    json_req(
+        "state_getStorage",
+        vec![to_value(key).unwrap(), to_value(at_block).unwrap()],
+        id,
+    )
+}
+
+pub fn state_get_read_proof(keys: Vec<StorageKey>, at_block: Option<Hash>) -> Value {
+    json_req(
+        "state_getReadProof",
+        vec![to_value(keys).unwrap(), to_value(at_block).unwrap()],
+        1,
+    )
 }
 
 pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
@@ -125,13 +104,13 @@ pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
 }
 
 pub fn author_submit_and_watch_extrinsic_with_id(xthex_prefixed: &str, id: u32) -> Value {
-    json_req("author_submitAndWatchExtrinsic", xthex_prefixed, id)
+    json_req("author_submitAndWatchExtrinsic", vec![xthex_prefixed], id)
 }
 
-fn json_req(method: &str, params: &str, id: u32) -> Value {
+fn json_req<S: Serialize>(method: &str, params: S, id: u32) -> Value {
     json!({
         "method": method,
-        "params": [params],
+        "params": params,
         "jsonrpc": "2.0",
         "id": id.to_string(),
     })

@@ -26,19 +26,26 @@ fn main() {
     let mut api = Api::new(format!("ws://{}", url));
 
     // get some plain storage value
-    let result: u128 = api.get_storage_value("Balances", "TotalIssuance").unwrap();
+    let result: u128 = api
+        .get_storage_value("Balances", "TotalIssuance", None)
+        .unwrap();
     println!("[+] TotalIssuance is {}", result);
+
+    let proof = api
+        .get_storage_value_proof("Balances", "TotalIssuance", None)
+        .unwrap();
+    println!("[+] StorageValueProof: {:?}", proof);
 
     // get StorageMap
     let result: Hash = api
-        .get_storage_map("System", "BlockHash", 1u32)
+        .get_storage_map("System", "BlockHash", 1u32, None)
         .or_else(|| Some(Hash::default()))
         .unwrap();
     println!("[+] block hash for blocknumber 42 is {:?}", result);
 
     // get StorageDoubleMap
     let result: u32 = api
-        .get_storage_double_map("TemplateModule", "SomeDoubleMap", 1_u32, 2_u32)
+        .get_storage_double_map("TemplateModule", "SomeDoubleMap", 1_u32, 2_u32, None)
         .or(Some(0))
         .unwrap();
     println!("[+] some double map (1,2) should be 3. Is {:?}", result);

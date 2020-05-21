@@ -66,6 +66,10 @@ version = '2.0.0-alpha.7'
 package = "sp-std"
 default-features = false
 
+[dependencies.sc-rpc-api]
+version = '0.8.0-alpha.7'
+optional = true
+
 [dev-dependencies.node_template_runtime]
 git = "https://github.com/scs/substrate-api-client-test-node"
 tag = 'v2.0.0-alpha.7'
@@ -89,6 +93,7 @@ features = ["yaml"]
 [features]
 default = ["std"]
 std = [
+    "sc-rpc-api",
 	"sp-core/std",
 	"codec/std",
 	"runtime_io/std",
@@ -96,7 +101,7 @@ std = [
 	"sp-version/std",
 	"balances/std",
 	"system/std",
-        "sp-runtime/std",
+    "sp-runtime/std",
 	"support/std",
 	"sp-std/std",
 	"serde/std",

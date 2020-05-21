@@ -64,6 +64,12 @@ pub mod events;
 #[cfg(feature = "std")]
 pub mod node_metadata;
 
+#[cfg(feature = "std")]
+use sp_core::storage::StorageKey;
+
+#[cfg(feature = "std")]
+use sc_rpc_api::state::ReadProof;
+
 pub mod utils;
 
 #[cfg(feature = "std")]
@@ -167,11 +173,16 @@ where
     }
 
     // low level access
-    fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
+    fn _get_request(url: String, jsonreq: String) -> Option<String> {
         let (result_in, result_out) = channel();
         rpc::get(url, jsonreq, result_in);
 
-        Ok(result_out.recv().unwrap())
+        let str = result_out.recv().unwrap();
+
+        match &str[..] {
+            "null" => None,
+            _ => Some(str),
+        }
     }
 
     pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
@@ -205,16 +216,11 @@ where
     pub fn get_account_info(&self, address: &AccountId) -> Option<AccountInfo> {
         let storagekey: sp_core::storage::StorageKey = self
             .metadata
-            .module("System")
-            .unwrap()
-            .storage("Account")
-            .unwrap()
-            .get_map::<AccountId, AccountInfo>()
-            .unwrap()
-            .key(address.clone());
+            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())
+            .unwrap();
         info!("storagekey {:?}", storagekey);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey, None)
     }
 
     pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
@@ -231,7 +237,6 @@ where
             json_req::chain_get_finalized_head().to_string(),
         )
         .map(|h_str| hexstr_to_hash(h_str).unwrap())
-        .ok()
     }
 
     pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
@@ -243,7 +248,6 @@ where
             json_req::chain_get_header(hash).to_string(),
         )
         .map(|h| serde_json::from_str(&h).unwrap())
-        .ok()
     }
 
     pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
@@ -266,10 +270,9 @@ where
             json_req::chain_get_block(hash).to_string(),
         )
         .map(|b| serde_json::from_str(&b).unwrap())
-        .ok()
     }
 
-    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
+    pub fn get_request(&self, jsonreq: String) -> Option<String> {
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
@@ -277,18 +280,14 @@ where
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
+        at_block: Option<Hash>,
     ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self
+        let storagekey = self
             .metadata
-            .module(storage_prefix)
-            .unwrap()
-            .storage(storage_key_name)
-            .unwrap()
-            .get_value()
-            .unwrap()
-            .key();
+            .storage_value_key(storage_prefix, storage_key_name)
+            .unwrap();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey, at_block)
     }
 
     pub fn get_storage_map<K: Encode, V: Decode + Clone>(
@@ -296,18 +295,14 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         map_key: K,
+        at_block: Option<Hash>,
     ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self
+        let storagekey = self
             .metadata
-            .module(storage_prefix)
-            .unwrap()
-            .storage(storage_key_name)
-            .unwrap()
-            .get_map::<K, V>()
-            .unwrap()
-            .key(map_key);
+            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
+            .unwrap();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey, at_block)
     }
 
     pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
@@ -316,43 +311,93 @@ where
         storage_key_name: &'static str,
         first: K,
         second: Q,
+        at_block: Option<Hash>,
     ) -> Option<V> {
-        let storagekey: sp_core::storage::StorageKey = self
+        let storagekey = self
             .metadata
-            .module(storage_prefix)
-            .unwrap()
-            .storage(storage_key_name)
-            .unwrap()
-            .get_double_map::<K, Q, V>()
-            .unwrap()
-            .key(first, second);
+            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
+            .unwrap();
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
-        self.get_storage_by_key_hash(storagekey.0)
+        self.get_storage_by_key_hash(storagekey, at_block)
     }
 
-    pub fn get_storage_by_key_hash<V: Decode>(&self, hash: Vec<u8>) -> Option<V> {
-        self.get_opaque_storage_by_key_hash(hash)
+    pub fn get_storage_by_key_hash<V: Decode>(
+        &self,
+        key: StorageKey,
+        at_block: Option<Hash>,
+    ) -> Option<V> {
+        self.get_opaque_storage_by_key_hash(key, at_block)
             .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
     }
 
-    pub fn get_opaque_storage_by_key_hash(&self, hash: Vec<u8>) -> Option<Vec<u8>> {
-        let mut keyhash_str = hex::encode(hash);
-        keyhash_str.insert_str(0, "0x");
-        let jsonreq = json_req::state_get_storage(&keyhash_str);
-        if let Ok(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
+    pub fn get_opaque_storage_by_key_hash(
+        &self,
+        key: StorageKey,
+        at_block: Option<Hash>,
+    ) -> Option<Vec<u8>> {
+        let jsonreq = json_req::state_get_storage(key, at_block);
+        Self::_get_request(self.url.clone(), jsonreq.to_string());
+        if let Some(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
             info!("storage hex = {}", hexstr);
-            let hexstr = hexstr
-                .trim_matches('\"')
-                .to_string()
-                .trim_start_matches("0x")
-                .to_string();
-            match hexstr.as_str() {
-                "null" => None,
-                _ => Some(hex::decode(&hexstr).unwrap()),
-            }
+            hexstr_to_vec(hexstr).ok()
         } else {
             None
         }
+    }
+
+    pub fn get_storage_value_proof(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        at_block: Option<Hash>,
+    ) -> Option<ReadProof<Hash>> {
+        let storagekey = self
+            .metadata
+            .storage_value_key(storage_prefix, storage_key_name)
+            .unwrap();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_proof_by_keys(vec![storagekey], at_block)
+    }
+
+    pub fn get_storage_map_proof<K: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        map_key: K,
+        at_block: Option<Hash>,
+    ) -> Option<ReadProof<Hash>> {
+        let storagekey = self
+            .metadata
+            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
+            .unwrap();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_proof_by_keys(vec![storagekey], at_block)
+    }
+
+    pub fn get_storage_double_map_proof<K: Encode, Q: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        first: K,
+        second: Q,
+        at_block: Option<Hash>,
+    ) -> Option<ReadProof<Hash>> {
+        let storagekey = self
+            .metadata
+            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
+            .unwrap();
+        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        self.get_storage_proof_by_keys(vec![storagekey], at_block)
+    }
+
+    pub fn get_storage_proof_by_keys(
+        &self,
+        keys: Vec<StorageKey>,
+        at_block: Option<Hash>,
+    ) -> Option<ReadProof<Hash>> {
+        let jsonreq = json_req::state_get_read_proof(keys, at_block);
+        Self::_get_request(self.url.clone(), jsonreq.to_string())
+            .map(|proof| serde_json::from_str(&proof).unwrap())
     }
 
     pub fn send_extrinsic(
@@ -398,8 +443,8 @@ where
 
     pub fn subscribe_events(&self, sender: ThreadOut<String>) {
         debug!("subscribing to events");
-        let key = storage_value_key_hex("System", "Events");
-        let jsonreq = json_req::state_subscribe_storage(&key).to_string();
+        let key = storage_key("System", "Events");
+        let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
         rpc::start_subcriber(self.url.clone(), jsonreq, sender);
     }
 

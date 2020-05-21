@@ -541,6 +541,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "futures"
+version = "0.1.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "futures"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
@@ -609,6 +614,7 @@ name = "futures-util"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
+ "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-channel 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-core 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-io 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -788,6 +794,63 @@ version = "0.3.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "wasm-bindgen 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "jsonrpc-client-transports"
+version = "14.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "failure 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpc-core 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpc-pubsub 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 1.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "jsonrpc-core"
+version = "14.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "jsonrpc-core-client"
+version = "14.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "jsonrpc-client-transports 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "jsonrpc-derive"
+version = "14.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro-crate 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.19 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "jsonrpc-pubsub"
+version = "14.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "jsonrpc-core 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parking_lot 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1808,6 +1871,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-rpc-api"
+version = "0.8.0-alpha.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "derive_more 0.99.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpc-core 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpc-core-client 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpc-derive 14.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpc-pubsub 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parking_lot 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-chain-spec 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-core 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-rpc 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-runtime 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-transaction-pool 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-version 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "schnorrkel"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1975,6 +2062,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-chain-spec"
+version = "2.0.0-alpha.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "sp-consensus-aura"
 version = "0.8.0-alpha.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2133,6 +2229,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "backtrace 0.3.46 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "sp-rpc"
+version = "2.0.0-alpha.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-core 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2396,6 +2501,7 @@ dependencies = [
  "pallet-contracts 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-scale-codec 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "primitive-types 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sc-rpc-api 0.8.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-core 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2934,6 +3040,7 @@ dependencies = [
 "checksum fuchsia-cprng 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
 "checksum fuchsia-zircon 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2e9763c69ebaae630ba35f74888db465e49e259ba1bc0eda7d06f4a067615d82"
 "checksum fuchsia-zircon-sys 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "3dcaa9ae7725d12cdb85b3ad99a434db70b468c09ded17e012d86b5c1010f7a7"
+"checksum futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)" = "1b980f2816d6ee8673b6517b52cb0e808a180efc92e5c19d02cdda79066703ef"
 "checksum futures 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "5c329ae8753502fb44ae4fc2b622fa2a94652c41e795143765ba0927f92ab780"
 "checksum futures-channel 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "f0c77d04ce8edd9cb903932b608268b3fffec4163dc053b3b402bf47eac1f1a8"
 "checksum futures-core 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "f25592f769825e89b92358db00d26f965761e094951ac44d3663ef25b7ac464a"
@@ -2965,6 +3072,11 @@ dependencies = [
 "checksum iovec 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "b2b3ea6ff95e175473f8ffe6a7eb7c00d054240321b84c57051175fe3c1e075e"
 "checksum itoa 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "b8b7a7c0c47db5545ed3fef7468ee7bb5b74691498139e4b3f6a20685dc6dd8e"
 "checksum js-sys 0.3.39 (registry+https://github.com/rust-lang/crates.io-index)" = "fa5a448de267e7358beaf4a5d849518fe9a0c13fce7afd44b06e68550e5562a7"
+"checksum jsonrpc-client-transports 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2307a7e78cf969759e390a8a2151ea12e783849a45bb00aa871b468ba58ea79e"
+"checksum jsonrpc-core 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "25525f6002338fb4debb5167a89a0b47f727a5a48418417545ad3429758b7fec"
+"checksum jsonrpc-core-client 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "87f9382e831a6d630c658df103aac3f971da096deb57c136ea2b760d3b4e3f9f"
+"checksum jsonrpc-derive 14.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "8609af8f63b626e8e211f52441fcdb6ec54f1a446606b10d5c89ae9bf8a20058"
+"checksum jsonrpc-pubsub 14.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c4ca5e391d6c6a2261d4adca029f427fe63ea546ad6cef2957c654c08495ec16"
 "checksum keccak 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "67c21572b4949434e4fc1e1978b99c5f77064153c59d998bf13ecd96fb5ecba7"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 "checksum lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
@@ -3070,6 +3182,7 @@ dependencies = [
 "checksum rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 "checksum ryu 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "ed3d612bc64430efeb3f7ee6ef26d590dce0c43249217bddc62112540c7941e1"
 "checksum safe-mix 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6d3d055a2582e6b00ed7a31c1524040aa391092bf636328350813f3a0605215c"
+"checksum sc-rpc-api 0.8.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "a27aa7d70aec2be0967110b5df9a11ac3aa76fe4c8576455c266d3135d8fe63a"
 "checksum schnorrkel 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "021b403afe70d81eea68f6ea12f6b3c9588e5d536a94c3bf80f15e7faa267862"
 "checksum scopeguard 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
@@ -3088,6 +3201,7 @@ dependencies = [
 "checksum sp-application-crypto 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "f2997e5072ef4fa6ac54658b0e79149095ececd89e3bd693f8fed90ad69862e8"
 "checksum sp-arithmetic 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "35ee0e06a6d46a3d6fb8706dfa2ca593b60a06c248fbd5173ab56070c209612e"
 "checksum sp-block-builder 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "e4b654cf89dd73ad85848b2c7e60812f231ba2785aeec9c4708a434323fecf9a"
+"checksum sp-chain-spec 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "2997456fa5b605fec06c5f2267a0e7cb44708b210548b1a557ce89b07bc04211"
 "checksum sp-consensus-aura 0.8.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "3dc4bdd9859ad3917bf8c4a40ec422259b9b538d9e8ba545dfd6870cd6a88ba5"
 "checksum sp-core 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "a4d4e7309949c9ce65a0347b20bbc89cc09efee55b1918c3253392286dab0df9"
 "checksum sp-debug-derive 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "b2c4cb00ba7694df96793cf024418e6a75d5f224716460961b5c9dbfa621c0e8"
@@ -3099,6 +3213,7 @@ dependencies = [
 "checksum sp-keyring 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "509e39a8b8c8c6532fcbea3140e3f92ec6712ee028bdc968f4ccb90181205c24"
 "checksum sp-offchain 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "e63092c0ecd8fc90971a14a169f62337b78d885873e55dee87f33fe5f76d6591"
 "checksum sp-panic-handler 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "acec634cd613519673edad420f56d5bbd087da9923c05aa66708882ee9676d20"
+"checksum sp-rpc 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "7bd0ae1f6a934590356ce844ce9d0ef71993cab223f6c9371c2fdea98b23c334"
 "checksum sp-runtime 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "0d37f6a2e111dd82dd194fa9ef77ba49b17e70162afc237f99e7c5dc6f95834f"
 "checksum sp-runtime-interface 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "bc743ea280556cbaf82203ec63ade39f4167402cb571aaf012c6c43f092ccf33"
 "checksum sp-runtime-interface-proc-macro 2.0.0-alpha.7 (registry+https://github.com/rust-lang/crates.io-index)" = "be673dffcf1084e6a0da85712866afde7bbdefa152e9e3e5dbf4a04f1994a673"
