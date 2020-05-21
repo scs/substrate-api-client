@@ -64,7 +64,10 @@ mod tests {
     #[test]
     fn test_hextstr_to_vec() {
         assert_eq!(hexstr_to_vec("0x01020a".to_string()), Ok(vec!(1, 2, 10)));
-        assert_eq!(hexstr_to_vec("null".to_string()), Ok(vec!(0u8)));
+        assert_eq!(
+            hexstr_to_vec("null".to_string()),
+            Err(hex::FromHexError::InvalidHexCharacter { c: 'n', index: 0 })
+        );
         assert_eq!(
             hexstr_to_vec("0x0q".to_string()),
             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
