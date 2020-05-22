@@ -58,7 +58,6 @@ fn main() {
         head,
         api.runtime_version.spec_version
     );
-
     
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
