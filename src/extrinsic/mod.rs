@@ -68,8 +68,8 @@ macro_rules! compose_extrinsic_offline {
     $genesis_hash: expr,
     $genesis_or_current_hash: expr,
     $runtime_spec_version: expr) => {{
-        use $crate::extrinsic::xt_primitives::*;
         use sp_runtime::generic::Era;
+        use $crate::extrinsic::xt_primitives::*;
         let extra = GenericExtra::new($era, $nonce);
         let raw_payload = SignedPayload::from_raw(
             $call.clone(),
