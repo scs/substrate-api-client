@@ -1,6 +1,6 @@
 # substrate-api-client
 
-![badge](https://img.shields.io/badge/substrate-2.0.0--alpha.6-success)
+![badge](https://img.shields.io/badge/substrate-2.0.0--alpha.7-success)
 
 <p align="center">
 <img src=./web3_foundation_grants_badge_black.svg width = 400>
