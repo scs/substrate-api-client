@@ -42,14 +42,14 @@ pub type GenericAddress = AccountId; //Address<AccountId, AccountIndex>;
 pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
 
 impl GenericExtra {
-    pub fn new(nonce: u32) -> GenericExtra {
-        GenericExtra(Era::Immortal, Compact(nonce), Compact(0 as u128))
+    pub fn new(era: Era, nonce: u32) -> GenericExtra {
+        GenericExtra(era, Compact(nonce), Compact(0 as u128))
     }
 }
 
 impl Default for GenericExtra {
     fn default() -> Self {
-        Self::new(0)
+        Self::new(Era::Immortal, 0)
     }
 }
 

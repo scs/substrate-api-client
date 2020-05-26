@@ -52,6 +52,8 @@ fn main() {
             api.clone().signer.unwrap(),
             Call::Balances(BalancesCall::transfer(to.clone(), 1_000_000)),
             nonce,
+            Era::Immortal,
+            api.genesis_hash,
             api.genesis_hash,
             api.runtime_version.spec_version
         );

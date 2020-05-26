@@ -19,7 +19,7 @@
 use clap::{load_yaml, App};
 
 use keyring::AccountKeyring;
-use node_template_runtime::{BalancesCall, Call};
+use node_template_runtime::{BalancesCall, Call, Header};
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
@@ -33,6 +33,11 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let api = Api::new(format!("ws://{}", url)).set_signer(from);
+
+    // Information for Era for mortal transactions
+    let head = api.get_finalized_head().unwrap();
+    let h: Header = api.get_header(Some(head)).unwrap();
+    let period = 5;
 
     println!(
         "[+] Alice's Account Nonce is {}\n",
@@ -48,7 +53,9 @@ fn main() {
         api.clone().signer.unwrap(),
         Call::Balances(BalancesCall::transfer(to.clone(), 42)),
         api.get_nonce().unwrap(),
+        Era::mortal(period, h.number.into()),
         api.genesis_hash,
+        head,
         api.runtime_version.spec_version
     );
 

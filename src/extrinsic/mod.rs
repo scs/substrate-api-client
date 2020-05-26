@@ -56,6 +56,7 @@ macro_rules! compose_call {
 /// * 'signer' - AccountKey that is used to sign the extrinsic.
 /// * 'call' - call as returned by the compose_call! macro or via substrate's call enums.
 /// * 'nonce' - signer's account nonce: u32
+/// * 'era' - Era for extrinsic to be valid
 /// * 'genesis_hash' - sp-runtime::Hash256/[u8; 32].
 /// * 'runtime_spec_version' - RuntimeVersion.spec_version/u32
 #[macro_export]
@@ -63,18 +64,20 @@ macro_rules! compose_extrinsic_offline {
     ($signer: expr,
     $call: expr,
     $nonce: expr,
+    $era: expr,
     $genesis_hash: expr,
+    $genesis_or_current_hash: expr,
     $runtime_spec_version: expr) => {{
+        use sp_runtime::generic::Era;
         use $crate::extrinsic::xt_primitives::*;
-
-        let extra = GenericExtra::new($nonce);
+        let extra = GenericExtra::new($era, $nonce);
         let raw_payload = SignedPayload::from_raw(
             $call.clone(),
             extra.clone(),
             (
                 $runtime_spec_version,
                 $genesis_hash,
-                $genesis_hash,
+                $genesis_or_current_hash,
                 (),
                 (),
                 (),
@@ -125,6 +128,8 @@ macro_rules! compose_extrinsic {
                     signer,
                     call.clone(),
                     $api.get_nonce().unwrap(),
+                    Era::Immortal,
+                    $api.genesis_hash,
                     $api.genesis_hash,
                     $api.runtime_version.spec_version
                 )
