@@ -41,7 +41,7 @@ pub struct RpcClient {
 
 impl Handler for RpcClient {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-        info!("sending request: {}", self.request);
+        debug!("sending request: {}", self.request);
         self.out.send(self.request.clone()).unwrap();
         Ok(())
     }
@@ -52,7 +52,7 @@ impl Handler for RpcClient {
 }
 
 pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
-    info!("Got get_request_msg {}", msg);
+    debug!("Got get_request_msg {}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
@@ -62,7 +62,7 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
 }
 
 pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>) -> Result<()> {
-    info!("got on_subscription_msg {}", msg);
+    debug!("got on_subscription_msg {}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {

@@ -39,13 +39,6 @@ fn main() {
     meta.print_overview();
     meta.print_modules_with_calls();
     meta.print_modules_with_events();
-
-    // print full substrate metadata json formatted
-    println!(
-        "{}",
-        Metadata::pretty_format(&api.get_metadata())
-            .unwrap_or_else(|| "pretty format failed".to_string())
-    )
 }
 
 pub fn get_node_url_from_cli() -> String {

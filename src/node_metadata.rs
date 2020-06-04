@@ -23,7 +23,6 @@ use metadata::{
     DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed, StorageEntryModifier,
     StorageEntryType, StorageHasher, META_RESERVED,
 };
-use serde::ser::Serialize;
 use sp_core::storage::StorageKey;
 
 #[derive(Debug, thiserror::Error)]
@@ -125,14 +124,6 @@ impl Metadata {
             }
         }
         println!("{}", string);
-    }
-
-    pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
-        let buf = Vec::new();
-        let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
-        let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
-        metadata.serialize(&mut ser).unwrap();
-        String::from_utf8(ser.into_inner()).ok()
     }
 
     pub fn print_modules_with_calls(&self) {

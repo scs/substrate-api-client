@@ -286,7 +286,7 @@ where
             .metadata
             .storage_value_key(storage_prefix, storage_key_name)
             .unwrap();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        debug!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
 
@@ -301,7 +301,7 @@ where
             .metadata
             .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
             .unwrap();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        debug!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
 
@@ -317,7 +317,7 @@ where
             .metadata
             .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
             .unwrap();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        debug!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
 
@@ -338,7 +338,7 @@ where
         let jsonreq = json_req::state_get_storage(key, at_block);
         Self::_get_request(self.url.clone(), jsonreq.to_string());
         if let Some(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
-            info!("storage hex = {}", hexstr);
+            debug!("storage hex = {}", hexstr);
             hexstr_to_vec(hexstr).ok()
         } else {
             None
@@ -355,7 +355,7 @@ where
             .metadata
             .storage_value_key(storage_prefix, storage_key_name)
             .unwrap();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        debug!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
 
@@ -370,7 +370,7 @@ where
             .metadata
             .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
             .unwrap();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        debug!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
 
@@ -386,7 +386,7 @@ where
             .metadata
             .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
             .unwrap();
-        info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
+        debug!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
 
