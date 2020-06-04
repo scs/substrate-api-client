@@ -99,6 +99,14 @@ pub fn state_get_read_proof(keys: Vec<StorageKey>, at_block: Option<Hash>) -> Va
     )
 }
 
+pub fn state_get_keys(key: StorageKey, at_block: Option<Hash>) -> Value {
+    json_req(
+        "state_getKeys",
+        vec![to_value(key).unwrap(), to_value(at_block).unwrap()],
+        1,
+    )
+}
+
 pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
     author_submit_and_watch_extrinsic_with_id(xthex_prefixed, REQUEST_TRANSFER)
 }
