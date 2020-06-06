@@ -410,11 +410,7 @@ where
             .map(|proof| serde_json::from_str(&proof).unwrap())
     }
 
-    pub fn get_keys(
-        &self,
-        key: StorageKey,
-        at_block: Option<Hash>,
-    ) -> Option<Vec<String>> {
+    pub fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Option<Vec<String>> {
         let jsonreq = json_req::state_get_keys(key, at_block);
         Self::_get_request(self.url.clone(), jsonreq.to_string())
             .map(|keys| serde_json::from_str(&keys).unwrap())
