@@ -172,6 +172,16 @@ impl Metadata {
             .key(map_key))
     }
 
+    pub fn storage_map_key_prefix(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+    ) -> Result<StorageKey, MetadataError> {
+        self.module(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_map_prefix()
+    }
+
     pub fn storage_double_map_key<K: Encode, Q: Encode, V: Decode + Clone>(
         &self,
         storage_prefix: &'static str,
@@ -326,6 +336,17 @@ impl StorageMetadata {
             _ => Err(MetadataError::StorageTypeError),
         }
     }
+    pub fn get_map_prefix(&self) -> Result<StorageKey, MetadataError> {
+        match &self.ty {
+            StorageEntryType::Map { .. } => {
+                let mut bytes = sp_core::twox_128(&self.module_prefix.as_bytes().to_vec()).to_vec();
+                bytes.extend(&sp_core::twox_128(&self.storage_prefix.as_bytes().to_vec())[..]);
+                Ok(StorageKey(bytes))
+            }
+            _ => Err(MetadataError::StorageTypeError),
+        }
+    }
+
     pub fn get_value(&self) -> Result<StorageValue, MetadataError> {
         match &self.ty {
             StorageEntryType::Plain { .. } => {

@@ -305,6 +305,16 @@ where
         self.get_storage_by_key_hash(storagekey, at_block)
     }
 
+    pub fn get_storage_map_key_prefix(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+    ) -> StorageKey {
+        self.metadata
+            .storage_map_key_prefix(storage_prefix, storage_key_name)
+            .unwrap()
+    }
+
     pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
         &self,
         storage_prefix: &'static str,
@@ -398,6 +408,12 @@ where
         let jsonreq = json_req::state_get_read_proof(keys, at_block);
         Self::_get_request(self.url.clone(), jsonreq.to_string())
             .map(|proof| serde_json::from_str(&proof).unwrap())
+    }
+
+    pub fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Option<Vec<String>> {
+        let jsonreq = json_req::state_get_keys(key, at_block);
+        Self::_get_request(self.url.clone(), jsonreq.to_string())
+            .map(|keys| serde_json::from_str(&keys).unwrap())
     }
 
     pub fn send_extrinsic(

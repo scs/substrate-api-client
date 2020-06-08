@@ -43,6 +43,10 @@ fn main() {
         .unwrap();
     println!("[+] block hash for blocknumber 42 is {:?}", result);
 
+    // get StorageMap key prefix
+    let result = api.get_storage_map_key_prefix("System", "BlockHash");
+    println!("[+] key prefix for System BlockHash map is {:?}", result);
+
     // get StorageDoubleMap
     let result: u32 = api
         .get_storage_double_map("TemplateModule", "SomeDoubleMap", 1_u32, 2_u32, None)
