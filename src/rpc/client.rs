@@ -175,12 +175,14 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
     match value["error"].as_object() {
         Some(obj) => {
             let error_message = obj.get("message").unwrap().as_str().unwrap().to_owned();
-            error!(
-                "extrinsic error code {}: {}",
+            let details = obj.get("data").unwrap().as_str().unwrap().to_owned();
+            panic!(
+                "extrinsic error code {}: {}: {}",
                 obj.get("code").unwrap().as_u64().unwrap(),
-                error_message
+                error_message,
+                details
             );
-            (XtStatus::Error, Some(error_message))
+            //(XtStatus::Error, Some(error_message))
         }
         None => match value["params"]["result"].as_object() {
             Some(obj) => {
