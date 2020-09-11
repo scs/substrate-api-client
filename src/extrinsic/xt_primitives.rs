@@ -55,7 +55,7 @@ impl Default for GenericExtra {
 
 /// additionalSigned fields of the respective SignedExtra fields.
 /// Order is the same as declared in the extra.
-pub type AdditionalSigned = (u32, H256, H256, (), (), (), ());
+pub type AdditionalSigned = (u32, u32, H256, H256, (), (), ());
 
 #[derive(Encode, Clone)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
