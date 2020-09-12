@@ -101,7 +101,7 @@ pub fn on_extrinsic_msg_until_finalized(
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
         (XtStatus::Finalized, val) => end_process(out, result, val),
-        (XtStatus::Error, e) => end_process(out, result, e),
+        (XtStatus::Error, e) => panic!(e),
         (XtStatus::Future, _) => {
             warn!("extrinsic has 'future' status. aborting");
             end_process(out, result, None);
@@ -122,7 +122,7 @@ pub fn on_extrinsic_msg_until_in_block(
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::InBlock, val) => end_process(out, result, val),
         (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, _) => end_process(out, result, None),
+        (XtStatus::Error, e) => panic!(e),
         _ => (),
     };
     Ok(())
@@ -139,7 +139,7 @@ pub fn on_extrinsic_msg_until_broadcast(
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Broadcast, _) => end_process(out, result, None),
         (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, _) => end_process(out, result, None),
+        (XtStatus::Error, e) => panic!(e),
         _ => (),
     };
     Ok(())
@@ -156,7 +156,7 @@ pub fn on_extrinsic_msg_until_ready(
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Ready, _) => end_process(out, result, None),
         (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => end_process(out, result, e),
+        (XtStatus::Error, e) => panic!(e),
         _ => (),
     };
     Ok(())
@@ -175,12 +175,18 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
     match value["error"].as_object() {
         Some(obj) => {
             let error_message = obj.get("message").unwrap().as_str().unwrap().to_owned();
-            error!(
-                "extrinsic error code {}: {}",
-                obj.get("code").unwrap().as_u64().unwrap(),
-                error_message
-            );
-            (XtStatus::Error, Some(error_message))
+            let code = obj.get("code").unwrap().as_i64().unwrap();
+            let details = match obj.get("data") {
+                Some(d) => d.as_str().unwrap().to_owned(),
+                None => "".to_string(),
+            };
+            (
+                XtStatus::Error,
+                Some(format!(
+                    "extrinsic error code {}: {}: {}",
+                    code, error_message, details
+                )),
+            )
         }
         None => match value["params"]["result"].as_object() {
             Some(obj) => {
@@ -261,13 +267,19 @@ mod tests {
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
         assert_eq!(
             parse_status(msg),
-            (XtStatus::Error, Some("Parse error".into()))
+            (
+                XtStatus::Error,
+                Some("extrinsic error code -32700: Parse error: ".into())
+            )
         );
 
-        let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":0},\"id\":\"4\"}";
+        let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
         assert_eq!(
             parse_status(msg),
-            (XtStatus::Error, Some("Invalid Transaction".into()))
+            (
+                XtStatus::Error,
+                Some("extrinsic error code 1010: Invalid Transaction: Bad Signature".into())
+            )
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
@@ -275,7 +287,7 @@ mod tests {
             parse_status(msg),
             (
                 XtStatus::Error,
-                Some("Extrinsic has invalid format.".into())
+                Some("extrinsic error code 1001: Extrinsic has invalid format.: ".into())
             )
         );
 
@@ -285,7 +297,7 @@ mod tests {
             (
                 XtStatus::Error,
                 Some(
-                    "Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))".into()
+                    "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")".into()
                 )
             )
         );

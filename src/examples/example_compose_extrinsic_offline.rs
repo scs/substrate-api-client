@@ -56,7 +56,8 @@ fn main() {
         Era::mortal(period, h.number.into()),
         api.genesis_hash,
         head,
-        api.runtime_version.spec_version
+        api.runtime_version.spec_version,
+        api.runtime_version.transaction_version
     );
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);

@@ -55,7 +55,8 @@ fn main() {
             Era::Immortal,
             api.genesis_hash,
             api.genesis_hash,
-            api.runtime_version.spec_version
+            api.runtime_version.spec_version,
+            api.runtime_version.transaction_version
         );
         // send and watch extrinsic until finalized
         println!("sending extrinsic with nonce {}", nonce);

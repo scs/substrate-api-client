@@ -67,7 +67,8 @@ macro_rules! compose_extrinsic_offline {
     $era: expr,
     $genesis_hash: expr,
     $genesis_or_current_hash: expr,
-    $runtime_spec_version: expr) => {{
+    $runtime_spec_version: expr,
+    $transaction_version: expr) => {{
         use sp_runtime::generic::Era;
         use $crate::extrinsic::xt_primitives::*;
         let extra = GenericExtra::new($era, $nonce);
@@ -76,9 +77,9 @@ macro_rules! compose_extrinsic_offline {
             extra.clone(),
             (
                 $runtime_spec_version,
+                $transaction_version,
                 $genesis_hash,
                 $genesis_or_current_hash,
-                (),
                 (),
                 (),
                 (),
@@ -131,7 +132,8 @@ macro_rules! compose_extrinsic {
                     Era::Immortal,
                     $api.genesis_hash,
                     $api.genesis_hash,
-                    $api.runtime_version.spec_version
+                    $api.runtime_version.spec_version,
+                    $api.runtime_version.transaction_version
                 )
             } else {
                 UncheckedExtrinsicV4 {
