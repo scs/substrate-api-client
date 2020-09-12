@@ -178,9 +178,15 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
             let code = obj.get("code").unwrap().as_i64().unwrap();
             let details = match obj.get("data") {
                 Some(d) => d.as_str().unwrap().to_owned(),
-                None => "".to_string()
+                None => "".to_string(),
             };
-            (XtStatus::Error, Some(format!("extrinsic error code {}: {}: {}", code, error_message, details)))
+            (
+                XtStatus::Error,
+                Some(format!(
+                    "extrinsic error code {}: {}: {}",
+                    code, error_message, details
+                )),
+            )
         }
         None => match value["params"]["result"].as_object() {
             Some(obj) => {
@@ -261,13 +267,19 @@ mod tests {
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
         assert_eq!(
             parse_status(msg),
-            (XtStatus::Error, Some("extrinsic error code -32700: Parse error: ".into()))
+            (
+                XtStatus::Error,
+                Some("extrinsic error code -32700: Parse error: ".into())
+            )
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
         assert_eq!(
             parse_status(msg),
-            (XtStatus::Error, Some("extrinsic error code 1010: Invalid Transaction: Bad Signature".into()))
+            (
+                XtStatus::Error,
+                Some("extrinsic error code 1010: Invalid Transaction: Bad Signature".into())
+            )
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
