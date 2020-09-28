@@ -3349,7 +3349,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-api-client"
-version = "0.4.7-sub2.0.0-rc5"
+version = "0.4.8-sub2.0.0-rc5"
 dependencies = [
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",

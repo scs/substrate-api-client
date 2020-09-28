@@ -80,6 +80,8 @@ use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
 use sp_runtime::{generic::SignedBlock, AccountId32 as AccountId, MultiSignature};
 
+pub extern crate sp_runtime;
+
 pub use sp_core::H256 as Hash;
 
 /// The block number type used in this runtime.
