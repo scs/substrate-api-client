@@ -199,6 +199,7 @@ impl Metadata {
 
 #[derive(Clone, Debug)]
 pub struct ModuleMetadata {
+    index: u8,
     name: String,
     storage: HashMap<String, StorageMetadata>,
     // constants
@@ -517,7 +518,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
             return Err(ConversionError::InvalidPrefix.into());
         }
         let meta = match metadata.1 {
-            RuntimeMetadata::V11(meta) => meta,
+            RuntimeMetadata::V12(meta) => meta,
             _ => return Err(ConversionError::InvalidVersion.into()),
         };
         let mut modules = HashMap::new();
@@ -540,6 +541,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
             modules.insert(
                 module_name.clone(),
                 ModuleMetadata {
+                    index: module.index,
                     name: module_name.clone(),
                     storage: storage_map,
                 },
@@ -554,7 +556,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
                 modules_with_calls.insert(
                     module_name.clone(),
                     ModuleWithCalls {
-                        index: modules_with_calls.len() as u8,
+                        index: module.index,
                         name: module_name.clone(),
                         calls: call_map,
                     },
@@ -568,7 +570,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
                 modules_with_events.insert(
                     module_name.clone(),
                     ModuleWithEvents {
-                        index: modules_with_events.len() as u8,
+                        index: module.index,
                         name: module_name.clone(),
                         events: event_map,
                     },

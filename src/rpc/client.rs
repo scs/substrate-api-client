@@ -101,7 +101,7 @@ pub fn on_extrinsic_msg_until_finalized(
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
         (XtStatus::Finalized, val) => end_process(out, result, val),
-        (XtStatus::Error, e) => panic!(e),
+        (XtStatus::Error, e) => panic!(e.unwrap()),
         (XtStatus::Future, _) => {
             warn!("extrinsic has 'future' status. aborting");
             end_process(out, result, None);
@@ -122,7 +122,7 @@ pub fn on_extrinsic_msg_until_in_block(
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::InBlock, val) => end_process(out, result, val),
         (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => panic!(e),
+        (XtStatus::Error, e) => panic!(e.unwrap()),
         _ => (),
     };
     Ok(())
@@ -139,7 +139,7 @@ pub fn on_extrinsic_msg_until_broadcast(
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Broadcast, _) => end_process(out, result, None),
         (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => panic!(e),
+        (XtStatus::Error, e) => panic!(e.unwrap()),
         _ => (),
     };
     Ok(())
@@ -156,7 +156,7 @@ pub fn on_extrinsic_msg_until_ready(
         (XtStatus::Finalized, val) => end_process(out, result, val),
         (XtStatus::Ready, _) => end_process(out, result, None),
         (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => panic!(e),
+        (XtStatus::Error, e) => panic!(e.unwrap()),
         _ => (),
     };
     Ok(())
