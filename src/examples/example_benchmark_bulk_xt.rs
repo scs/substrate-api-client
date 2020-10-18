@@ -33,7 +33,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let api = Api::new(format!("ws://{}", url)).set_signer(from);
+    let api = Api::new(url).set_signer(from);
 
     println!(
         "[+] Alice's Account Nonce is {}\n",
@@ -72,7 +72,7 @@ pub fn get_node_url_from_cli() -> String {
     let yml = load_yaml!("../../src/examples/cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
-    let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
+    let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}\n", url);

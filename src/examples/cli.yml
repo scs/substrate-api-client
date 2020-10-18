@@ -9,11 +9,12 @@ settings:
 
 args:
   - node-server:
-      long: ns
-      help: Set the node server IP address
+      short: u
+      long: url
+      help: Set the node server IP address including ws:// or wss:// prefix
       takes_value: true
   - node-port:
       short: p
-      long: node-port
+      long: port
       help: Set the websocket port to listen for substrate events
       takes_value: true
