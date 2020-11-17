@@ -18,6 +18,7 @@ use clap::{load_yaml, App};
 
 use keyring::AccountKeyring;
 use substrate_api_client::{Api, Hash};
+use substrate_api_client::AccountInfo;
 
 fn main() {
     env_logger::init();
@@ -37,15 +38,16 @@ fn main() {
     println!("[+] StorageValueProof: {:?}", proof);
 
     // get StorageMap
-    let result: Hash = api
-        .get_storage_map("System", "BlockHash", 1u32, None)
-        .or_else(|| Some(Hash::default()))
+    let account = AccountKeyring::Alice.public();
+    let result: AccountInfo = api
+        .get_storage_map("System", "Account", account, None)
+        .or_else(|| Some(AccountInfo::default()))
         .unwrap();
-    println!("[+] block hash for blocknumber 42 is {:?}", result);
+    println!("[+] AccountInfo for Alice is {:?}", result);
 
     // get StorageMap key prefix
-    let result = api.get_storage_map_key_prefix("System", "BlockHash");
-    println!("[+] key prefix for System BlockHash map is {:?}", result);
+    let result = api.get_storage_map_key_prefix("System", "Account");
+    println!("[+] key prefix for System Account map is {:?}", result);
 
     // get StorageDoubleMap
     let result: u32 = api
