@@ -21,6 +21,9 @@
 use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
+use std::io::{Error as IoError, ErrorKind::ConnectionRefused};
+
+#[cfg(feature = "std")]
 use std::sync::mpsc::Sender as ThreadOut;
 #[cfg(feature = "std")]
 use std::sync::mpsc::{channel, Receiver};
@@ -175,16 +178,11 @@ where
     }
 
     // low level access
-    fn _get_request(url: String, jsonreq: String) -> Option<String> {
+    fn _get_request(url: String, jsonreq: String) -> WsResult<String> {
         let (result_in, result_out) = channel();
         rpc::get(url, jsonreq, result_in);
 
-        let str = result_out.recv().unwrap();
-
-        match &str[..] {
-            "null" => None,
-            _ => Some(str),
-        }
+        Ok(result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?)
     }
 
     pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
@@ -205,7 +203,7 @@ where
                 let mut arr: [u8; 32] = Default::default();
                 arr.clone_from_slice(pair.to_owned().public().as_ref());
                 let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
-                if let Some(info) = self.get_account_info(&accountid) {
+                if let Ok(info) = self.get_account_info(&accountid) {
                     Ok(info.nonce)
                 } else {
                     Ok(0)
@@ -215,7 +213,7 @@ where
         }
     }
 
-    pub fn get_account_info(&self, address: &AccountId) -> Option<AccountInfo> {
+    pub fn get_account_info(&self, address: &AccountId) -> WsResult<AccountInfo> {
         let storagekey: sp_core::storage::StorageKey = self
             .metadata
             .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())
@@ -225,15 +223,11 @@ where
         self.get_storage_by_key_hash(storagekey, None)
     }
 
-    pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
-        if let Some(info) = self.get_account_info(address) {
-            Some(info.data)
-        } else {
-            None
-        }
+    pub fn get_account_data(&self, address: &AccountId) -> WsResult<AccountData> {
+        Ok(self.get_account_info(address)?.data)
     }
 
-    pub fn get_finalized_head(&self) -> Option<Hash> {
+    pub fn get_finalized_head(&self) -> WsResult<Hash> {
         Self::_get_request(
             self.url.clone(),
             json_req::chain_get_finalized_head().to_string(),
@@ -241,7 +235,7 @@ where
         .map(|h_str| hexstr_to_hash(h_str).unwrap())
     }
 
-    pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
+    pub fn get_header<H>(&self, hash: Option<Hash>) -> WsResult<H>
     where
         H: Header + DeserializeOwned,
     {
@@ -252,7 +246,7 @@ where
         .map(|h| serde_json::from_str(&h).unwrap())
     }
 
-    pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
+    pub fn get_block<B>(&self, hash: Option<Hash>) -> WsResult<B>
     where
         B: Block + DeserializeOwned,
     {
@@ -263,7 +257,7 @@ where
     /// The interval at which finality proofs are provided is set via the
     /// the `GrandpaConfig.justification_period` in a node's service.rs.
     /// The Justification may be none.
-    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> Option<SignedBlock<B>>
+    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> WsResult<SignedBlock<B>>
     where
         B: Block + DeserializeOwned,
     {
@@ -274,7 +268,7 @@ where
         .map(|b| serde_json::from_str(&b).unwrap())
     }
 
-    pub fn get_request(&self, jsonreq: String) -> Option<String> {
+    pub fn get_request(&self, jsonreq: String) -> WsResult<String> {
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
@@ -283,7 +277,7 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> Option<V> {
+    ) -> WsResult<V> {
         let storagekey = self
             .metadata
             .storage_value_key(storage_prefix, storage_key_name)
@@ -298,7 +292,7 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> Option<V> {
+    ) -> WsResult<V> {
         let storagekey = self
             .metadata
             .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
@@ -324,7 +318,7 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> Option<V> {
+    ) -> WsResult<V> {
         let storagekey = self
             .metadata
             .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
@@ -337,7 +331,7 @@ where
         &self,
         key: StorageKey,
         at_block: Option<Hash>,
-    ) -> Option<V> {
+    ) -> WsResult<V> {
         self.get_opaque_storage_by_key_hash(key, at_block)
             .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
     }
@@ -346,14 +340,14 @@ where
         &self,
         key: StorageKey,
         at_block: Option<Hash>,
-    ) -> Option<Vec<u8>> {
+    ) -> WsResult<Vec<u8>> {
         let jsonreq = json_req::state_get_storage(key, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string());
-        if let Some(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
+        Self::_get_request(self.url.clone(), jsonreq.to_string())?;
+        if let Ok(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
             info!("storage hex = {}", hexstr);
-            hexstr_to_vec(hexstr).ok()
+            Ok(hexstr_to_vec(hexstr).unwrap())
         } else {
-            None
+            Err(IoError::from(ConnectionRefused))?
         }
     }
 
@@ -362,7 +356,7 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> WsResult<ReadProof<Hash>> {
         let storagekey = self
             .metadata
             .storage_value_key(storage_prefix, storage_key_name)
@@ -377,7 +371,7 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> WsResult<ReadProof<Hash>> {
         let storagekey = self
             .metadata
             .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
@@ -393,7 +387,7 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> WsResult<ReadProof<Hash>> {
         let storagekey = self
             .metadata
             .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
@@ -406,13 +400,13 @@ where
         &self,
         keys: Vec<StorageKey>,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> WsResult<ReadProof<Hash>> {
         let jsonreq = json_req::state_get_read_proof(keys, at_block);
         Self::_get_request(self.url.clone(), jsonreq.to_string())
             .map(|proof| serde_json::from_str(&proof).unwrap())
     }
 
-    pub fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Option<Vec<String>> {
+    pub fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> WsResult<Vec<String>> {
         let jsonreq = json_req::state_get_keys(key, at_block);
         Self::_get_request(self.url.clone(), jsonreq.to_string())
             .map(|keys| serde_json::from_str(&keys).unwrap())
@@ -431,25 +425,25 @@ where
         match exit_on {
             XtStatus::Finalized => {
                 rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("finalized: {}", res);
                 Ok(Some(hexstr_to_hash(res).unwrap()))
             }
             XtStatus::InBlock => {
                 rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("inBlock: {}", res);
                 Ok(Some(hexstr_to_hash(res).unwrap()))
             }
             XtStatus::Broadcast => {
                 rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("broadcast: {}", res);
                 Ok(None)
             }
             XtStatus::Ready => {
                 rpc::send_extrinsic(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("ready: {}", res);
                 Ok(None)
             }
