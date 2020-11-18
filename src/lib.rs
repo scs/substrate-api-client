@@ -182,7 +182,9 @@ where
         let (result_in, result_out) = channel();
         rpc::get(url, jsonreq, result_in);
 
-        Ok(result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?)
+        Ok(result_out
+            .recv()
+            .map_err(|_| IoError::from(ConnectionRefused))?)
     }
 
     pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
@@ -203,11 +205,10 @@ where
                 let mut arr: [u8; 32] = Default::default();
                 arr.clone_from_slice(pair.to_owned().public().as_ref());
                 let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
-                if let Ok(info) = self.get_account_info(&accountid) {
-                    Ok(info.nonce)
-                } else {
-                    Ok(0)
-                }
+
+                Ok(self
+                    .get_account_info(&accountid)
+                    .map_or(0, |info| info.nonce))
             }
             None => Err("Can't get nonce when no signer is set"),
         }
@@ -343,12 +344,10 @@ where
     ) -> WsResult<Vec<u8>> {
         let jsonreq = json_req::state_get_storage(key, at_block);
         Self::_get_request(self.url.clone(), jsonreq.to_string())?;
-        if let Ok(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
-            info!("storage hex = {}", hexstr);
-            Ok(hexstr_to_vec(hexstr).unwrap())
-        } else {
-            Err(IoError::from(ConnectionRefused))?
-        }
+        let hexstr = Self::_get_request(self.url.clone(), jsonreq.to_string())?;
+        info!("storage hex = {}", hexstr);
+
+        Ok(hexstr_to_vec(hexstr).unwrap())
     }
 
     pub fn get_storage_value_proof(
@@ -425,25 +424,33 @@ where
         match exit_on {
             XtStatus::Finalized => {
                 rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
+                let res = result_out
+                    .recv()
+                    .map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("finalized: {}", res);
                 Ok(Some(hexstr_to_hash(res).unwrap()))
             }
             XtStatus::InBlock => {
                 rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
+                let res = result_out
+                    .recv()
+                    .map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("inBlock: {}", res);
                 Ok(Some(hexstr_to_hash(res).unwrap()))
             }
             XtStatus::Broadcast => {
                 rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
+                let res = result_out
+                    .recv()
+                    .map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("broadcast: {}", res);
                 Ok(None)
             }
             XtStatus::Ready => {
                 rpc::send_extrinsic(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().map_err(|_| IoError::from(ConnectionRefused))?;
+                let res = result_out
+                    .recv()
+                    .map_err(|_| IoError::from(ConnectionRefused))?;
                 info!("ready: {}", res);
                 Ok(None)
             }
