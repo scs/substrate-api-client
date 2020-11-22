@@ -21,7 +21,9 @@ use codec::Compact;
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 use substrate_api_client::{
-    compose_call, compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
+    compose_call, compose_extrinsic,
+    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
+    Api, XtStatus,
 };
 
 fn main() {
@@ -41,7 +43,7 @@ fn main() {
         api.metadata.clone(),
         "Balances",
         "set_balance",
-        to,
+        GenericAddress::Id(to),
         Compact(42 as u128),
         Compact(42 as u128)
     );

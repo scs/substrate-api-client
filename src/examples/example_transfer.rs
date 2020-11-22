@@ -17,6 +17,7 @@
 use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
+use sp_runtime::MultiAddress;
 
 use substrate_api_client::{Api, XtStatus};
 
@@ -35,7 +36,7 @@ fn main() {
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
     // generate extrinsic
-    let xt = api.balance_transfer(to.clone(), 1000);
+    let xt = api.balance_transfer(MultiAddress::Id(to.clone()), 1000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",

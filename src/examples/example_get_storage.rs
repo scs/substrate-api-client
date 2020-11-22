@@ -17,8 +17,8 @@
 use clap::{load_yaml, App};
 
 use keyring::AccountKeyring;
-use substrate_api_client::{Api, Hash};
 use substrate_api_client::AccountInfo;
+use substrate_api_client::Api;
 
 fn main() {
     env_logger::init();
