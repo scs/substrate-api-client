@@ -21,7 +21,8 @@ use codec::Compact;
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 use substrate_api_client::{
-    compose_call, compose_extrinsic, extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4}, 
+    compose_call, compose_extrinsic,
+    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
     Api, XtStatus,
 };
 

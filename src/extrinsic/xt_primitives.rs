@@ -32,7 +32,6 @@ pub type AccountIndex = u64;
 
 pub type GenericAddress = sp_runtime::MultiAddress<AccountId, ()>;
 
-
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
 /// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).

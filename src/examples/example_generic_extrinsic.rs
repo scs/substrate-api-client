@@ -21,7 +21,8 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic, extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4}, 
+    compose_extrinsic,
+    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
     Api, XtStatus,
 };
 
@@ -39,12 +40,12 @@ fn main() {
     // call Balances::transfer
     // the names are given as strings
     #[allow(clippy::redundant_clone)]
-    let xt: UncheckedExtrinsicV4<_> =
-        compose_extrinsic!(api.clone(), 
-            "Balances", 
-            "transfer", 
-            GenericAddress::Id(to), 
-            Compact(42 as u128)
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
+        api.clone(),
+        "Balances",
+        "transfer",
+        GenericAddress::Id(to),
+        Compact(42 as u128)
     );
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
