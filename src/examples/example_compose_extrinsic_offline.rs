@@ -21,6 +21,7 @@ use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use node_template_runtime::{BalancesCall, Call, Header};
 use sp_core::crypto::Pair;
+use sp_runtime::MultiAddress;
 
 use substrate_api_client::{
     compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
@@ -45,7 +46,7 @@ fn main() {
     );
 
     // define the recipient
-    let to = AccountKeyring::Bob.to_account_id();
+    let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
     // compose the extrinsic with all the element
     #[allow(clippy::redundant_clone)]
