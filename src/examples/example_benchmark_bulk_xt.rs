@@ -22,12 +22,9 @@ use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
-use sp_runtime::MultiAddress;
 
 use substrate_api_client::{
-    compose_extrinsic_offline,
-    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
-    Api, XtStatus,
+    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {
@@ -44,7 +41,7 @@ fn main() {
     );
 
     // define the recipient
-    let to = GenericAddress::Id(AccountKeyring::Bob.to_account_id());
+    let to = AccountKeyring::Bob.to_account_id();
 
     let mut nonce = api.get_nonce().unwrap();
     let first_nonce = nonce;
@@ -53,7 +50,10 @@ fn main() {
         #[allow(clippy::redundant_clone)]
         let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
-            Call::Balances(BalancesCall::transfer(to.clone(), 1_000_000)),
+            Call::Balances(BalancesCall::transfer(
+                GenericAddress::Id(to.clone()),
+                1_000_000
+            )),
             nonce,
             Era::Immortal,
             api.genesis_hash,
