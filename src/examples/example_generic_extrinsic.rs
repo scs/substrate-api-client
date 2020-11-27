@@ -21,7 +21,7 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
+    compose_extrinsic, UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {

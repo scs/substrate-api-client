@@ -46,9 +46,6 @@ use sp_core::crypto::Pair;
 use ws::Result as WsResult;
 
 #[cfg(feature = "std")]
-use node_metadata::Metadata;
-
-#[cfg(feature = "std")]
 use rpc::json_req;
 
 #[cfg(feature = "std")]
@@ -91,6 +88,11 @@ pub type Moment = u64;
 /// Index of a transaction.
 //fixme: make generic
 pub type Index = u32;
+
+// re-export useful types
+pub use extrinsic::xt_primitives::{GenericAddress, GenericExtra, UncheckedExtrinsicV4};
+#[cfg(feature = "std")]
+pub use node_metadata::Metadata;
 
 #[cfg(feature = "std")]
 pub use rpc::XtStatus;

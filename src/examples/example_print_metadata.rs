@@ -25,8 +25,7 @@ use clap::App;
 
 use sp_core::sr25519;
 
-use substrate_api_client::node_metadata::Metadata;
-use substrate_api_client::Api;
+use substrate_api_client::{Api, Metadata};
 
 fn main() {
     env_logger::init();

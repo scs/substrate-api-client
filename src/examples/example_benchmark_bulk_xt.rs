@@ -24,7 +24,7 @@ use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
+    compose_extrinsic_offline, UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {

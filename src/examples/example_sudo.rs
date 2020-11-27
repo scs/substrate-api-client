@@ -22,7 +22,7 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 use substrate_api_client::{
     compose_call, compose_extrinsic,
-    extrinsic::xt_primitives::{GenericAddress, UncheckedExtrinsicV4},
+    GenericAddress, UncheckedExtrinsicV4,
     Api, XtStatus,
 };
 

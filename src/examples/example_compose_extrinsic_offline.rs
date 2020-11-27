@@ -24,7 +24,7 @@ use sp_core::crypto::Pair;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::{
-    compose_extrinsic_offline, extrinsic::xt_primitives::UncheckedExtrinsicV4, Api, XtStatus,
+    compose_extrinsic_offline, UncheckedExtrinsicV4, Api, XtStatus,
 };
 
 fn main() {
