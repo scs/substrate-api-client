@@ -16,7 +16,7 @@
 */
 
 use log::{debug, error, info, warn};
-use std::sync::mpsc::Sender as ThreadOut;
+use std::sync::mpsc::{Sender as ThreadOut, SendError};
 use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
 
 #[derive(Debug, PartialEq)]
@@ -61,7 +61,7 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
     Ok(())
 }
 
-pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>) -> Result<()> {
+pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
     info!("got on_subscription_msg {}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
@@ -76,13 +76,27 @@ pub fn on_subscription_msg(msg: Message, _out: Sender, result: ThreadOut<String>
                     let changes = &value["params"]["result"]["changes"];
 
                     match changes[0][1].as_str() {
-                        Some(change_set) => result.send(change_set.to_owned()).unwrap(),
+                        Some(change_set) => match result.send(change_set.to_owned()) {
+                            Ok(_) => (),
+                            // close ws if receiver is dropped
+                            Err(SendError(e)) => { 
+                                debug!("SendError: {}. will close ws", e);
+                                out.close(CloseCode::Normal).unwrap()
+                            }
+                        },
                         None => println!("No events happened"),
                     };
                 }
                 Some("chain_finalizedHead") => {
                     serde_json::to_string(&value["params"]["result"])
-                        .map(|head| result.send(head).unwrap())
+                        .map(|head| match result.send(head) {
+                            Ok(_) => (),
+                            // close ws if receiver is dropped
+                            Err(SendError(e)) => {
+                                debug!("SendError: {}. will close ws", e);
+                                out.close(CloseCode::Normal).unwrap()
+                            }
+                        })
                         .unwrap_or_else(|_| error!("Could not parse header"));
                 }
                 _ => error!("unsupported method"),
