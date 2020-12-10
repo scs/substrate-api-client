@@ -1,7 +1,5 @@
 # substrate-api-client
 
-![badge](https://img.shields.io/badge/substrate-2.0.0-success)
-
 <p align="center">
 <img src=./web3_foundation_grants_badge_black.svg width = 400>
 </p>
@@ -35,7 +33,6 @@ To build the test node, execute the following steps:
 
     git clone https://github.com/scs/substrate-node-template
     cd substrate-test-nodes/
-    git checkout v2.0.0-alpha.6-api-client
     cargo build --release
 
 Run the node:
