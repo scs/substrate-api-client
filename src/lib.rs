@@ -134,8 +134,7 @@ where
         let genesis_hash = Self::_get_genesis_hash(url.clone())?;
         info!("Got genesis hash: {:?}", genesis_hash);
 
-        let metadata = Self::_get_metadata(url.clone())
-            .map(|metadata_prefixed| Metadata::try_from(metadata_prefixed))??;
+        let metadata = Self::_get_metadata(url.clone()).map(Metadata::try_from)??;
         debug!("Metadata: {:?}", metadata);
 
         let runtime_version = Self::_get_runtime_version(url.clone())?;
@@ -168,12 +167,11 @@ where
 
     fn _get_runtime_version(url: String) -> ApiResult<RuntimeVersion> {
         let jsonreq = json_req::state_get_runtime_version();
-        let version_str = Self::_get_request(url, jsonreq.to_string())
-            .map_err(|e| ApiClientError::RuntimeVersion(e.to_string()))?;
+        let version_str = Self::_get_request(url, jsonreq.to_string())?;
 
         if version_str.is_none() {
             return Err(ApiClientError::RuntimeVersion(
-                "Version str is none".to_string(),
+                "Version is none".to_string(),
             ));
         }
         serde_json::from_str(&version_str.unwrap()).map_err(|e| e.into())
@@ -181,8 +179,7 @@ where
 
     fn _get_metadata(url: String) -> ApiResult<RuntimeMetadataPrefixed> {
         let jsonreq = json_req::state_get_metadata();
-        let meta = Self::_get_request(url, jsonreq.to_string())
-            .map_err(|e| ApiClientError::MetadataFetch(e.to_string()))?;
+        let meta = Self::_get_request(url, jsonreq.to_string())?;
 
         if meta.is_none() {
             return Err(ApiClientError::MetadataFetch(
