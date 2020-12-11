@@ -108,6 +108,8 @@ pub type Balance = u128;
 pub type AccountData = AccountDataGen<Balance>;
 pub type AccountInfo = AccountInfoGen<Index, AccountData>;
 
+type ApiResult<T> = Result<T, ApiClientError>;
+
 #[cfg(feature = "std")]
 #[derive(Clone)]
 pub struct Api<P>
@@ -128,24 +130,24 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(url: String) -> Self {
-        let genesis_hash = Self::_get_genesis_hash(url.clone());
+    pub fn new(url: String) -> ApiResult<Self> {
+        let genesis_hash = Self::_get_genesis_hash(url.clone())?;
         info!("Got genesis hash: {:?}", genesis_hash);
 
-        let meta = Self::_get_metadata(url.clone());
-        let metadata = Metadata::try_from(meta).unwrap();
+        let metadata = Self::_get_metadata(url.clone())
+            .map(|metadata_prefixed| Metadata::try_from(metadata_prefixed))??;
         debug!("Metadata: {:?}", metadata);
 
-        let runtime_version = Self::_get_runtime_version(url.clone());
+        let runtime_version = Self::_get_runtime_version(url.clone())?;
         info!("Runtime Version: {:?}", runtime_version);
 
-        Self {
+        Ok(Self {
             url,
             signer: None,
             genesis_hash,
             metadata,
             runtime_version,
-        }
+        })
     }
 
     pub fn set_signer(mut self, signer: P) -> Self {
@@ -153,130 +155,139 @@ where
         self
     }
 
-    fn _get_genesis_hash(url: String) -> Hash {
+    fn _get_genesis_hash(url: String) -> ApiResult<Hash> {
         let jsonreq = json_req::chain_get_genesis_hash();
-        let genesis_hash_str = Self::_get_request(url, jsonreq.to_string())
-            .expect("Fetching genesis hash from node failed");
-        hexstr_to_hash(genesis_hash_str).unwrap()
+        let genesis = Self::_get_request(url, jsonreq.to_string())
+            .map_err(|e| ApiClientError::Genesis(e.to_string()))?;
+
+        match genesis {
+            Some(g) => hexstr_to_hash(g).map_err(|e| e.into()),
+            None => Err(ApiClientError::Genesis("Genesis is zero".to_string())),
+        }
     }
 
-    fn _get_runtime_version(url: String) -> RuntimeVersion {
+    fn _get_runtime_version(url: String) -> ApiResult<RuntimeVersion> {
         let jsonreq = json_req::state_get_runtime_version();
-        let version_str = Self::_get_request(url, jsonreq.to_string()).unwrap(); //expect("Fetching runtime version from node failed");
-        debug!("got the following runtime version (raw): {}", version_str);
-        serde_json::from_str(&version_str).unwrap()
+        let version_str = Self::_get_request(url, jsonreq.to_string())
+            .map_err(|e| ApiClientError::RuntimeVersion(e.to_string()))?;
+
+        if version_str.is_none() {
+            return Err(ApiClientError::RuntimeVersion(
+                "Version str is none".to_string(),
+            ));
+        }
+        serde_json::from_str(&version_str.unwrap()).map_err(|e| e.into())
     }
 
-    fn _get_metadata(url: String) -> RuntimeMetadataPrefixed {
+    fn _get_metadata(url: String) -> ApiResult<RuntimeMetadataPrefixed> {
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = Self::_get_request(url, jsonreq.to_string()).unwrap();
+        let meta = Self::_get_request(url, jsonreq.to_string())
+            .map_err(|e| ApiClientError::MetadataFetch(e.to_string()))?;
 
-        let _unhex = hexstr_to_vec(metadata_str).unwrap();
-        let mut _om = _unhex.as_slice();
-        RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
+        if meta.is_none() {
+            return Err(ApiClientError::MetadataFetch(
+                "Metadata is none".to_string(),
+            ));
+        }
+        let metadata = hexstr_to_vec(meta.unwrap())?;
+        RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
     }
 
     // low level access
-    fn _get_request(url: String, jsonreq: String) -> Option<String> {
+    fn _get_request(url: String, jsonreq: String) -> ApiResult<Option<String>> {
         let (result_in, result_out) = channel();
         rpc::get(url, jsonreq, result_in);
 
-        let str = result_out.recv().unwrap();
+        let str = result_out.recv()?;
 
         match &str[..] {
-            "null" => None,
-            _ => Some(str),
+            "null" => Ok(None),
+            _ => Ok(Some(str)),
         }
     }
 
-    pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
+    pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
         Self::_get_metadata(self.url.clone())
     }
 
-    pub fn get_spec_version(&self) -> u32 {
-        Self::_get_runtime_version(self.url.clone()).spec_version
+    pub fn get_spec_version(&self) -> ApiResult<u32> {
+        Self::_get_runtime_version(self.url.clone()).map(|v| v.spec_version)
     }
 
-    pub fn get_genesis_hash(&self) -> Hash {
+    pub fn get_genesis_hash(&self) -> ApiResult<Hash> {
         Self::_get_genesis_hash(self.url.clone())
     }
 
-    pub fn get_nonce(&self) -> Result<u32, &str> {
-        match &self.signer {
-            Some(pair) => {
-                let mut arr: [u8; 32] = Default::default();
-                arr.clone_from_slice(pair.to_owned().public().as_ref());
-                let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
-                if let Some(info) = self.get_account_info(&accountid) {
-                    Ok(info.nonce)
-                } else {
-                    Ok(0)
-                }
-            }
-            None => Err("Can't get nonce when no signer is set"),
+    pub fn get_nonce(&self) -> ApiResult<u32> {
+        if self.signer.is_none() {
+            return Err(ApiClientError::NoSigner);
         }
+
+        let pair = self.signer.as_ref().unwrap();
+        let mut arr: [u8; 32] = Default::default();
+        arr.clone_from_slice(pair.to_owned().public().as_ref());
+        let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
+
+        self.get_account_info(&accountid)
+            .map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
     }
 
-    pub fn get_account_info(&self, address: &AccountId) -> Option<AccountInfo> {
+    pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
         let storagekey: sp_core::storage::StorageKey = self
             .metadata
-            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())
-            .unwrap();
+            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())?;
         info!("storagekey {:?}", storagekey);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, None)
     }
 
-    pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
-        if let Some(info) = self.get_account_info(address) {
-            Some(info.data)
-        } else {
-            None
+    pub fn get_account_data(&self, address: &AccountId) -> ApiResult<Option<AccountData>> {
+        self.get_account_info(address)
+            .map(|info| info.map(|i| i.data))
+    }
+
+    pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
+        let h = self.get_request(json_req::chain_get_finalized_head().to_string())?;
+        match h {
+            Some(hash) => Ok(Some(hexstr_to_hash(hash)?)),
+            None => Ok(None),
         }
     }
 
-    pub fn get_finalized_head(&self) -> Option<Hash> {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_finalized_head().to_string(),
-        )
-        .map(|h_str| hexstr_to_hash(h_str).unwrap())
-    }
-
-    pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
+    pub fn get_header<H>(&self, hash: Option<Hash>) -> ApiResult<Option<H>>
     where
         H: Header + DeserializeOwned,
     {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_header(hash).to_string(),
-        )
-        .map(|h| serde_json::from_str(&h).unwrap())
+        let h = self.get_request(json_req::chain_get_header(hash).to_string())?;
+        match h {
+            Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
+            None => Ok(None),
+        }
     }
 
-    pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
+    pub fn get_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<B>>
     where
         B: Block + DeserializeOwned,
     {
-        Self::get_signed_block(self, hash).map(|signed_block| signed_block.block)
+        Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
     }
 
     /// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
     /// The interval at which finality proofs are provided is set via the
     /// the `GrandpaConfig.justification_period` in a node's service.rs.
     /// The Justification may be none.
-    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> Option<SignedBlock<B>>
+    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<SignedBlock<B>>>
     where
         B: Block + DeserializeOwned,
     {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_block(hash).to_string(),
-        )
-        .map(|b| serde_json::from_str(&b).unwrap())
+        let b = self.get_request(json_req::chain_get_block(hash).to_string())?;
+        match b {
+            Some(block) => Ok(Some(serde_json::from_str(&block)?)),
+            None => Ok(None),
+        }
     }
 
-    pub fn get_request(&self, jsonreq: String) -> Option<String> {
+    pub fn get_request(&self, jsonreq: String) -> ApiResult<Option<String>> {
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
@@ -285,11 +296,10 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> Option<V> {
+    ) -> ApiResult<Option<V>> {
         let storagekey = self
             .metadata
-            .storage_value_key(storage_prefix, storage_key_name)
-            .unwrap();
+            .storage_value_key(storage_prefix, storage_key_name)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -300,11 +310,10 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> Option<V> {
-        let storagekey = self
-            .metadata
-            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
-            .unwrap();
+    ) -> ApiResult<Option<V>> {
+        let storagekey =
+            self.metadata
+                .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -313,10 +322,10 @@ where
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
-    ) -> StorageKey {
+    ) -> ApiResult<StorageKey> {
         self.metadata
             .storage_map_key_prefix(storage_prefix, storage_key_name)
-            .unwrap()
+            .map_err(|e| e.into())
     }
 
     pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
@@ -326,11 +335,13 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> Option<V> {
-        let storagekey = self
-            .metadata
-            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
-            .unwrap();
+    ) -> ApiResult<Option<V>> {
+        let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
+            storage_prefix,
+            storage_key_name,
+            first,
+            second,
+        )?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -339,23 +350,25 @@ where
         &self,
         key: StorageKey,
         at_block: Option<Hash>,
-    ) -> Option<V> {
-        self.get_opaque_storage_by_key_hash(key, at_block)
-            .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
+    ) -> ApiResult<Option<V>> {
+        let s = self.get_opaque_storage_by_key_hash(key, at_block)?;
+        match s {
+            Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
+            None => Ok(None),
+        }
     }
 
     pub fn get_opaque_storage_by_key_hash(
         &self,
         key: StorageKey,
         at_block: Option<Hash>,
-    ) -> Option<Vec<u8>> {
+    ) -> ApiResult<Option<Vec<u8>>> {
         let jsonreq = json_req::state_get_storage(key, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string());
-        if let Some(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
-            info!("storage hex = {}", hexstr);
-            hexstr_to_vec(hexstr).ok()
-        } else {
-            None
+        let s = self.get_request(jsonreq.to_string())?;
+
+        match s {
+            Some(storage) => Ok(Some(hexstr_to_vec(storage)?)),
+            None => Ok(None),
         }
     }
 
@@ -364,11 +377,10 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
         let storagekey = self
             .metadata
-            .storage_value_key(storage_prefix, storage_key_name)
-            .unwrap();
+            .storage_value_key(storage_prefix, storage_key_name)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -379,11 +391,10 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
-        let storagekey = self
-            .metadata
-            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
-            .unwrap();
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
+        let storagekey =
+            self.metadata
+                .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -395,11 +406,13 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
-        let storagekey = self
-            .metadata
-            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
-            .unwrap();
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
+        let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
+            storage_prefix,
+            storage_key_name,
+            first,
+            second,
+        )?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -408,16 +421,26 @@ where
         &self,
         keys: Vec<StorageKey>,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
         let jsonreq = json_req::state_get_read_proof(keys, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string())
-            .map(|proof| serde_json::from_str(&proof).unwrap())
+        let p = self.get_request(jsonreq.to_string())?;
+        match p {
+            Some(proof) => Ok(Some(serde_json::from_str(&proof)?)),
+            None => Ok(None),
+        }
     }
 
-    pub fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Option<Vec<String>> {
+    pub fn get_keys(
+        &self,
+        key: StorageKey,
+        at_block: Option<Hash>,
+    ) -> ApiResult<Option<Vec<String>>> {
         let jsonreq = json_req::state_get_keys(key, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string())
-            .map(|keys| serde_json::from_str(&keys).unwrap())
+        let k = self.get_request(jsonreq.to_string())?;
+        match k {
+            Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
+            None => Ok(None),
+        }
     }
 
     pub fn send_extrinsic(
@@ -511,7 +534,7 @@ where
                             RuntimeEvent::Raw(raw)
                                 if raw.module == module && raw.variant == variant =>
                             {
-                                return Some(raw)
+                                return Some(raw);
                             }
                             _ => debug!("ignoring unsupported module event: {:?}", event),
                         }
@@ -521,4 +544,28 @@ where
             }
         }
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ApiClientError {
+    #[error("Fetching genesis hash failed: {0}")]
+    Genesis(String),
+    #[error("Fetching runtime version failed: {0}")]
+    RuntimeVersion(String),
+    #[error("Fetching Metadata error: {0}")]
+    MetadataFetch(String),
+    #[error("Operation needs a signer to be set in the api")]
+    NoSigner,
+    #[error("WebSocket Error: {0}")]
+    WebSocket(#[from] ws::Error),
+    #[error("Channel Receive Error: {0}")]
+    Disconnected(#[from] sp_std::sync::mpsc::RecvError),
+    #[error("Metadata Error: {0}")]
+    Metadata(#[from] crate::node_metadata::MetadataError),
+    #[error("Error decoding storage value")]
+    StorageValueDecode(#[from] extrinsic::codec::Error),
+    #[error("Received invalid hex string: {0}")]
+    InvalidHexString(#[from] hex::FromHexError),
+    #[error("Error deserializing with serde: {0}")]
+    Deserializing(#[from] serde_json::Error),
 }
