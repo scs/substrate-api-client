@@ -43,9 +43,6 @@ use metadata::RuntimeMetadataPrefixed;
 use sp_core::crypto::Pair;
 
 #[cfg(feature = "std")]
-use ws::Result as WsResult;
-
-#[cfg(feature = "std")]
 use rpc::json_req;
 
 #[cfg(feature = "std")]
@@ -96,6 +93,7 @@ pub use node_metadata::Metadata;
 
 #[cfg(feature = "std")]
 pub use rpc::XtStatus;
+use sp_core::crypto::AccountId32;
 #[cfg(feature = "std")]
 use sp_runtime::{
     traits::{Block, Header},
@@ -108,6 +106,7 @@ pub type Balance = u128;
 pub type AccountData = AccountDataGen<Balance>;
 pub type AccountInfo = AccountInfoGen<Index, AccountData>;
 
+#[cfg(feature = "std")]
 type ApiResult<T> = Result<T, ApiClientError>;
 
 #[cfg(feature = "std")]
@@ -156,8 +155,7 @@ where
 
     fn _get_genesis_hash(url: String) -> ApiResult<Hash> {
         let jsonreq = json_req::chain_get_genesis_hash();
-        let genesis = Self::_get_request(url, jsonreq.to_string())
-            .map_err(|e| ApiClientError::Genesis(e.to_string()))?;
+        let genesis = Self::_get_request(url, jsonreq.to_string())?;
 
         match genesis {
             Some(g) => hexstr_to_hash(g).map_err(|e| e.into()),
@@ -167,14 +165,14 @@ where
 
     fn _get_runtime_version(url: String) -> ApiResult<RuntimeVersion> {
         let jsonreq = json_req::state_get_runtime_version();
-        let version_str = Self::_get_request(url, jsonreq.to_string())?;
+        let version = Self::_get_request(url, jsonreq.to_string())?;
 
-        if version_str.is_none() {
-            return Err(ApiClientError::RuntimeVersion(
+        match version {
+            Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
+            None => Err(ApiClientError::RuntimeVersion(
                 "Version is none".to_string(),
-            ));
+            )),
         }
-        serde_json::from_str(&version_str.unwrap()).map_err(|e| e.into())
     }
 
     fn _get_metadata(url: String) -> ApiResult<RuntimeMetadataPrefixed> {
@@ -223,9 +221,9 @@ where
         let pair = self.signer.as_ref().unwrap();
         let mut arr: [u8; 32] = Default::default();
         arr.clone_from_slice(pair.to_owned().public().as_ref());
-        let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
+        let account_id: AccountId = AccountId32::from(arr);
 
-        self.get_account_info(&accountid)
+        self.get_account_info(&account_id)
             .map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
     }
 
@@ -444,7 +442,7 @@ where
         &self,
         xthex_prefixed: String,
         exit_on: XtStatus,
-    ) -> WsResult<Option<Hash>> {
+    ) -> ApiResult<Option<Hash>> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
 
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
@@ -453,31 +451,29 @@ where
         match exit_on {
             XtStatus::Finalized => {
                 rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv()?;
                 info!("finalized: {}", res);
-                Ok(Some(hexstr_to_hash(res).unwrap()))
+                Ok(Some(hexstr_to_hash(res)?))
             }
             XtStatus::InBlock => {
                 rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv()?;
                 info!("inBlock: {}", res);
-                Ok(Some(hexstr_to_hash(res).unwrap()))
+                Ok(Some(hexstr_to_hash(res)?))
             }
             XtStatus::Broadcast => {
                 rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv()?;
                 info!("broadcast: {}", res);
                 Ok(None)
             }
             XtStatus::Ready => {
                 rpc::send_extrinsic(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                let res = result_out.recv()?;
                 info!("ready: {}", res);
                 Ok(None)
             }
-            _ => panic!(
-                "can only wait for finalized, in block, broadcast and ready extrinsic status"
-            ),
+            _ => Err(ApiClientError::XtStatus(exit_on)),
         }
     }
 
@@ -544,6 +540,7 @@ where
 }
 
 #[derive(Debug, thiserror::Error)]
+#[cfg(feature = "std")]
 pub enum ApiClientError {
     #[error("Fetching genesis hash failed: {0}")]
     Genesis(String),
@@ -559,10 +556,12 @@ pub enum ApiClientError {
     Disconnected(#[from] sp_std::sync::mpsc::RecvError),
     #[error("Metadata Error: {0}")]
     Metadata(#[from] crate::node_metadata::MetadataError),
-    #[error("Error decoding storage value")]
+    #[error("Error decoding storage value: {0}")]
     StorageValueDecode(#[from] extrinsic::codec::Error),
     #[error("Received invalid hex string: {0}")]
     InvalidHexString(#[from] hex::FromHexError),
     #[error("Error deserializing with serde: {0}")]
     Deserializing(#[from] serde_json::Error),
+    #[error("Xstatus Error: Can only waith for can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
+    XtStatus(XtStatus),
 }
