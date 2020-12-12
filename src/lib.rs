@@ -93,7 +93,10 @@ pub use node_metadata::Metadata;
 
 #[cfg(feature = "std")]
 pub use rpc::XtStatus;
+
+#[cfg(feature = "std")]
 use sp_core::crypto::AccountId32;
+
 #[cfg(feature = "std")]
 use sp_runtime::{
     traits::{Block, Header},
