@@ -31,9 +31,9 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::<sr25519::Pair>::new(url);
+    let api = Api::<sr25519::Pair>::new(url).unwrap();
 
-    let meta = Metadata::try_from(api.get_metadata()).unwrap();
+    let meta = Metadata::try_from(api.get_metadata().unwrap()).unwrap();
 
     meta.print_overview();
     meta.print_modules_with_calls();
@@ -42,7 +42,7 @@ fn main() {
     // print full substrate metadata json formatted
     println!(
         "{}",
-        Metadata::pretty_format(&api.get_metadata())
+        Metadata::pretty_format(&api.get_metadata().unwrap())
             .unwrap_or_else(|| "pretty format failed".to_string())
     )
 }

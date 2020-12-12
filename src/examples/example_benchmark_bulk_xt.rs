@@ -23,9 +23,7 @@ use keyring::AccountKeyring;
 use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
 
-use substrate_api_client::{
-    compose_extrinsic_offline, UncheckedExtrinsicV4, Api, XtStatus,
-};
+use substrate_api_client::{compose_extrinsic_offline, Api, UncheckedExtrinsicV4, XtStatus};
 
 fn main() {
     env_logger::init();
@@ -33,7 +31,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let api = Api::new(url).set_signer(from);
+    let api = Api::new(url).map(|api| api.set_signer(from)).unwrap();
 
     println!(
         "[+] Alice's Account Nonce is {}\n",

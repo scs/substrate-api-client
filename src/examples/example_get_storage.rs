@@ -24,11 +24,12 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let mut api = Api::new(url);
+    let mut api = Api::new(url).unwrap();
 
     // get some plain storage value
     let result: u128 = api
         .get_storage_value("Balances", "TotalIssuance", None)
+        .unwrap()
         .unwrap();
     println!("[+] TotalIssuance is {}", result);
 
@@ -41,17 +42,19 @@ fn main() {
     let account = AccountKeyring::Alice.public();
     let result: AccountInfo = api
         .get_storage_map("System", "Account", account, None)
+        .unwrap()
         .or_else(|| Some(AccountInfo::default()))
         .unwrap();
     println!("[+] AccountInfo for Alice is {:?}", result);
 
     // get StorageMap key prefix
-    let result = api.get_storage_map_key_prefix("System", "Account");
+    let result = api.get_storage_map_key_prefix("System", "Account").unwrap();
     println!("[+] key prefix for System Account map is {:?}", result);
 
     // get StorageDoubleMap
     let result: u32 = api
         .get_storage_double_map("TemplateModule", "SomeDoubleMap", 1_u32, 2_u32, None)
+        .unwrap()
         .or(Some(0))
         .unwrap();
     println!("[+] some double map (1,2) should be 3. Is {:?}", result);

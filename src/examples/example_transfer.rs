@@ -27,11 +27,13 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let api = Api::new(url).set_signer(from.clone());
+    let api = Api::new(url)
+        .map(|api| api.set_signer(from.clone()))
+        .unwrap();
 
     let to = AccountKeyring::Bob.to_account_id();
 
-    match api.get_account_data(&to) {
+    match api.get_account_data(&to).unwrap() {
         Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
@@ -53,7 +55,7 @@ fn main() {
     println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
-    let bob = api.get_account_data(&to).unwrap();
+    let bob = api.get_account_data(&to).unwrap().unwrap();
     println!("[+] Bob's Free Balance is now {}\n", bob.free);
 }
 
