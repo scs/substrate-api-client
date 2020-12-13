@@ -54,13 +54,17 @@ impl Handler for RpcClient {
 }
 
 pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
-    info!("Got get_request_msg {}", msg);
-    let retstr = msg.as_text().unwrap();
-    let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
+    out.close(CloseCode::Normal)
+        .unwrap_or_else(|_| warn!("Could not close Websocket normally"));
 
-    result.send(value["result"].to_string()).unwrap();
-    out.close(CloseCode::Normal)?;
-    Ok(())
+    info!("Got get_request_msg {}", msg);
+    let result_str = serde_json::from_str(msg.as_text()?)
+        .map(|v: serde_json::Value| v["result"].to_string())
+        .map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+
+    result
+        .send(result_str)
+        .map_err(|e| Box::new(RpcClientError::Send(e)).into())
 }
 
 pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
@@ -117,7 +121,6 @@ pub fn on_extrinsic_msg_until_finalized(
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
         Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
-        Ok((XtStatus::Error, e)) => panic!(e.unwrap()),
         Ok((XtStatus::Future, _)) => {
             warn!("extrinsic has 'future' status. aborting");
             end_process(out, result, None)
@@ -179,10 +182,13 @@ fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) ->
     // return result to calling thread
     debug!("Thread end result :{:?} value:{:?}", result, value);
     let val = value.unwrap_or_else(|| "".to_string());
+
+    out.close(CloseCode::Normal)
+        .unwrap_or_else(|_| warn!("Could not close WebSocket normally"));
+
     result
         .send(val)
-        .map_err(|e| Box::new(RpcClientError::Send(e)))?;
-    out.close(CloseCode::Normal)
+        .map_err(|e| Box::new(RpcClientError::Send(e)).into())
 }
 
 fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
