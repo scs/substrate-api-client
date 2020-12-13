@@ -19,10 +19,7 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic,
-    extrinsic::xt_primitives::UncheckedExtrinsicV4,
-    utils::{hexstr_to_u64, FromHexString},
-    Api,
+    compose_extrinsic, utils::FromHexString, Api, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[derive(Encode, Decode, Debug)]
@@ -36,28 +33,34 @@ fn main() {
 
     let signer = AccountKeyring::Alice.pair();
 
-    let api = Api::new(format!("ws://{}", url)).set_signer(signer.clone());
+    let api = Api::new(format!("ws://{}", url))
+        .map(|api| api.set_signer(signer.clone()))
+        .unwrap();
 
     let xt: UncheckedExtrinsicV4<_> =
-        compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
+        compose_extrinsic!(api, "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Extrinsic: {:?}\n", xt);
 
-    let tx_hash = api.send_extrinsic(xt.hex_encode()).unwrap();
+    let tx_hash = api
+        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .unwrap()
+        .unwrap();
     println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
 
     // get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
     // event similar to what we do in the example_contract.
-    let res_str = api
-        .get_storage("Kitty", "KittyIndex", Some(signer.public().encode()))
+    let index: u64 = api
+        .get_storage_map("Kitty", "KittyIndex", Some(signer.public().encode()), None)
+        .unwrap()
         .unwrap();
 
-    let index = hexstr_to_u64(res_str).unwrap();
     println!("[+] Alice's Kitty is at index : {}\n", index);
 
     // get the Kitty
     let res_str = api
-        .get_storage("Kitty", "Kitties", Some(index.encode()))
+        .get_storage_map("Kitty", "Kitties", Some(index.encode()), None)
+        .unwrap()
         .unwrap();
 
     let res_vec = Vec::from_hex(res_str).unwrap();
