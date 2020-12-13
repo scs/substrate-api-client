@@ -479,7 +479,7 @@ where
                 info!("ready: {}", res);
                 Ok(None)
             }
-            _ => Err(ApiClientError::XtStatus(exit_on)),
+            _ => Err(ApiClientError::UnsupportedXtStatus(exit_on)),
         }
     }
 
@@ -568,6 +568,6 @@ pub enum ApiClientError {
     InvalidHexString(#[from] hex::FromHexError),
     #[error("Error deserializing with serde: {0}")]
     Deserializing(#[from] serde_json::Error),
-    #[error("Xstatus Error: Can only waith for can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
-    XtStatus(XtStatus),
+    #[error("UnsupportedXtStatus Error: Can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
+    UnsupportedXtStatus(XtStatus),
 }
