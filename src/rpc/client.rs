@@ -16,8 +16,8 @@
 */
 
 use log::{debug, error, info, warn};
-use std::sync::mpsc::{Sender as ThreadOut, SendError};
-use ws::{CloseCode, Handler, Handshake, Message, Result, Sender};
+use std::sync::mpsc::{SendError, Sender as ThreadOut};
+use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
 
 #[derive(Debug, PartialEq)]
 pub enum XtStatus {
@@ -30,7 +30,7 @@ pub enum XtStatus {
     Unknown,
 }
 
-pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()>;
+pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
 
 pub struct RpcClient {
     pub out: Sender,
@@ -39,31 +39,33 @@ pub struct RpcClient {
     pub on_message_fn: OnMessageFn,
 }
 
+type RpcResult<T> = Result<T, RpcClientError>;
+
 impl Handler for RpcClient {
-    fn on_open(&mut self, _: Handshake) -> Result<()> {
+    fn on_open(&mut self, _: Handshake) -> WsResult<()> {
         info!("sending request: {}", self.request);
-        self.out.send(self.request.clone()).unwrap();
+        self.out.send(self.request.clone())?;
         Ok(())
     }
 
-    fn on_message(&mut self, msg: Message) -> Result<()> {
+    fn on_message(&mut self, msg: Message) -> WsResult<()> {
         (self.on_message_fn)(msg, self.out.clone(), self.result.clone())
     }
 }
 
-pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
     info!("Got get_request_msg {}", msg);
     let retstr = msg.as_text().unwrap();
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
 
     result.send(value["result"].to_string()).unwrap();
-    out.close(CloseCode::Normal).unwrap();
+    out.close(CloseCode::Normal)?;
     Ok(())
 }
 
-pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> Result<()> {
+pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
     info!("got on_subscription_msg {}", msg);
-    let retstr = msg.as_text().unwrap();
+    let retstr = msg.as_text()?;
     let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
     match value["id"].as_str() {
         Some(_idstr) => {}
@@ -79,9 +81,9 @@ pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>)
                         Some(change_set) => match result.send(change_set.to_owned()) {
                             Ok(_) => (),
                             // close ws if receiver is dropped
-                            Err(SendError(e)) => { 
+                            Err(SendError(e)) => {
                                 debug!("SendError: {}. will close ws", e);
-                                out.close(CloseCode::Normal).unwrap()
+                                out.close(CloseCode::Normal)?;
                             }
                         },
                         None => println!("No events happened"),
@@ -110,81 +112,80 @@ pub fn on_extrinsic_msg_until_finalized(
     msg: Message,
     out: Sender,
     result: ThreadOut<String>,
-) -> Result<()> {
+) -> WsResult<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
-        (XtStatus::Finalized, val) => end_process(out, result, val),
-        (XtStatus::Error, e) => panic!(e.unwrap()),
-        (XtStatus::Future, _) => {
+        Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
+        Ok((XtStatus::Error, e)) => panic!(e.unwrap()),
+        Ok((XtStatus::Future, _)) => {
             warn!("extrinsic has 'future' status. aborting");
-            end_process(out, result, None);
+            end_process(out, result, None)
         }
-        _ => (),
-    };
-    Ok(())
+        Err(e) => Err(Box::new(e).into()),
+        _ => Ok(()),
+    }
 }
 
 pub fn on_extrinsic_msg_until_in_block(
     msg: Message,
     out: Sender,
     result: ThreadOut<String>,
-) -> Result<()> {
+) -> WsResult<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
-        (XtStatus::Finalized, val) => end_process(out, result, val),
-        (XtStatus::InBlock, val) => end_process(out, result, val),
-        (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => panic!(e.unwrap()),
-        _ => (),
-    };
-    Ok(())
+        Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
+        Ok((XtStatus::InBlock, val)) => end_process(out, result, val),
+        Ok((XtStatus::Future, _)) => end_process(out, result, None),
+        Err(e) => Err(Box::new(e).into()),
+        _ => Ok(()),
+    }
 }
 
 pub fn on_extrinsic_msg_until_broadcast(
     msg: Message,
     out: Sender,
     result: ThreadOut<String>,
-) -> Result<()> {
+) -> WsResult<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
-        (XtStatus::Finalized, val) => end_process(out, result, val),
-        (XtStatus::Broadcast, _) => end_process(out, result, None),
-        (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => panic!(e.unwrap()),
-        _ => (),
-    };
-    Ok(())
+        Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
+        Ok((XtStatus::Broadcast, _)) => end_process(out, result, None),
+        Ok((XtStatus::Future, _)) => end_process(out, result, None),
+        Err(e) => Err(Box::new(e).into()),
+        _ => Ok(()),
+    }
 }
 
 pub fn on_extrinsic_msg_until_ready(
     msg: Message,
     out: Sender,
     result: ThreadOut<String>,
-) -> Result<()> {
+) -> WsResult<()> {
     let retstr = msg.as_text().unwrap();
     debug!("got msg {}", retstr);
     match parse_status(retstr) {
-        (XtStatus::Finalized, val) => end_process(out, result, val),
-        (XtStatus::Ready, _) => end_process(out, result, None),
-        (XtStatus::Future, _) => end_process(out, result, None),
-        (XtStatus::Error, e) => panic!(e.unwrap()),
-        _ => (),
-    };
-    Ok(())
+        Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
+        Ok((XtStatus::Ready, _)) => end_process(out, result, None),
+        Ok((XtStatus::Future, _)) => end_process(out, result, None),
+        Err(e) => Err(Box::new(e).into()),
+        _ => Ok(()),
+    }
 }
 
-fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) {
+fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) -> WsResult<()> {
     // return result to calling thread
     debug!("Thread end result :{:?} value:{:?}", result, value);
     let val = value.unwrap_or_else(|| "".to_string());
-    result.send(val).unwrap();
-    out.close(CloseCode::Normal).unwrap();
+    result
+        .send(val)
+        .map_err(|e| Box::new(RpcClientError::Send(e)))?;
+    out.close(CloseCode::Normal)
 }
 
-fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
+fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
     let value: serde_json::Value = serde_json::from_str(msg).unwrap();
     match value["error"].as_object() {
         Some(obj) => {
@@ -194,37 +195,45 @@ fn parse_status(msg: &str) -> (XtStatus, Option<String>) {
                 Some(d) => d.as_str().unwrap().to_owned(),
                 None => "".to_string(),
             };
-            (
-                XtStatus::Error,
-                Some(format!(
-                    "extrinsic error code {}: {}: {}",
-                    code, error_message, details
-                )),
-            )
+            Err(RpcClientError::Extrinsic(format!(
+                "extrinsic error code {}: {}: {}",
+                code, error_message, details
+            )))
         }
         None => match value["params"]["result"].as_object() {
             Some(obj) => {
                 if let Some(hash) = obj.get("finalized") {
                     info!("finalized: {:?}", hash);
-                    (XtStatus::Finalized, Some(hash.to_string()))
+                    Ok((XtStatus::Finalized, Some(hash.to_string())))
                 } else if let Some(hash) = obj.get("inBlock") {
                     info!("inBlock: {:?}", hash);
-                    (XtStatus::InBlock, Some(hash.to_string()))
+                    Ok((XtStatus::InBlock, Some(hash.to_string())))
                 } else if let Some(array) = obj.get("broadcast") {
                     info!("broadcast: {:?}", array);
-                    (XtStatus::Broadcast, Some(array.to_string()))
+                    Ok((XtStatus::Broadcast, Some(array.to_string())))
                 } else {
-                    (XtStatus::Unknown, None)
+                    Ok((XtStatus::Unknown, None))
                 }
             }
             None => match value["params"]["result"].as_str() {
-                Some("ready") => (XtStatus::Ready, None),
-                Some("future") => (XtStatus::Future, None),
-                Some(&_) => (XtStatus::Unknown, None),
-                None => (XtStatus::Unknown, None),
+                Some("ready") => Ok((XtStatus::Ready, None)),
+                Some("future") => Ok((XtStatus::Future, None)),
+                Some(&_) => Ok((XtStatus::Unknown, None)),
+                None => Ok((XtStatus::Unknown, None)),
             },
         },
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[cfg(feature = "std")]
+pub enum RpcClientError {
+    #[error("Serdejson error: {0}")]
+    Serde(#[from] serde_json::error::Error),
+    #[error("Extrinsic Error: {0}")]
+    Extrinsic(String),
+    #[error("Send Error: {0}")]
+    Send(#[from] std::sync::mpsc::SendError<String>),
 }
 
 #[cfg(test)]
