@@ -69,8 +69,9 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
 
 pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
     info!("got on_subscription_msg {}", msg);
-    let retstr = msg.as_text()?;
-    let value: serde_json::Value = serde_json::from_str(retstr).unwrap();
+    let value: serde_json::Value =
+        serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+
     match value["id"].as_str() {
         Some(_idstr) => {}
         _ => {
@@ -80,30 +81,24 @@ pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>)
             match value["method"].as_str() {
                 Some("state_storage") => {
                     let changes = &value["params"]["result"]["changes"];
-
                     match changes[0][1].as_str() {
-                        Some(change_set) => match result.send(change_set.to_owned()) {
-                            Ok(_) => (),
-                            // close ws if receiver is dropped
-                            Err(SendError(e)) => {
+                        Some(change_set) => {
+                            if let Err(SendError(e)) = result.send(change_set.to_owned()) {
                                 debug!("SendError: {}. will close ws", e);
                                 out.close(CloseCode::Normal)?;
                             }
-                        },
+                        }
                         None => println!("No events happened"),
                     };
                 }
                 Some("chain_finalizedHead") => {
-                    serde_json::to_string(&value["params"]["result"])
-                        .map(|head| match result.send(head) {
-                            Ok(_) => (),
-                            // close ws if receiver is dropped
-                            Err(SendError(e)) => {
-                                debug!("SendError: {}. will close ws", e);
-                                out.close(CloseCode::Normal).unwrap()
-                            }
-                        })
-                        .unwrap_or_else(|_| error!("Could not parse header"));
+                    let head = serde_json::to_string(&value["params"]["result"])
+                        .map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+
+                    if let Err(e) = result.send(head) {
+                        debug!("SendError: {}. will close ws", e);
+                        out.close(CloseCode::Normal)?;
+                    }
                 }
                 _ => error!("unsupported method"),
             }
