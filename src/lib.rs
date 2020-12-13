@@ -67,6 +67,9 @@ use sc_rpc_api::state::ReadProof;
 pub mod utils;
 
 #[cfg(feature = "std")]
+use utils::FromHexString;
+
+#[cfg(feature = "std")]
 pub mod rpc;
 
 #[cfg(feature = "std")]
@@ -161,7 +164,7 @@ where
         let genesis = Self::_get_request(url, jsonreq.to_string())?;
 
         match genesis {
-            Some(g) => hexstr_to_hash(g).map_err(|e| e.into()),
+            Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
             None => Err(ApiClientError::Genesis("Genesis is zero".to_string())),
         }
     }
@@ -187,7 +190,7 @@ where
                 "Metadata is none".to_string(),
             ));
         }
-        let metadata = hexstr_to_vec(meta.unwrap())?;
+        let metadata = Vec::from_hex(meta.unwrap())?;
         RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
     }
 
@@ -247,7 +250,7 @@ where
     pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
         let h = self.get_request(json_req::chain_get_finalized_head().to_string())?;
         match h {
-            Some(hash) => Ok(Some(hexstr_to_hash(hash)?)),
+            Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
             None => Ok(None),
         }
     }
@@ -365,7 +368,7 @@ where
         let s = self.get_request(jsonreq.to_string())?;
 
         match s {
-            Some(storage) => Ok(Some(hexstr_to_vec(storage)?)),
+            Some(storage) => Ok(Some(Vec::from_hex(storage)?)),
             None => Ok(None),
         }
     }
@@ -456,13 +459,13 @@ where
                 rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
                 let res = result_out.recv()?;
                 info!("finalized: {}", res);
-                Ok(Some(hexstr_to_hash(res)?))
+                Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::InBlock => {
                 rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
                 let res = result_out.recv()?;
                 info!("inBlock: {}", res);
-                Ok(Some(hexstr_to_hash(res)?))
+                Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::Broadcast => {
                 rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
@@ -517,7 +520,7 @@ where
         loop {
             let event_str = receiver.recv().unwrap();
 
-            let _unhex = hexstr_to_vec(event_str).unwrap();
+            let _unhex = Vec::from_hex(event_str).unwrap();
             let mut _er_enc = _unhex.as_slice();
 
             let _events = event_decoder.decode_events(&mut _er_enc);

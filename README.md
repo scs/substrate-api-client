@@ -95,7 +95,7 @@ Shows how to fetch and decode a custom storage struct.
                                   "Kitties",
                                   Some(index.encode())).unwrap();
 
-    let res_vec = hexstr_to_vec(res_str);
+    let res_vec = Vec::from_hex(res_str);
 
     // Type annotations are needed here to know that to decode into.
     let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();

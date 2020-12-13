@@ -19,10 +19,10 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    Api,
     compose_extrinsic,
     extrinsic::xt_primitives::UncheckedExtrinsicV4,
-    utils::{hexstr_to_u64, hexstr_to_vec}
+    utils::{hexstr_to_u64, FromHexString},
+    Api,
 };
 
 #[derive(Encode, Decode, Debug)]
@@ -36,15 +36,10 @@ fn main() {
 
     let signer = AccountKeyring::Alice.pair();
 
-    let api = Api::new(format!("ws://{}", url))
-        .set_signer(signer.clone());
+    let api = Api::new(format!("ws://{}", url)).set_signer(signer.clone());
 
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
-        api.clone(),
-        "KittyModule",
-        "create_kitty",
-        10 as u128
-    );
+    let xt: UncheckedExtrinsicV4<_> =
+        compose_extrinsic!(api.clone(), "KittyModule", "create_kitty", 10 as u128);
 
     println!("[+] Extrinsic: {:?}\n", xt);
 
@@ -53,19 +48,19 @@ fn main() {
 
     // get the index at which Alice's Kitty resides. Alternatively, we could listen to the StoredKitty
     // event similar to what we do in the example_contract.
-    let res_str = api.get_storage("Kitty",
-                                  "KittyIndex",
-                                  Some(signer.public().encode())).unwrap();
+    let res_str = api
+        .get_storage("Kitty", "KittyIndex", Some(signer.public().encode()))
+        .unwrap();
 
     let index = hexstr_to_u64(res_str).unwrap();
     println!("[+] Alice's Kitty is at index : {}\n", index);
 
     // get the Kitty
-    let res_str = api.get_storage("Kitty",
-                                  "Kitties",
-                                  Some(index.encode())).unwrap();
+    let res_str = api
+        .get_storage("Kitty", "Kitties", Some(index.encode()))
+        .unwrap();
 
-    let res_vec = hexstr_to_vec(res_str).unwrap();
+    let res_vec = Vec::from_hex(res_str).unwrap();
 
     // type annotations are needed here to know that to decode into.
     let kitty: Kitty = Decode::decode(&mut res_vec.as_slice()).unwrap();
