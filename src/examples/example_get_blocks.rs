@@ -55,7 +55,7 @@ fn main() {
 
     println!("Subscribing to finalized heads");
     let (sender, receiver) = channel();
-    api.subscribe_finalized_heads(sender);
+    api.subscribe_finalized_heads(sender).unwrap();
 
     for _ in 0..5 {
         let head: Header = receiver

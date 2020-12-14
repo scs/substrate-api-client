@@ -32,7 +32,7 @@ use balances::AccountData as AccountDataGen;
 use system::AccountInfo as AccountInfoGen;
 
 #[cfg(feature = "std")]
-use codec::{Decode, Encode, Error as CodecError};
+use codec::{Decode, Encode};
 
 #[cfg(feature = "std")]
 use log::{debug, error, info};
@@ -159,13 +159,20 @@ where
         self
     }
 
+    pub fn signer_account(&self) -> Option<AccountId32> {
+        let pair = self.signer.as_ref()?;
+        let mut arr: [u8; 32] = Default::default();
+        arr.clone_from_slice(pair.to_owned().public().as_ref());
+        Some(AccountId32::from(arr))
+    }
+
     fn _get_genesis_hash(url: String) -> ApiResult<Hash> {
         let jsonreq = json_req::chain_get_genesis_hash();
         let genesis = Self::_get_request(url, jsonreq.to_string())?;
 
         match genesis {
             Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
-            None => Err(ApiClientError::Genesis("Genesis is zero".to_string())),
+            None => Err(ApiClientError::Genesis),
         }
     }
 
@@ -175,9 +182,7 @@ where
 
         match version {
             Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-            None => Err(ApiClientError::RuntimeVersion(
-                "Version is none".to_string(),
-            )),
+            None => Err(ApiClientError::RuntimeVersion),
         }
     }
 
@@ -186,9 +191,7 @@ where
         let meta = Self::_get_request(url, jsonreq.to_string())?;
 
         if meta.is_none() {
-            return Err(ApiClientError::MetadataFetch(
-                "Metadata is none".to_string(),
-            ));
+            return Err(ApiClientError::MetadataFetch);
         }
         let metadata = Vec::from_hex(meta.unwrap())?;
         RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
@@ -224,12 +227,7 @@ where
             return Err(ApiClientError::NoSigner);
         }
 
-        let pair = self.signer.as_ref().unwrap();
-        let mut arr: [u8; 32] = Default::default();
-        arr.clone_from_slice(pair.to_owned().public().as_ref());
-        let account_id: AccountId = AccountId32::from(arr);
-
-        self.get_account_info(&account_id)
+        self.get_account_info(&self.signer_account().unwrap())
             .map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
     }
 
@@ -502,9 +500,9 @@ where
         variant: &str,
         decoder: Option<EventsDecoder>,
         receiver: &Receiver<String>,
-    ) -> Option<Result<E, CodecError>> {
-        self.wait_for_raw_event(module, variant, decoder, receiver)
-            .map(|raw| E::decode(&mut &raw.data[..]))
+    ) -> ApiResult<E> {
+        let raw = self.wait_for_raw_event(module, variant, decoder, receiver)?;
+        E::decode(&mut &raw.data[..]).map_err(|e| e.into())
     }
 
     pub fn wait_for_raw_event(
@@ -513,17 +511,15 @@ where
         variant: &str,
         decoder: Option<EventsDecoder>,
         receiver: &Receiver<String>,
-    ) -> Option<RawEvent> {
-        let event_decoder =
-            decoder.unwrap_or_else(|| EventsDecoder::try_from(self.metadata.clone()).unwrap());
+    ) -> ApiResult<RawEvent> {
+        let event_decoder = match decoder {
+            Some(d) => d,
+            None => EventsDecoder::try_from(self.metadata.clone())?,
+        };
 
         loop {
-            let event_str = receiver.recv().unwrap();
-
-            let _unhex = Vec::from_hex(event_str).unwrap();
-            let mut _er_enc = _unhex.as_slice();
-
-            let _events = event_decoder.decode_events(&mut _er_enc);
+            let event_str = receiver.recv()?;
+            let _events = event_decoder.decode_events(&mut Vec::from_hex(event_str)?.as_slice());
             info!("wait for raw event");
             match _events {
                 Ok(raw_events) => {
@@ -533,7 +529,7 @@ where
                             RuntimeEvent::Raw(raw)
                                 if raw.module == module && raw.variant == variant =>
                             {
-                                return Some(raw);
+                                return Ok(raw);
                             }
                             _ => debug!("ignoring unsupported module event: {:?}", event),
                         }
@@ -548,20 +544,22 @@ where
 #[derive(Debug, thiserror::Error)]
 #[cfg(feature = "std")]
 pub enum ApiClientError {
-    #[error("Fetching genesis hash failed: {0}")]
-    Genesis(String),
-    #[error("Fetching runtime version failed: {0}")]
-    RuntimeVersion(String),
-    #[error("Fetching Metadata error: {0}")]
-    MetadataFetch(String),
+    #[error("Fetching genesis hash failed. Are you connected to the correct endpoint?")]
+    Genesis,
+    #[error("Fetching runtime version failed. Are you connected to the correct endpoint?")]
+    RuntimeVersion,
+    #[error("Fetching Metadata failed. Are you connected to the correct endpoint?")]
+    MetadataFetch,
     #[error("Operation needs a signer to be set in the api")]
     NoSigner,
     #[error("WebSocket Error: {0}")]
     WebSocket(#[from] ws::Error),
-    #[error("Channel Receive Error: {0}")]
+    #[error("ChannelReceiveError, sender is disconnected: {0}")]
     Disconnected(#[from] sp_std::sync::mpsc::RecvError),
     #[error("Metadata Error: {0}")]
     Metadata(#[from] crate::node_metadata::MetadataError),
+    #[error("Events Error: {0}")]
+    Events(#[from] crate::events::EventsError),
     #[error("Error decoding storage value: {0}")]
     StorageValueDecode(#[from] extrinsic::codec::Error),
     #[error("Received invalid hex string: {0}")]
