@@ -187,18 +187,18 @@ fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) ->
 }
 
 fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
-    let value: serde_json::Value = serde_json::from_str(msg).unwrap();
+    let value: serde_json::Value = serde_json::from_str(msg)?;
     match value["error"].as_object() {
         Some(obj) => {
-            let error_message = obj.get("message").unwrap().as_str().unwrap().to_owned();
-            let code = obj.get("code").unwrap().as_i64().unwrap();
-            let details = match obj.get("data") {
-                Some(d) => d.as_str().unwrap().to_owned(),
-                None => "".to_string(),
-            };
+            let error = obj
+                .get("message")
+                .map_or_else(|| "", |e| e.as_str().unwrap());
+            let code = obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap());
+            let details = obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap());
+
             Err(RpcClientError::Extrinsic(format!(
                 "extrinsic error code {}: {}: {}",
-                code, error_message, details
+                code, error, details
             )))
         }
         None => match value["params"]["result"].as_object() {
