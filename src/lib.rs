@@ -197,7 +197,7 @@ where
     // low level access
     fn _get_request(url: String, jsonreq: String) -> ApiResult<Option<String>> {
         let (result_in, result_out) = channel();
-        rpc::get(url, jsonreq, result_in);
+        rpc::get(url, jsonreq, result_in)?;
 
         let str = result_out.recv()?;
 
@@ -456,25 +456,25 @@ where
         let (result_in, result_out) = channel();
         match exit_on {
             XtStatus::Finalized => {
-                rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
+                rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in)?;
                 let res = result_out.recv()?;
                 info!("finalized: {}", res);
                 Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::InBlock => {
-                rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
+                rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in)?;
                 let res = result_out.recv()?;
                 info!("inBlock: {}", res);
                 Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::Broadcast => {
-                rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
+                rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in)?;
                 let res = result_out.recv()?;
                 info!("broadcast: {}", res);
                 Ok(None)
             }
             XtStatus::Ready => {
-                rpc::send_extrinsic(self.url.clone(), jsonreq, result_in);
+                rpc::send_extrinsic(self.url.clone(), jsonreq, result_in)?;
                 let res = result_out.recv()?;
                 info!("ready: {}", res);
                 Ok(None)
@@ -483,17 +483,17 @@ where
         }
     }
 
-    pub fn subscribe_events(&self, sender: ThreadOut<String>) {
+    pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to events");
         let key = storage_key("System", "Events");
         let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-        rpc::start_subcriber(self.url.clone(), jsonreq, sender);
+        rpc::start_subscriber(self.url.clone(), jsonreq, sender).map_err(|e| e.into())
     }
 
-    pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) {
+    pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to finalized heads");
         let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-        rpc::start_subcriber(self.url.clone(), jsonreq, sender)
+        rpc::start_subscriber(self.url.clone(), jsonreq, sender).map_err(|e| e.into())
     }
 
     pub fn wait_for_event<E: Decode>(

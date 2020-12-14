@@ -15,6 +15,7 @@
 
 */
 
+use crate::rpc::{RpcClientError, RpcResult};
 use log::{debug, error, info, warn};
 use std::sync::mpsc::{SendError, Sender as ThreadOut};
 use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
@@ -38,8 +39,6 @@ pub struct RpcClient {
     pub result: ThreadOut<String>,
     pub on_message_fn: OnMessageFn,
 }
-
-type RpcResult<T> = Result<T, RpcClientError>;
 
 impl Handler for RpcClient {
     fn on_open(&mut self, _: Handshake) -> WsResult<()> {
@@ -224,17 +223,6 @@ fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
             },
         },
     }
-}
-
-#[derive(Debug, thiserror::Error)]
-#[cfg(feature = "std")]
-pub enum RpcClientError {
-    #[error("Serdejson error: {0}")]
-    Serde(#[from] serde_json::error::Error),
-    #[error("Extrinsic Error: {0}")]
-    Extrinsic(String),
-    #[error("Send Error: {0}")]
-    Send(#[from] std::sync::mpsc::SendError<String>),
 }
 
 #[cfg(test)]
