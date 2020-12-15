@@ -12,16 +12,17 @@ chmod +x ./rustup.sh
 # Load new environment
 source $HOME/.cargo/env
 
+TOOLCHAIN=$(cat ./rust-toolchain)
 # Install nightly that supports clippy
 # Overview: https://rust-lang.github.io/rustup-components-history/index.html
-rustup default nightly-2020-02-06
+rustup toolchain add $TOOLCHAIN
 
 # Install aux components, clippy for linter, rustfmt for formatting
-rustup component add clippy
-rustup component add rustfmt
+rustup component add clippy --toolchain $TOOLCHAIN
+rustup component add rustfmt --toolchain $TOOLCHAIN
 
 # Install WASM toolchain
-rustup target add wasm32-unknown-unknown
+rustup target add wasm32-unknown-unknown --toolchain $TOOLCHAIN
 
 # Install wasm-gc
 if ! [ -x "$(command -v wasm-gc)" ]; then
