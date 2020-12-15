@@ -32,7 +32,7 @@ use balances::AccountData as AccountDataGen;
 use system::AccountInfo as AccountInfoGen;
 
 #[cfg(feature = "std")]
-use codec::{Decode, Encode, Error as CodecError};
+use codec::{Decode, Encode};
 
 #[cfg(feature = "std")]
 use log::{debug, error, info};
@@ -41,9 +41,6 @@ use log::{debug, error, info};
 use metadata::RuntimeMetadataPrefixed;
 #[cfg(feature = "std")]
 use sp_core::crypto::Pair;
-
-#[cfg(feature = "std")]
-use ws::Result as WsResult;
 
 #[cfg(feature = "std")]
 use rpc::json_req;
@@ -68,6 +65,9 @@ use sp_core::storage::StorageKey;
 use sc_rpc_api::state::ReadProof;
 
 pub mod utils;
+
+#[cfg(feature = "std")]
+use utils::FromHexString;
 
 #[cfg(feature = "std")]
 pub mod rpc;
@@ -96,6 +96,10 @@ pub use node_metadata::Metadata;
 
 #[cfg(feature = "std")]
 pub use rpc::XtStatus;
+
+#[cfg(feature = "std")]
+use sp_core::crypto::AccountId32;
+
 #[cfg(feature = "std")]
 use sp_runtime::{
     traits::{Block, Header},
@@ -107,6 +111,9 @@ pub type Balance = u128;
 
 pub type AccountData = AccountDataGen<Balance>;
 pub type AccountInfo = AccountInfoGen<Index, AccountData>;
+
+#[cfg(feature = "std")]
+type ApiResult<T> = Result<T, ApiClientError>;
 
 #[cfg(feature = "std")]
 #[derive(Clone)]
@@ -128,24 +135,23 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(url: String) -> Self {
-        let genesis_hash = Self::_get_genesis_hash(url.clone());
+    pub fn new(url: String) -> ApiResult<Self> {
+        let genesis_hash = Self::_get_genesis_hash(url.clone())?;
         info!("Got genesis hash: {:?}", genesis_hash);
 
-        let meta = Self::_get_metadata(url.clone());
-        let metadata = Metadata::try_from(meta).unwrap();
+        let metadata = Self::_get_metadata(url.clone()).map(Metadata::try_from)??;
         debug!("Metadata: {:?}", metadata);
 
-        let runtime_version = Self::_get_runtime_version(url.clone());
+        let runtime_version = Self::_get_runtime_version(url.clone())?;
         info!("Runtime Version: {:?}", runtime_version);
 
-        Self {
+        Ok(Self {
             url,
             signer: None,
             genesis_hash,
             metadata,
             runtime_version,
-        }
+        })
     }
 
     pub fn set_signer(mut self, signer: P) -> Self {
@@ -153,130 +159,134 @@ where
         self
     }
 
-    fn _get_genesis_hash(url: String) -> Hash {
+    pub fn signer_account(&self) -> Option<AccountId32> {
+        let pair = self.signer.as_ref()?;
+        let mut arr: [u8; 32] = Default::default();
+        arr.clone_from_slice(pair.to_owned().public().as_ref());
+        Some(AccountId32::from(arr))
+    }
+
+    fn _get_genesis_hash(url: String) -> ApiResult<Hash> {
         let jsonreq = json_req::chain_get_genesis_hash();
-        let genesis_hash_str = Self::_get_request(url, jsonreq.to_string())
-            .expect("Fetching genesis hash from node failed");
-        hexstr_to_hash(genesis_hash_str).unwrap()
+        let genesis = Self::_get_request(url, jsonreq.to_string())?;
+
+        match genesis {
+            Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
+            None => Err(ApiClientError::Genesis),
+        }
     }
 
-    fn _get_runtime_version(url: String) -> RuntimeVersion {
+    fn _get_runtime_version(url: String) -> ApiResult<RuntimeVersion> {
         let jsonreq = json_req::state_get_runtime_version();
-        let version_str = Self::_get_request(url, jsonreq.to_string()).unwrap(); //expect("Fetching runtime version from node failed");
-        debug!("got the following runtime version (raw): {}", version_str);
-        serde_json::from_str(&version_str).unwrap()
+        let version = Self::_get_request(url, jsonreq.to_string())?;
+
+        match version {
+            Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
+            None => Err(ApiClientError::RuntimeVersion),
+        }
     }
 
-    fn _get_metadata(url: String) -> RuntimeMetadataPrefixed {
+    fn _get_metadata(url: String) -> ApiResult<RuntimeMetadataPrefixed> {
         let jsonreq = json_req::state_get_metadata();
-        let metadata_str = Self::_get_request(url, jsonreq.to_string()).unwrap();
+        let meta = Self::_get_request(url, jsonreq.to_string())?;
 
-        let _unhex = hexstr_to_vec(metadata_str).unwrap();
-        let mut _om = _unhex.as_slice();
-        RuntimeMetadataPrefixed::decode(&mut _om).unwrap()
+        if meta.is_none() {
+            return Err(ApiClientError::MetadataFetch);
+        }
+        let metadata = Vec::from_hex(meta.unwrap())?;
+        RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
     }
 
     // low level access
-    fn _get_request(url: String, jsonreq: String) -> Option<String> {
+    fn _get_request(url: String, jsonreq: String) -> ApiResult<Option<String>> {
         let (result_in, result_out) = channel();
-        rpc::get(url, jsonreq, result_in);
+        rpc::get(url, jsonreq, result_in)?;
 
-        let str = result_out.recv().unwrap();
+        let str = result_out.recv()?;
 
         match &str[..] {
-            "null" => None,
-            _ => Some(str),
+            "null" => Ok(None),
+            _ => Ok(Some(str)),
         }
     }
 
-    pub fn get_metadata(&self) -> RuntimeMetadataPrefixed {
+    pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
         Self::_get_metadata(self.url.clone())
     }
 
-    pub fn get_spec_version(&self) -> u32 {
-        Self::_get_runtime_version(self.url.clone()).spec_version
+    pub fn get_spec_version(&self) -> ApiResult<u32> {
+        Self::_get_runtime_version(self.url.clone()).map(|v| v.spec_version)
     }
 
-    pub fn get_genesis_hash(&self) -> Hash {
+    pub fn get_genesis_hash(&self) -> ApiResult<Hash> {
         Self::_get_genesis_hash(self.url.clone())
     }
 
-    pub fn get_nonce(&self) -> Result<u32, &str> {
-        match &self.signer {
-            Some(pair) => {
-                let mut arr: [u8; 32] = Default::default();
-                arr.clone_from_slice(pair.to_owned().public().as_ref());
-                let accountid: AccountId = Decode::decode(&mut &arr.encode()[..]).unwrap();
-                if let Some(info) = self.get_account_info(&accountid) {
-                    Ok(info.nonce)
-                } else {
-                    Ok(0)
-                }
-            }
-            None => Err("Can't get nonce when no signer is set"),
+    pub fn get_nonce(&self) -> ApiResult<u32> {
+        if self.signer.is_none() {
+            return Err(ApiClientError::NoSigner);
         }
+
+        self.get_account_info(&self.signer_account().unwrap())
+            .map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
     }
 
-    pub fn get_account_info(&self, address: &AccountId) -> Option<AccountInfo> {
+    pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
         let storagekey: sp_core::storage::StorageKey = self
             .metadata
-            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())
-            .unwrap();
+            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())?;
         info!("storagekey {:?}", storagekey);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, None)
     }
 
-    pub fn get_account_data(&self, address: &AccountId) -> Option<AccountData> {
-        if let Some(info) = self.get_account_info(address) {
-            Some(info.data)
-        } else {
-            None
+    pub fn get_account_data(&self, address: &AccountId) -> ApiResult<Option<AccountData>> {
+        self.get_account_info(address)
+            .map(|info| info.map(|i| i.data))
+    }
+
+    pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
+        let h = self.get_request(json_req::chain_get_finalized_head().to_string())?;
+        match h {
+            Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
+            None => Ok(None),
         }
     }
 
-    pub fn get_finalized_head(&self) -> Option<Hash> {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_finalized_head().to_string(),
-        )
-        .map(|h_str| hexstr_to_hash(h_str).unwrap())
-    }
-
-    pub fn get_header<H>(&self, hash: Option<Hash>) -> Option<H>
+    pub fn get_header<H>(&self, hash: Option<Hash>) -> ApiResult<Option<H>>
     where
         H: Header + DeserializeOwned,
     {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_header(hash).to_string(),
-        )
-        .map(|h| serde_json::from_str(&h).unwrap())
+        let h = self.get_request(json_req::chain_get_header(hash).to_string())?;
+        match h {
+            Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
+            None => Ok(None),
+        }
     }
 
-    pub fn get_block<B>(&self, hash: Option<Hash>) -> Option<B>
+    pub fn get_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<B>>
     where
         B: Block + DeserializeOwned,
     {
-        Self::get_signed_block(self, hash).map(|signed_block| signed_block.block)
+        Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
     }
 
     /// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
     /// The interval at which finality proofs are provided is set via the
     /// the `GrandpaConfig.justification_period` in a node's service.rs.
     /// The Justification may be none.
-    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> Option<SignedBlock<B>>
+    pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<SignedBlock<B>>>
     where
         B: Block + DeserializeOwned,
     {
-        Self::_get_request(
-            self.url.clone(),
-            json_req::chain_get_block(hash).to_string(),
-        )
-        .map(|b| serde_json::from_str(&b).unwrap())
+        let b = self.get_request(json_req::chain_get_block(hash).to_string())?;
+        match b {
+            Some(block) => Ok(Some(serde_json::from_str(&block)?)),
+            None => Ok(None),
+        }
     }
 
-    pub fn get_request(&self, jsonreq: String) -> Option<String> {
+    pub fn get_request(&self, jsonreq: String) -> ApiResult<Option<String>> {
         Self::_get_request(self.url.clone(), jsonreq)
     }
 
@@ -285,11 +295,10 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> Option<V> {
+    ) -> ApiResult<Option<V>> {
         let storagekey = self
             .metadata
-            .storage_value_key(storage_prefix, storage_key_name)
-            .unwrap();
+            .storage_value_key(storage_prefix, storage_key_name)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -300,11 +309,10 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> Option<V> {
-        let storagekey = self
-            .metadata
-            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
-            .unwrap();
+    ) -> ApiResult<Option<V>> {
+        let storagekey =
+            self.metadata
+                .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -313,10 +321,10 @@ where
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
-    ) -> StorageKey {
+    ) -> ApiResult<StorageKey> {
         self.metadata
             .storage_map_key_prefix(storage_prefix, storage_key_name)
-            .unwrap()
+            .map_err(|e| e.into())
     }
 
     pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
@@ -326,11 +334,13 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> Option<V> {
-        let storagekey = self
-            .metadata
-            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
-            .unwrap();
+    ) -> ApiResult<Option<V>> {
+        let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
+            storage_prefix,
+            storage_key_name,
+            first,
+            second,
+        )?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -339,23 +349,25 @@ where
         &self,
         key: StorageKey,
         at_block: Option<Hash>,
-    ) -> Option<V> {
-        self.get_opaque_storage_by_key_hash(key, at_block)
-            .map(|v| Decode::decode(&mut v.as_slice()).unwrap())
+    ) -> ApiResult<Option<V>> {
+        let s = self.get_opaque_storage_by_key_hash(key, at_block)?;
+        match s {
+            Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
+            None => Ok(None),
+        }
     }
 
     pub fn get_opaque_storage_by_key_hash(
         &self,
         key: StorageKey,
         at_block: Option<Hash>,
-    ) -> Option<Vec<u8>> {
+    ) -> ApiResult<Option<Vec<u8>>> {
         let jsonreq = json_req::state_get_storage(key, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string());
-        if let Some(hexstr) = Self::_get_request(self.url.clone(), jsonreq.to_string()) {
-            info!("storage hex = {}", hexstr);
-            hexstr_to_vec(hexstr).ok()
-        } else {
-            None
+        let s = self.get_request(jsonreq.to_string())?;
+
+        match s {
+            Some(storage) => Ok(Some(Vec::from_hex(storage)?)),
+            None => Ok(None),
         }
     }
 
@@ -364,11 +376,10 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
         let storagekey = self
             .metadata
-            .storage_value_key(storage_prefix, storage_key_name)
-            .unwrap();
+            .storage_value_key(storage_prefix, storage_key_name)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -379,11 +390,10 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
-        let storagekey = self
-            .metadata
-            .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)
-            .unwrap();
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
+        let storagekey =
+            self.metadata
+                .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -395,11 +405,13 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
-        let storagekey = self
-            .metadata
-            .storage_double_map_key::<K, Q, V>(storage_prefix, storage_key_name, first, second)
-            .unwrap();
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
+        let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
+            storage_prefix,
+            storage_key_name,
+            first,
+            second,
+        )?;
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -408,23 +420,33 @@ where
         &self,
         keys: Vec<StorageKey>,
         at_block: Option<Hash>,
-    ) -> Option<ReadProof<Hash>> {
+    ) -> ApiResult<Option<ReadProof<Hash>>> {
         let jsonreq = json_req::state_get_read_proof(keys, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string())
-            .map(|proof| serde_json::from_str(&proof).unwrap())
+        let p = self.get_request(jsonreq.to_string())?;
+        match p {
+            Some(proof) => Ok(Some(serde_json::from_str(&proof)?)),
+            None => Ok(None),
+        }
     }
 
-    pub fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Option<Vec<String>> {
+    pub fn get_keys(
+        &self,
+        key: StorageKey,
+        at_block: Option<Hash>,
+    ) -> ApiResult<Option<Vec<String>>> {
         let jsonreq = json_req::state_get_keys(key, at_block);
-        Self::_get_request(self.url.clone(), jsonreq.to_string())
-            .map(|keys| serde_json::from_str(&keys).unwrap())
+        let k = self.get_request(jsonreq.to_string())?;
+        match k {
+            Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
+            None => Ok(None),
+        }
     }
 
     pub fn send_extrinsic(
         &self,
         xthex_prefixed: String,
         exit_on: XtStatus,
-    ) -> WsResult<Option<Hash>> {
+    ) -> ApiResult<Option<Hash>> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
 
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
@@ -432,46 +454,44 @@ where
         let (result_in, result_out) = channel();
         match exit_on {
             XtStatus::Finalized => {
-                rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in)?;
+                let res = result_out.recv()?;
                 info!("finalized: {}", res);
-                Ok(Some(hexstr_to_hash(res).unwrap()))
+                Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::InBlock => {
-                rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in)?;
+                let res = result_out.recv()?;
                 info!("inBlock: {}", res);
-                Ok(Some(hexstr_to_hash(res).unwrap()))
+                Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::Broadcast => {
-                rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in)?;
+                let res = result_out.recv()?;
                 info!("broadcast: {}", res);
                 Ok(None)
             }
             XtStatus::Ready => {
-                rpc::send_extrinsic(self.url.clone(), jsonreq, result_in);
-                let res = result_out.recv().unwrap();
+                rpc::send_extrinsic(self.url.clone(), jsonreq, result_in)?;
+                let res = result_out.recv()?;
                 info!("ready: {}", res);
                 Ok(None)
             }
-            _ => panic!(
-                "can only wait for finalized, in block, broadcast and ready extrinsic status"
-            ),
+            _ => Err(ApiClientError::UnsupportedXtStatus(exit_on)),
         }
     }
 
-    pub fn subscribe_events(&self, sender: ThreadOut<String>) {
+    pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to events");
         let key = storage_key("System", "Events");
         let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-        rpc::start_subcriber(self.url.clone(), jsonreq, sender);
+        rpc::start_subscriber(self.url.clone(), jsonreq, sender).map_err(|e| e.into())
     }
 
-    pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) {
+    pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to finalized heads");
         let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-        rpc::start_subcriber(self.url.clone(), jsonreq, sender)
+        rpc::start_subscriber(self.url.clone(), jsonreq, sender).map_err(|e| e.into())
     }
 
     pub fn wait_for_event<E: Decode>(
@@ -480,9 +500,9 @@ where
         variant: &str,
         decoder: Option<EventsDecoder>,
         receiver: &Receiver<String>,
-    ) -> Option<Result<E, CodecError>> {
-        self.wait_for_raw_event(module, variant, decoder, receiver)
-            .map(|raw| E::decode(&mut &raw.data[..]))
+    ) -> ApiResult<E> {
+        let raw = self.wait_for_raw_event(module, variant, decoder, receiver)?;
+        E::decode(&mut &raw.data[..]).map_err(|e| e.into())
     }
 
     pub fn wait_for_raw_event(
@@ -491,17 +511,15 @@ where
         variant: &str,
         decoder: Option<EventsDecoder>,
         receiver: &Receiver<String>,
-    ) -> Option<RawEvent> {
-        let event_decoder =
-            decoder.unwrap_or_else(|| EventsDecoder::try_from(self.metadata.clone()).unwrap());
+    ) -> ApiResult<RawEvent> {
+        let event_decoder = match decoder {
+            Some(d) => d,
+            None => EventsDecoder::try_from(self.metadata.clone())?,
+        };
 
         loop {
-            let event_str = receiver.recv().unwrap();
-
-            let _unhex = hexstr_to_vec(event_str).unwrap();
-            let mut _er_enc = _unhex.as_slice();
-
-            let _events = event_decoder.decode_events(&mut _er_enc);
+            let event_str = receiver.recv()?;
+            let _events = event_decoder.decode_events(&mut Vec::from_hex(event_str)?.as_slice());
             info!("wait for raw event");
             match _events {
                 Ok(raw_events) => {
@@ -511,7 +529,7 @@ where
                             RuntimeEvent::Raw(raw)
                                 if raw.module == module && raw.variant == variant =>
                             {
-                                return Some(raw)
+                                return Ok(raw);
                             }
                             _ => debug!("ignoring unsupported module event: {:?}", event),
                         }
@@ -521,4 +539,33 @@ where
             }
         }
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[cfg(feature = "std")]
+pub enum ApiClientError {
+    #[error("Fetching genesis hash failed. Are you connected to the correct endpoint?")]
+    Genesis,
+    #[error("Fetching runtime version failed. Are you connected to the correct endpoint?")]
+    RuntimeVersion,
+    #[error("Fetching Metadata failed. Are you connected to the correct endpoint?")]
+    MetadataFetch,
+    #[error("Operation needs a signer to be set in the api")]
+    NoSigner,
+    #[error("WebSocket Error: {0}")]
+    WebSocket(#[from] ws::Error),
+    #[error("ChannelReceiveError, sender is disconnected: {0}")]
+    Disconnected(#[from] sp_std::sync::mpsc::RecvError),
+    #[error("Metadata Error: {0}")]
+    Metadata(#[from] crate::node_metadata::MetadataError),
+    #[error("Events Error: {0}")]
+    Events(#[from] crate::events::EventsError),
+    #[error("Error decoding storage value: {0}")]
+    StorageValueDecode(#[from] extrinsic::codec::Error),
+    #[error("Received invalid hex string: {0}")]
+    InvalidHexString(#[from] hex::FromHexError),
+    #[error("Error deserializing with serde: {0}")]
+    Deserializing(#[from] serde_json::Error),
+    #[error("UnsupportedXtStatus Error: Can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
+    UnsupportedXtStatus(XtStatus),
 }

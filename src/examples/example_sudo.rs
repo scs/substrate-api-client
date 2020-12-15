@@ -21,9 +21,7 @@ use codec::Compact;
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 use substrate_api_client::{
-    compose_call, compose_extrinsic,
-    GenericAddress, UncheckedExtrinsicV4,
-    Api, XtStatus,
+    compose_call, compose_extrinsic, Api, GenericAddress, UncheckedExtrinsicV4, XtStatus,
 };
 
 fn main() {
@@ -32,7 +30,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let sudoer = AccountKeyring::Alice.pair();
-    let api = Api::new(url).set_signer(sudoer);
+    let api = Api::new(url).map(|api| api.set_signer(sudoer)).unwrap();
 
     // set the recipient of newly issued funds
     let to = AccountKeyring::Bob.to_account_id();

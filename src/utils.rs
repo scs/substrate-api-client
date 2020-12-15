@@ -31,28 +31,32 @@ pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
     StorageKey(key)
 }
 
-pub fn hexstr_to_vec(hexstr: String) -> Result<Vec<u8>, FromHexError> {
-    let hexstr = hexstr
-        .trim_matches('\"')
-        .to_string()
-        .trim_start_matches("0x")
-        .to_string();
-
-    hex::decode(&hexstr)
+pub trait FromHexString {
+    fn from_hex(hex: String) -> Result<Self, hex::FromHexError>
+    where
+        Self: Sized;
 }
 
-pub fn hexstr_to_hash(hexstr: String) -> Result<Hash, FromHexError> {
-    let unhex = hexstr_to_vec(hexstr);
-    match unhex {
-        Ok(vec) => match vec.len() {
-            32 => {
-                let mut gh: [u8; 32] = Default::default();
-                gh.copy_from_slice(&vec[..]);
-                Ok(Hash::from(gh))
-            }
+impl FromHexString for Vec<u8> {
+    fn from_hex(hex: String) -> Result<Self, hex::FromHexError> {
+        let hexstr = hex
+            .trim_matches('\"')
+            .to_string()
+            .trim_start_matches("0x")
+            .to_string();
+
+        hex::decode(&hexstr)
+    }
+}
+
+impl FromHexString for Hash {
+    fn from_hex(hex: String) -> Result<Self, FromHexError> {
+        let vec = Vec::from_hex(hex)?;
+
+        match vec.len() {
+            32 => Ok(Hash::from_slice(&vec)),
             _ => Err(hex::FromHexError::InvalidStringLength),
-        },
-        Err(err) => Err(err),
+        }
     }
 }
 
@@ -63,13 +67,13 @@ mod tests {
 
     #[test]
     fn test_hextstr_to_vec() {
-        assert_eq!(hexstr_to_vec("0x01020a".to_string()), Ok(vec!(1, 2, 10)));
+        assert_eq!(Vec::from_hex("0x01020a".to_string()), Ok(vec!(1, 2, 10)));
         assert_eq!(
-            hexstr_to_vec("null".to_string()),
+            Vec::from_hex("null".to_string()),
             Err(hex::FromHexError::InvalidHexCharacter { c: 'n', index: 0 })
         );
         assert_eq!(
-            hexstr_to_vec("0x0q".to_string()),
+            Vec::from_hex("0x0q".to_string()),
             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
         );
     }
@@ -77,17 +81,17 @@ mod tests {
     #[test]
     fn test_hextstr_to_hash() {
         assert_eq!(
-            hexstr_to_hash(
+            Hash::from_hex(
                 "0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
             ),
             Ok(Hash::from([0u8; 32]))
         );
         assert_eq!(
-            hexstr_to_hash("0x010000000000000000".to_string()),
+            Hash::from_hex("0x010000000000000000".to_string()),
             Err(hex::FromHexError::InvalidStringLength)
         );
         assert_eq!(
-            hexstr_to_hash("0x0q".to_string()),
+            Hash::from_hex("0x0q".to_string()),
             Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
         );
     }

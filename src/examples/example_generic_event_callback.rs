@@ -35,15 +35,14 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::<sr25519::Pair>::new(url);
+    let api = Api::<sr25519::Pair>::new(url).unwrap();
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
 
-    api.subscribe_events(events_in);
+    api.subscribe_events(events_in).unwrap();
     let args: TransferEventArgs = api
         .wait_for_event("Balances", "Transfer", None, &events_out)
-        .unwrap()
         .unwrap();
 
     println!("Transactor: {:?}", args.from);

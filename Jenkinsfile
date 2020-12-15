@@ -13,6 +13,11 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '3'))
   }
   stages {
+    stage('rustup') {
+      steps {
+        sh './ci/install_rust.sh'
+      }
+    }
     stage('Start substrate-test-nodes') {
       steps {
         copyArtifacts fingerprintArtifacts: true, projectName: 'substraTEE/substrate-api-client-test-node_nightly', selector: lastCompleted()

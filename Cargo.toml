@@ -27,12 +27,6 @@ features = ["derive"]
 version = "1.3.1"
 default-features = false
 
-[dependencies.runtime_io]
-git = "https://github.com/paritytech/substrate.git" 
-rev = "a208da16"
-package = "sp-io"
-default-features=false
-
 [dependencies.metadata]
 git = "https://github.com/paritytech/substrate.git" 
 rev = "a208da16"
@@ -108,7 +102,6 @@ std = [
     "sc-rpc-api",
 	"sp-core/std",
 	"codec/std",
-	"runtime_io/std",
 	"metadata/std",
 	"sp-version/std",
 	"balances/std",

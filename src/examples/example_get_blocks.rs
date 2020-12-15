@@ -31,16 +31,16 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::<sr25519::Pair>::new(url);
+    let api = Api::<sr25519::Pair>::new(url).unwrap();
 
-    let head = api.get_finalized_head().unwrap();
+    let head = api.get_finalized_head().unwrap().unwrap();
 
     println!("Finalized Head:\n {} \n", head);
 
-    let h: Header = api.get_header(Some(head)).unwrap();
+    let h: Header = api.get_header(Some(head)).unwrap().unwrap();
     println!("Finalized header:\n {:?} \n", h);
 
-    let b: SignedBlock = api.get_signed_block(Some(head)).unwrap();
+    let b: SignedBlock = api.get_signed_block(Some(head)).unwrap().unwrap();
     println!("Finalized signed block:\n {:?} \n", b);
 
     println!(
@@ -55,7 +55,7 @@ fn main() {
 
     println!("Subscribing to finalized heads");
     let (sender, receiver) = channel();
-    api.subscribe_finalized_heads(sender);
+    api.subscribe_finalized_heads(sender).unwrap();
 
     for _ in 0..5 {
         let head: Header = receiver

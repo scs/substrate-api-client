@@ -205,7 +205,7 @@ let res_str = api.get_storage("Kitty",
                               "Kitties",
                               Some(index.encode())).unwrap();
 
-let res_vec = hexstr_to_vec(res_str).unwrap();
+let res_vec = Vec::from_hex(res_str).unwrap();
 ```
 
 Naturally, the `utils` module does not have a `hexstr_to_kitty` function, instead we can transform it into a byte vector. Now we must decode this vector into a `Kitty`, but neither Rust nor substrate does know the structure of our `Kitty`. But luckily, the metadata does! In the metadata we find that our `Kitty` looks as follows: `Kitty<T::Hash, T::Balance>`. Hence, we can define the structure on the client side and tell rust what to decode into. `T::Hash` is again a substrate type alias for a 32 byte array aka `[u8; 32]`.

@@ -27,23 +27,23 @@ use sp_core::H256 as Hash;
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use node_template_runtime::Event;
 
-use substrate_api_client::utils::hexstr_to_vec;
+use substrate_api_client::utils::FromHexString;
 use substrate_api_client::Api;
 
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::<sr25519::Pair>::new(url);
+    let api = Api::<sr25519::Pair>::new(url).unwrap();
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
-    api.subscribe_events(events_in);
+    api.subscribe_events(events_in).unwrap();
 
     loop {
         let event_str = events_out.recv().unwrap();
 
-        let _unhex = hexstr_to_vec(event_str).unwrap();
+        let _unhex = Vec::from_hex(event_str).unwrap();
         let mut _er_enc = _unhex.as_slice();
         let _events = Vec::<system::EventRecord<Event, Hash>>::decode(&mut _er_enc);
         match _events {
