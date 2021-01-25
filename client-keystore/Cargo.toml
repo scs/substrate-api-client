@@ -14,25 +14,25 @@ serde_json = "1.0"
 default-features = false
 package = "sp-core"
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 
 [dependencies.sp-keystore]
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 package = "sp-keystore"
 
 [dependencies.sc-keystore]
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 package = "sc-keystore"
 
 [dependencies.sp-keyring]
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 package = "sp-keyring"
 
 [dependencies.sp-application-crypto]
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 package = "sp-application-crypto"
 

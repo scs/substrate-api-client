@@ -10,10 +10,10 @@ codec = { package = "parity-scale-codec", features = ["derive"], version = "1.3.
 
 [dependencies.sp-core]
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 version = '2.0.0'
 
 [dependencies.keyring]
 git = "https://github.com/paritytech/substrate.git"
-rev = "a208da16"
+rev = "38f723bf"
 package = "sp-keyring"
