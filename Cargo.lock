@@ -3891,7 +3891,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-api-client"
-version = "0.4.13"
+version = "0.4.14"
 dependencies = [
  "clap",
  "env_logger",

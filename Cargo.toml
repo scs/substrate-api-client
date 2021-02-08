@@ -1,6 +1,6 @@
 [package]
 name = "substrate-api-client"
-version = "0.4.13"
+version = "0.4.14"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
