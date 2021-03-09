@@ -21,14 +21,12 @@ features=["full_crypto"]
 
 [dependencies.application-crypto]
 git = "https://github.com/paritytech/substrate.git"
-rev = "38f723bf"
 package = "sp-application-crypto"
 default-features = false
 features = ["full_crypto"]
 
 [dependencies.sp-io]
 git = "https://github.com/paritytech/substrate.git"
-rev = "38f723bf"
 default-features=false
 features = ["disable_oom", "disable_panic_handler"]
 

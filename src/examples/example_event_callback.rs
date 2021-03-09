@@ -54,7 +54,7 @@ fn main() {
                         Event::pallet_balances(be) => {
                             println!(">>>>>>>>>> balances event: {:?}", be);
                             match &be {
-                                balances::RawEvent::Transfer(transactor, dest, value) => {
+                                balances::Event::Transfer(transactor, dest, value) => {
                                     println!("Transactor: {:?}", transactor);
                                     println!("Destination: {:?}", dest);
                                     println!("Value: {:?}", value);

@@ -61,11 +61,11 @@ fn main() {
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
-    // send and watch extrinsic until finalized
+    // send and watch extrinsic until in block
     let blockh = api
-        .send_extrinsic(xt.hex_encode(), XtStatus::Finalized)
+        .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
-    println!("[+] Transaction got finalized in block {:?}", blockh);
+    println!("[+] Transaction got included in block {:?}", blockh);
 }
 
 pub fn get_node_url_from_cli() -> String {
