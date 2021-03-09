@@ -65,10 +65,8 @@ default-features = false
 git = "https://github.com/paritytech/substrate.git" 
 optional = true
 
-[dev-dependencies.node_template_runtime]
+[dev-dependencies.node-template-runtime]
 git = "https://github.com/scs/substrate-api-client-test-node"
-rev = "7b7ffa842f16659103e685f98c545c284a0ab5d6"
-package = "node-template-runtime"
 
 [dev-dependencies]
 wabt = "0.9.0"
