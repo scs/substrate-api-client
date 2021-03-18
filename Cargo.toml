@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 env_logger      = { version = "0.7", optional = true }
 ws              = { version = "0.9.1", optional = true, features = ["ssl"] }
-hex             = { version = "0.4", default-features = false }
+hex             = { version = "0.4.2", default-features = false }
 log             = { version = "0.4", optional = true }
 serde           = { version = "1.0", optional = true, features = ["derive"] }
 serde_json      = { version = "1.0", optional = true }
@@ -15,7 +15,7 @@ thiserror       = { version = "1.0", optional =true }
 primitive-types = { version = "0.6.1", optional = true, features = ["codec"] }
 
 [dependencies.sp-core]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "sp-core"
 default-features = false
 features = ["full_crypto"]
@@ -27,42 +27,42 @@ version = "2.0.0"
 default-features = false
 
 [dependencies.metadata]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "frame-metadata"
 default-features=false
 
 [dependencies.sp-version]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "sp-version"
 default-features=false
 
 [dependencies.balances]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "pallet-balances"
 default-features=false
 
 [dependencies.system]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "frame-system"
 default-features=false
 
 [dependencies.sp-runtime]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "sp-runtime"
 default-features=false
 
 [dependencies.support]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "frame-support"
 default-features=false
 
 [dependencies.sp-std]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "sp-std"
 default-features = false
 
 [dependencies.sc-rpc-api]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 optional = true
 
 [dev-dependencies.node-template-runtime]
@@ -72,11 +72,11 @@ git = "https://github.com/scs/substrate-api-client-test-node"
 wabt = "0.9.0"
 
 [dev-dependencies.contracts]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "pallet-contracts"
 
 [dev-dependencies.keyring]
-git = "https://github.com/paritytech/substrate.git" 
+git = "https://github.com/paritytech/substrate.git"
 package = "sp-keyring"
 
 [dev-dependencies.clap]
