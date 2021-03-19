@@ -59,7 +59,7 @@ impl LocalKeystore {
 	pub fn key_pair<Pair: AppPair>(&self, public: &<Pair as AppKey>::Public) -> Result<Pair> {
 		self.0.read().key_pair::<Pair>(public)
     }
-    
+
     pub fn generate<Pair: AppPair>(&self) -> Result<Pair> {
         self.0.write().generate_by_type::<Pair::Generic>(Pair::ID).map(Into::into)
     }
