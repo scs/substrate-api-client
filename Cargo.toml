@@ -74,9 +74,9 @@ git = "https://github.com/paritytech/substrate.git"
 branch = "master"
 optional = true
 
-#[dev-dependencies.node-template-runtime]
-#git = "https://github.com/scs/substrate-api-client-test-node"
-#branch = "master"
+[dev-dependencies.node-template-runtime]
+git = "https://github.com/encointer/substrate-api-client-test-node"
+branch = "bump-to-polkadot-v0.9.2"
 
 [dev-dependencies.keyring]
 git = "https://github.com/paritytech/substrate.git"
