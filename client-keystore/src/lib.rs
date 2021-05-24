@@ -213,21 +213,21 @@ impl SyncCryptoStore for LocalKeystore {
 				let pub_key = ed25519::Public::from_slice(key.1.as_slice());
 				let key_pair = self.0.read()
 					.key_pair_by_type::<ed25519::Pair>(&pub_key, id)
-					.map_err(|e| TraitError::from(e))?;
+					.map_err(TraitError::from)?;
 				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
 			}
 			sr25519::CRYPTO_ID => {
 				let pub_key = sr25519::Public::from_slice(key.1.as_slice());
 				let key_pair = self.0.read()
 					.key_pair_by_type::<sr25519::Pair>(&pub_key, id)
-					.map_err(|e| TraitError::from(e))?;
+					.map_err(TraitError::from)?;
 				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
 			},
 			ecdsa::CRYPTO_ID => {
 				let pub_key = ecdsa::Public::from_slice(key.1.as_slice());
 				let key_pair = self.0.read()
 					.key_pair_by_type::<ecdsa::Pair>(&pub_key, id)
-					.map_err(|e| TraitError::from(e))?;
+					.map_err(TraitError::from)?;
 				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
 			}
 			_ => Err(TraitError::KeyNotSupported(id))
@@ -530,7 +530,7 @@ impl KeystoreInner {
 				if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
 					match hex::decode(name) {
 						Ok(ref hex) if hex.len() > 4 => {
-							if &hex[0..4] != &id.0 {
+							if hex[0..4] != id.0 {
 								continue;
 							}
 							let public = hex[4..].to_vec();

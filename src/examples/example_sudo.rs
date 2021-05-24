@@ -42,8 +42,8 @@ fn main() {
         "Balances",
         "set_balance",
         GenericAddress::Id(to),
-        Compact(42 as u128),
-        Compact(42 as u128)
+        Compact(42_u128),
+        Compact(42_u128)
     );
     #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
