@@ -525,15 +525,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cmake"
-version = "0.1.45"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb6210b637171dfba4cda12e579ac6dc73f5165ad56133e5d72ef3131f320855"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "concurrent-queue"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1162,12 +1153,6 @@ name = "gimli"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6503fe142514ca4799d4c26297c4248239fe8838d827db6bd6065c6ed29a6ce"
-
-[[package]]
-name = "glob"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8be18de09a56b60ed0edf84bc9df007e30040691af7acd1c41874faac5895bfb"
 
 [[package]]
 name = "gloo-timers"
@@ -2113,52 +2098,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-contracts"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
-dependencies = [
- "frame-support",
- "frame-system",
- "log",
- "pallet-contracts-primitives",
- "pallet-contracts-proc-macro",
- "parity-scale-codec 2.1.1",
- "parity-wasm 0.42.2",
- "pwasm-utils",
- "serde",
- "smallvec",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-sandbox",
- "sp-std",
- "wasmi-validation 0.4.0",
-]
-
-[[package]]
-name = "pallet-contracts-primitives"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
-dependencies = [
- "bitflags",
- "parity-scale-codec 2.1.1",
- "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-contracts-proc-macro"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "parity-multiaddr"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2244,12 +2183,6 @@ name = "parity-wasm"
 version = "0.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc878dac00da22f8f61e7af3157988424567ab01d9920b962ef7dcbd7cd865"
-
-[[package]]
-name = "parity-wasm"
-version = "0.42.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be5e13c266502aadf83426d87d81a0f5d1ef45b8027f5a471c360abfe4bfae92"
 
 [[package]]
 name = "parking"
@@ -2586,17 +2519,6 @@ checksum = "b518d7cdd93dab1d1122cf07fa9a60771836c668dde9d9e2a139f957f0d9f1bb"
 dependencies = [
  "bytes 1.0.1",
  "prost",
-]
-
-[[package]]
-name = "pwasm-utils"
-version = "0.17.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78778a25194f953d1766fc8c6a331ed56f070d09a0511267ee2c150cb71ea8c2"
-dependencies = [
- "byteorder",
- "log",
- "parity-wasm 0.42.2",
 ]
 
 [[package]]
@@ -3395,19 +3317,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-sandbox"
-version = "0.9.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
-dependencies = [
- "parity-scale-codec 2.1.1",
- "sp-core",
- "sp-io",
- "sp-std",
- "sp-wasm-interface",
- "wasmi",
-]
-
-[[package]]
 name = "sp-staking"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
@@ -3615,7 +3524,6 @@ dependencies = [
  "hex",
  "log",
  "pallet-balances",
- "pallet-contracts",
  "parity-scale-codec 2.1.1",
  "primitive-types 0.6.2",
  "sc-rpc-api",
@@ -3627,7 +3535,6 @@ dependencies = [
  "sp-std",
  "sp-version",
  "thiserror",
- "wabt",
  "ws",
 ]
 
@@ -4116,29 +4023,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 
 [[package]]
-name = "wabt"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94b5f5d6984ca42df66280baa8a15ac188a173ddaf4580b574a98931c01920e7"
-dependencies = [
- "serde",
- "serde_derive",
- "serde_json",
- "wabt-sys",
-]
-
-[[package]]
-name = "wabt-sys"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b064c81821100adb4b71923cecfc67fef083db21c3bbd454b0162c7ffe63eeaa"
-dependencies = [
- "cc",
- "cmake",
- "glob",
-]
-
-[[package]]
 name = "waker-fn"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4257,8 +4141,8 @@ dependencies = [
  "memory_units",
  "num-rational 0.2.4",
  "num-traits",
- "parity-wasm 0.41.0",
- "wasmi-validation 0.3.0",
+ "parity-wasm",
+ "wasmi-validation",
 ]
 
 [[package]]
@@ -4267,16 +4151,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea78c597064ba73596099281e2f4cfc019075122a65cdda3205af94f0b264d93"
 dependencies = [
- "parity-wasm 0.41.0",
-]
-
-[[package]]
-name = "wasmi-validation"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb8e860796d8be48efef530b60eebf84e74a88bce107374fffb0da97d504b8"
-dependencies = [
- "parity-wasm 0.42.2",
+ "parity-wasm",
 ]
 
 [[package]]

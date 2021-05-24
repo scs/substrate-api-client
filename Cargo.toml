@@ -78,14 +78,6 @@ optional = true
 #git = "https://github.com/scs/substrate-api-client-test-node"
 #branch = "master"
 
-[dev-dependencies]
-wabt = "0.9.0"
-
-[dev-dependencies.contracts]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "pallet-contracts"
-
 [dev-dependencies.keyring]
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
@@ -161,6 +153,15 @@ name = "example_sudo"
 path = "src/examples/example_sudo.rs"
 
 # DEPRECATED. might work but too much work to maintain, sorry
+
+# needed for contract example
+#[dev-dependencies]
+#wabt = "0.10.0"
+
+#[dev-dependencies.contracts]
+#git = "https://github.com/paritytech/substrate.git"
+#branch = "master"
+#package = "pallet-contracts"
 
 #[[example]]
 #name = "example_contract"
