@@ -37,19 +37,19 @@ default-features=false
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
 package = "sp-version"
-default-features=false
+optional = true
 
 [dependencies.balances]
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
 package = "pallet-balances"
-default-features=false
+optional = true
 
 [dependencies.system]
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
 package = "frame-system"
-default-features=false
+optional = true
 
 [dependencies.sp-runtime]
 git = "https://github.com/paritytech/substrate.git"
@@ -102,9 +102,9 @@ std = [
 	"sp-core/std",
 	"codec/std",
 	"metadata/std",
-	"sp-version/std",
-	"balances/std",
-	"system/std",
+	"sp-version",
+	"balances",
+	"system",
     "sp-runtime/std",
 	"support/std",
 	"sp-std/std",
