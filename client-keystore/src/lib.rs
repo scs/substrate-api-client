@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2019-2020 Parity Technologies (UK) Ltd.
+// Copyright (C) 2019-2021 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-//! Local keystore implementation
+//! Local keystore implementation. This file is from substrate but was copied here to have
+//! access to the private stuff.
+
 use std::{
 	collections::{HashMap, HashSet},
 	fs::{self, File},
@@ -64,20 +66,28 @@ impl LocalKeystore {
 	pub fn key_pair<Pair: AppPair>(&self, public: &<Pair as AppKey>::Public) -> Result<Option<Pair>> {
 		self.0.read().key_pair::<Pair>(public)
 	}
+}
 
-	pub fn generate<Pair: AppPair>(&self) -> Result<Pair> {
-        self.0.write().generate_by_type::<Pair::Generic>(Pair::ID).map(Into::into)
-    }
+/// This is an extension from the substrate-api-client repo. Keep it as a separate trait to
+/// make that clear.
+pub trait KeystoreExt {
+	fn generate<Pair: AppPair>(&self) -> Result<Pair>;
+	fn public_keys<Public: AppPublic>(&self) -> Result<Vec<Public>>;
+}
 
-    pub fn public_keys<Public: AppPublic>(&self) -> Result<Vec<Public>> {
-        self.0.read().raw_public_keys(Public::ID)
-            .map(|v| {
-                v.into_iter()
-                    .map(|k| Public::from_slice(k.as_slice()))
-                    .collect()
-            })
-    }
+impl KeystoreExt for LocalKeystore {
+	fn generate<Pair: AppPair>(&self) -> Result<Pair> {
+		self.0.write().generate_by_type::<Pair::Generic>(Pair::ID).map(Into::into)
+	}
 
+	fn public_keys<Public: AppPublic>(&self) -> Result<Vec<Public>> {
+		self.0.read().raw_public_keys(Public::ID)
+			.map(|v| {
+				v.into_iter()
+					.map(|k| Public::from_slice(k.as_slice()))
+					.collect()
+			})
+	}
 }
 
 #[async_trait]
@@ -154,6 +164,15 @@ impl CryptoStore for LocalKeystore {
 		transcript_data: VRFTranscriptData,
 	) -> std::result::Result<Option<VRFSignature>, TraitError> {
 		SyncCryptoStore::sr25519_vrf_sign(self, key_type, public, transcript_data)
+	}
+
+	async fn ecdsa_sign_prehashed(
+		&self,
+		id: KeyTypeId,
+		public: &ecdsa::Public,
+		msg: &[u8; 32],
+	) -> std::result::Result<Option<ecdsa::Signature>, TraitError> {
+		SyncCryptoStore::ecdsa_sign_prehashed(self, id, public, msg)
 	}
 }
 
@@ -313,6 +332,18 @@ impl SyncCryptoStore for LocalKeystore {
 		} else {
 			Ok(None)
 		}
+	}
+
+	fn ecdsa_sign_prehashed(
+		&self,
+		id: KeyTypeId,
+		public: &ecdsa::Public,
+		msg: &[u8; 32],
+	) -> std::result::Result<Option<ecdsa::Signature>, TraitError> {
+		let pair = self.0.read()
+			.key_pair_by_type::<ecdsa::Pair>(public, id)?;
+
+		pair.map(|k| k.sign_prehashed(msg)).map(Ok).transpose()
 	}
 }
 
