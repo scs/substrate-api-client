@@ -38,7 +38,7 @@ fn main() {
         .unwrap();
 
     let xt: UncheckedExtrinsicV4<_> =
-        compose_extrinsic!(api, "KittyModule", "create_kitty", 10 as u128);
+        compose_extrinsic!(api, "KittyModule", "create_kitty", 10_u128);
 
     println!("[+] Extrinsic: {:?}\n", xt);
 
