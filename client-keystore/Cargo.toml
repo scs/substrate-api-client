@@ -35,3 +35,6 @@ package = "sp-keyring"
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
 package = "sp-application-crypto"
+
+[dev-dependencies]
+tempfile = "3.2.0"

@@ -556,3 +556,211 @@ impl KeystoreInner {
 			.map(|v| v.map(Into::into))
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use tempfile::TempDir;
+	use sp_core::{
+		Pair,
+		crypto::Ss58Codec,
+		testing::SR25519,
+	};
+	use sp_application_crypto::{ed25519, sr25519, AppPublic};
+	use std::{
+		fs,
+		str::FromStr,
+	};
+
+	const TEST_KEY_TYPE: KeyTypeId = KeyTypeId(*b"test");
+
+	impl KeystoreInner {
+		fn insert_ephemeral_from_seed<Pair: AppPair>(&mut self, seed: &str) -> Result<Pair> {
+			self.insert_ephemeral_from_seed_by_type::<Pair::Generic>(seed, Pair::ID).map(Into::into)
+		}
+
+		fn public_keys<Public: AppPublic>(&self) -> Result<Vec<Public>> {
+			self.raw_public_keys(Public::ID)
+				.map(|v| {
+					v.into_iter()
+						.map(|k| Public::from_slice(k.as_slice()))
+						.collect()
+				})
+		}
+
+		fn generate<Pair: AppPair>(&mut self) -> Result<Pair> {
+			self.generate_by_type::<Pair::Generic>(Pair::ID).map(Into::into)
+		}
+	}
+
+	#[test]
+	fn basic_store() {
+		let temp_dir = TempDir::new().unwrap();
+		let mut store = KeystoreInner::open(temp_dir.path(), None).unwrap();
+
+		assert!(store.public_keys::<ed25519::AppPublic>().unwrap().is_empty());
+
+		let key: ed25519::AppPair = store.generate().unwrap();
+		let key2: ed25519::AppPair = store.key_pair(&key.public()).unwrap().unwrap();
+
+		assert_eq!(key.public(), key2.public());
+
+		assert_eq!(store.public_keys::<ed25519::AppPublic>().unwrap()[0], key.public());
+	}
+
+	#[test]
+	fn has_keys_works() {
+		let temp_dir = TempDir::new().unwrap();
+		let store = LocalKeystore::open(temp_dir.path(), None).unwrap();
+
+		let key: ed25519::AppPair = store.0.write().generate().unwrap();
+		let key2 = ed25519::Pair::generate().0;
+
+		assert!(
+			!SyncCryptoStore::has_keys(&store, &[(key2.public().to_vec(), ed25519::AppPublic::ID)])
+		);
+
+		assert!(
+			!SyncCryptoStore::has_keys(
+				&store,
+				&[
+					(key2.public().to_vec(), ed25519::AppPublic::ID),
+					(key.public().to_raw_vec(), ed25519::AppPublic::ID),
+				],
+			)
+		);
+
+		assert!(
+			SyncCryptoStore::has_keys(&store, &[(key.public().to_raw_vec(), ed25519::AppPublic::ID)])
+		);
+	}
+
+	#[test]
+	fn test_insert_ephemeral_from_seed() {
+		let temp_dir = TempDir::new().unwrap();
+		let mut store = KeystoreInner::open(temp_dir.path(), None).unwrap();
+
+		let pair: ed25519::AppPair = store.insert_ephemeral_from_seed(
+			"0x3d97c819d68f9bafa7d6e79cb991eebcd77d966c5334c0b94d9e1fa7ad0869dc"
+		).unwrap();
+		assert_eq!(
+			"5DKUrgFqCPV8iAXx9sjy1nyBygQCeiUYRFWurZGhnrn3HJCA",
+			pair.public().to_ss58check()
+		);
+
+		drop(store);
+		let store = KeystoreInner::open(temp_dir.path(), None).unwrap();
+		// Keys generated from seed should not be persisted!
+		assert!(store.key_pair::<ed25519::AppPair>(&pair.public()).unwrap().is_none());
+	}
+
+	#[test]
+	fn password_being_used() {
+		let password = String::from("password");
+		let temp_dir = TempDir::new().unwrap();
+		let mut store = KeystoreInner::open(
+			temp_dir.path(),
+			Some(FromStr::from_str(password.as_str()).unwrap()),
+		).unwrap();
+
+		let pair: ed25519::AppPair = store.generate().unwrap();
+		assert_eq!(
+			pair.public(),
+			store.key_pair::<ed25519::AppPair>(&pair.public()).unwrap().unwrap().public(),
+		);
+
+		// Without the password the key should not be retrievable
+		let store = KeystoreInner::open(temp_dir.path(), None).unwrap();
+		assert!(store.key_pair::<ed25519::AppPair>(&pair.public()).is_err());
+
+		let store = KeystoreInner::open(
+			temp_dir.path(),
+			Some(FromStr::from_str(password.as_str()).unwrap()),
+		).unwrap();
+		assert_eq!(
+			pair.public(),
+			store.key_pair::<ed25519::AppPair>(&pair.public()).unwrap().unwrap().public(),
+		);
+	}
+
+	#[test]
+	fn public_keys_are_returned() {
+		let temp_dir = TempDir::new().unwrap();
+		let mut store = KeystoreInner::open(temp_dir.path(), None).unwrap();
+
+		let mut keys = Vec::new();
+		for i in 0..10 {
+			keys.push(store.generate::<ed25519::AppPair>().unwrap().public());
+			keys.push(store.insert_ephemeral_from_seed::<ed25519::AppPair>(
+				&format!("0x3d97c819d68f9bafa7d6e79cb991eebcd7{}d966c5334c0b94d9e1fa7ad0869dc", i),
+			).unwrap().public());
+		}
+
+		// Generate a key of a different type
+		store.generate::<sr25519::AppPair>().unwrap();
+
+		keys.sort();
+		let mut store_pubs = store.public_keys::<ed25519::AppPublic>().unwrap();
+		store_pubs.sort();
+
+		assert_eq!(keys, store_pubs);
+	}
+
+	#[test]
+	fn store_unknown_and_extract_it() {
+		let temp_dir = TempDir::new().unwrap();
+		let store = KeystoreInner::open(temp_dir.path(), None).unwrap();
+
+		let secret_uri = "//Alice";
+		let key_pair = sr25519::AppPair::from_string(secret_uri, None).expect("Generates key pair");
+
+		store.insert_unknown(
+			SR25519,
+			secret_uri,
+			key_pair.public().as_ref(),
+		).expect("Inserts unknown key");
+
+		let store_key_pair = store.key_pair_by_type::<sr25519::AppPair>(
+			&key_pair.public(),
+			SR25519,
+		).expect("Gets key pair from keystore").unwrap();
+
+		assert_eq!(key_pair.public(), store_key_pair.public());
+	}
+
+	#[test]
+	fn store_ignores_files_with_invalid_name() {
+		let temp_dir = TempDir::new().unwrap();
+		let store = LocalKeystore::open(temp_dir.path(), None).unwrap();
+
+		let file_name = temp_dir.path().join(hex::encode(&SR25519.0[..2]));
+		fs::write(file_name, "test").expect("Invalid file is written");
+
+		assert!(
+			SyncCryptoStore::sr25519_public_keys(&store, SR25519).is_empty(),
+		);
+	}
+
+	#[test]
+	fn generate_with_seed_is_not_stored() {
+		let temp_dir = TempDir::new().unwrap();
+		let store = LocalKeystore::open(temp_dir.path(), None).unwrap();
+		let _alice_tmp_key = SyncCryptoStore::sr25519_generate_new(&store, TEST_KEY_TYPE, Some("//Alice")).unwrap();
+
+		assert_eq!(SyncCryptoStore::sr25519_public_keys(&store, TEST_KEY_TYPE).len(), 1);
+
+		drop(store);
+		let store = LocalKeystore::open(temp_dir.path(), None).unwrap();
+		assert_eq!(SyncCryptoStore::sr25519_public_keys(&store, TEST_KEY_TYPE).len(), 0);
+	}
+
+	#[test]
+	fn generate_can_be_fetched_in_memory() {
+		let store = LocalKeystore::in_memory();
+		SyncCryptoStore::sr25519_generate_new(&store, TEST_KEY_TYPE, Some("//Alice")).unwrap();
+
+		assert_eq!(SyncCryptoStore::sr25519_public_keys(&store, TEST_KEY_TYPE).len(), 1);
+		SyncCryptoStore::sr25519_generate_new(&store, TEST_KEY_TYPE, None).unwrap();
+		assert_eq!(SyncCryptoStore::sr25519_public_keys(&store, TEST_KEY_TYPE).len(), 2);
+	}
+}
