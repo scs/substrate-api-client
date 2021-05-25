@@ -1980,7 +1980,7 @@ dependencies = [
 [[package]]
 name = "node-template-runtime"
 version = "3.0.0"
-source = "git+https://github.com/encointer/substrate-api-client-test-node?branch=bump-to-polkadot-v0.9.2#59e99c59fafc37d235a5b1eccb04ee2058360daf"
+source = "git+https://github.com/scs/substrate-api-client-test-node?branch=bump-to-polkadot-v0.9.2#7d14a36de9c47b80b46bc739b795c6b67c8cbd45"
 dependencies = [
  "frame-executive",
  "frame-support",
@@ -2246,7 +2246,7 @@ dependencies = [
 [[package]]
 name = "pallet-template"
 version = "3.0.0"
-source = "git+https://github.com/encointer/substrate-api-client-test-node?branch=bump-to-polkadot-v0.9.2#59e99c59fafc37d235a5b1eccb04ee2058360daf"
+source = "git+https://github.com/scs/substrate-api-client-test-node?branch=bump-to-polkadot-v0.9.2#7d14a36de9c47b80b46bc739b795c6b67c8cbd45"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
