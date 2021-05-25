@@ -1,6 +1,6 @@
 [package]
 name = "api-client-tutorial"
-version = "0.1.0"
+version = "0.6.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
