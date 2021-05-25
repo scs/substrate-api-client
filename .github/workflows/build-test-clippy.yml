@@ -40,7 +40,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: init-rust-target
       run: rustup target add wasm32-unknown-unknown
-    - name: api-client + examplea
+    - name: api-client
       run: cargo test
     - name: keystore
       run: |
