@@ -347,12 +347,14 @@ impl SyncCryptoStore for LocalKeystore {
 	}
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<SyncCryptoStorePtr> for LocalKeystore {
 	fn into(self) -> SyncCryptoStorePtr {
 		Arc::new(self)
 	}
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<Arc<dyn CryptoStore>> for LocalKeystore {
 	fn into(self) -> Arc<dyn CryptoStore> {
 		Arc::new(self)
