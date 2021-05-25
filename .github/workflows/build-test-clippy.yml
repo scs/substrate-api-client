@@ -52,7 +52,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: init-rust
-      run: rustup component add clippy
+      run: |
+        rustup target add wasm32-unknown-unknown
+        rustup component add clippy
     - name: api-client
       run: cargo clippy
     - name: keystore
