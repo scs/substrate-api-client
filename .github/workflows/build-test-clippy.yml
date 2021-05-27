@@ -1,0 +1,73 @@
+name: Build & Test & Clippy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: init-rust-target
+      run: rustup target add wasm32-unknown-unknown
+    - name: api-client
+      run: cargo build
+    - name: keystore
+      run: |
+        cd client-keystore
+        cargo build
+    - name: examples
+      run: cargo build --examples
+    - name: test_no_std
+      run: |
+        cd test_no_std
+        cargo build
+    - name: tutorial
+      run: |
+        cd tutorials/api-client-tutorial
+        cargo build
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: init-rust-target
+      run: rustup target add wasm32-unknown-unknown
+    - name: api-client
+      run: cargo test
+    - name: keystore
+      run: |
+        cd client-keystore
+        cargo test
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: init-rust
+      run: |
+        rustup target add wasm32-unknown-unknown
+        rustup component add clippy
+    - name: api-client
+      run: cargo clippy
+    - name: keystore
+      run: |
+        cd client-keystore
+        cargo clippy
+    - name: examples
+      run: cargo clippy --examples
+    - name: test_no_std
+      run: |
+        cd test_no_std
+        cargo clippy
+    - name: tutorial
+      run: |
+        cd tutorials/api-client-tutorial
+        cargo clippy

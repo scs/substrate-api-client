@@ -1,6 +1,6 @@
 [package]
 name = "substrate-client-keystore"
-version = "0.1.0"
+version = "0.6.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
@@ -12,21 +12,29 @@ serde_json = "1.0"
 
 [dependencies.sp-core]
 git = "https://github.com/paritytech/substrate.git"
+branch = "master"
 package = "sp-core"
 default-features = false
 
 [dependencies.sp-keystore]
 git = "https://github.com/paritytech/substrate.git"
+branch = "master"
 package = "sp-keystore"
 
 [dependencies.sc-keystore]
 git = "https://github.com/paritytech/substrate.git"
+branch = "master"
 package = "sc-keystore"
 
 [dependencies.sp-keyring]
 git = "https://github.com/paritytech/substrate.git"
+branch = "master"
 package = "sp-keyring"
 
 [dependencies.sp-application-crypto]
 git = "https://github.com/paritytech/substrate.git"
+branch = "master"
 package = "sp-application-crypto"
+
+[dev-dependencies]
+tempfile = "3.2.0"

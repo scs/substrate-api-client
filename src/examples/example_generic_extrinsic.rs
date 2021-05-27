@@ -41,7 +41,7 @@ fn main() {
         "Balances",
         "transfer",
         GenericAddress::Id(to),
-        Compact(42 as u128)
+        Compact(42_u128)
     );
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);

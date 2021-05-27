@@ -43,7 +43,7 @@ pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
 
 impl GenericExtra {
     pub fn new(era: Era, nonce: u32) -> GenericExtra {
-        GenericExtra(era, Compact(nonce), Compact(0 as u128))
+        GenericExtra(era, Compact(nonce), Compact(0_u128))
     }
 }
 
