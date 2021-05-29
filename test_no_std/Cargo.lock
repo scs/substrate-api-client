@@ -944,7 +944,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "substrate-api-client"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "frame-metadata",
  "frame-support",
@@ -992,7 +992,7 @@ dependencies = [
 
 [[package]]
 name = "test_no_std"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "libc",
  "sp-application-crypto",
