@@ -17,13 +17,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use serde_json::Value;
 #[cfg(feature = "std")]
 use sp_std::prelude::*;
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "ws-client"))]
+use std::sync::mpsc::Receiver;
+#[cfg(all(feature = "std", feature = "ws-client"))]
 use std::sync::mpsc::Sender as ThreadOut;
-#[cfg(feature = "std")]
-use std::sync::mpsc::{channel, Receiver};
 
 #[cfg(feature = "std")]
 use std::convert::TryFrom;
@@ -41,8 +42,8 @@ use sp_core::crypto::Pair;
 #[cfg(feature = "std")]
 use rpc::json_req;
 
-#[cfg(feature = "std")]
-use utils::*;
+// #[cfg(feature = "std")]
+// use utils::*;
 
 #[cfg(feature = "std")]
 use sp_version::RuntimeVersion;
@@ -63,12 +64,12 @@ use sc_rpc_api::state::ReadProof;
 pub mod utils;
 
 #[cfg(feature = "std")]
-use utils::FromHexString;
+pub use utils::FromHexString;
 
 #[cfg(feature = "std")]
 pub mod rpc;
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "ws-client"))]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
 use sp_runtime::{generic::SignedBlock, AccountId32 as AccountId, MultiSignature};
@@ -110,23 +111,23 @@ pub type Balance = u128;
 #[derive(Clone, Eq, PartialEq, Default, Debug, Encode, Decode)]
 pub struct AccountDataGen<Balance> {
     /// Non-reserved part of the balance. There may still be restrictions on this, but it is the
-	/// total pool what may in principle be transferred, reserved and used for tipping.
-	///
-	/// This is the only balance that matters in terms of most operations on tokens. It
-	/// alone is used to determine the balance when in the contract execution environment.
+    /// total pool what may in principle be transferred, reserved and used for tipping.
+    ///
+    /// This is the only balance that matters in terms of most operations on tokens. It
+    /// alone is used to determine the balance when in the contract execution environment.
     pub free: Balance,
     /// Balance which is reserved and may not be used at all.
-	///
-	/// This can still get slashed, but gets slashed last of all.
-	///
-	/// This balance is a 'reserve' balance that other subsystems use in order to set aside tokens
-	/// that are still 'owned' by the account holder, but which are suspendable.
+    ///
+    /// This can still get slashed, but gets slashed last of all.
+    ///
+    /// This balance is a 'reserve' balance that other subsystems use in order to set aside tokens
+    /// that are still 'owned' by the account holder, but which are suspendable.
     pub reserved: Balance,
     /// The amount that `free` may not drop below when withdrawing for *anything except transaction
-	/// fee payment*.
+    /// fee payment*.
     pub misc_frozen: Balance,
     /// The amount that `free` may not drop below when withdrawing specifically for transaction
-	/// fee payment.
+    /// fee payment.
     pub fee_frozen: Balance,
 }
 
@@ -139,16 +140,16 @@ pub struct AccountInfoGen<Index, AccountData> {
     /// The number of transactions this account has sent.
     pub nonce: Index,
     /// The number of other modules that currently depend on this account's existence. The account
-	/// cannot be reaped until this is zero.
+    /// cannot be reaped until this is zero.
     pub consumers: RefCount,
     /// The number of other modules that allow this account to exist. The account may not be reaped
-	/// until this and `sufficients` are both zero.
+    /// until this and `sufficients` are both zero.
     pub providers: RefCount,
     /// The number of modules that allow this account to exist for their own purposes only. The
-	/// account may not be reaped until this and `providers` are both zero.
+    /// account may not be reaped until this and `providers` are both zero.
     pub sufficients: RefCount,
     /// The additional data that belongs to this account. Used to store the balance(s) in a lot of
-	/// chains.
+    /// chains.
     pub data: AccountData,
 }
 
@@ -156,113 +157,41 @@ pub type AccountData = AccountDataGen<Balance>;
 pub type AccountInfo = AccountInfoGen<Index, AccountData>;
 
 #[cfg(feature = "std")]
-type ApiResult<T> = Result<T, ApiClientError>;
+pub type ApiResult<T> = Result<T, ApiClientError>;
 
 #[cfg(feature = "std")]
-#[derive(Clone)]
-pub struct Api<P>
+pub trait RpcClient {
+    /// Sends a RPC request that returns a String
+    fn get_request(&self, jsonreq: Value) -> ApiResult<String>;
+
+    /// Send a RPC request that returns a SHA256 hash
+    fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
+}
+
+#[cfg(feature = "std")]
+pub struct Api<P, Client>
 where
-    P: Pair,
-    MultiSignature: From<P::Signature>,
+    Client: RpcClient,
 {
-    pub url: String,
     pub signer: Option<P>,
     pub genesis_hash: Hash,
     pub metadata: Metadata,
     pub runtime_version: RuntimeVersion,
+    client: Client,
 }
 
 #[cfg(feature = "std")]
-impl<P> Api<P>
+impl<P, Client> Api<P, Client>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    Client: RpcClient,
 {
-    pub fn new(url: String) -> ApiResult<Self> {
-        let genesis_hash = Self::_get_genesis_hash(url.clone())?;
-        info!("Got genesis hash: {:?}", genesis_hash);
-
-        let metadata = Self::_get_metadata(url.clone()).map(Metadata::try_from)??;
-        debug!("Metadata: {:?}", metadata);
-
-        let runtime_version = Self::_get_runtime_version(url.clone())?;
-        info!("Runtime Version: {:?}", runtime_version);
-
-        Ok(Self {
-            url,
-            signer: None,
-            genesis_hash,
-            metadata,
-            runtime_version,
-        })
-    }
-
-    pub fn set_signer(mut self, signer: P) -> Self {
-        self.signer = Some(signer);
-        self
-    }
-
     pub fn signer_account(&self) -> Option<AccountId32> {
         let pair = self.signer.as_ref()?;
         let mut arr: [u8; 32] = Default::default();
         arr.clone_from_slice(pair.to_owned().public().as_ref());
         Some(AccountId32::from(arr))
-    }
-
-    fn _get_genesis_hash(url: String) -> ApiResult<Hash> {
-        let jsonreq = json_req::chain_get_genesis_hash();
-        let genesis = Self::_get_request(url, jsonreq.to_string())?;
-
-        match genesis {
-            Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
-            None => Err(ApiClientError::Genesis),
-        }
-    }
-
-    fn _get_runtime_version(url: String) -> ApiResult<RuntimeVersion> {
-        let jsonreq = json_req::state_get_runtime_version();
-        let version = Self::_get_request(url, jsonreq.to_string())?;
-
-        match version {
-            Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-            None => Err(ApiClientError::RuntimeVersion),
-        }
-    }
-
-    fn _get_metadata(url: String) -> ApiResult<RuntimeMetadataPrefixed> {
-        let jsonreq = json_req::state_get_metadata();
-        let meta = Self::_get_request(url, jsonreq.to_string())?;
-
-        if meta.is_none() {
-            return Err(ApiClientError::MetadataFetch);
-        }
-        let metadata = Vec::from_hex(meta.unwrap())?;
-        RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
-    }
-
-    // low level access
-    fn _get_request(url: String, jsonreq: String) -> ApiResult<Option<String>> {
-        let (result_in, result_out) = channel();
-        rpc::get(url, jsonreq, result_in)?;
-
-        let str = result_out.recv()?;
-
-        match &str[..] {
-            "null" => Ok(None),
-            _ => Ok(Some(str)),
-        }
-    }
-
-    pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
-        Self::_get_metadata(self.url.clone())
-    }
-
-    pub fn get_spec_version(&self) -> ApiResult<u32> {
-        Self::_get_runtime_version(self.url.clone()).map(|v| v.spec_version)
-    }
-
-    pub fn get_genesis_hash(&self) -> ApiResult<Hash> {
-        Self::_get_genesis_hash(self.url.clone())
     }
 
     pub fn get_nonce(&self) -> ApiResult<u32> {
@@ -272,6 +201,89 @@ where
 
         self.get_account_info(&self.signer_account().unwrap())
             .map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
+    }
+}
+
+#[cfg(feature = "std")]
+impl<P, Client> Api<P, Client>
+where
+    Client: RpcClient,
+{
+    pub fn new(client: Client) -> ApiResult<Self> {
+        let genesis_hash = Self::_get_genesis_hash(&client)?;
+        info!("Got genesis hash: {:?}", genesis_hash);
+
+        let metadata = Self::_get_metadata(&client).map(Metadata::try_from)??;
+        debug!("Metadata: {:?}", metadata);
+
+        let runtime_version = Self::_get_runtime_version(&client)?;
+        info!("Runtime Version: {:?}", runtime_version);
+
+        Ok(Self {
+            signer: None,
+            genesis_hash,
+            metadata,
+            runtime_version,
+            client,
+        })
+    }
+
+    pub fn set_signer(mut self, signer: P) -> Self {
+        self.signer = Some(signer);
+        self
+    }
+
+    fn _get_genesis_hash(client: &Client) -> ApiResult<Hash> {
+        let jsonreq = json_req::chain_get_genesis_hash();
+        let genesis = Self::_get_request(client, jsonreq)?;
+
+        match genesis {
+            Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
+            None => Err(ApiClientError::Genesis),
+        }
+    }
+
+    fn _get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
+        let jsonreq = json_req::state_get_runtime_version();
+        let version = Self::_get_request(client, jsonreq)?;
+
+        match version {
+            Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
+            None => Err(ApiClientError::RuntimeVersion),
+        }
+    }
+
+    fn _get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
+        let jsonreq = json_req::state_get_metadata();
+        let meta = Self::_get_request(client, jsonreq)?;
+
+        if meta.is_none() {
+            return Err(ApiClientError::MetadataFetch);
+        }
+        let metadata = Vec::from_hex(meta.unwrap())?;
+        RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
+    }
+
+    // low level access
+    fn _get_request(client: &Client, jsonreq: Value) -> ApiResult<Option<String>> {
+        let str = client.get_request(jsonreq)?;
+
+        match &str[..] {
+            "null" => Ok(None),
+            _ => Ok(Some(str)),
+        }
+    }
+
+    pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
+        Self::_get_metadata(&self.client)
+    }
+
+    pub fn get_spec_version(&self) -> ApiResult<u32> {
+        Self::_get_runtime_version(&self.client).map(|v| v.spec_version)
+    }
+
+    pub fn get_genesis_hash(&self) -> ApiResult<Hash> {
+        Self::_get_genesis_hash(&self.client)
     }
 
     pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
@@ -289,7 +301,7 @@ where
     }
 
     pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
-        let h = self.get_request(json_req::chain_get_finalized_head().to_string())?;
+        let h = self.get_request(json_req::chain_get_finalized_head())?;
         match h {
             Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
             None => Ok(None),
@@ -300,7 +312,7 @@ where
     where
         H: Header + DeserializeOwned,
     {
-        let h = self.get_request(json_req::chain_get_header(hash).to_string())?;
+        let h = self.get_request(json_req::chain_get_header(hash))?;
         match h {
             Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
             None => Ok(None),
@@ -322,15 +334,15 @@ where
     where
         B: Block + DeserializeOwned,
     {
-        let b = self.get_request(json_req::chain_get_block(hash).to_string())?;
+        let b = self.get_request(json_req::chain_get_block(hash))?;
         match b {
             Some(block) => Ok(Some(serde_json::from_str(&block)?)),
             None => Ok(None),
         }
     }
 
-    pub fn get_request(&self, jsonreq: String) -> ApiResult<Option<String>> {
-        Self::_get_request(self.url.clone(), jsonreq)
+    pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
+        Self::_get_request(&self.client, jsonreq)
     }
 
     pub fn get_storage_value<V: Decode>(
@@ -406,7 +418,7 @@ where
         at_block: Option<Hash>,
     ) -> ApiResult<Option<Vec<u8>>> {
         let jsonreq = json_req::state_get_storage(key, at_block);
-        let s = self.get_request(jsonreq.to_string())?;
+        let s = self.get_request(jsonreq)?;
 
         match s {
             Some(storage) => Ok(Some(Vec::from_hex(storage)?)),
@@ -465,7 +477,7 @@ where
         at_block: Option<Hash>,
     ) -> ApiResult<Option<ReadProof<Hash>>> {
         let jsonreq = json_req::state_get_read_proof(keys, at_block);
-        let p = self.get_request(jsonreq.to_string())?;
+        let p = self.get_request(jsonreq)?;
         match p {
             Some(proof) => Ok(Some(serde_json::from_str(&proof)?)),
             None => Ok(None),
@@ -478,63 +490,63 @@ where
         at_block: Option<Hash>,
     ) -> ApiResult<Option<Vec<String>>> {
         let jsonreq = json_req::state_get_keys(key, at_block);
-        let k = self.get_request(jsonreq.to_string())?;
+        let k = self.get_request(jsonreq)?;
         match k {
             Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
             None => Ok(None),
         }
     }
 
+    #[cfg(feature = "ws-client")]
     pub fn send_extrinsic(
         &self,
         xthex_prefixed: String,
         exit_on: XtStatus,
     ) -> ApiResult<Option<Hash>> {
         debug!("sending extrinsic: {:?}", xthex_prefixed);
-
-        let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
-
-        let (result_in, result_out) = channel();
-        match exit_on {
-            XtStatus::Finalized => {
-                rpc::send_extrinsic_and_wait_until_finalized(self.url.clone(), jsonreq, result_in)?;
-                let res = result_out.recv()?;
-                info!("finalized: {}", res);
-                Ok(Some(Hash::from_hex(res)?))
-            }
-            XtStatus::InBlock => {
-                rpc::send_extrinsic_and_wait_until_in_block(self.url.clone(), jsonreq, result_in)?;
-                let res = result_out.recv()?;
-                info!("inBlock: {}", res);
-                Ok(Some(Hash::from_hex(res)?))
-            }
-            XtStatus::Broadcast => {
-                rpc::send_extrinsic_and_wait_until_broadcast(self.url.clone(), jsonreq, result_in)?;
-                let res = result_out.recv()?;
-                info!("broadcast: {}", res);
-                Ok(None)
-            }
-            XtStatus::Ready => {
-                rpc::send_extrinsic(self.url.clone(), jsonreq, result_in)?;
-                let res = result_out.recv()?;
-                info!("ready: {}", res);
-                Ok(None)
-            }
-            _ => Err(ApiClientError::UnsupportedXtStatus(exit_on)),
-        }
+        self.client.send_extrinsic(xthex_prefixed, exit_on)
     }
 
+    #[cfg(not(feature = "ws-client"))]
+    pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Hash>> {
+        debug!("sending extrinsic: {:?}", xthex_prefixed);
+        // XtStatus should never be used used but we need to put something
+        self.client
+            .send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
+    }
+}
+
+#[cfg(feature = "ws-client")]
+pub trait Subscriber {
+    fn start_subscriber(
+        &self,
+        json_req: String,
+        result_in: ThreadOut<String>,
+    ) -> Result<(), ws::Error>;
+}
+
+#[cfg(feature = "ws-client")]
+impl<P, Client> Api<P, Client>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+    Client: RpcClient + Subscriber,
+{
     pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to events");
-        let key = storage_key("System", "Events");
+        let key = utils::storage_key("System", "Events");
         let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-        rpc::start_subscriber(self.url.clone(), jsonreq, sender).map_err(|e| e.into())
+        self.client
+            .start_subscriber(jsonreq, sender)
+            .map_err(|e| e.into())
     }
 
     pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to finalized heads");
         let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-        rpc::start_subscriber(self.url.clone(), jsonreq, sender).map_err(|e| e.into())
+        self.client
+            .start_subscriber(jsonreq, sender)
+            .map_err(|e| e.into())
     }
 
     pub fn wait_for_event<E: Decode>(
@@ -595,8 +607,11 @@ pub enum ApiClientError {
     MetadataFetch,
     #[error("Operation needs a signer to be set in the api")]
     NoSigner,
+    #[cfg(feature = "ws-client")]
     #[error("WebSocket Error: {0}")]
     WebSocket(#[from] ws::Error),
+    #[error("RpcClient error: {0}")]
+    RpcClient(String),
     #[error("ChannelReceiveError, sender is disconnected: {0}")]
     Disconnected(#[from] sp_std::sync::mpsc::RecvError),
     #[error("Metadata Error: {0}")]

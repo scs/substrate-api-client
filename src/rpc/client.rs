@@ -15,23 +15,15 @@
 
 */
 
-use crate::rpc::{RpcClientError, RpcResult};
+use crate::rpc::RpcClientError;
+use crate::XtStatus;
 use log::{debug, error, info, warn};
 use std::sync::mpsc::{SendError, Sender as ThreadOut};
 use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
 
-#[derive(Debug, PartialEq)]
-pub enum XtStatus {
-    Finalized,
-    InBlock,
-    Broadcast,
-    Ready,
-    Future,
-    Error,
-    Unknown,
-}
-
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
+
+type RpcResult<T> = Result<T, RpcClientError>;
 
 pub struct RpcClient {
     pub out: Sender,
