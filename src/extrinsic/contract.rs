@@ -18,7 +18,7 @@
 use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_core::H256 as Hash;
-use sp_runtime::MultiSignature;
+use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
 use crate::RpcClient;
@@ -56,6 +56,7 @@ impl<P, Client> Api<P, Client>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    MultiSigner: From<P::Public>,
     Client: RpcClient,
 {
     pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {

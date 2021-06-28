@@ -72,7 +72,10 @@ pub mod rpc;
 #[cfg(all(feature = "std", feature = "ws-client"))]
 use events::{EventsDecoder, RawEvent, RuntimeEvent};
 #[cfg(feature = "std")]
-use sp_runtime::{generic::SignedBlock, AccountId32 as AccountId, MultiSignature};
+use sp_runtime::{
+    generic::SignedBlock, traits::IdentifyAccount, AccountId32 as AccountId, MultiSignature,
+    MultiSigner,
+};
 
 pub extern crate sp_runtime;
 
@@ -185,13 +188,13 @@ impl<P, Client> Api<P, Client>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    MultiSigner: From<P::Public>,
     Client: RpcClient,
 {
     pub fn signer_account(&self) -> Option<AccountId32> {
         let pair = self.signer.as_ref()?;
-        let mut arr: [u8; 32] = Default::default();
-        arr.clone_from_slice(pair.to_owned().public().as_ref());
-        Some(AccountId32::from(arr))
+        let multi_signer = MultiSigner::from(pair.public());
+        Some(multi_signer.into_account())
     }
 
     pub fn get_nonce(&self) -> ApiResult<u32> {

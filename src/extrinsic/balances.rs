@@ -22,7 +22,7 @@ use crate::RpcClient;
 #[cfg(feature = "std")]
 use crate::{compose_extrinsic, Api};
 use sp_core::crypto::Pair;
-use sp_runtime::MultiSignature;
+use sp_runtime::{MultiSignature, MultiSigner};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
@@ -47,6 +47,7 @@ impl<P, Client> Api<P, Client>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    MultiSigner: From<P::Public>,
     Client: RpcClient,
 {
     pub fn balance_transfer(&self, to: GenericAddress, amount: Balance) -> BalanceTransferXt {
