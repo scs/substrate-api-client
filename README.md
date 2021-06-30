@@ -10,7 +10,6 @@ substrate-api-client a library written in Rust for connecting to the substrate's
 * supports composing extrinsics for `no_std` builds
 * Watch events and execute code upon events.
 * Parse and print the node metadata.
-* currently only supports [node-template](https://github.com/substrate-developer-hub/substrate-node-template) based chains (doesn't support the Account type of Polkadot/Kusama without patches)
 
 ## Prerequisites
 
