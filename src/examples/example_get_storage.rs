@@ -17,7 +17,7 @@
 use clap::{load_yaml, App};
 
 use keyring::AccountKeyring;
-use substrate_api_client::rpc::WsRpc;
+use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::AccountInfo;
 use substrate_api_client::Api;
 
@@ -25,7 +25,7 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let client = WsRpc::new(url);
+    let client = WsRpcClient::new(url);
     let api = Api::new(client).unwrap();
 
     // get some plain storage value

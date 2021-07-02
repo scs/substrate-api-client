@@ -23,7 +23,7 @@ use keyring::AccountKeyring;
 use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
 
-use substrate_api_client::rpc::WsRpc;
+use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{compose_extrinsic_offline, Api, UncheckedExtrinsicV4, XtStatus};
 
 fn main() {
@@ -32,7 +32,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let client = WsRpc::new(url);
+    let client = WsRpcClient::new(url);
     let api = Api::new(client).map(|api| api.set_signer(from)).unwrap();
 
     println!(

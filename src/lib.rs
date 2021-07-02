@@ -17,69 +17,21 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use serde_json::Value;
 #[cfg(feature = "std")]
-use sp_std::prelude::*;
-
-#[cfg(all(feature = "std", feature = "ws-client"))]
-use std::sync::mpsc::Receiver;
-#[cfg(all(feature = "std", feature = "ws-client"))]
-use std::sync::mpsc::Sender as ThreadOut;
-
-#[cfg(feature = "std")]
-use std::convert::TryFrom;
+pub use std_prelude::*;
 
 use codec::{Decode, Encode};
 
-#[cfg(feature = "std")]
-use log::{debug, error, info};
-
-#[cfg(feature = "std")]
-use metadata::RuntimeMetadataPrefixed;
-#[cfg(feature = "std")]
-use sp_core::crypto::Pair;
-
-#[cfg(feature = "std")]
-use rpc::json_req;
-
-// #[cfg(feature = "std")]
-// use utils::*;
-
-#[cfg(feature = "std")]
-use sp_version::RuntimeVersion;
-
 #[macro_use]
 pub mod extrinsic;
-#[cfg(feature = "std")]
 pub mod events;
-#[cfg(feature = "std")]
 pub mod node_metadata;
-
-#[cfg(feature = "std")]
-use sp_core::storage::StorageKey;
-
-#[cfg(feature = "std")]
-use sc_rpc_api::state::ReadProof;
-
+pub mod rpc;
 pub mod utils;
 
-#[cfg(feature = "std")]
-pub use utils::FromHexString;
-
-#[cfg(feature = "std")]
-pub mod rpc;
-
-#[cfg(all(feature = "std", feature = "ws-client"))]
-use events::{EventsDecoder, RawEvent, RuntimeEvent};
-#[cfg(feature = "std")]
-use sp_runtime::{
-    generic::SignedBlock, traits::IdentifyAccount, AccountId32 as AccountId, MultiSignature,
-    MultiSigner,
-};
+mod std_prelude;
 
 pub extern crate sp_runtime;
-
-pub use sp_core::H256 as Hash;
 
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;
@@ -90,21 +42,10 @@ pub type Moment = u64;
 pub type Index = u32;
 
 // re-export useful types
+#[cfg(feature = "ws-client")]
 pub use extrinsic::xt_primitives::{GenericAddress, GenericExtra, UncheckedExtrinsicV4};
-#[cfg(feature = "std")]
-pub use node_metadata::Metadata;
-
-#[cfg(feature = "std")]
 pub use rpc::XtStatus;
-
-#[cfg(feature = "std")]
-use sp_core::crypto::AccountId32;
-
-#[cfg(feature = "std")]
-use sp_runtime::{
-    traits::{Block, Header},
-    DeserializeOwned,
-};
+pub use sp_core::H256 as Hash;
 
 //fixme: make generic
 pub type Balance = u128;
@@ -165,7 +106,7 @@ pub type ApiResult<T> = Result<T, ApiClientError>;
 #[cfg(feature = "std")]
 pub trait RpcClient {
     /// Sends a RPC request that returns a String
-    fn get_request(&self, jsonreq: Value) -> ApiResult<String>;
+    fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<String>;
 
     /// Send a RPC request that returns a SHA256 hash
     fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
@@ -191,7 +132,7 @@ where
     MultiSigner: From<P::Public>,
     Client: RpcClient,
 {
-    pub fn signer_account(&self) -> Option<AccountId32> {
+    pub fn signer_account(&self) -> Option<AccountId> {
         let pair = self.signer.as_ref()?;
         let multi_signer = MultiSigner::from(pair.public());
         Some(multi_signer.into_account())
@@ -434,7 +375,7 @@ where
         storage_prefix: &'static str,
         storage_key_name: &'static str,
         at_block: Option<Hash>,
-    ) -> ApiResult<Option<ReadProof<Hash>>> {
+    ) -> ApiResult<Option<rpc::ReadProof<Hash>>> {
         let storagekey = self
             .metadata
             .storage_value_key(storage_prefix, storage_key_name)?;
@@ -448,7 +389,7 @@ where
         storage_key_name: &'static str,
         map_key: K,
         at_block: Option<Hash>,
-    ) -> ApiResult<Option<ReadProof<Hash>>> {
+    ) -> ApiResult<Option<rpc::ReadProof<Hash>>> {
         let storagekey =
             self.metadata
                 .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
@@ -463,7 +404,7 @@ where
         first: K,
         second: Q,
         at_block: Option<Hash>,
-    ) -> ApiResult<Option<ReadProof<Hash>>> {
+    ) -> ApiResult<Option<rpc::ReadProof<Hash>>> {
         let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
             storage_prefix,
             storage_key_name,
@@ -478,7 +419,7 @@ where
         &self,
         keys: Vec<StorageKey>,
         at_block: Option<Hash>,
-    ) -> ApiResult<Option<ReadProof<Hash>>> {
+    ) -> ApiResult<Option<rpc::ReadProof<Hash>>> {
         let jsonreq = json_req::state_get_read_proof(keys, at_block);
         let p = self.get_request(jsonreq)?;
         match p {
@@ -556,7 +497,7 @@ where
         &self,
         module: &str,
         variant: &str,
-        decoder: Option<EventsDecoder>,
+        decoder: Option<events::EventsDecoder>,
         receiver: &Receiver<String>,
     ) -> ApiResult<E> {
         let raw = self.wait_for_raw_event(module, variant, decoder, receiver)?;
@@ -567,12 +508,12 @@ where
         &self,
         module: &str,
         variant: &str,
-        decoder: Option<EventsDecoder>,
+        decoder: Option<events::EventsDecoder>,
         receiver: &Receiver<String>,
-    ) -> ApiResult<RawEvent> {
+    ) -> ApiResult<events::RawEvent> {
         let event_decoder = match decoder {
             Some(d) => d,
-            None => EventsDecoder::try_from(self.metadata.clone())?,
+            None => events::EventsDecoder::try_from(self.metadata.clone())?,
         };
 
         loop {
@@ -584,7 +525,7 @@ where
                     for (phase, event) in raw_events.into_iter() {
                         info!("Decoded Event: {:?}, {:?}", phase, event);
                         match event {
-                            RuntimeEvent::Raw(raw)
+                            events::RuntimeEvent::Raw(raw)
                                 if raw.module == module && raw.variant == variant =>
                             {
                                 return Ok(raw);

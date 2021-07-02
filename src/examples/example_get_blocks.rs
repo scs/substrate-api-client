@@ -25,14 +25,14 @@ use sp_core::sr25519;
 
 use node_template_runtime::{Block, Header, SignedBlock};
 use std::sync::mpsc::channel;
-use substrate_api_client::rpc::WsRpc;
+use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::Api;
 
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let client = WsRpc::new(url);
+    let client = WsRpcClient::new(url);
     let api = Api::<sr25519::Pair>::new(client).unwrap();
 
     let head = api.get_finalized_head().unwrap().unwrap();

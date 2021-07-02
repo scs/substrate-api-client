@@ -14,19 +14,16 @@
    limitations under the License.
 
 */
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "ws-client")]
-mod client;
+pub use ws_client::ws::WsRpcClient;
+#[cfg(feature = "ws-client")]
+mod ws_client;
 
 pub mod json_req;
 
-#[cfg(feature = "ws-client")]
-pub use crate::rpc::ws::WsRpc;
-#[cfg(feature = "ws-client")]
-mod ws;
-
 #[derive(Debug, thiserror::Error)]
-#[cfg(feature = "std")]
 pub enum RpcClientError {
     #[error("Serde json error: {0}")]
     Serde(#[from] serde_json::error::Error),
@@ -45,4 +42,16 @@ pub enum XtStatus {
     Future,
     Error,
     Unknown,
+}
+
+// Exact structure from
+// https://github.com/paritytech/substrate/blob/master/client/rpc-api/src/state/helpers.rs
+// Adding manually so we don't need sc-rpc-api, which brings in async dependencies
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadProof<Hash> {
+    /// Block hash used to generate the proof
+    pub at: Hash,
+    /// A proof used to prove that storage entries are included in the storage trie
+    pub proof: Vec<sp_core::Bytes>,
 }

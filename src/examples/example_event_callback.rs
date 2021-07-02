@@ -27,7 +27,7 @@ use sp_core::H256 as Hash;
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use node_template_runtime::Event;
 
-use substrate_api_client::rpc::WsRpc;
+use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::utils::FromHexString;
 use substrate_api_client::Api;
 
@@ -35,7 +35,7 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let client = WsRpc::new(url);
+    let client = WsRpcClient::new(url);
     let api = Api::<sr25519::Pair>::new(client).unwrap();
 
     println!("Subscribe to events");

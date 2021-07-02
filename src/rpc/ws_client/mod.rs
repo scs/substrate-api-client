@@ -14,12 +14,15 @@
    limitations under the License.
 
 */
+use std::sync::mpsc::{SendError, Sender as ThreadOut};
+
+use log::{debug, error, info, warn};
 
 use crate::rpc::RpcClientError;
 use crate::XtStatus;
-use log::{debug, error, info, warn};
-use std::sync::mpsc::{SendError, Sender as ThreadOut};
-use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
+
+use ::ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
+pub mod ws;
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
 

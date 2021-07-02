@@ -8,12 +8,12 @@ use sp_core::H256 as Hash;
 
 use ::ws::{connect, Result as WsResult};
 
-use crate::rpc::client::{
+use crate::rpc::json_req;
+use crate::rpc::ws_client::{
     on_extrinsic_msg_until_broadcast, on_extrinsic_msg_until_finalized,
     on_extrinsic_msg_until_in_block, on_extrinsic_msg_until_ready, on_get_request_msg,
     on_subscription_msg, OnMessageFn, RpcClient,
 };
-use crate::rpc::json_req;
 use crate::utils::FromHexString;
 use crate::ApiClientError;
 use crate::ApiResult;
@@ -21,19 +21,19 @@ use crate::RpcClient as RpcClientTrait;
 use crate::Subscriber;
 use crate::XtStatus;
 
-pub struct WsRpc {
+pub struct WsRpcClient {
     url: String,
 }
 
-impl WsRpc {
-    pub fn new(url: &str) -> WsRpc {
-        WsRpc {
+impl WsRpcClient {
+    pub fn new(url: &str) -> WsRpcClient {
+        WsRpcClient {
             url: url.to_string(),
         }
     }
 }
 
-impl RpcClientTrait for WsRpc {
+impl RpcClientTrait for WsRpcClient {
     fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
         let (result_in, result_out) = channel();
         self.get(jsonreq.to_string(), result_in)?;
@@ -81,7 +81,7 @@ impl RpcClientTrait for WsRpc {
     }
 }
 
-impl Subscriber for WsRpc {
+impl Subscriber for WsRpcClient {
     fn start_subscriber(
         &self,
         json_req: String,
@@ -91,7 +91,7 @@ impl Subscriber for WsRpc {
     }
 }
 
-impl WsRpc {
+impl WsRpcClient {
     pub fn get(&self, json_req: String, result_in: ThreadOut<String>) -> WsResult<()> {
         self.start_rpc_client_thread(json_req, result_in, on_get_request_msg)
     }
