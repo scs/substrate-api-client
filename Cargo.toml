@@ -148,6 +148,10 @@ path = "src/examples/example_benchmark_bulk_xt.rs"
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
 
+[[example]]
+name = "example_custom_client"
+path = "src/examples/example_custom_client.rs"
+
 # DEPRECATED. might work but too much work to maintain, sorry
 
 # needed for contract example
