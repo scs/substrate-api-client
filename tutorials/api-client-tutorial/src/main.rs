@@ -19,7 +19,7 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::{
-    compose_extrinsic, utils::FromHexString, Api, UncheckedExtrinsicV4, XtStatus,
+    compose_extrinsic, rpc::WsRpcClient, utils::FromHexString, Api, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[derive(Encode, Decode, Debug)]
@@ -29,11 +29,12 @@ struct Kitty {
 }
 
 fn main() {
-    let url = "127.0.0.1:9944";
+    let url = "ws://127.0.0.1:9944";
 
     let signer = AccountKeyring::Alice.pair();
+    let client = WsRpcClient::new(&url);
 
-    let api = Api::new(format!("ws://{}", url))
+    let api = Api::new(client)
         .map(|api| api.set_signer(signer.clone()))
         .unwrap();
 
