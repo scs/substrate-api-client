@@ -40,7 +40,6 @@ pub type Moment = u64;
 pub type Index = u32;
 
 // re-export useful types
-#[cfg(feature = "ws-client")]
 pub use extrinsic::xt_primitives::{GenericAddress, GenericExtra, UncheckedExtrinsicV4};
 pub use sp_core::H256 as Hash;
 
