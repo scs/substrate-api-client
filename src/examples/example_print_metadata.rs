@@ -32,8 +32,8 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let client = WsRpcClient::new(url);
-    let api = Api::<sr25519::Pair>::new(client).unwrap();
+    let client = WsRpcClient::new(&url);
+    let api = Api::<sr25519::Pair, _>::new(client).unwrap();
 
     let meta = Metadata::try_from(api.get_metadata().unwrap()).unwrap();
 

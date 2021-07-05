@@ -20,6 +20,7 @@ use crate::std::FromHexString;
 use crate::std::RpcClient as RpcClientTrait;
 use crate::std::XtStatus;
 
+#[derive(Debug, Clone)]
 pub struct WsRpcClient {
     url: String,
 }

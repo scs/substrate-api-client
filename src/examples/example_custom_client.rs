@@ -1,19 +1,25 @@
 use substrate_api_client::rpc::json_req::author_submit_extrinsic;
-use substrate_api_client::{Api, ApiClientError, ApiResult, Hash, RpcClient};
+use substrate_api_client::{
+    Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, Value, XtStatus,
+};
 struct MyClient {
     // pick any request crate, such as ureq::Agent
-    inner: (),
+    _inner: (),
 }
 
 impl MyClient {
     pub fn new() -> Self {
         Self {
             // ureq::agent()
-            inner: (),
+            _inner: (),
         }
     }
 
-    pub fn send_json<R>(&self, path: String, json: Value) -> Result<R> {
+    pub fn send_json<R>(
+        &self,
+        _path: String,
+        _json: Value,
+    ) -> Result<R, Box<dyn std::error::Error>> {
         // you can figure this out...self.inner...send_json...
         todo!()
     }
@@ -41,5 +47,5 @@ impl RpcClient for MyClient {
 
 fn main() {
     let client = MyClient::new();
-    let api = Api::<(), _>::new(client);
+    let _api = Api::<(), _>::new(client);
 }

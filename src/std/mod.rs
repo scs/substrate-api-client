@@ -38,6 +38,7 @@ pub trait RpcClient {
     fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
 }
 
+#[derive(Clone)]
 pub struct Api<P, Client>
 where
     Client: RpcClient,

@@ -28,7 +28,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let client = WsRpcClient::new(url);
+    let client = WsRpcClient::new(&url);
     let api = Api::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();

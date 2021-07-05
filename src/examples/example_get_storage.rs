@@ -25,8 +25,8 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let client = WsRpcClient::new(url);
-    let api = Api::new(client).unwrap();
+    let client = WsRpcClient::new(&url);
+    let mut api = Api::new(client).unwrap();
 
     // get some plain storage value
     let result: u128 = api

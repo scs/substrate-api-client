@@ -31,7 +31,7 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let sudoer = AccountKeyring::Alice.pair();
-    let client = WsRpcClient::new(url);
+    let client = WsRpcClient::new(&url);
     let api = Api::new(client).map(|api| api.set_signer(sudoer)).unwrap();
 
     // set the recipient of newly issued funds
