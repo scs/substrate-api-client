@@ -1,6 +1,5 @@
-use substrate_api_client::json_req::author_submit_extrinsic;
+use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 use substrate_api_client::{Api, ApiClientError, ApiResult, Hash, RpcClient};
-
 struct MyClient {
     // pick any request crate, such as ureq::Agent
     inner: (),

@@ -17,7 +17,7 @@
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "ws-client")]
-pub use ws_client::ws::WsRpcClient;
+pub use ws_client::{EventsError, WsRpcClient};
 #[cfg(feature = "ws-client")]
 mod ws_client;
 

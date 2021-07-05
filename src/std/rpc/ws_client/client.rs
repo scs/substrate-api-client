@@ -5,21 +5,20 @@ use std::thread;
 use log::info;
 use serde_json::Value;
 use sp_core::H256 as Hash;
+use ws::{connect, Result as WsResult};
 
-use ::ws::{connect, Result as WsResult};
-
-use crate::rpc::json_req;
-use crate::rpc::ws_client::{
+use crate::std::rpc::json_req;
+use crate::std::rpc::ws_client::Subscriber;
+use crate::std::rpc::ws_client::{
     on_extrinsic_msg_until_broadcast, on_extrinsic_msg_until_finalized,
     on_extrinsic_msg_until_in_block, on_extrinsic_msg_until_ready, on_get_request_msg,
     on_subscription_msg, OnMessageFn, RpcClient,
 };
-use crate::utils::FromHexString;
-use crate::ApiClientError;
-use crate::ApiResult;
-use crate::RpcClient as RpcClientTrait;
-use crate::Subscriber;
-use crate::XtStatus;
+use crate::std::ApiClientError;
+use crate::std::ApiResult;
+use crate::std::FromHexString;
+use crate::std::RpcClient as RpcClientTrait;
+use crate::std::XtStatus;
 
 pub struct WsRpcClient {
     url: String,
@@ -47,7 +46,7 @@ impl RpcClientTrait for WsRpcClient {
 
         xthex_prefixed: String,
         exit_on: XtStatus,
-    ) -> crate::ApiResult<Option<sp_core::H256>> {
+    ) -> ApiResult<Option<sp_core::H256>> {
         let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
 
         let (result_in, result_out) = channel();

@@ -21,9 +21,11 @@ use sp_core::H256 as Hash;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
-use crate::RpcClient;
 #[cfg(feature = "std")]
-use crate::{compose_extrinsic, Api};
+use crate::{
+    compose_extrinsic,
+    std::{Api, RpcClient},
+};
 
 use super::xt_primitives::*;
 

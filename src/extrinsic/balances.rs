@@ -18,9 +18,11 @@
 use codec::Compact;
 
 use super::xt_primitives::*;
-use crate::RpcClient;
 #[cfg(feature = "std")]
-use crate::{compose_extrinsic, Api};
+use crate::{
+    compose_extrinsic,
+    std::{Api, RpcClient},
+};
 use sp_core::crypto::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
 
