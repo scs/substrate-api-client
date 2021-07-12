@@ -18,6 +18,7 @@
 use codec::Compact;
 
 use super::xt_primitives::*;
+use crate::extrinsic::CallIndex;
 #[cfg(feature = "std")]
 use crate::{
     compose_extrinsic,
@@ -30,7 +31,6 @@ pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
 
-pub type CallIndex = [u8; 2];
 pub type Balance = u128;
 
 pub type BalanceTransferFn = (CallIndex, GenericAddress, Compact<Balance>);

@@ -374,7 +374,7 @@ mod tests {
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
         assert_eq!(
             parse_status(msg)
-                .map_err(|e| extract_extrinsic_error_msg(e))
+                .map_err(extract_extrinsic_error_msg)
                 .unwrap_err(),
             "extrinsic error code -32700: Parse error: ".to_string()
         );
@@ -382,7 +382,7 @@ mod tests {
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
         assert_eq!(
             parse_status(msg)
-                .map_err(|e| extract_extrinsic_error_msg(e))
+                .map_err(extract_extrinsic_error_msg)
                 .unwrap_err(),
             "extrinsic error code 1010: Invalid Transaction: Bad Signature".to_string()
         );
@@ -390,7 +390,7 @@ mod tests {
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
         assert_eq!(
             parse_status(msg)
-                .map_err(|e| extract_extrinsic_error_msg(e))
+                .map_err(extract_extrinsic_error_msg)
                 .unwrap_err(),
             "extrinsic error code 1001: Extrinsic has invalid format.: ".to_string()
         );
@@ -398,7 +398,7 @@ mod tests {
         let msg = r#"{"jsonrpc":"2.0","error":{"code":1002,"message":"Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))","data":"RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"},"id":"3"}"#;
         assert_eq!(
             parse_status(msg)
-                .map_err(|e| extract_extrinsic_error_msg(e))
+                .map_err(extract_extrinsic_error_msg)
                 .unwrap_err(),
             "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")".to_string()
         );

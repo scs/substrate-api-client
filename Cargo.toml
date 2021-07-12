@@ -47,6 +47,12 @@ branch = "master"
 package = "pallet-balances"
 optional = true
 
+[dependencies.staking]
+git = "https://github.com/paritytech/substrate.git"
+branch = "master"
+package = "pallet-staking"
+optional = true
+
 [dependencies.system]
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
@@ -92,6 +98,7 @@ std = [
 	"metadata/std",
 	"sp-version",
 	"balances",
+	"staking",
 	"system",
 	"sp-runtime/std",
 	"support/std",
