@@ -18,11 +18,14 @@
 use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_core::H256 as Hash;
-use sp_runtime::MultiSignature;
+use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
-use crate::{compose_extrinsic, Api};
+use crate::{
+    compose_extrinsic,
+    std::{Api, RpcClient},
+};
 
 use super::xt_primitives::*;
 
@@ -51,10 +54,12 @@ pub type ContractInstantiateXt = UncheckedExtrinsicV4<ContractInstantiateFn>;
 pub type ContractCallXt = UncheckedExtrinsicV4<ContractCallFn>;
 
 #[cfg(feature = "std")]
-impl<P> Api<P>
+impl<P, Client> Api<P, Client>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    MultiSigner: From<P::Public>,
+    Client: RpcClient,
 {
     pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {
         compose_extrinsic!(

@@ -19,9 +19,12 @@ use codec::Compact;
 
 use super::xt_primitives::*;
 #[cfg(feature = "std")]
-use crate::{compose_extrinsic, Api};
+use crate::{
+    compose_extrinsic,
+    std::{Api, RpcClient},
+};
 use sp_core::crypto::Pair;
-use sp_runtime::MultiSignature;
+use sp_runtime::{MultiSignature, MultiSigner};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
@@ -42,10 +45,12 @@ pub type BalanceTransferXt = UncheckedExtrinsicV4<BalanceTransferFn>;
 pub type BalanceSetBalanceXt = UncheckedExtrinsicV4<BalanceSetBalanceFn>;
 
 #[cfg(feature = "std")]
-impl<P> Api<P>
+impl<P, Client> Api<P, Client>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    MultiSigner: From<P::Public>,
+    Client: RpcClient,
 {
     pub fn balance_transfer(&self, to: GenericAddress, amount: Balance) -> BalanceTransferXt {
         compose_extrinsic!(

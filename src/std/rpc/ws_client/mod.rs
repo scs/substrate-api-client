@@ -14,24 +14,30 @@
    limitations under the License.
 
 */
+use std::convert::TryFrom;
+use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 
-use crate::rpc::{RpcClientError, RpcResult};
+use codec::Decode;
 use log::{debug, error, info, warn};
-use std::sync::mpsc::{SendError, Sender as ThreadOut};
-use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
+use sp_core::Pair;
+use sp_runtime::MultiSignature;
+use ws::{CloseCode, Error, Handler, Handshake, Message, Result as WsResult, Sender};
 
-#[derive(Debug, PartialEq)]
-pub enum XtStatus {
-    Finalized,
-    InBlock,
-    Broadcast,
-    Ready,
-    Future,
-    Error,
-    Unknown,
-}
+use crate::std::rpc::RpcClientError;
+use crate::std::{json_req, FromHexString, RpcClient as RpcClientTrait, XtStatus};
+use crate::std::{Api, ApiResult};
+use crate::utils;
+
+pub use client::WsRpcClient;
+pub use events::EventsError;
+use events::{EventsDecoder, RawEvent, RuntimeEvent};
+
+pub mod client;
+pub mod events;
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
+
+type RpcResult<T> = Result<T, RpcClientError>;
 
 pub struct RpcClient {
     pub out: Sender,
@@ -49,6 +55,88 @@ impl Handler for RpcClient {
 
     fn on_message(&mut self, msg: Message) -> WsResult<()> {
         (self.on_message_fn)(msg, self.out.clone(), self.result.clone())
+    }
+}
+
+pub trait Subscriber {
+    fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>)
+        -> Result<(), Error>;
+}
+
+impl<P> Api<P, WsRpcClient> {
+    pub fn default_with_url(url: &str) -> ApiResult<Self> {
+        let client = WsRpcClient::new(url);
+        Self::new(client)
+    }
+}
+
+impl<P, Client> Api<P, Client>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+    Client: RpcClientTrait + Subscriber,
+{
+    pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+        debug!("subscribing to events");
+        let key = utils::storage_key("System", "Events");
+        let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
+        self.client
+            .start_subscriber(jsonreq, sender)
+            .map_err(|e| e.into())
+    }
+
+    pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+        debug!("subscribing to finalized heads");
+        let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
+        self.client
+            .start_subscriber(jsonreq, sender)
+            .map_err(|e| e.into())
+    }
+
+    pub fn wait_for_event<E: Decode>(
+        &self,
+        module: &str,
+        variant: &str,
+        decoder: Option<EventsDecoder>,
+        receiver: &Receiver<String>,
+    ) -> ApiResult<E> {
+        let raw = self.wait_for_raw_event(module, variant, decoder, receiver)?;
+        E::decode(&mut &raw.data[..]).map_err(|e| e.into())
+    }
+
+    pub fn wait_for_raw_event(
+        &self,
+        module: &str,
+        variant: &str,
+        decoder: Option<EventsDecoder>,
+        receiver: &Receiver<String>,
+    ) -> ApiResult<RawEvent> {
+        let event_decoder = match decoder {
+            Some(d) => d,
+            None => EventsDecoder::try_from(self.metadata.clone())?,
+        };
+
+        loop {
+            let event_str = receiver.recv()?;
+            let _events = event_decoder.decode_events(&mut Vec::from_hex(event_str)?.as_slice());
+            info!("wait for raw event");
+            match _events {
+                Ok(raw_events) => {
+                    for (phase, event) in raw_events.into_iter() {
+                        info!("Decoded Event: {:?}, {:?}", phase, event);
+                        match event {
+                            RuntimeEvent::Raw(raw)
+                                if raw.module == module && raw.variant == variant =>
+                            {
+                                return Ok(raw);
+                            }
+                            _ => debug!("ignoring unsupported module event: {:?}", event),
+                        }
+                    }
+                }
+                Err(_) => error!("couldn't decode event record list"),
+            }
+        }
     }
 }
 

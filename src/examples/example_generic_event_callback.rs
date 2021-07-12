@@ -21,6 +21,7 @@ use clap::{load_yaml, App};
 use codec::Decode;
 use sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
+use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::Api;
 
 // Look at the how the transfer event looks like in in the metadata
@@ -35,7 +36,8 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    let api = Api::<sr25519::Pair>::new(url).unwrap();
+    let client = WsRpcClient::new(&url);
+    let api = Api::<sr25519::Pair, _>::new(client).unwrap();
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();

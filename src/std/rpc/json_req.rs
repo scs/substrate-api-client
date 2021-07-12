@@ -107,8 +107,16 @@ pub fn state_get_keys(key: StorageKey, at_block: Option<Hash>) -> Value {
     )
 }
 
+pub fn author_submit_extrinsic(xthex_prefixed: &str) -> Value {
+    author_submit_extrinsic_with_id(xthex_prefixed, REQUEST_TRANSFER)
+}
+
 pub fn author_submit_and_watch_extrinsic(xthex_prefixed: &str) -> Value {
     author_submit_and_watch_extrinsic_with_id(xthex_prefixed, REQUEST_TRANSFER)
+}
+
+pub fn author_submit_extrinsic_with_id(xthex_prefixed: &str, id: u32) -> Value {
+    json_req("author_submitExtrinsic", vec![xthex_prefixed], id)
 }
 
 pub fn author_submit_and_watch_extrinsic_with_id(xthex_prefixed: &str, id: u32) -> Value {
