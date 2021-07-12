@@ -1,7 +1,4 @@
-pub use std::convert::TryFrom;
-
 pub use metadata::RuntimeMetadataPrefixed;
-pub use serde::de::DeserializeOwned;
 pub use serde_json::Value;
 pub use sp_core::crypto::Pair;
 pub use sp_core::storage::StorageKey;
@@ -21,8 +18,11 @@ pub mod rpc;
 
 mod node_metadata;
 
+use std::convert::TryFrom;
+
 use codec::{Decode, Encode};
 use log::{debug, info};
+use serde::de::DeserializeOwned;
 
 use crate::extrinsic;
 use crate::rpc::json_req;

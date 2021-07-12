@@ -63,6 +63,13 @@ pub trait Subscriber {
         -> Result<(), Error>;
 }
 
+impl<P> Api<P, WsRpcClient> {
+    pub fn default_with_url(url: &str) -> ApiResult<Self> {
+        let client = WsRpcClient::new(url);
+        Self::new(client)
+    }
+}
+
 impl<P, Client> Api<P, Client>
 where
     P: Pair,
