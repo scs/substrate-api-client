@@ -25,7 +25,7 @@ use log::{debug, info};
 use serde::de::DeserializeOwned;
 
 use crate::extrinsic;
-use crate::rpc::json_req;
+use crate::rpc::{json_req, FeeDetails};
 use crate::{AccountData, AccountInfo, Hash};
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
@@ -361,6 +361,19 @@ where
         let k = self.get_request(jsonreq)?;
         match k {
             Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
+            None => Ok(None),
+        }
+    }
+
+    pub fn get_fee_details(
+        &self,
+        xthex_prefixed: &str,
+        at_block: Option<Hash>,
+    ) -> ApiResult<Option<FeeDetails>> {
+        let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
+        let res = self.get_request(jsonreq)?;
+        match res {
+            Some(details) => Ok(Some(serde_json::from_str(&details)?)),
             None => Ok(None),
         }
     }
