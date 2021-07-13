@@ -18,14 +18,6 @@ libc = { version="0.2", default-features=false }
 package = "substrate-api-client"
 path = ".."
 default-features=false
-features=["full_crypto"]
-
-[dependencies.application-crypto]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "sp-application-crypto"
-default-features = false
-features = ["full_crypto"]
 
 [dependencies.sp-io]
 git = "https://github.com/paritytech/substrate.git"
