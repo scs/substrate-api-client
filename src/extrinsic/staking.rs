@@ -16,6 +16,7 @@ const STAKING_REBOND: &str = "rebond";
 const STAKING_WITHDRAW_UNBONDED: &str = "withdraw_unbonded";
 const STAKING_NOMINATE: &str = "nominate";
 const STAKING_CHILL: &str = "chill";
+const STAKING_SET_CONTROLLER: &str = "set_controller";
 
 pub type StakingBondFn = (
     CallIndex,
@@ -29,6 +30,7 @@ pub type StakingRebondFn = (CallIndex, Compact<Balance>);
 pub type StakingWithdrawUnbondedFn = (CallIndex, u32);
 pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
 pub type StakingChillFn = CallIndex;
+pub type StakingSetControllerFn = (CallIndex, GenericAddress);
 
 pub type StakingBondXt = UncheckedExtrinsicV4<StakingBondFn>;
 pub type StakingBondExtraXt = UncheckedExtrinsicV4<StakingBondExtraFn>;
@@ -37,6 +39,7 @@ pub type StakingRebondXt = UncheckedExtrinsicV4<StakingRebondFn>;
 pub type StakingWithdrawUnbondedXt = UncheckedExtrinsicV4<StakingWithdrawUnbondedFn>;
 pub type StakingNominateXt = UncheckedExtrinsicV4<StakingNominateFn>;
 pub type StakingChillXt = UncheckedExtrinsicV4<StakingChillFn>;
+pub type StakingSetControllerXt = UncheckedExtrinsicV4<StakingSetControllerFn>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<P, Client> Api<P, Client>
@@ -101,5 +104,12 @@ where
     /// Stop nominating por validating. Effects take place in the next era
     pub fn staking_chill(&self) -> StakingChillXt {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_CHILL)
+    }
+
+    /// (Re-)set the controller of the stash
+    /// Effects will be felt at the beginning of the next era.
+    /// Must be Signed by the stash, not the controller.
+    pub fn staking_set_controller(&self, controller: GenericAddress) -> StakingSetControllerXt {
+        compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
     }
 }
