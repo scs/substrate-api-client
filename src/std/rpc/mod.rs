@@ -106,10 +106,10 @@ where
     D: serde::de::Deserializer<'de>,
 {
     let s: &str = serde::de::Deserialize::deserialize(deserializer)?;
-    let num = if s.starts_with("0x") {
-        u128::from_str_radix(&s[2..], 16)
+    let num = if let Some(hex) = s.strip_prefix("0x") {
+        u128::from_str_radix(hex, 16)
     } else {
-        u128::from_str_radix(s, 10)
+        s.parse::<u128>()
     };
     num.map_err(|e| serde::de::Error::custom(e.to_string()))
 }
