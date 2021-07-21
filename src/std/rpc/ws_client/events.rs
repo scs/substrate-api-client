@@ -25,7 +25,9 @@ use sp_runtime::DispatchError;
 use support::weights::DispatchInfo;
 use system::Phase;
 
-use crate::node_metadata::{EventArg, Metadata, MetadataError};
+use crate::std::node_metadata::{EventArg, Metadata, MetadataError};
+use crate::std::AccountId;
+use crate::{Balance, BlockNumber, Hash, Moment};
 
 /// Event for the System module.
 #[derive(Clone, Debug, Decode)]
@@ -95,11 +97,11 @@ impl TryFrom<Metadata> for EventsDecoder {
         decoder.register_type_size::<u32>("AuthorityIndex")?;
         decoder.register_type_size::<u64>("AuthorityWeight")?;
         decoder.register_type_size::<u32>("MemberCount")?;
-        decoder.register_type_size::<crate::AccountId>("AccountId")?;
-        decoder.register_type_size::<crate::BlockNumber>("BlockNumber")?;
-        decoder.register_type_size::<crate::Moment>("Moment")?;
-        decoder.register_type_size::<crate::Hash>("Hash")?;
-        decoder.register_type_size::<crate::Balance>("Balance")?;
+        decoder.register_type_size::<AccountId>("AccountId")?;
+        decoder.register_type_size::<BlockNumber>("BlockNumber")?;
+        decoder.register_type_size::<Moment>("Moment")?;
+        decoder.register_type_size::<Hash>("Hash")?;
+        decoder.register_type_size::<Balance>("Balance")?;
         // VoteThreshold enum index
         decoder.register_type_size::<u8>("VoteThreshold")?;
 

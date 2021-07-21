@@ -19,6 +19,7 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 use sp_runtime::MultiAddress;
 
+use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{Api, XtStatus};
 
 fn main() {
@@ -27,7 +28,8 @@ fn main() {
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let api = Api::new(url)
+    let client = WsRpcClient::new(&url);
+    let api = Api::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 
