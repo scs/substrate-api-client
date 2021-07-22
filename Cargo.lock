@@ -3559,6 +3559,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-rpc"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
+dependencies = [
+ "rustc-hash",
+ "serde",
+ "sp-core",
+ "tracing-core",
+]
+
+[[package]]
 name = "sp-runtime"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
@@ -3847,12 +3858,14 @@ dependencies = [
  "node-template-runtime",
  "pallet-balances",
  "pallet-staking",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "primitive-types 0.6.2",
  "serde",
  "serde_json",
  "sp-core",
  "sp-keyring",
+ "sp-rpc",
  "sp-runtime",
  "sp-std",
  "sp-version",

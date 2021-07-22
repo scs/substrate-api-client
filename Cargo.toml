@@ -59,6 +59,20 @@ branch = "master"
 package = "frame-system"
 optional = true
 
+[dependencies.transaction-payment]
+git = "https://github.com/paritytech/substrate.git"
+branch = "master"
+package = "pallet-transaction-payment"
+default-features = false
+optional = true
+
+[dependencies.sp-rpc]
+git = "https://github.com/paritytech/substrate.git"
+branch = "master"
+package = "sp-rpc"
+default-features = false
+optional = true
+
 [dependencies.sp-runtime]
 git = "https://github.com/paritytech/substrate.git"
 branch = "master"
@@ -98,7 +112,6 @@ std = [
 	"metadata/std",
 	"sp-version",
 	"balances",
-	"staking",
 	"system",
 	"sp-runtime/std",
 	"support/std",
@@ -109,8 +122,11 @@ std = [
 	"hex/std",
 	"primitive-types",
 	"thiserror",
+	"sp-rpc",
+	"transaction-payment/std"
 ]
 ws-client = ["ws"]
+staking-xt = ["std", "staking"]
 
 # need to add this for the app_crypto macro
 full_crypto = []

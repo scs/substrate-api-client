@@ -27,7 +27,7 @@ pub extern crate log;
 pub mod balances;
 #[cfg(feature = "std")]
 pub mod contract;
-#[cfg(feature = "std")]
+#[cfg(feature = "staking-xt")]
 pub mod staking;
 pub mod xt_primitives;
 
