@@ -14,3 +14,5 @@
 # IntelliJ
 **/.idea/
 *.iml
+
+Cargo.lock
