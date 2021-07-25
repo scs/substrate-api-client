@@ -13,14 +13,15 @@
     limitations under the License.
 */
 
-///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
+//! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
+//! module, whereas the desired module and call are supplied as a string.
+
 use clap::{load_yaml, App};
 use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
-use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{Api, XtStatus};
+use substrate_api_client::{compose_extrinsic, Api, UncheckedExtrinsicV4, XtStatus};
 
 fn main() {
     env_logger::init();
@@ -29,40 +30,33 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::new(client)
-        .map(|api| api.set_signer(from.clone()))
-        .unwrap();
+    let api = Api::new(client).map(|api| api.set_signer(from)).unwrap();
 
+    // set the recipient
     let to = AccountKeyring::Bob.to_account_id();
 
-    match api.get_account_data(&to).unwrap() {
-        Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
-        None => println!("[+] Bob's Free Balance is is 0\n"),
-    }
-    // generate extrinsic
-    let xt = api.balance_transfer(MultiAddress::Id(to.clone()), 1000);
-
-    println!(
-        "Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
-        from.public(),
-        to
+    // call Balances::transfer
+    // the names are given as strings
+    #[allow(clippy::redundant_clone)]
+    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
+        api.clone(),
+        "Balances",
+        "transfer",
+        GenericAddress::Id(to),
+        Compact(42_u128)
     );
 
-    println!("[+] Composed extrinsic: {:?}\n", xt);
+    println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
-    // send and watch extrinsic until finalized
+    // send and watch extrinsic until InBlock
     let tx_hash = api
         .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
-    println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
-
-    // verify that Bob's free Balance increased
-    let bob = api.get_account_data(&to).unwrap().unwrap();
-    println!("[+] Bob's Free Balance is now {}\n", bob.free);
+    println!("[+] Transaction got included. Hash: {:?}", tx_hash);
 }
 
 pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("../../src/examples/cli.yml");
+    let yml = load_yaml!("./cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
     let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");

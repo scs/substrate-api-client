@@ -13,20 +13,24 @@
     limitations under the License.
 */
 
-///! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
-///! debugging tool.
+///! Very simple example that shows how to subscribe to events generically
+/// implying no runtime needs to be imported
+use std::sync::mpsc::channel;
 
-#[macro_use]
-extern crate clap;
-
-use std::convert::TryFrom;
-
-use clap::App;
-
+use clap::{load_yaml, App};
+use codec::Decode;
 use sp_core::sr25519;
-
+use sp_runtime::AccountId32 as AccountId;
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{Api, Metadata};
+use substrate_api_client::Api;
+
+// Look at the how the transfer event looks like in in the metadata
+#[derive(Decode)]
+struct TransferEventArgs {
+    from: AccountId,
+    to: AccountId,
+    value: u128,
+}
 
 fn main() {
     env_logger::init();
@@ -35,27 +39,26 @@ fn main() {
     let client = WsRpcClient::new(&url);
     let api = Api::<sr25519::Pair, _>::new(client).unwrap();
 
-    let meta = Metadata::try_from(api.get_metadata().unwrap()).unwrap();
+    println!("Subscribe to events");
+    let (events_in, events_out) = channel();
 
-    meta.print_overview();
-    meta.print_modules_with_calls();
-    meta.print_modules_with_events();
+    api.subscribe_events(events_in).unwrap();
+    let args: TransferEventArgs = api
+        .wait_for_event("Balances", "Transfer", None, &events_out)
+        .unwrap();
 
-    // print full substrate metadata json formatted
-    println!(
-        "{}",
-        Metadata::pretty_format(&api.get_metadata().unwrap())
-            .unwrap_or_else(|| "pretty format failed".to_string())
-    )
+    println!("Transactor: {:?}", args.from);
+    println!("Destination: {:?}", args.to);
+    println!("Value: {:?}", args.value);
 }
 
 pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("../../src/examples/cli.yml");
+    let yml = load_yaml!("./cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
     let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}\n", url);
+    println!("Interacting with node on {}", url);
     url
 }
