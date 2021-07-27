@@ -50,6 +50,17 @@ pub fn chain_subscribe_finalized_heads() -> Value {
     json_req("chain_subscribeFinalizedHeads", Value::Null, 1)
 }
 
+pub fn payment_query_fee_details(xthex_prefixed: &str, at_block: Option<Hash>) -> Value {
+    json_req(
+        "payment_queryFeeDetails",
+        vec![
+            to_value(xthex_prefixed).unwrap(),
+            to_value(at_block).unwrap(),
+        ],
+        1,
+    )
+}
+
 pub fn state_get_metadata() -> Value {
     state_get_metadata_with_id(1)
 }

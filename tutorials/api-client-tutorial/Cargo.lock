@@ -1408,6 +1408,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-transaction-payment"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec 2.1.1",
+ "serde",
+ "smallvec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "parity-scale-codec"
 version = "1.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2210,6 +2226,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-rpc"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
+dependencies = [
+ "rustc-hash",
+ "serde",
+ "sp-core",
+ "tracing-core",
+]
+
+[[package]]
 name = "sp-runtime"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#1d7f6e12c651d776fc0dc1adefd007bb60f60b63"
@@ -2425,11 +2452,13 @@ dependencies = [
  "hex",
  "log",
  "pallet-balances",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "primitive-types 0.6.2",
  "serde",
  "serde_json",
  "sp-core",
+ "sp-rpc",
  "sp-runtime",
  "sp-std",
  "sp-version",

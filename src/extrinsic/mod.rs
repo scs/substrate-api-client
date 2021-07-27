@@ -27,7 +27,11 @@ pub extern crate log;
 pub mod balances;
 #[cfg(feature = "std")]
 pub mod contract;
+#[cfg(feature = "staking-xt")]
+pub mod staking;
 pub mod xt_primitives;
+
+pub type CallIndex = [u8; 2];
 
 /// Generates the extrinsic's call field for a given module and call passed as &str
 /// # Arguments
@@ -119,6 +123,7 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
+            #[allow(unused_imports)] // For when extrinsic does not use Compact
             use $crate::extrinsic::codec::Compact;
             use $crate::extrinsic::log::info;
             use $crate::extrinsic::xt_primitives::*;

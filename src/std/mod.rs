@@ -2,6 +2,7 @@ pub use metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;
 pub use sp_core::crypto::Pair;
 pub use sp_core::storage::StorageKey;
+pub use sp_rpc::number::NumberOrHex;
 pub use sp_runtime::traits::{Block, Header};
 pub use sp_runtime::{
     generic::SignedBlock, traits::IdentifyAccount, AccountId32 as AccountId, MultiSignature,
@@ -9,6 +10,7 @@ pub use sp_runtime::{
 };
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
+pub use transaction_payment::FeeDetails;
 
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
@@ -361,6 +363,19 @@ where
         let k = self.get_request(jsonreq)?;
         match k {
             Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
+            None => Ok(None),
+        }
+    }
+
+    pub fn get_fee_details(
+        &self,
+        xthex_prefixed: &str,
+        at_block: Option<Hash>,
+    ) -> ApiResult<Option<FeeDetails<NumberOrHex>>> {
+        let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
+        let res = self.get_request(jsonreq)?;
+        match res {
+            Some(details) => Ok(Some(serde_json::from_str(&details)?)),
             None => Ok(None),
         }
     }
