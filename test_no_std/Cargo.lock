@@ -950,6 +950,7 @@ dependencies = [
  "frame-support",
  "hex",
  "parity-scale-codec",
+ "sp-application-crypto",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -995,7 +996,6 @@ name = "test_no_std"
 version = "0.6.0"
 dependencies = [
  "libc",
- "sp-application-crypto",
  "sp-io",
  "substrate-api-client",
 ]
