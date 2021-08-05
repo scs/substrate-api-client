@@ -405,7 +405,11 @@ where
 }
 
 fn convert_fee_details(details: FeeDetails<NumberOrHex>) -> ApiResult<FeeDetails<u128>> {
-    let inclusion_fee = inclusion_fee_with_balance(details.inclusion_fee)?;
+    let inclusion_fee = if let Some(inclusion_fee) = details.inclusion_fee {
+        Some(inclusion_fee_with_balance(inclusion_fee)?)
+    } else {
+        None
+    };
     let tip = details
         .tip
         .try_into()
@@ -414,27 +418,22 @@ fn convert_fee_details(details: FeeDetails<NumberOrHex>) -> ApiResult<FeeDetails
 }
 
 fn inclusion_fee_with_balance(
-    inclusion_fee: Option<InclusionFee<NumberOrHex>>,
-) -> ApiResult<Option<InclusionFee<Balance>>> {
-    let inclusion_fee = if let Some(inclusion_fee) = inclusion_fee {
-        Some(InclusionFee {
-            base_fee: inclusion_fee
-                .base_fee
-                .try_into()
-                .map_err(|_| ApiClientError::TryFromIntError)?,
-            len_fee: inclusion_fee
-                .base_fee
-                .try_into()
-                .map_err(|_| ApiClientError::TryFromIntError)?,
-            adjusted_weight_fee: inclusion_fee
-                .base_fee
-                .try_into()
-                .map_err(|_| ApiClientError::TryFromIntError)?,
-        })
-    } else {
-        None
-    };
-    Ok(inclusion_fee)
+    inclusion_fee: InclusionFee<NumberOrHex>,
+) -> ApiResult<InclusionFee<Balance>> {
+    Ok(InclusionFee {
+        base_fee: inclusion_fee
+            .base_fee
+            .try_into()
+            .map_err(|_| ApiClientError::TryFromIntError)?,
+        len_fee: inclusion_fee
+            .base_fee
+            .try_into()
+            .map_err(|_| ApiClientError::TryFromIntError)?,
+        adjusted_weight_fee: inclusion_fee
+            .base_fee
+            .try_into()
+            .map_err(|_| ApiClientError::TryFromIntError)?,
+    })
 }
 
 #[derive(Debug, thiserror::Error)]
