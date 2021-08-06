@@ -2,7 +2,6 @@ pub use metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;
 pub use sp_core::crypto::Pair;
 pub use sp_core::storage::StorageKey;
-pub use sp_rpc::number::NumberOrHex;
 pub use sp_runtime::traits::{Block, Header};
 pub use sp_runtime::{
     generic::SignedBlock, traits::IdentifyAccount, AccountId32 as AccountId, MultiSignature,
@@ -20,14 +19,16 @@ pub mod rpc;
 
 mod node_metadata;
 
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 use codec::{Decode, Encode};
 use log::{debug, info};
 use serde::de::DeserializeOwned;
+use sp_rpc::number::NumberOrHex;
+use transaction_payment::InclusionFee;
 
-use crate::extrinsic;
 use crate::rpc::json_req;
+use crate::{extrinsic, Balance};
 use crate::{AccountData, AccountInfo, Hash};
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
@@ -371,11 +372,15 @@ where
         &self,
         xthex_prefixed: &str,
         at_block: Option<Hash>,
-    ) -> ApiResult<Option<FeeDetails<NumberOrHex>>> {
+    ) -> ApiResult<Option<FeeDetails<Balance>>> {
         let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
         let res = self.get_request(jsonreq)?;
         match res {
-            Some(details) => Ok(Some(serde_json::from_str(&details)?)),
+            Some(details) => {
+                let details: FeeDetails<NumberOrHex> = serde_json::from_str(&details)?;
+                let details = convert_fee_details(details)?;
+                Ok(Some(details))
+            }
             None => Ok(None),
         }
     }
@@ -397,6 +402,38 @@ where
         self.client
             .send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
     }
+}
+
+fn convert_fee_details(details: FeeDetails<NumberOrHex>) -> ApiResult<FeeDetails<u128>> {
+    let inclusion_fee = if let Some(inclusion_fee) = details.inclusion_fee {
+        Some(inclusion_fee_with_balance(inclusion_fee)?)
+    } else {
+        None
+    };
+    let tip = details
+        .tip
+        .try_into()
+        .map_err(|_| ApiClientError::TryFromIntError)?;
+    Ok(FeeDetails { inclusion_fee, tip })
+}
+
+fn inclusion_fee_with_balance(
+    inclusion_fee: InclusionFee<NumberOrHex>,
+) -> ApiResult<InclusionFee<Balance>> {
+    Ok(InclusionFee {
+        base_fee: inclusion_fee
+            .base_fee
+            .try_into()
+            .map_err(|_| ApiClientError::TryFromIntError)?,
+        len_fee: inclusion_fee
+            .base_fee
+            .try_into()
+            .map_err(|_| ApiClientError::TryFromIntError)?,
+        adjusted_weight_fee: inclusion_fee
+            .base_fee
+            .try_into()
+            .map_err(|_| ApiClientError::TryFromIntError)?,
+    })
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -430,4 +467,6 @@ pub enum ApiClientError {
     Deserializing(#[from] serde_json::Error),
     #[error("UnsupportedXtStatus Error: Can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
     UnsupportedXtStatus(XtStatus),
+    #[error("Error converting NumberOrHex to Balance")]
+    TryFromIntError,
 }
