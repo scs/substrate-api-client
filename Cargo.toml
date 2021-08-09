@@ -18,7 +18,7 @@ env_logger = "0.7"
 
 [dependencies.sp-core]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-core"
 default-features = false
 features = ["full_crypto"]
@@ -31,80 +31,80 @@ default-features = false
 
 [dependencies.metadata]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "frame-metadata"
 default-features = false
 
 [dependencies.sp-version]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-version"
 optional = true
 
 [dependencies.balances]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "pallet-balances"
 optional = true
 
 [dependencies.staking]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "pallet-staking"
 optional = true
 
 [dependencies.system]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "frame-system"
 optional = true
 
 [dependencies.transaction-payment]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "pallet-transaction-payment"
 default-features = false
 optional = true
 
 [dependencies.sp-rpc]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-rpc"
 default-features = false
 optional = true
 
 [dependencies.sp-runtime]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-runtime"
 default-features = false
 
 [dependencies.support]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "frame-support"
 default-features = false
 
 [dependencies.sp-std]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-std"
 default-features = false
 
 # need to add this for the app_crypto macro
 [dependencies.sp-application-crypto]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 default-features = false
 features = ["full_crypto"]
 
 [dev-dependencies.node-template-runtime]
-branch = "bump-to-polkadot-v0.9.2"
+branch = "bh/change-substrate-branch"
 git = "https://github.com/scs/substrate-api-client-test-node"
 
 [dev-dependencies.keyring]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-keyring"
 
 [dev-dependencies.clap]
@@ -188,7 +188,7 @@ path = "src/examples/example_custom_client.rs"
 
 #[dev-dependencies.contracts]
 #git = "https://github.com/paritytech/substrate.git"
-#branch = "master"
+#branch = "polkadot-v0.9.2"
 #package = "pallet-contracts"
 
 #[[example]]

@@ -12,28 +12,28 @@ serde_json = "1.0"
 
 [dependencies.sp-core]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-core"
 default-features = false
 
 [dependencies.sp-keystore]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-keystore"
 
 [dependencies.sc-keystore]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sc-keystore"
 
 [dependencies.sp-keyring]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-keyring"
 
 [dependencies.sp-application-crypto]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 package = "sp-application-crypto"
 
 [dev-dependencies]

@@ -14,14 +14,14 @@ panic = "abort"
 [dependencies]
 libc = { version="0.2", default-features=false }
 
-[dependencies.substrate-api-client] 
+[dependencies.substrate-api-client]
 package = "substrate-api-client"
 path = ".."
 default-features=false
 
 [dependencies.sp-io]
 git = "https://github.com/paritytech/substrate.git"
-branch = "master"
+branch = "polkadot-v0.9.2"
 default-features=false
 features = ["disable_oom", "disable_panic_handler"]
 
