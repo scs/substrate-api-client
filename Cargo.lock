@@ -1679,7 +1679,7 @@ dependencies = [
 [[package]]
 name = "node-template-runtime"
 version = "3.0.0"
-source = "git+https://github.com/scs/substrate-api-client-test-node?branch=substrate-update-4.0.0-dev#545c83bbf6f0673df4e467fda2442cb5de94a29a"
+source = "git+https://github.com/scs/substrate-api-client-test-node?branch=master#16161c0aa3bdc381c1fd214aeb51ebc976e1ff21"
 dependencies = [
  "frame-executive",
  "frame-support",
@@ -1982,7 +1982,7 @@ dependencies = [
 [[package]]
 name = "pallet-template"
 version = "3.0.0"
-source = "git+https://github.com/scs/substrate-api-client-test-node?branch=substrate-update-4.0.0-dev#545c83bbf6f0673df4e467fda2442cb5de94a29a"
+source = "git+https://github.com/scs/substrate-api-client-test-node?branch=master#16161c0aa3bdc381c1fd214aeb51ebc976e1ff21"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
