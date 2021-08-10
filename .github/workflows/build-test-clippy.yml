@@ -3,7 +3,7 @@ name: Build & Test & Clippy
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [ master , polkadot-v0.9.2]
   pull_request:
     branches: [ master , polkadot-v0.9.2]
 
