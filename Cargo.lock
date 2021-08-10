@@ -1561,9 +1561,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.98"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
+checksum = "a7f823d141fe0a24df1e23b4af4e3c7ba9e5966ec514ea068c93024aa7deb765"
 
 [[package]]
 name = "libm"
@@ -1916,7 +1916,7 @@ dependencies = [
 [[package]]
 name = "node-template-runtime"
 version = "3.0.0"
-source = "git+https://github.com/scs/substrate-api-client-test-node?branch=bh/change-substrate-branch#55a78a5efd56ca36fbe58793d19a5777d2bebf11"
+source = "git+https://github.com/scs/substrate-api-client-test-node?branch=polkadot-v0.9.2#5764613171c8b3b998b09810e3fcad7b529526e9"
 dependencies = [
  "frame-executive",
  "frame-support",
@@ -2217,7 +2217,7 @@ dependencies = [
 [[package]]
 name = "pallet-template"
 version = "3.0.0"
-source = "git+https://github.com/scs/substrate-api-client-test-node?branch=bh/change-substrate-branch#55a78a5efd56ca36fbe58793d19a5777d2bebf11"
+source = "git+https://github.com/scs/substrate-api-client-test-node?branch=polkadot-v0.9.2#5764613171c8b3b998b09810e3fcad7b529526e9"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
