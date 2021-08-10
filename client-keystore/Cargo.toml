@@ -5,36 +5,17 @@ authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2018"
 
 [dependencies]
-parking_lot = "0.10.0"
+parking_lot = "0.11.1"
 async-trait = "0.1.30"
 hex = "0.4"
 serde_json = "1.0"
 
-[dependencies.sp-core]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "sp-core"
-default-features = false
-
-[dependencies.sp-keystore]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "sp-keystore"
-
-[dependencies.sc-keystore]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "sc-keystore"
-
-[dependencies.sp-keyring]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "sp-keyring"
-
-[dependencies.sp-application-crypto]
-git = "https://github.com/paritytech/substrate.git"
-branch = "master"
-package = "sp-application-crypto"
+# Substrate dependencies
+sp-core = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-keystore = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sc-keystore = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-keyring = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-application-crypto = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [dev-dependencies]
 tempfile = "3.2.0"

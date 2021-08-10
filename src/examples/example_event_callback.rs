@@ -53,7 +53,7 @@ fn main() {
                 for evr in &evts {
                     println!("decoded: {:?} {:?}", evr.phase, evr.event);
                     match &evr.event {
-                        Event::pallet_balances(be) => {
+                        Event::Balances(be) => {
                             println!(">>>>>>>>>> balances event: {:?}", be);
                             match &be {
                                 balances::Event::Transfer(transactor, dest, value) => {
