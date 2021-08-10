@@ -30,7 +30,7 @@ use crate::utils;
 
 pub use client::WsRpcClient;
 pub use events::EventsError;
-use events::{EventsDecoder, RawEvent, RuntimeEvent};
+pub use events::{EventsDecoder, RawEvent, RuntimeEvent};
 
 pub mod client;
 pub mod events;
