@@ -210,7 +210,7 @@ pub fn on_extrinsic_msg_until_finalized(
         Err(e) => {
             end_process(out, result, None)?;
             Err(Box::new(e).into())
-        },
+        }
         _ => Ok(()),
     }
 }
@@ -229,7 +229,7 @@ pub fn on_extrinsic_msg_until_in_block(
         Err(e) => {
             end_process(out, result, None)?;
             Err(Box::new(e).into())
-        },
+        }
         _ => Ok(()),
     }
 }
@@ -248,7 +248,7 @@ pub fn on_extrinsic_msg_until_broadcast(
         Err(e) => {
             end_process(out, result, None)?;
             Err(Box::new(e).into())
-        },
+        }
         _ => Ok(()),
     }
 }
@@ -267,7 +267,7 @@ pub fn on_extrinsic_msg_until_ready(
         Err(e) => {
             end_process(out, result, None)?;
             Err(Box::new(e).into())
-        },
+        }
         _ => Ok(()),
     }
 }
