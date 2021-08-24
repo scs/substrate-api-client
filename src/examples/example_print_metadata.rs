@@ -40,7 +40,7 @@ fn main() {
     meta.print_overview();
     meta.print_modules_with_calls();
     meta.print_modules_with_events();
-
+    meta.print_modules_with_errors();
     // print full substrate metadata json formatted
     println!(
         "{}",
