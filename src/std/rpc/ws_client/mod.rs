@@ -140,7 +140,7 @@ where
                         return Err(ApiClientError::Events(error));
                     }
                     _ => error!("couldn't decode event record list"),
-                }
+                },
             }
         }
     }

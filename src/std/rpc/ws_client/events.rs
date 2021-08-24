@@ -210,22 +210,20 @@ impl EventsDecoder {
                 let system_event = SystemEvent::decode(input)?;
                 log::debug!("Decoding successful, system_event: {:?}", system_event);
                 match system_event {
-                    SystemEvent::ExtrinsicSuccess(_info) => {
-                        RuntimeEvent::System(system_event)
-                    }
+                    SystemEvent::ExtrinsicSuccess(_info) => RuntimeEvent::System(system_event),
                     SystemEvent::ExtrinsicFailed(dispatch_error, _info) => match dispatch_error {
-                            DispatchError::Module { index, error, ..} => {
-                                let module = self.metadata.module_with_errors(index)?;
-                                log::debug!("Found module events {:?}", module.name());
-                                let error_metadata = module.error(error)?;
-                                log::debug!("received error '{}::{}'", module.name(), error_metadata);
-                                return Err(EventsError::ModuleError(error_metadata.to_owned()));
-                            }
-                            _ => {
-                                log::debug!("Ignoring unsupported ExtrinsicFailed event");
-                                RuntimeEvent::System(system_event)
-                            },
-                    }
+                        DispatchError::Module { index, error, .. } => {
+                            let module = self.metadata.module_with_errors(index)?;
+                            log::debug!("Found module events {:?}", module.name());
+                            let error_metadata = module.error(error)?;
+                            log::debug!("received error '{}::{}'", module.name(), error_metadata);
+                            return Err(EventsError::ModuleError(error_metadata.to_owned()));
+                        }
+                        _ => {
+                            log::debug!("Ignoring unsupported ExtrinsicFailed event");
+                            RuntimeEvent::System(system_event)
+                        }
+                    },
                 }
             } else {
                 let event_variant = input.read_byte()?;
