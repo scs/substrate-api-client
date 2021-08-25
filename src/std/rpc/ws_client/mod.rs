@@ -26,7 +26,7 @@ use ws::{CloseCode, Error, Handler, Handshake, Message, Result as WsResult, Send
 use crate::std::rpc::RpcClientError;
 use crate::std::{json_req, FromHexString, RpcClient as RpcClientTrait, XtStatus};
 use crate::std::{Api, ApiResult};
-use crate::utils;
+use crate::{utils, ApiClientError};
 
 pub use client::WsRpcClient;
 pub use events::EventsError;
@@ -134,7 +134,13 @@ where
                         }
                     }
                 }
-                Err(_) => error!("couldn't decode event record list"),
+                Err(error) => match error {
+                    EventsError::ModuleError(ref msg) => {
+                        error!("Extrinsic Failed: {}", msg);
+                        return Err(ApiClientError::Events(error));
+                    }
+                    _ => error!("couldn't decode event record list"),
+                },
             }
         }
     }

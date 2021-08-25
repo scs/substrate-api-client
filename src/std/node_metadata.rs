@@ -44,6 +44,10 @@ pub enum MetadataError {
     StorageTypeError,
     #[error("Map value type error")]
     MapValueTypeError,
+    #[error("Module with errors not found")]
+    ModuleWithErrorsNotFound(u8),
+    #[error("Error not found")]
+    ErrorNotFound(u8),
 }
 
 #[derive(Clone, Debug)]
@@ -51,6 +55,7 @@ pub struct Metadata {
     modules: HashMap<String, ModuleMetadata>,
     modules_with_calls: HashMap<String, ModuleWithCalls>,
     modules_with_events: HashMap<String, ModuleWithEvents>,
+    modules_with_errors: HashMap<String, ModuleWithErrors>,
 }
 
 impl Metadata {
@@ -99,6 +104,27 @@ impl Metadata {
             .ok_or(MetadataError::ModuleWithEventsNotFound(module_index))
     }
 
+    pub fn modules_with_errors(&self) -> impl Iterator<Item = &ModuleWithErrors> {
+        self.modules_with_errors.values()
+    }
+
+    pub fn module_with_errors_by_name<S>(&self, name: S) -> Result<&ModuleWithErrors, MetadataError>
+    where
+        S: ToString,
+    {
+        let name = name.to_string();
+        self.modules_with_errors
+            .get(&name)
+            .ok_or(MetadataError::ModuleNotFound(name))
+    }
+
+    pub fn module_with_errors(&self, module_index: u8) -> Result<&ModuleWithErrors, MetadataError> {
+        self.modules_with_errors
+            .values()
+            .find(|&module| module.index == module_index)
+            .ok_or(MetadataError::ModuleWithErrorsNotFound(module_index))
+    }
+
     pub fn print_overview(&self) {
         let mut string = String::new();
         for (name, module) in &self.modules {
@@ -123,6 +149,13 @@ impl Metadata {
                     string.push('\n');
                 }
             }
+            if let Some(module) = self.modules_with_errors.get(name) {
+                for error in module.errors.values() {
+                    string.push_str(" err  ");
+                    string.push_str(error.as_str());
+                    string.push('\n');
+                }
+            }
         }
         println!("{}", string);
     }
@@ -143,6 +176,12 @@ impl Metadata {
 
     pub fn print_modules_with_events(&self) {
         for m in self.modules_with_events() {
+            m.print()
+        }
+    }
+
+    pub fn print_modules_with_errors(&self) {
+        for m in self.modules_with_errors() {
             m.print()
         }
     }
@@ -264,6 +303,37 @@ impl ModuleWithEvents {
 
         for e in self.events() {
             println!("Name: {:?}, Args: {:?}", e.name, e.arguments);
+        }
+        println!()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ModuleWithErrors {
+    pub index: u8,
+    pub name: String,
+    pub errors: HashMap<u8, String>,
+}
+
+impl ModuleWithErrors {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn error(&self, index: u8) -> Result<&String, MetadataError> {
+        self.errors
+            .get(&index)
+            .ok_or(MetadataError::ErrorNotFound(index))
+    }
+
+    pub fn print(&self) {
+        println!(
+            "----------------- Errors for Module: {} -----------------\n",
+            self.name()
+        );
+
+        for e in self.errors.values() {
+            println!("Name: {}", e);
         }
         println!()
     }
@@ -524,6 +594,8 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
         let mut modules = HashMap::new();
         let mut modules_with_calls = HashMap::new();
         let mut modules_with_events = HashMap::new();
+        let mut modules_with_errors = HashMap::new();
+
         for module in convert(meta.modules)?.into_iter() {
             let module_name = convert(module.name.clone())?;
 
@@ -576,11 +648,26 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
                     },
                 );
             }
+            let errors = module.errors;
+            let mut error_map = HashMap::new();
+            for (index, error) in convert(errors)?.into_iter().enumerate() {
+                let name = convert(error.name)?;
+                error_map.insert(index as u8, name);
+            }
+            modules_with_errors.insert(
+                module_name.clone(),
+                ModuleWithErrors {
+                    index: module.index,
+                    name: module_name.clone(),
+                    errors: error_map,
+                },
+            );
         }
         Ok(Metadata {
             modules,
             modules_with_calls,
             modules_with_events,
+            modules_with_errors,
         })
     }
 }
