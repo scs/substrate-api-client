@@ -41,6 +41,8 @@ fn main() {
     meta.print_modules_with_calls();
     meta.print_modules_with_events();
     meta.print_modules_with_errors();
+    meta.print_modules_with_constants();
+
     // print full substrate metadata json formatted
     println!(
         "{}",
