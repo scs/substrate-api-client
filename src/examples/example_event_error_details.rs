@@ -44,7 +44,7 @@ fn main() {
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
     // generate extrinsic
-    let amount = 1000000000000000000;
+    let amount = 10000000000000000000;
     let xt = api.balance_transfer(MultiAddress::Id(to.clone()), amount);
 
     println!(
