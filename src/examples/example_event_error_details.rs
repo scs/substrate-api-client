@@ -32,10 +32,17 @@ fn main() {
         .unwrap();
 
     let from_account_id = AccountKeyring::Alice.to_account_id();
-    match api.get_account_data(&from_account_id).unwrap() {
-        Some(alice) => println!("[+] Alice's Free Balance is is {}\n", alice.free),
-        None => println!("[+] Alice's Free Balance is is 0\n"),
-    }
+
+    let amount = match api.get_account_data(&from_account_id).unwrap() {
+        Some(alice) => {
+            println!("[+] Alice's Free Balance is is {}\n", alice.free);
+            alice.free
+        }
+        None => {
+            println!("[+] Alice's Free Balance is is 0\n");
+            10000000000000000000
+        }
+    };
 
     let to = AccountKeyring::Bob.to_account_id();
 
@@ -44,7 +51,6 @@ fn main() {
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
     // generate extrinsic
-    let amount = 10000000000000000000;
     let xt = api.balance_transfer(MultiAddress::Id(to.clone()), amount);
 
     println!(
@@ -60,13 +66,14 @@ fn main() {
         .unwrap();
     println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
+    //Transfer will failed as Alice want to transfer all her balance. She has not enough money to pay the fee
     let (events_in, events_out) = channel();
     api.subscribe_events(events_in).unwrap();
     let args: ApiResult<TransferEventArgs> =
         api.wait_for_event("Balances", "Transfer", None, &events_out);
     match args {
         Ok(transfer_event) => {
-            println!("Error : Transfer event received!!!\n");
+            println!("Transfer event received!!!\n");
             println!("Transactor: {:?}", transfer_event.from);
             println!("Destination: {:?}", transfer_event.to);
             println!("Value: {:?}", transfer_event.value);
