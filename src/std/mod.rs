@@ -384,6 +384,11 @@ where
             None => Ok(None),
         }
     }
+    pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
+        let module = self.metadata.module_with_constants_by_name("Balances")?;
+        let constant_metadata = module.constant_by_name("ExistentialDeposit")?;
+        Decode::decode(&mut constant_metadata.get_value().as_slice()).map_err(|e| e.into())
+    }
 
     #[cfg(feature = "ws-client")]
     pub fn send_extrinsic(
