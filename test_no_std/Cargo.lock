@@ -253,12 +253,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "frame-metadata"
+version = "14.0.0"
+source = "git+https://github.com/paritytech/frame-metadata.git?branch=main#39fe3d8f279a37c7c414bf37db281a35e0ccd520"
+dependencies = [
+ "cfg-if",
+ "parity-scale-codec",
+]
+
+[[package]]
 name = "frame-support"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#f651d45ce5742bc60fe8ae518c035d1638ae83d2"
 dependencies = [
  "bitflags",
- "frame-metadata",
+ "frame-metadata 14.0.0-dev",
  "frame-support-procedural",
  "impl-trait-for-tuples",
  "log",
@@ -928,7 +937,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 name = "substrate-api-client"
 version = "0.6.0"
 dependencies = [
- "frame-metadata",
+ "frame-metadata 14.0.0",
  "frame-support",
  "hex",
  "parity-scale-codec",

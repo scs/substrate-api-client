@@ -20,8 +20,9 @@ use codec::{Decode, Encode};
 
 use log::*;
 use metadata::{
-    DecodeDifferent, RuntimeMetadata, RuntimeMetadataPrefixed, StorageEntryModifier,
-    StorageEntryType, StorageHasher, META_RESERVED,
+    decode_different::DecodeDifferent,
+    v13::{StorageEntryModifier, StorageEntryType, StorageHasher, META_RESERVED},
+    RuntimeMetadata, RuntimeMetadataPrefixed,
 };
 use serde::ser::Serialize;
 use sp_core::storage::StorageKey;
@@ -798,7 +799,9 @@ fn convert<B: 'static, O: 'static>(dd: DecodeDifferent<B, O>) -> Result<O, Conve
     }
 }
 
-fn convert_event(event: metadata::EventMetadata) -> Result<ModuleEventMetadata, ConversionError> {
+fn convert_event(
+    event: metadata::v13::EventMetadata,
+) -> Result<ModuleEventMetadata, ConversionError> {
     let name = convert(event.name)?;
     let mut arguments = Vec::new();
     for arg in convert(event.arguments)? {
@@ -809,7 +812,7 @@ fn convert_event(event: metadata::EventMetadata) -> Result<ModuleEventMetadata, 
 }
 
 fn convert_constant(
-    constant: metadata::ModuleConstantMetadata,
+    constant: metadata::v13::ModuleConstantMetadata,
 ) -> Result<ModuleConstantMetadata, ConversionError> {
     let name = convert(constant.name)?;
     let value = convert(constant.value)?;
@@ -820,7 +823,7 @@ fn convert_constant(
 fn convert_entry(
     module_prefix: String,
     storage_prefix: String,
-    entry: metadata::StorageEntryMetadata,
+    entry: metadata::v13::StorageEntryMetadata,
 ) -> Result<StorageMetadata, ConversionError> {
     let default = convert(entry.default)?;
     Ok(StorageMetadata {
