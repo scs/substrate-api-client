@@ -34,13 +34,15 @@ pub enum RpcClientError {
     Send(#[from] std::sync::mpsc::SendError<String>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
     Finalized,
     InBlock,
     Broadcast,
     Ready,
     Future,
+    /// uses `author_submit`
+    SubmitOnly,
     Error,
     Unknown,
 }

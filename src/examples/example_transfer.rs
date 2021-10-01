@@ -52,7 +52,7 @@ fn main() {
 
     // send and watch extrinsic until finalized
     let tx_hash = api
-        .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
+        .send_extrinsic(xt.hex_encode(), XtStatus::SubmitOnly)
         .unwrap();
     println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
