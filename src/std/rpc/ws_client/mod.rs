@@ -376,13 +376,6 @@ mod tests {
     use crate::rpc::RpcClientError;
     use std::fmt::Debug;
 
-    fn extract_extrinsic_error_msg(err: RpcClientError) -> String {
-        match err {
-            RpcClientError::Extrinsic(msg) => msg,
-            _ => panic!("Expected extrinsic error"),
-        }
-    }
-
     fn assert_extrinsic_err<T: Debug>(result: Result<T, RpcClientError>, msg: &str) {
         assert_matches!(result.unwrap_err(), RpcClientError::Extrinsic(
 			m,
@@ -462,35 +455,27 @@ mod tests {
         assert_eq!(parse_status(msg).unwrap(), (XtStatus::Future, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code -32700: Parse error: ".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code -32700: Parse error: ",
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code 1010: Invalid Transaction: Bad Signature".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code 1010: Invalid Transaction: Bad Signature",
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code 1001: Extrinsic has invalid format.: ".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code 1001: Extrinsic has invalid format.: ",
         );
 
         let msg = r#"{"jsonrpc":"2.0","error":{"code":1002,"message":"Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))","data":"RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"},"id":"3"}"#;
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"
         );
     }
 }
