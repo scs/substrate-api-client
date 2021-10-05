@@ -66,7 +66,7 @@ pub fn state_get_metadata() -> Value {
 }
 
 pub fn state_get_metadata_with_id(id: u32) -> Value {
-    json_req("state_getMetadata", Value::Null, id)
+    json_req("state_getMetadata", vec![Value::Null], id)
 }
 
 pub fn state_get_runtime_version() -> Value {
@@ -74,7 +74,7 @@ pub fn state_get_runtime_version() -> Value {
 }
 
 pub fn state_get_runtime_version_with_id(id: u32) -> Value {
-    json_req("state_getRuntimeVersion", Value::Null, id)
+    json_req("state_getRuntimeVersion", vec![Value::Null], id)
 }
 
 pub fn state_subscribe_storage(key: Vec<StorageKey>) -> Value {
