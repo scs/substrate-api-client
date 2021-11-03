@@ -21,12 +21,14 @@ extern crate clap;
 
 use clap::App;
 
+use node_template_runtime::{Block, Header};
 use sp_core::sr25519;
-
-use node_template_runtime::{Block, Header, SignedBlock};
+use sp_runtime::generic::SignedBlock as SignedBlockG;
 use std::sync::mpsc::channel;
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::Api;
+
+type SignedBlock = SignedBlockG<Block>;
 
 fn main() {
     env_logger::init();

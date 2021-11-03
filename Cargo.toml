@@ -33,7 +33,7 @@ sp-application-crypto = { version = "4.0.0-dev", default-features = false, git =
 
 [dev-dependencies]
 env_logger = "0.9"
-node-template-runtime = { git = "https://github.com/scs/substrate-api-client-test-node", branch = "master" }
+node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 keyring = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master", package = "sp-keyring" }
 clap = { version = "2.33", features = ["yaml"] }
 
