@@ -31,6 +31,7 @@ use crate::{utils, ApiClientError};
 pub use client::WsRpcClient;
 pub use events::EventsError;
 pub use events::{EventsDecoder, RawEvent, RuntimeEvent};
+use serde_json::Value;
 
 pub mod client;
 pub mod events;
@@ -278,6 +279,22 @@ pub fn on_extrinsic_msg_until_ready(
     }
 }
 
+pub fn on_extrinsic_msg_submit_only(
+    msg: Message,
+    out: Sender,
+    result: ThreadOut<String>,
+) -> WsResult<()> {
+    let retstr = msg.as_text().unwrap();
+    debug!("got msg {}", retstr);
+    match result_from_json_response(retstr) {
+        Ok(val) => end_process(out, result, Some(val)),
+        Err(e) => {
+            end_process(out, result, None)?;
+            Err(Box::new(e).into())
+        }
+    }
+}
+
 fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) -> WsResult<()> {
     // return result to calling thread
     debug!("Thread end result :{:?} value:{:?}", result, value);
@@ -293,53 +310,101 @@ fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) ->
 
 fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
     let value: serde_json::Value = serde_json::from_str(msg)?;
-    match value["error"].as_object() {
-        Some(obj) => {
-            let error = obj
-                .get("message")
-                .map_or_else(|| "", |e| e.as_str().unwrap());
-            let code = obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap());
-            let details = obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap());
 
-            Err(RpcClientError::Extrinsic(format!(
-                "extrinsic error code {}: {}: {}",
-                code, error, details
-            )))
-        }
-        None => match value["params"]["result"].as_object() {
-            Some(obj) => {
-                if let Some(hash) = obj.get("finalized") {
-                    info!("finalized: {:?}", hash);
-                    Ok((XtStatus::Finalized, Some(hash.to_string())))
-                } else if let Some(hash) = obj.get("inBlock") {
-                    info!("inBlock: {:?}", hash);
-                    Ok((XtStatus::InBlock, Some(hash.to_string())))
-                } else if let Some(array) = obj.get("broadcast") {
-                    info!("broadcast: {:?}", array);
-                    Ok((XtStatus::Broadcast, Some(array.to_string())))
-                } else {
-                    Ok((XtStatus::Unknown, None))
-                }
+    if value["error"].as_object().is_some() {
+        return Err(into_extrinsic_err(&value));
+    }
+
+    match value["params"]["result"].as_object() {
+        Some(obj) => {
+            if let Some(hash) = obj.get("finalized") {
+                info!("finalized: {:?}", hash);
+                Ok((XtStatus::Finalized, Some(hash.to_string())))
+            } else if let Some(hash) = obj.get("inBlock") {
+                info!("inBlock: {:?}", hash);
+                Ok((XtStatus::InBlock, Some(hash.to_string())))
+            } else if let Some(array) = obj.get("broadcast") {
+                info!("broadcast: {:?}", array);
+                Ok((XtStatus::Broadcast, Some(array.to_string())))
+            } else {
+                Ok((XtStatus::Unknown, None))
             }
-            None => match value["params"]["result"].as_str() {
-                Some("ready") => Ok((XtStatus::Ready, None)),
-                Some("future") => Ok((XtStatus::Future, None)),
-                Some(&_) => Ok((XtStatus::Unknown, None)),
-                None => Ok((XtStatus::Unknown, None)),
-            },
+        }
+        None => match value["params"]["result"].as_str() {
+            Some("ready") => Ok((XtStatus::Ready, None)),
+            Some("future") => Ok((XtStatus::Future, None)),
+            Some(&_) => Ok((XtStatus::Unknown, None)),
+            None => Ok((XtStatus::Unknown, None)),
         },
     }
+}
+
+/// Todo: this is the code that was used in `parse_status` Don't we want to just print the
+/// error as is instead of introducing our custom format here?
+fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
+    let err_obj = resp_with_err["error"].as_object().unwrap();
+
+    let error = err_obj
+        .get("message")
+        .map_or_else(|| "", |e| e.as_str().unwrap());
+    let code = err_obj
+        .get("code")
+        .map_or_else(|| -1, |c| c.as_i64().unwrap());
+    let details = err_obj
+        .get("data")
+        .map_or_else(|| "", |d| d.as_str().unwrap());
+
+    RpcClientError::Extrinsic(format!(
+        "extrinsic error code {}: {}: {}",
+        code, error, details
+    ))
+}
+
+fn result_from_json_response(resp: &str) -> RpcResult<String> {
+    let value: serde_json::Value = serde_json::from_str(resp)?;
+
+    let resp = value["result"]
+        .as_str()
+        .ok_or_else(|| into_extrinsic_err(&value))?;
+
+    Ok(resp.to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::rpc::RpcClientError;
+    use std::fmt::Debug;
 
-    fn extract_extrinsic_error_msg(err: RpcClientError) -> String {
-        match err {
-            RpcClientError::Extrinsic(msg) => msg,
-            _ => panic!("Expected extrinsic error"),
-        }
+    fn assert_extrinsic_err<T: Debug>(result: Result<T, RpcClientError>, msg: &str) {
+        assert_matches!(result.unwrap_err(), RpcClientError::Extrinsic(
+			m,
+		) if &m == msg)
+    }
+
+    #[test]
+    fn result_from_json_response_works() {
+        let msg = r#"{"jsonrpc":"2.0","result":"0xe7640c3e8ba8d10ed7fed07118edb0bfe2d765d3ea2f3a5f6cf781ae3237788f","id":"3"}"#;
+
+        assert_eq!(
+            result_from_json_response(msg).unwrap(),
+            "0xe7640c3e8ba8d10ed7fed07118edb0bfe2d765d3ea2f3a5f6cf781ae3237788f"
+        );
+    }
+
+    #[test]
+    fn result_from_json_response_errs_on_error_response() {
+        let _err_raw =
+            r#"{"code":-32602,"message":"Invalid params: invalid hex character: h, at 284."}"#;
+
+        let err_msg = format!(
+            "extrinsic error code {}: {}: {}",
+            -32602, "Invalid params: invalid hex character: h, at 284.", ""
+        );
+
+        let msg = r#"{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: invalid hex character: h, at 284."},"id":"3"}"#;
+
+        assert_extrinsic_err(result_from_json_response(msg), &err_msg)
     }
 
     #[test]
@@ -390,35 +455,27 @@ mod tests {
         assert_eq!(parse_status(msg).unwrap(), (XtStatus::Future, None));
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code -32700: Parse error: ".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code -32700: Parse error: ",
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code 1010: Invalid Transaction: Bad Signature".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code 1010: Invalid Transaction: Bad Signature",
         );
 
         let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code 1001: Extrinsic has invalid format.: ".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code 1001: Extrinsic has invalid format.: ",
         );
 
         let msg = r#"{"jsonrpc":"2.0","error":{"code":1002,"message":"Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))","data":"RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"},"id":"3"}"#;
-        assert_eq!(
-            parse_status(msg)
-                .map_err(extract_extrinsic_error_msg)
-                .unwrap_err(),
-            "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")".to_string()
+        assert_extrinsic_err(
+            parse_status(msg),
+            "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"
         );
     }
 }

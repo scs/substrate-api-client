@@ -7,6 +7,7 @@ use serde_json::Value;
 use sp_core::H256 as Hash;
 use ws::{connect, Result as WsResult};
 
+use crate::rpc::ws_client::on_extrinsic_msg_submit_only;
 use crate::std::rpc::json_req;
 use crate::std::rpc::ws_client::Subscriber;
 use crate::std::rpc::ws_client::{
@@ -44,11 +45,15 @@ impl RpcClientTrait for WsRpcClient {
 
     fn send_extrinsic(
         &self,
-
         xthex_prefixed: String,
         exit_on: XtStatus,
     ) -> ApiResult<Option<sp_core::H256>> {
-        let jsonreq = json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string();
+        // Todo: Make all variants return a H256: #175.
+
+        let jsonreq = match exit_on {
+            XtStatus::SubmitOnly => json_req::author_submit_extrinsic(&xthex_prefixed).to_string(),
+            _ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
+        };
 
         let (result_in, result_out) = channel();
         match exit_on {
@@ -71,9 +76,15 @@ impl RpcClientTrait for WsRpcClient {
                 Ok(None)
             }
             XtStatus::Ready => {
-                self.send_extrinsic(jsonreq, result_in)?;
+                self.send_extrinsic_until_ready(jsonreq, result_in)?;
                 let res = result_out.recv()?;
                 info!("ready: {}", res);
+                Ok(None)
+            }
+            XtStatus::SubmitOnly => {
+                self.send_extrinsic(jsonreq, result_in)?;
+                let res = result_out.recv()?;
+                info!("submitted xt: {}", res);
                 Ok(None)
             }
             _ => Err(ApiClientError::UnsupportedXtStatus(exit_on)),
@@ -97,6 +108,14 @@ impl WsRpcClient {
     }
 
     pub fn send_extrinsic(&self, json_req: String, result_in: ThreadOut<String>) -> WsResult<()> {
+        self.start_rpc_client_thread(json_req, result_in, on_extrinsic_msg_submit_only)
+    }
+
+    pub fn send_extrinsic_until_ready(
+        &self,
+        json_req: String,
+        result_in: ThreadOut<String>,
+    ) -> WsResult<()> {
         self.start_rpc_client_thread(json_req, result_in, on_extrinsic_msg_until_ready)
     }
 
