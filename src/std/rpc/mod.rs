@@ -36,6 +36,7 @@ pub enum RpcClientError {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
+    // Todo: some variants to not return a hash with `send_extrinsics`: #175.
     Finalized,
     InBlock,
     Broadcast,

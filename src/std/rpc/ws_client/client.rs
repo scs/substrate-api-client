@@ -48,6 +48,8 @@ impl RpcClientTrait for WsRpcClient {
         xthex_prefixed: String,
         exit_on: XtStatus,
     ) -> ApiResult<Option<sp_core::H256>> {
+        // Todo: Make all variants return a H256: #175.
+
         let jsonreq = match exit_on {
             XtStatus::SubmitOnly => json_req::author_submit_extrinsic(&xthex_prefixed).to_string(),
             _ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
