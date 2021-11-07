@@ -1,0 +1,101 @@
+name: Build & Test & Clippy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  cancel_previous_runs:
+    name: Cancel Previous Runs
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: styfle/cancel-workflow-action@0.4.1
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: Rust check ${{ matrix.check }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
+        #
+        # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
+        # we omit clippy and test there.
+        check: [ cargo build --release --all --exclude test-no-std,
+                 cargo build --release -p test-no-std,
+
+                 cargo clippy --all --exclude test-no-std -- -D warnings,
+                 cargo clippy --examples -- -D warnings,
+
+                 cargo test --all --exclude test-no-std,
+
+                 cargo fmt --all -- --check,
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: init-rust-target
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.check }}
+
+      - name: ${{ matrix.check }}
+        run: ${{ matrix.check }}
+
+  examples:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        example: [ example_generic_extrinsic,
+                   example_print_metadata,
+                   example_transfer,
+                   example_get_storage,
+                   example_get_blocks,
+                   example_benchmark_bulk_xt,
+                   example_event_error_details,
+                   example_sudo,
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: init-rust-target
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.example }}
+
+      - name: Build examples
+        run: cargo build --release --examples
+
+      - name: Download Integritee Node
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: ci.yml
+          run_id: 1422190562
+          name: integritee-node-dev-6965648223e27ec065f7b4b38ac687d33e6af5c5
+          repo: integritee-network/integritee-node
+          path: node
+
+      - name: Run node
+        run: |
+          chmod +x node/integritee-node
+          ./node/integritee-node --dev &
+          sleep 10
+
+      - name: Run Examples
+        timeout-minutes: 5
+        run: |
+          ./target/release/examples/${{ matrix.example }}
