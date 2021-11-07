@@ -4,6 +4,14 @@ version = "0.6.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 edition = "2021"
 
+[workspace]
+members = [
+	".",
+	"client-keystore",
+	"test_no_std",
+	"tutorials/api-client-tutorial",
+]
+
 [dependencies]
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4", optional = true }

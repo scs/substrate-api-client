@@ -3,13 +3,6 @@ name = "test_no_std"
 version = "0.6.0"
 authors = ["Alain Brenzikofer <alain.brenzikofer@scs.ch>"]
 edition = "2021"
-resolver = "2"
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
 
 [dependencies]
 libc = { version="0.2", default-features=false }
