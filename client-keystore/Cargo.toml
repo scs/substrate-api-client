@@ -2,7 +2,7 @@
 name = "substrate-client-keystore"
 version = "0.6.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 parking_lot = "0.11.1"

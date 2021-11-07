@@ -14,9 +14,8 @@
 */
 
 use codec::{Decode, Encode};
-use keyring::AccountKeyring;
-
 use sp_core::crypto::Pair;
+use sp_keyring::AccountKeyring;
 
 use substrate_api_client::{
     compose_extrinsic, rpc::WsRpcClient, utils::FromHexString, Api, UncheckedExtrinsicV4, XtStatus,
