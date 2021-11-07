@@ -352,7 +352,7 @@ impl SyncCryptoStore for LocalKeystore {
         public_keys.iter().all(|(p, t)| {
             self.0
                 .read()
-                .key_phrase_by_type(&p, *t)
+                .key_phrase_by_type(p, *t)
                 .ok()
                 .flatten()
                 .is_some()

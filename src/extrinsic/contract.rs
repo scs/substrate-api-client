@@ -62,7 +62,7 @@ where
 {
     pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {
         compose_extrinsic!(
-            &self,
+            self,
             CONTRACTS_MODULE,
             CONTRACTS_PUT_CODE,
             Compact(gas_limit),
