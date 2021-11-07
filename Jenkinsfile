@@ -35,7 +35,7 @@ pipeline {
     stage('Build no_std') {
       steps {
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-          sh 'cd test_no_std && cargo build --message-format json > ${WORKSPACE}/build_no_std.log'
+          sh 'cd test-no-std && cargo build --message-format json > ${WORKSPACE}/build_no_std.log'
         }
       }
     }
@@ -81,7 +81,7 @@ pipeline {
           sh 'cargo clippy --release --no-default-features 2>&1 | tee ${WORKSPACE}/clippy_release_no_default_features.log'
         }
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-          sh 'cd test_no_std && cargo clippy 2>&1 | tee ${WORKSPACE}/clippy_no_std.log'
+          sh 'cd test-no-std && cargo clippy 2>&1 | tee ${WORKSPACE}/clippy_no_std.log'
         }
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
           sh 'cargo clippy --release --examples 2>&1 | tee ${WORKSPACE}/clippy_examples_release.log'

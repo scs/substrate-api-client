@@ -8,7 +8,7 @@ edition = "2021"
 members = [
 	".",
 	"client-keystore",
-	"test_no_std",
+	"test-no-std",
 	"tutorials/api-client-tutorial",
 ]
 

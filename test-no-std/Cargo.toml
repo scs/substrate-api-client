@@ -1,0 +1,14 @@
+[package]
+name = "test-no-std"
+version = "0.6.0"
+authors = ["Alain Brenzikofer <alain.brenzikofer@scs.ch>"]
+edition = "2021"
+
+[dependencies]
+libc = { version = "0.2", default-features = false }
+
+# local dependencies
+substrate-api-client = { path = "..", default-features = false }
+
+# substrate dependencies
+sp-io = { version = "4.0.0-dev", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
