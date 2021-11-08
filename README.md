@@ -24,17 +24,15 @@ For more information, please refer to the [substrate](https://github.com/parityt
 
 ## Substrate node
 
-To execute the examples, a running substrate node is needed. A slightly extended node-template can be found at https://github.com/scs/substrate-api-client-test-node
+To execute the examples, a running substrate node is needed. You can download our node artifact from our GitHub Actions
+CI, which can be found in the 'Actions' tab.
 
-To build the test node, execute the following steps:
+The unpacked node can be run with:
 
-    git clone https://github.com/scs/substrate-api-client-test-node
-    cd substrate-api-client-test-node/
-    cargo build --release
+```
+./node-template --dev
+```
 
-Run the node:
-
-    ./target/release/node-template --dev
 
 ## Tutorial
 
