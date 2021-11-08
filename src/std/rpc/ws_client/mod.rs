@@ -19,6 +19,7 @@ use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 
 use codec::Decode;
 use log::{debug, error, info, warn};
+use serde_json::Value;
 use sp_core::Pair;
 use sp_runtime::MultiSignature;
 use ws::{CloseCode, Error, Handler, Handshake, Message, Result as WsResult, Sender};
@@ -28,13 +29,12 @@ use crate::std::{json_req, FromHexString, RpcClient as RpcClientTrait, XtStatus}
 use crate::std::{Api, ApiResult};
 use crate::{utils, ApiClientError};
 
+pub use ac_node_api::events::EventsError;
+pub use ac_node_api::events::{EventsDecoder, RawEvent, RuntimeEvent};
+
 pub use client::WsRpcClient;
-pub use events::EventsError;
-pub use events::{EventsDecoder, RawEvent, RuntimeEvent};
-use serde_json::Value;
 
 pub mod client;
-pub mod events;
 
 pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
 

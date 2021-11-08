@@ -8,6 +8,7 @@ edition = "2021"
 members = [
 	".",
 	"client-keystore",
+	"node-api",
 	"test-no-std",
 	"tutorials/api-client-tutorial",
 ]
@@ -38,6 +39,9 @@ metadata = { version = "14.0.0", default-features = false, git = "https://github
 # need to add this for the app_crypto macro
 sp-application-crypto = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
 
+# local deps
+ac-node-api = { path = "node-api", optional = true }
+ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
 env_logger = "0.9"
@@ -66,7 +70,10 @@ std = [
 	"primitive-types",
 	"thiserror",
 	"sp-rpc",
-	"transaction-payment/std"
+	"transaction-payment/std",
+	# local deps
+	"ac-node-api",
+	"ac-primitives/std",
 ]
 ws-client = ["ws"]
 staking-xt = ["std", "staking"]
