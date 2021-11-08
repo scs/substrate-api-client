@@ -13,7 +13,7 @@ pub use transaction_payment::FeeDetails;
 
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
-pub use ac_node_api::metadata::{Metadata, MetadataError};
+pub use ac_node_api::metadata::{InvalidMetadataError, Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo};
 use sp_core::H256 as Hash;
 
@@ -460,9 +460,11 @@ pub enum ApiClientError {
     Disconnected(#[from] sp_std::sync::mpsc::RecvError),
     #[error("Metadata Error: {0}")]
     Metadata(#[from] MetadataError),
+    #[error("InvalidMetadata: {0}")]
+    InvalidMetadata(#[from] InvalidMetadataError),
     #[cfg(feature = "ws-client")]
     #[error("Events Error: {0}")]
-    Events(#[from] rpc::EventsError),
+    NodeApi(#[from] ac_node_api::error::Error),
     #[error("Error decoding storage value: {0}")]
     StorageValueDecode(#[from] extrinsic::codec::Error),
     #[error("Received invalid hex string: {0}")]

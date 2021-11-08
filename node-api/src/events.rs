@@ -23,6 +23,7 @@ use crate::{
     metadata::{EventMetadata, Metadata, MetadataError},
     Phase,
 };
+use ac_primitives::Hash;
 use scale_info::{TypeDef, TypeDefPrimitive};
 use sp_core::Bytes;
 
@@ -43,15 +44,12 @@ pub struct RawEvent {
 
 /// Events decoder.
 #[derive(Debug, Clone)]
-pub struct EventsDecoder<T> {
+pub struct EventsDecoder {
     metadata: Metadata,
-    marker: PhantomData<T>,
+    marker: PhantomData<()>,
 }
 
-impl<T> EventsDecoder<T>
-where
-    T: Config,
-{
+impl EventsDecoder {
     /// Creates a new `EventsDecoder`.
     pub fn new(metadata: Metadata) -> Self {
         Self {
@@ -99,7 +97,7 @@ where
                     };
 
                     // topics come after the event data in EventRecord
-                    let topics = Vec::<T::Hash>::decode(input)?;
+                    let topics = Vec::<Hash>::decode(input)?;
                     log::debug!("topics: {:?}", topics);
 
                     Raw::Event(event)
