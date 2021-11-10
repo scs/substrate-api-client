@@ -82,7 +82,7 @@ impl EventsDecoder {
             let mut event_data = Vec::<u8>::new();
             let mut event_errors = Vec::<RuntimeError>::new();
             let result =
-                self.decode_raw_event(&event_metadata, input, &mut event_data, &mut event_errors);
+                self.decode_raw_event(event_metadata, input, &mut event_data, &mut event_errors);
             let raw = match result {
                 Ok(()) => {
                     log::debug!("raw bytes: {}", hex::encode(&event_data),);
@@ -180,7 +180,7 @@ impl EventsDecoder {
                 let variant = variant
                     .variants()
                     .get(variant_index as usize)
-                    .ok_or(Error::Other(format!("Variant {} not found", variant_index)))?;
+                    .ok_or_else(|| Error::Other(format!("Variant {} not found", variant_index)))?;
                 for field in variant.fields() {
                     self.decode_type(field.ty().id(), input, output)?;
                 }
@@ -249,7 +249,7 @@ impl EventsDecoder {
                             let field_ty = self
                                 .metadata
                                 .resolve_type(field.ty().id())
-                                .ok_or(MetadataError::TypeNotFound(field.ty().id()))?;
+                                .ok_or_else(|| MetadataError::TypeNotFound(field.ty().id()))?;
                             if let TypeDef::Primitive(primitive) = field_ty.type_def() {
                                 decode_compact_primitive(primitive)
                             } else {

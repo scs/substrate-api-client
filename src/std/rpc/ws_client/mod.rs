@@ -135,10 +135,7 @@ where
                         }
                     }
                 }
-                Err(error) => match error {
-                    // Todo: maybe not all errors should be ignored.
-                    _ => error!("couldn't decode event record list"),
-                },
+                Err(error) => error!("couldn't decode event record list: {:?}", error),
             }
         }
     }

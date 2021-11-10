@@ -390,7 +390,7 @@ where
             .pallet("Balances")?
             .constants
             .get(ed_id)
-            .ok_or_else(|| MetadataError::ConstantNotFound(ed_id))?;
+            .ok_or(MetadataError::ConstantNotFound(ed_id))?;
 
         Ok(Decode::decode(&mut ed.value.as_slice())?)
     }
