@@ -31,6 +31,8 @@ pub mod extrinsic;
 pub mod utils;
 
 pub use ac_primitives::{
-    AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BlockNumber, Index, Moment,
-    RefCount,
+    AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BlockNumber, Hash, Index,
+    Moment, RefCount,
 };
+
+pub use extrinsic::xt_primitives::{GenericAddress, GenericExtra, UncheckedExtrinsicV4};
