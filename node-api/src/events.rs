@@ -1,5 +1,6 @@
-// Copyright 2019 Parity Technologies (UK) Ltd.
-// This file is part of substrate-subxt.
+// Copyright 2019-2021 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
+// and Integritee AG.
+// This file is part of subxt.
 //
 // subxt is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,7 +13,11 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with substrate-subxt.  If not, see <http://www.gnu.org/licenses/>.
+// along with subxt.  If not, see <http://www.gnu.org/licenses/>.
+
+//! Module to parse chain events
+//!
+//! This file is very similar to subxt, except where noted.
 
 use codec::{Codec, Compact, Decode, Encode, Input};
 use std::marker::PhantomData;
@@ -42,6 +47,9 @@ pub struct RawEvent {
 }
 
 /// Events decoder.
+///
+/// In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
+/// hash type. We omitted this here and use the `ac_primitives::Hash` instead.
 #[derive(Debug, Clone)]
 pub struct EventsDecoder {
     metadata: Metadata,

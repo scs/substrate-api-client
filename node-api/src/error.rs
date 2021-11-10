@@ -1,4 +1,5 @@
-// Copyright 2019-2021 Parity Technologies (UK) Ltd.
+// Copyright 2019-2021 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
+// and Integritee AG.
 // This file is part of subxt.
 //
 // subxt is free software: you can redistribute it and/or modify
@@ -13,6 +14,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with subxt.  If not, see <http://www.gnu.org/licenses/>.
+
+//! The errors use in the node-api crate.
+//!
+//! This file is mostly subxt.
 
 use crate::{
     events::EventsDecodingError,
