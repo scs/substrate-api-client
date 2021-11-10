@@ -42,7 +42,7 @@ fn main() {
     let (events_in, events_out) = channel();
     api.subscribe_events(events_in).unwrap();
 
-    loop {
+    for _ in 0..5 {
         let event_str = events_out.recv().unwrap();
 
         let _unhex = Vec::from_hex(event_str).unwrap();
