@@ -1,23 +1,10 @@
-use codec::{Decode, Encode};
+use codec::Decode;
 
 pub mod config;
 pub mod error;
 pub mod events;
 pub mod metadata;
 pub mod storage;
-
-/// Call trait.
-pub trait Call: Encode {
-    /// Pallet name.
-    const PALLET: &'static str;
-    /// Function name.
-    const FUNCTION: &'static str;
-
-    /// Returns true if the given pallet and function names match this call.
-    fn is_call(pallet: &str, function: &str) -> bool {
-        Self::PALLET == pallet && Self::FUNCTION == function
-    }
-}
 
 /// Wraps an already encoded byte vector, prevents being encoded as a raw byte vector as part of
 /// the transaction payload

@@ -24,7 +24,7 @@ use frame_metadata::{
 use scale_info::{form::PortableForm, Type, Variant};
 
 use crate::storage::GetStorage;
-use crate::{Call, Encoded};
+use crate::Encoded;
 use sp_core::storage::StorageKey;
 
 /// Metadata error.
@@ -130,16 +130,16 @@ pub struct PalletMetadata {
 }
 
 impl PalletMetadata {
-    pub fn encode_call<C>(&self, call: &C) -> Result<Encoded, MetadataError>
+    pub fn encode_call<C>(&self, call_name: &'static str, args: C) -> Result<Encoded, MetadataError>
     where
-        C: Call,
+        C: Encode,
     {
         let fn_index = self
             .calls
-            .get(C::FUNCTION)
-            .ok_or(MetadataError::CallNotFound(C::FUNCTION))?;
+            .get(call_name)
+            .ok_or(MetadataError::CallNotFound(call_name))?;
         let mut bytes = vec![self.index, *fn_index];
-        bytes.extend(call.encode());
+        bytes.extend(args.encode());
         Ok(Encoded(bytes))
     }
 

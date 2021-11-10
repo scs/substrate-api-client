@@ -24,6 +24,9 @@ pub extern crate codec;
 pub extern crate log;
 
 #[cfg(feature = "std")]
+pub use ac_node_api::metadata::MetadataError;
+
+#[cfg(feature = "std")]
 pub mod balances;
 #[cfg(feature = "std")]
 pub mod contract;
@@ -43,13 +46,13 @@ pub type CallIndex = [u8; 2];
 /// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_call {
-($node_metadata: expr, $module: expr, $call_name: expr $(, $args: expr) *) => {
+($node_metadata: expr, $pallet: expr, $call_name: expr $(, $args: expr) *) => {
         {
-            let module = $node_metadata.module_with_calls($module).unwrap().to_owned();
+            let pallet = $node_metadata.pallet($pallet).unwrap().to_owned();
 
-            let call_index = module.calls.get($call_name).unwrap();
+            let call_index = pallet.calls.get($call_name).unwrap();
 
-            ([module.index, *call_index as u8] $(, ($args)) *)
+            ([pallet.index, *call_index as u8] $(, ($args)) *)
         }
     };
 }
