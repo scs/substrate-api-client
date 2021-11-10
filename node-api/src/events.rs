@@ -18,7 +18,6 @@ use codec::{Codec, Compact, Decode, Encode, Input};
 use std::marker::PhantomData;
 
 use crate::{
-    config::Config,
     error::{Error, RuntimeError},
     metadata::{EventMetadata, Metadata, MetadataError},
     Phase,

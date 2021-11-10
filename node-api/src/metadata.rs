@@ -16,14 +16,16 @@
 
 use std::{collections::HashMap, convert::TryFrom};
 
-use codec::Error as CodecError;
+use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
     PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
     StorageEntryMetadata, META_RESERVED,
 };
 use scale_info::{form::PortableForm, Type, Variant};
 
+use crate::storage::GetStorage;
 use crate::{Call, Encoded};
+use sp_core::storage::StorageKey;
 
 /// Metadata error.
 #[derive(Debug, thiserror::Error)]
@@ -340,5 +342,56 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
             events,
             errors,
         })
+    }
+}
+
+impl Metadata {
+    pub fn storage_value_key(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+    ) -> Result<StorageKey, MetadataError> {
+        Ok(self
+            .pallet(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_value(storage_prefix)?
+            .key())
+    }
+
+    pub fn storage_map_key<K: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        map_key: K,
+    ) -> Result<StorageKey, MetadataError> {
+        Ok(self
+            .pallet(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_map::<K, V>(storage_prefix)?
+            .key(map_key))
+    }
+
+    pub fn storage_map_key_prefix(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+    ) -> Result<StorageKey, MetadataError> {
+        self.pallet(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_map_prefix(storage_prefix)
+    }
+
+    pub fn storage_double_map_key<K: Encode, Q: Encode, V: Decode + Clone>(
+        &self,
+        storage_prefix: &'static str,
+        storage_key_name: &'static str,
+        first: K,
+        second: Q,
+    ) -> Result<StorageKey, MetadataError> {
+        Ok(self
+            .pallet(storage_prefix)?
+            .storage(storage_key_name)?
+            .get_double_map::<K, Q, V>(storage_prefix)?
+            .key(first, second))
     }
 }

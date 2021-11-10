@@ -18,15 +18,11 @@
 
 use codec::{Decode, Encode};
 use log::info;
-use sp_core::storage::{StorageChangeSet, StorageData, StorageKey};
+use sp_core::storage::StorageKey;
 use std::marker::PhantomData;
 
-use crate::{
-    error::Error,
-    metadata::{Metadata, MetadataError},
-};
+use crate::metadata::MetadataError;
 use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
-use frame_support::{ensure, metadata::StorageMetadata};
 use scale_info::form::PortableForm;
 
 #[derive(Clone, Debug)]
