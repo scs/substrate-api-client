@@ -29,6 +29,7 @@ use transaction_payment::InclusionFee;
 
 use crate::rpc::json_req;
 use crate::{extrinsic, Balance};
+use ac_node_api::storage::{StorageEntryKey, StorageMapKey};
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
@@ -157,10 +158,11 @@ where
     }
 
     pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
-        let storagekey: sp_core::storage::StorageKey = self
-            .metadata
-            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())?;
-        info!("storagekey {:?}", storagekey);
+        // let storagekey: sp_core::storage::StorageKey = self
+        //     .metadata
+        //     .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())?;
+
+        let storage_key = info!("storage key {:?}", storage_key);
         info!("storage key is: 0x{}", hex::encode(storagekey.0.clone()));
         self.get_storage_by_key_hash(storagekey, None)
     }

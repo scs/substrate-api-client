@@ -4,6 +4,7 @@ pub mod config;
 pub mod error;
 pub mod events;
 pub mod metadata;
+pub mod storage;
 
 /// Call trait.
 pub trait Call: Encode {
