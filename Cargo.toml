@@ -123,10 +123,6 @@ name = "example_sudo"
 path = "src/examples/example_sudo.rs"
 
 [[example]]
-name = "example_custom_client"
-path = "src/examples/example_custom_client.rs"
-
-[[example]]
 name = "example_get_existential_deposit"
 path = "src/examples/example_get_existential_deposit.rs"
 
