@@ -67,8 +67,6 @@ jobs:
         with:
           repository: paritytech/substrate
           path: substrate
-          # same as substrate deps in Cargo.lock. We will use latest later when upgraded to metadata v14.
-          ref: '558a68f8328a004f153496a192c3ac9723c763c3'
 
       - uses: Swatinem/rust-cache@v1
         with:
