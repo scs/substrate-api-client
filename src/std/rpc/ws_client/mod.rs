@@ -14,7 +14,6 @@
    limitations under the License.
 
 */
-use std::convert::TryFrom;
 use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 
 use codec::Decode;

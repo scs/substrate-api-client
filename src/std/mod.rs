@@ -384,9 +384,15 @@ where
         }
     }
     pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
-        let module = self.metadata.module_with_constants_by_name("Balances")?;
-        let constant_metadata = module.constant_by_name("ExistentialDeposit")?;
-        Decode::decode(&mut constant_metadata.get_value().as_slice()).map_err(|e| e.into())
+        let ed_id: &'static str = "ExistentialDeposit";
+        let ed = self
+            .metadata
+            .pallet("Balances")?
+            .constants
+            .get(ed_id)
+            .ok_or_else(|| MetadataError::ConstantNotFound(ed_id))?;
+
+        Ok(Decode::decode(&mut ed.value.as_slice())?)
     }
 
     #[cfg(feature = "ws-client")]
