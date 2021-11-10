@@ -13,7 +13,7 @@ pub use transaction_payment::FeeDetails;
 
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
-pub use ac_node_api::node_metadata::{Metadata, MetadataError};
+pub use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo};
 use sp_core::H256 as Hash;
 

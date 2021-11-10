@@ -1,2 +1,2 @@
 pub mod events;
-pub mod node_metadata;
+pub mod metadata;

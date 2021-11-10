@@ -26,7 +26,7 @@ use frame_system::Phase;
 use sp_runtime::AccountId32 as AccountId;
 use sp_runtime::DispatchError;
 
-use crate::node_metadata::{EventArg, Metadata, MetadataError};
+use crate::metadata::{EventArg, Metadata, MetadataError};
 use ac_primitives::{Balance, BlockNumber, Moment};
 
 use sp_core::H256 as Hash;
