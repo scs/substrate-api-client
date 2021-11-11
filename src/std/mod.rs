@@ -13,11 +13,11 @@ pub use transaction_payment::FeeDetails;
 
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
-pub use node_metadata::Metadata;
+pub use ac_node_api::metadata::{Metadata, MetadataError};
+use ac_primitives::{AccountData, AccountInfo};
+use sp_core::H256 as Hash;
 
 pub mod rpc;
-
-mod node_metadata;
 
 use std::convert::{TryFrom, TryInto};
 
@@ -29,7 +29,6 @@ use transaction_payment::InclusionFee;
 
 use crate::rpc::json_req;
 use crate::{extrinsic, Balance};
-use crate::{AccountData, AccountInfo, Hash};
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
@@ -460,7 +459,7 @@ pub enum ApiClientError {
     #[error("ChannelReceiveError, sender is disconnected: {0}")]
     Disconnected(#[from] sp_std::sync::mpsc::RecvError),
     #[error("Metadata Error: {0}")]
-    Metadata(#[from] node_metadata::MetadataError),
+    Metadata(#[from] MetadataError),
     #[cfg(feature = "ws-client")]
     #[error("Events Error: {0}")]
     Events(#[from] rpc::EventsError),

@@ -13,6 +13,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "ac-node-api"
+version = "0.1.0"
+dependencies = [
+ "ac-primitives",
+ "frame-metadata 14.0.0",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "log",
+ "parity-scale-codec",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-runtime",
+ "thiserror",
+]
+
+[[package]]
+name = "ac-primitives"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "sp-core",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3052,6 +3078,8 @@ dependencies = [
 name = "substrate-api-client"
 version = "0.6.0"
 dependencies = [
+ "ac-node-api",
+ "ac-primitives",
  "clap",
  "env_logger",
  "frame-metadata 14.0.0",

@@ -1,0 +1,18 @@
+[package]
+name = "ac-primitives"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+codec = { package = 'parity-scale-codec', version = "2.0.0", default-features = false,  features = ['derive']}
+
+sp-core = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "sp-core/std",
+]

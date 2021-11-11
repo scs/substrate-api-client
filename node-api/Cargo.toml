@@ -1,0 +1,26 @@
+[package]
+name = "ac-node-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+codec = { package = 'parity-scale-codec', version = "2.0.0", features = ['derive']}
+hex = { version = "0.4.3" }
+log = { version = "0.4" }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = { version = "1.0" }
+serde_json = { version = "1.0" }
+
+# local deps
+ac-primitives = { path = "../primitives" }
+
+# substrate deps
+frame-support = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# new parity repo
+frame-metadata = { version = "14.0.0", git = "https://github.com/paritytech/frame-metadata.git", branch = "main", features = ["v13"] }

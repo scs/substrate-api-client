@@ -21,13 +21,15 @@ use std::{
 };
 
 use codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input, Output};
+use frame_support::weights::DispatchInfo;
+use frame_system::Phase;
+use sp_runtime::AccountId32 as AccountId;
 use sp_runtime::DispatchError;
-use support::weights::DispatchInfo;
-use system::Phase;
 
-use crate::std::node_metadata::{EventArg, Metadata, MetadataError};
-use crate::std::AccountId;
-use crate::{Balance, BlockNumber, Hash, Moment};
+use crate::metadata::{EventArg, Metadata, MetadataError};
+use ac_primitives::{Balance, BlockNumber, Moment};
+
+use sp_core::H256 as Hash;
 
 /// Event for the System module.
 #[derive(Clone, Debug, Decode)]
@@ -255,7 +257,7 @@ impl EventsDecoder {
             log::debug!("Phase {:?}, Event: {:?}", phase, event);
 
             log::debug!("Decoding topics {:?}", input);
-            let _topics = Vec::<crate::Hash>::decode(input)?;
+            let _topics = Vec::<Hash>::decode(input)?;
             r.push((phase, event));
         }
         Ok(r)
