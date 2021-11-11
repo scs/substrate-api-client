@@ -15,14 +15,13 @@
 //!
 //! This file is **not** from subxt.
 
+use crate::metadata::MetadataError;
 use codec::{Decode, Encode};
-use log::info;
+use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
+use log::debug;
+use scale_info::form::PortableForm;
 use sp_core::storage::StorageKey;
 use std::marker::PhantomData;
-
-use crate::metadata::MetadataError;
-use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
-use scale_info::form::PortableForm;
 
 #[derive(Clone, Debug)]
 pub struct StorageValue {
@@ -114,7 +113,7 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                 let default = Decode::decode(&mut &self.default[..])
                     .map_err(|_| MetadataError::MapValueTypeError)?;
 
-                info!(
+                debug!(
                     "map for '{}' '{}' has hasher1 {:?} hasher2 {:?}",
                     pallet_prefix, self.name, hasher1, hasher2
                 );
@@ -147,7 +146,7 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                 let default = Decode::decode(&mut &self.default[..])
                     .map_err(|_| MetadataError::MapValueTypeError)?;
 
-                info!(
+                debug!(
                     "map for '{}' '{}' has hasher {:?}",
                     pallet_prefix, self.name, hasher
                 );

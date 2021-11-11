@@ -16,6 +16,7 @@
 */
 use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 
+use ac_node_api::events::{EventsDecoder, Raw, RawEvent};
 use codec::Decode;
 use log::{debug, error, info, warn};
 use serde_json::Value;
@@ -27,9 +28,6 @@ use crate::std::rpc::RpcClientError;
 use crate::std::{json_req, FromHexString, RpcClient as RpcClientTrait, XtStatus};
 use crate::std::{Api, ApiResult};
 use crate::utils;
-
-pub use ac_node_api::error::Error as NodeApiError;
-pub use ac_node_api::events::{EventsDecoder, Raw, RawEvent};
 
 pub use client::WsRpcClient;
 

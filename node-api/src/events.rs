@@ -19,17 +19,16 @@
 //!
 //! This file is very similar to subxt, except where noted.
 
-use codec::{Codec, Compact, Decode, Encode, Input};
-use std::marker::PhantomData;
-
 use crate::{
     error::{Error, RuntimeError},
     metadata::{EventMetadata, Metadata, MetadataError},
     Phase,
 };
 use ac_primitives::Hash;
+use codec::{Codec, Compact, Decode, Encode, Input};
 use scale_info::{TypeDef, TypeDefPrimitive};
 use sp_core::Bytes;
+use std::marker::PhantomData;
 
 /// Raw bytes for an Event
 #[derive(Debug)]
@@ -306,36 +305,3 @@ pub enum EventsDecodingError {
     #[error("Invalid compact composite type {0}")]
     InvalidCompactType(String),
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use std::convert::TryFrom;
-//
-//     type DefaultConfig = crate::NodeTemplateRuntime;
-//
-//     #[test]
-//     fn test_decode_option() {
-//         let decoder = EventsDecoder::<DefaultConfig>::new(
-//             Metadata::default(),
-//         );
-//
-//         let value = Some(0u8);
-//         let input = value.encode();
-//         let mut output = Vec::<u8>::new();
-//         let mut errors = Vec::<RuntimeError>::new();
-//
-//         decoder
-//             .decode_raw_bytes(
-//                 &[EventArg::Option(Box::new(EventArg::Primitive(
-//                     "u8".to_string(),
-//                 )))],
-//                 &mut &input[..],
-//                 &mut output,
-//                 &mut errors,
-//             )
-//             .unwrap();
-//
-//         assert_eq!(output, vec![1, 0]);
-//     }
-// }

@@ -24,9 +24,6 @@ pub extern crate codec;
 pub extern crate log;
 
 #[cfg(feature = "std")]
-pub use ac_node_api::metadata::MetadataError;
-
-#[cfg(feature = "std")]
 pub mod balances;
 #[cfg(feature = "std")]
 pub mod contract;

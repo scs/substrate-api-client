@@ -102,6 +102,7 @@ path = "src/examples/example_event_callback.rs"
 name = "example_generic_extrinsic"
 path = "src/examples/example_generic_extrinsic.rs"
 
+# Todo: #179
 #[[example]]
 #name = "example_print_metadata"
 #path = "src/examples/example_print_metadata.rs"

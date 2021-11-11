@@ -19,18 +19,15 @@
 //!
 //! This file is mostly subxt.
 
-use std::{collections::HashMap, convert::TryFrom};
-
+use crate::{storage::GetStorage, Encoded};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
     PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
     StorageEntryMetadata, META_RESERVED,
 };
 use scale_info::{form::PortableForm, Type, Variant};
-
-use crate::storage::GetStorage;
-use crate::Encoded;
 use sp_core::storage::StorageKey;
+use std::{collections::HashMap, convert::TryFrom};
 
 /// Metadata error.
 #[derive(Debug, thiserror::Error)]
