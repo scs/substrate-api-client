@@ -1,0 +1,136 @@
+name: Build & Test & Clippy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  cancel_previous_runs:
+    name: Cancel Previous Runs
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: styfle/cancel-workflow-action@0.4.1
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: Rust check ${{ matrix.check }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
+        #
+        # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
+        # we omit clippy and test there.
+        check: [ cargo build --release --all --exclude test-no-std,
+                 cargo build --release -p test-no-std,
+
+                 cargo clippy --all --exclude test-no-std -- -D warnings,
+                 cargo clippy --examples -- -D warnings,
+
+                 cargo test --all --exclude test-no-std,
+
+                 cargo fmt --all -- --check,
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: init-rust-target
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.check }}
+
+      - name: ${{ matrix.check }}
+        run: ${{ matrix.check }}
+
+  build-node-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: init-rust-target
+        # need to set rust nightly as substrate does not have a rust-toolchain.toml
+        run: |
+          rustup default nightly
+          rustup target add wasm32-unknown-unknown --toolchain nightly
+          rustup show
+
+      - name: Checkout substrate
+        uses: actions/checkout@v2
+        with:
+          repository: paritytech/substrate
+          path: substrate
+          # same as substrate deps in Cargo.lock. We will use latest later when upgraded to metadata v14.
+          ref: '558a68f8328a004f153496a192c3ac9723c763c3'
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: substrate
+
+      - name: Build node-template
+        run: |
+          cd substrate
+          cargo build --release -p node-template
+
+      - name: Upload node-template
+        uses: actions/upload-artifact@v2
+        with:
+          name: node-template
+          path: substrate/target/release/node-template
+
+
+  examples:
+    needs: build-node-template
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        example: [
+            example_benchmark_bulk_xt,
+            example_compose_extrinsic_offline,
+            example_event_callback,
+#            example_generic_event_callback, does not work without somebody executing a transfer. So we don't run it.
+#            example_event_error_details , Todo: this example hangs: #134
+            example_generic_extrinsic,
+            example_get_blocks,
+            example_get_existential_deposit,
+            example_get_storage,
+#            example_print_metadata, // Todo: metadata print needs revamp: #179.
+            example_sudo,
+            example_transfer,
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: init-rust-target
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.example }}
+
+      - name: Build examples
+        run: cargo build --release --examples
+
+      - name: Download node-template
+        uses: actions/download-artifact@v2
+        with:
+          name: node-template
+          path: node
+
+      - name: Run node-template
+        run: |
+          chmod +x node/node-template
+          ./node/node-template --dev &
+
+      - name: Run Examples
+        timeout-minutes: 5
+        run: |
+          ./target/release/examples/${{ matrix.example }}
