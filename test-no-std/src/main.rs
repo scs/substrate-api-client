@@ -26,6 +26,9 @@ pub extern "C" fn main(_nargs: i32, _args: *const *const u8) -> i32 {
     0
 }
 
+#[lang = "eh_personality"]
+extern "C" fn eh_personality() {}
+
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
     loop {}

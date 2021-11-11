@@ -284,9 +284,9 @@ impl Metadata {
 
 #[derive(Clone, Debug)]
 pub struct ModuleMetadata {
-    index: u8,
-    name: String,
-    storage: HashMap<String, StorageMetadata>,
+    pub index: u8,
+    pub name: String,
+    pub storage: HashMap<String, StorageMetadata>,
     // constants
 }
 
@@ -430,11 +430,11 @@ impl ModuleWithConstants {
 
 #[derive(Clone, Debug)]
 pub struct StorageMetadata {
-    module_prefix: String,
-    storage_prefix: String,
-    modifier: StorageEntryModifier,
-    ty: StorageEntryType,
-    default: Vec<u8>,
+    pub module_prefix: String,
+    pub storage_prefix: String,
+    pub modifier: StorageEntryModifier,
+    pub ty: StorageEntryType,
+    pub default: Vec<u8>,
 }
 
 impl StorageMetadata {

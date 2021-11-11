@@ -374,6 +374,7 @@ fn result_from_json_response(resp: &str) -> RpcResult<String> {
 mod tests {
     use super::*;
     use crate::rpc::RpcClientError;
+    use std::assert_matches::assert_matches;
     use std::fmt::Debug;
 
     fn assert_extrinsic_err<T: Debug>(result: Result<T, RpcClientError>, msg: &str) {
