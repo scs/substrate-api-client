@@ -430,11 +430,11 @@ fn inclusion_fee_with_balance(
             .try_into()
             .map_err(|_| ApiClientError::TryFromIntError)?,
         len_fee: inclusion_fee
-            .base_fee
+            .len_fee
             .try_into()
             .map_err(|_| ApiClientError::TryFromIntError)?,
         adjusted_weight_fee: inclusion_fee
-            .base_fee
+            .adjusted_weight_fee
             .try_into()
             .map_err(|_| ApiClientError::TryFromIntError)?,
     })
