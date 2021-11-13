@@ -1,19 +1,17 @@
-/*
-   Copyright 2019 Supercomputing Systems AG
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-	   http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-*/
+// Copyright 2019 Supercomputing Systems AG
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 //! Offers macros that build extrinsics for custom runtime modules based on the metadata.
 //! Additionally, some predefined extrinsics for common runtime modules are implemented.
@@ -66,7 +64,7 @@ macro_rules! compose_call {
 /// * 'runtime_spec_version' - RuntimeVersion.spec_version/u32
 #[macro_export]
 macro_rules! compose_extrinsic_offline {
-	($signer: expr,
+    ($signer: expr,
     $call: expr,
     $nonce: expr,
     $era: expr,
@@ -74,37 +72,41 @@ macro_rules! compose_extrinsic_offline {
     $genesis_or_current_hash: expr,
     $runtime_spec_version: expr,
     $transaction_version: expr) => {{
-		use $crate::{
-			extrinsic::xt_primitives::*,
-			sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner},
-		};
+        use $crate::{
+            extrinsic::xt_primitives::*,
+            sp_runtime::{
+                generic::Era,
+                traits::IdentifyAccount,
+                MultiSigner,
+            },
+        };
 
-		let extra = GenericExtra::new($era, $nonce);
-		let raw_payload = SignedPayload::from_raw(
-			$call.clone(),
-			extra.clone(),
-			(
-				$runtime_spec_version,
-				$transaction_version,
-				$genesis_hash,
-				$genesis_or_current_hash,
-				(),
-				(),
-				(),
-			),
-		);
+        let extra = GenericExtra::new($era, $nonce);
+        let raw_payload = SignedPayload::from_raw(
+            $call.clone(),
+            extra.clone(),
+            (
+                $runtime_spec_version,
+                $transaction_version,
+                $genesis_hash,
+                $genesis_or_current_hash,
+                (),
+                (),
+                (),
+            ),
+        );
 
-		let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
+        let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
-		let multi_signer: MultiSigner = $signer.public().into();
+        let multi_signer: MultiSigner = $signer.public().into();
 
-		UncheckedExtrinsicV4::new_signed(
-			$call,
-			GenericAddress::from(multi_signer.into_account()),
-			signature.into(),
-			extra,
-		)
-	}};
+        UncheckedExtrinsicV4::new_signed(
+            $call,
+            GenericAddress::from(multi_signer.into_account()),
+            signature.into(),
+            extra,
+        )
+    }};
 }
 
 /// Generates an Unchecked extrinsic for a given module and call passed as a &str.
