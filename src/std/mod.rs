@@ -25,7 +25,7 @@ use codec::{Decode, Encode};
 use log::{debug, info};
 use serde::de::DeserializeOwned;
 use sp_rpc::number::NumberOrHex;
-use transaction_payment::InclusionFee;
+use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 
 use crate::rpc::json_req;
 use crate::{extrinsic, Balance};
@@ -383,6 +383,23 @@ where
             None => Ok(None),
         }
     }
+
+    pub fn get_payment_info(
+        &self,
+        xthex_prefixed: &str,
+        at_block: Option<Hash>,
+    ) -> ApiResult<Option<RuntimeDispatchInfo<Balance>>> {
+        let jsonreq = json_req::payment_query_info(xthex_prefixed, at_block);
+        let res = self.get_request(jsonreq)?;
+        match res {
+            Some(info) => {
+                let info: RuntimeDispatchInfo<Balance> = serde_json::from_str(&info)?;
+                Ok(Some(info))
+            }
+            None => Ok(None),
+        }
+    }
+
     pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
         let module = self.metadata.module_with_constants_by_name("Balances")?;
         let constant_metadata = module.constant_by_name("ExistentialDeposit")?;
