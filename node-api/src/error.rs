@@ -20,8 +20,8 @@
 //! This file is mostly subxt.
 
 use crate::{
-    events::EventsDecodingError,
-    metadata::{InvalidMetadataError, Metadata, MetadataError},
+	events::EventsDecodingError,
+	metadata::{InvalidMetadataError, Metadata, MetadataError},
 };
 use sp_core::crypto::SecretStringError;
 use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError};
@@ -30,120 +30,116 @@ use thiserror::Error;
 /// Error enum.
 #[derive(Debug, Error)]
 pub enum Error {
-    /// Io error.
-    #[error("Io error: {0}")]
-    Io(#[from] std::io::Error),
-    /// Codec error.
-    #[error("Scale codec error: {0}")]
-    Codec(#[from] codec::Error),
-    /// Serde serialization error
-    #[error("Serde json error: {0}")]
-    Serialization(#[from] serde_json::error::Error),
-    /// Secret string error.
-    #[error("Secret String Error")]
-    SecretString(SecretStringError),
-    /// Extrinsic validity error
-    #[error("Transaction Validity Error: {0:?}")]
-    Invalid(TransactionValidityError),
-    /// Invalid metadata error
-    #[error("Invalid Metadata: {0}")]
-    InvalidMetadata(#[from] InvalidMetadataError),
-    /// Invalid metadata error
-    #[error("Metadata: {0}")]
-    Metadata(#[from] MetadataError),
-    /// Runtime error.
-    #[error("Runtime error: {0}")]
-    Runtime(#[from] RuntimeError),
-    /// Events decoding error.
-    #[error("Events decoding error: {0}")]
-    EventsDecoding(#[from] EventsDecodingError),
-    /// Other error.
-    #[error("Other error: {0}")]
-    Other(String),
+	/// Io error.
+	#[error("Io error: {0}")]
+	Io(#[from] std::io::Error),
+	/// Codec error.
+	#[error("Scale codec error: {0}")]
+	Codec(#[from] codec::Error),
+	/// Serde serialization error
+	#[error("Serde json error: {0}")]
+	Serialization(#[from] serde_json::error::Error),
+	/// Secret string error.
+	#[error("Secret String Error")]
+	SecretString(SecretStringError),
+	/// Extrinsic validity error
+	#[error("Transaction Validity Error: {0:?}")]
+	Invalid(TransactionValidityError),
+	/// Invalid metadata error
+	#[error("Invalid Metadata: {0}")]
+	InvalidMetadata(#[from] InvalidMetadataError),
+	/// Invalid metadata error
+	#[error("Metadata: {0}")]
+	Metadata(#[from] MetadataError),
+	/// Runtime error.
+	#[error("Runtime error: {0}")]
+	Runtime(#[from] RuntimeError),
+	/// Events decoding error.
+	#[error("Events decoding error: {0}")]
+	EventsDecoding(#[from] EventsDecodingError),
+	/// Other error.
+	#[error("Other error: {0}")]
+	Other(String),
 }
 
 impl From<SecretStringError> for Error {
-    fn from(error: SecretStringError) -> Self {
-        Error::SecretString(error)
-    }
+	fn from(error: SecretStringError) -> Self {
+		Error::SecretString(error)
+	}
 }
 
 impl From<TransactionValidityError> for Error {
-    fn from(error: TransactionValidityError) -> Self {
-        Error::Invalid(error)
-    }
+	fn from(error: TransactionValidityError) -> Self {
+		Error::Invalid(error)
+	}
 }
 
 impl From<&str> for Error {
-    fn from(error: &str) -> Self {
-        Error::Other(error.into())
-    }
+	fn from(error: &str) -> Self {
+		Error::Other(error.into())
+	}
 }
 
 impl From<String> for Error {
-    fn from(error: String) -> Self {
-        Error::Other(error)
-    }
+	fn from(error: String) -> Self {
+		Error::Other(error)
+	}
 }
 
 /// Runtime error.
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum RuntimeError {
-    /// Module error.
-    #[error("Runtime module error: {0}")]
-    Module(PalletError),
-    /// At least one consumer is remaining so the account cannot be destroyed.
-    #[error("At least one consumer is remaining so the account cannot be destroyed.")]
-    ConsumerRemaining,
-    /// There are no providers so the account cannot be created.
-    #[error("There are no providers so the account cannot be created.")]
-    NoProviders,
-    /// Bad origin.
-    #[error("Bad origin: throw by ensure_signed, ensure_root or ensure_none.")]
-    BadOrigin,
-    /// Cannot lookup.
-    #[error("Cannot lookup some information required to validate the transaction.")]
-    CannotLookup,
-    /// Other error.
-    #[error("Other error: {0}")]
-    Other(String),
+	/// Module error.
+	#[error("Runtime module error: {0}")]
+	Module(PalletError),
+	/// At least one consumer is remaining so the account cannot be destroyed.
+	#[error("At least one consumer is remaining so the account cannot be destroyed.")]
+	ConsumerRemaining,
+	/// There are no providers so the account cannot be created.
+	#[error("There are no providers so the account cannot be created.")]
+	NoProviders,
+	/// Bad origin.
+	#[error("Bad origin: throw by ensure_signed, ensure_root or ensure_none.")]
+	BadOrigin,
+	/// Cannot lookup.
+	#[error("Cannot lookup some information required to validate the transaction.")]
+	CannotLookup,
+	/// Other error.
+	#[error("Other error: {0}")]
+	Other(String),
 }
 
 impl RuntimeError {
-    /// Converts a `DispatchError` into a subxt error.
-    pub fn from_dispatch(metadata: &Metadata, error: DispatchError) -> Result<Self, Error> {
-        match error {
-            DispatchError::Module {
-                index,
-                error,
-                message: _,
-            } => {
-                let error = metadata.error(index, error)?;
-                Ok(Self::Module(PalletError {
-                    pallet: error.pallet().to_string(),
-                    error: error.error().to_string(),
-                    description: error.description().to_vec(),
-                }))
-            }
-            DispatchError::BadOrigin => Ok(Self::BadOrigin),
-            DispatchError::CannotLookup => Ok(Self::CannotLookup),
-            DispatchError::ConsumerRemaining => Ok(Self::ConsumerRemaining),
-            DispatchError::NoProviders => Ok(Self::NoProviders),
-            DispatchError::Arithmetic(_math_error) => Ok(Self::Other("math_error".into())),
-            DispatchError::Token(_token_error) => Ok(Self::Other("token error".into())),
-            DispatchError::Other(msg) => Ok(Self::Other(msg.to_string())),
-        }
-    }
+	/// Converts a `DispatchError` into a subxt error.
+	pub fn from_dispatch(metadata: &Metadata, error: DispatchError) -> Result<Self, Error> {
+		match error {
+			DispatchError::Module { index, error, message: _ } => {
+				let error = metadata.error(index, error)?;
+				Ok(Self::Module(PalletError {
+					pallet: error.pallet().to_string(),
+					error: error.error().to_string(),
+					description: error.description().to_vec(),
+				}))
+			},
+			DispatchError::BadOrigin => Ok(Self::BadOrigin),
+			DispatchError::CannotLookup => Ok(Self::CannotLookup),
+			DispatchError::ConsumerRemaining => Ok(Self::ConsumerRemaining),
+			DispatchError::NoProviders => Ok(Self::NoProviders),
+			DispatchError::Arithmetic(_math_error) => Ok(Self::Other("math_error".into())),
+			DispatchError::Token(_token_error) => Ok(Self::Other("token error".into())),
+			DispatchError::Other(msg) => Ok(Self::Other(msg.to_string())),
+		}
+	}
 }
 
 /// Module error.
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
 #[error("{error} from {pallet}")]
 pub struct PalletError {
-    /// The module where the error originated.
-    pub pallet: String,
-    /// The actual error code.
-    pub error: String,
-    /// The error description.
-    pub description: Vec<String>,
+	/// The module where the error originated.
+	pub pallet: String,
+	/// The actual error code.
+	pub error: String,
+	/// The error description.
+	pub description: Vec<String>,
 }

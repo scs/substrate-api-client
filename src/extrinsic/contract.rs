@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,16 +16,15 @@
 */
 
 use codec::Compact;
-use sp_core::crypto::Pair;
-use sp_core::H256 as Hash;
+use sp_core::{crypto::Pair, H256 as Hash};
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
 use crate::extrinsic::CallIndex;
 #[cfg(feature = "std")]
 use crate::{
-    compose_extrinsic,
-    std::{Api, RpcClient},
+	compose_extrinsic,
+	std::{Api, RpcClient},
 };
 
 use super::xt_primitives::*;
@@ -55,54 +54,48 @@ pub type ContractCallXt = UncheckedExtrinsicV4<ContractCallFn>;
 #[cfg(feature = "std")]
 impl<P, Client> Api<P, Client>
 where
-    P: Pair,
-    MultiSignature: From<P::Signature>,
-    MultiSigner: From<P::Public>,
-    Client: RpcClient,
+	P: Pair,
+	MultiSignature: From<P::Signature>,
+	MultiSigner: From<P::Public>,
+	Client: RpcClient,
 {
-    pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {
-        compose_extrinsic!(
-            self,
-            CONTRACTS_MODULE,
-            CONTRACTS_PUT_CODE,
-            Compact(gas_limit),
-            code
-        )
-    }
+	pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {
+		compose_extrinsic!(self, CONTRACTS_MODULE, CONTRACTS_PUT_CODE, Compact(gas_limit), code)
+	}
 
-    pub fn contract_instantiate(
-        &self,
-        endowment: Balance,
-        gas_limit: Gas,
-        code_hash: Hash,
-        data: Data,
-    ) -> ContractInstantiateXt {
-        compose_extrinsic!(
-            self,
-            CONTRACTS_MODULE,
-            CONTRACTS_INSTANTIATE,
-            Compact(endowment),
-            Compact(gas_limit),
-            code_hash,
-            data
-        )
-    }
+	pub fn contract_instantiate(
+		&self,
+		endowment: Balance,
+		gas_limit: Gas,
+		code_hash: Hash,
+		data: Data,
+	) -> ContractInstantiateXt {
+		compose_extrinsic!(
+			self,
+			CONTRACTS_MODULE,
+			CONTRACTS_INSTANTIATE,
+			Compact(endowment),
+			Compact(gas_limit),
+			code_hash,
+			data
+		)
+	}
 
-    pub fn contract_call(
-        &self,
-        dest: GenericAddress,
-        value: Balance,
-        gas_limit: Gas,
-        data: Data,
-    ) -> ContractCallXt {
-        compose_extrinsic!(
-            self,
-            CONTRACTS_MODULE,
-            CONTRACTS_CALL,
-            dest,
-            Compact(value),
-            Compact(gas_limit),
-            data
-        )
-    }
+	pub fn contract_call(
+		&self,
+		dest: GenericAddress,
+		value: Balance,
+		gas_limit: Gas,
+		data: Data,
+	) -> ContractCallXt {
+		compose_extrinsic!(
+			self,
+			CONTRACTS_MODULE,
+			CONTRACTS_CALL,
+			dest,
+			Compact(value),
+			Compact(gas_limit),
+			data
+		)
+	}
 }
