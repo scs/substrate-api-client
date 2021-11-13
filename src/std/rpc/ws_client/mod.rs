@@ -14,9 +14,9 @@
    limitations under the License.
 
 */
-use std::convert::TryFrom;
 use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 
+use ac_node_api::events::{EventsDecoder, Raw, RawEvent};
 use codec::Decode;
 use log::{debug, error, info, warn};
 use serde_json::Value;
@@ -27,10 +27,7 @@ use ws::{CloseCode, Error, Handler, Handshake, Message, Result as WsResult, Send
 use crate::std::rpc::RpcClientError;
 use crate::std::{json_req, FromHexString, RpcClient as RpcClientTrait, XtStatus};
 use crate::std::{Api, ApiResult};
-use crate::{utils, ApiClientError};
-
-pub use ac_node_api::events::EventsError;
-pub use ac_node_api::events::{EventsDecoder, RawEvent, RuntimeEvent};
+use crate::utils;
 
 pub use client::WsRpcClient;
 
@@ -114,7 +111,7 @@ where
     ) -> ApiResult<RawEvent> {
         let event_decoder = match decoder {
             Some(d) => d,
-            None => EventsDecoder::try_from(self.metadata.clone())?,
+            None => EventsDecoder::new(self.metadata.clone()),
         };
 
         loop {
@@ -126,22 +123,17 @@ where
                     for (phase, event) in raw_events.into_iter() {
                         info!("Decoded Event: {:?}, {:?}", phase, event);
                         match event {
-                            RuntimeEvent::Raw(raw)
-                                if raw.module == module && raw.variant == variant =>
-                            {
+                            Raw::Event(raw) if raw.pallet == module && raw.variant == variant => {
                                 return Ok(raw);
+                            }
+                            Raw::Error(runtime_error) => {
+                                error!("Some extrinsic Failed: {:?}", runtime_error);
                             }
                             _ => debug!("ignoring unsupported module event: {:?}", event),
                         }
                     }
                 }
-                Err(error) => match error {
-                    EventsError::ModuleError(ref msg) => {
-                        error!("Extrinsic Failed: {}", msg);
-                        return Err(ApiClientError::Events(error));
-                    }
-                    _ => error!("couldn't decode event record list"),
-                },
+                Err(error) => error!("couldn't decode event record list: {:?}", error),
             }
         }
     }

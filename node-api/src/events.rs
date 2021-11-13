@@ -1,5 +1,6 @@
-// Copyright 2019 Parity Technologies (UK) Ltd.
-// This file is part of substrate-subxt.
+// Copyright 2019-2021 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
+// and Integritee AG.
+// This file is part of subxt.
 //
 // subxt is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,254 +13,295 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with substrate-subxt.  If not, see <http://www.gnu.org/licenses/>.
+// along with subxt.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{
-    collections::{HashMap, HashSet},
-    convert::TryFrom,
-    marker::Send,
+//! Module to parse chain events
+//!
+//! This file is very similar to subxt, except where noted.
+
+use crate::{
+    error::{Error, RuntimeError},
+    metadata::{EventMetadata, Metadata, MetadataError},
+    Phase,
 };
-
-use codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input, Output};
-use frame_support::weights::DispatchInfo;
-use frame_system::Phase;
-use sp_runtime::AccountId32 as AccountId;
-use sp_runtime::DispatchError;
-
-use crate::metadata::{EventArg, Metadata, MetadataError};
-use ac_primitives::{Balance, BlockNumber, Moment};
-
-use sp_core::H256 as Hash;
-
-/// Event for the System module.
-#[derive(Clone, Debug, Decode)]
-pub enum SystemEvent {
-    /// An extrinsic completed successfully.
-    ExtrinsicSuccess(DispatchInfo),
-    /// An extrinsic failed.
-    ExtrinsicFailed(DispatchError, DispatchInfo),
-}
-
-/// Top level Event that can be produced by a substrate runtime
-#[derive(Debug)]
-pub enum RuntimeEvent {
-    System(SystemEvent),
-    Raw(RawEvent),
-}
+use ac_primitives::Hash;
+use codec::{Codec, Compact, Decode, Encode, Input};
+use scale_info::{TypeDef, TypeDefPrimitive};
+use sp_core::Bytes;
+use std::marker::PhantomData;
 
 /// Raw bytes for an Event
 #[derive(Debug)]
 pub struct RawEvent {
-    /// The name of the module from whence the Event originated
-    pub module: String,
-    /// The name of the Event
+    /// The name of the pallet from whence the Event originated.
+    pub pallet: String,
+    /// The index of the pallet from whence the Event originated.
+    pub pallet_index: u8,
+    /// The name of the pallet Event variant.
     pub variant: String,
+    /// The index of the pallet Event variant.
+    pub variant_index: u8,
     /// The raw Event data
-    pub data: Vec<u8>,
+    pub data: Bytes,
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum EventsError {
-    #[error("Scale codec error: {0:?}")]
-    CodecError(#[from] CodecError),
-    #[error("Metadata error: {0:?}")]
-    Metadata(#[from] MetadataError),
-    #[error("Type Sizes Unavailable: {0:?}")]
-    TypeSizeUnavailable(String),
-    #[error("Module error: {0:?}")]
-    ModuleError(String),
-}
-
-#[derive(Clone)]
+/// Events decoder.
+///
+/// In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
+/// hash type. We omitted this here and use the `ac_primitives::Hash` instead.
+#[derive(Debug, Clone)]
 pub struct EventsDecoder {
     metadata: Metadata,
-    type_sizes: HashMap<String, usize>,
-    // marker: PhantomData<fn() -> T>,
-}
-
-impl TryFrom<Metadata> for EventsDecoder {
-    type Error = EventsError;
-
-    fn try_from(metadata: Metadata) -> Result<Self, Self::Error> {
-        let mut decoder = Self {
-            metadata,
-            type_sizes: HashMap::new(),
-            // marker: PhantomData,
-        };
-        // register default event arg type sizes for dynamic decoding of events
-        decoder.register_type_size::<bool>("bool")?;
-        decoder.register_type_size::<u32>("ReferendumIndex")?;
-        decoder.register_type_size::<[u8; 16]>("Kind")?;
-        decoder.register_type_size::<[u8; 32]>("AuthorityId")?;
-        decoder.register_type_size::<u8>("u8")?;
-        decoder.register_type_size::<u32>("u32")?;
-        decoder.register_type_size::<u64>("u64")?;
-        decoder.register_type_size::<u32>("AccountIndex")?;
-        decoder.register_type_size::<u32>("SessionIndex")?;
-        decoder.register_type_size::<u32>("PropIndex")?;
-        decoder.register_type_size::<u32>("ProposalIndex")?;
-        decoder.register_type_size::<u32>("AuthorityIndex")?;
-        decoder.register_type_size::<u64>("AuthorityWeight")?;
-        decoder.register_type_size::<u32>("MemberCount")?;
-        decoder.register_type_size::<AccountId>("AccountId")?;
-        decoder.register_type_size::<BlockNumber>("BlockNumber")?;
-        decoder.register_type_size::<Moment>("Moment")?;
-        decoder.register_type_size::<Hash>("Hash")?;
-        decoder.register_type_size::<Balance>("Balance")?;
-        // VoteThreshold enum index
-        decoder.register_type_size::<u8>("VoteThreshold")?;
-
-        Ok(decoder)
-    }
+    marker: PhantomData<()>,
 }
 
 impl EventsDecoder {
-    pub fn register_type_size<U>(&mut self, name: &str) -> Result<usize, EventsError>
-    where
-        U: Default + Codec + Send + 'static,
-    {
-        let size = U::default().encode().len();
-        if size > 0 {
-            self.type_sizes.insert(name.to_string(), size);
-            Ok(size)
-        } else {
-            Err(EventsError::TypeSizeUnavailable(name.to_owned()))
+    /// Creates a new `EventsDecoder`.
+    pub fn new(metadata: Metadata) -> Self {
+        Self {
+            metadata,
+            marker: Default::default(),
         }
     }
 
-    pub fn check_missing_type_sizes(&self) {
-        let mut missing = HashSet::new();
-        for module in self.metadata.modules_with_events() {
-            for event in module.events() {
-                for arg in event.arguments() {
-                    for primitive in arg.primitives() {
-                        if module.name() != "System"
-                            && !self.type_sizes.contains_key(&primitive)
-                            && !primitive.contains("PhantomData")
-                        {
-                            missing.insert(format!(
-                                "{}::{}::{}",
-                                module.name(),
-                                event.name,
-                                primitive
-                            ));
-                        }
-                    }
-                }
-            }
-        }
-        if !missing.is_empty() {
-            log::warn!(
-                "The following primitive types do not have registered sizes: {:?} \
-                If any of these events are received, an error will occur since we cannot decode them",
-                missing
-            );
-        }
-    }
-
-    fn decode_raw_bytes<I: Input, W: Output>(
-        &self,
-        args: &[EventArg],
-        input: &mut I,
-        output: &mut W,
-    ) -> Result<(), EventsError> {
-        for arg in args {
-            match arg {
-                EventArg::Vec(arg) => {
-                    let len = <Compact<u32>>::decode(input)?;
-                    len.encode_to(output);
-                    for _ in 0..len.0 {
-                        self.decode_raw_bytes(&[*arg.clone()], input, output)?
-                    }
-                }
-                EventArg::Tuple(args) => self.decode_raw_bytes(args, input, output)?,
-                EventArg::Primitive(name) => {
-                    if name.contains("PhantomData") {
-                        // PhantomData is size 0
-                        return Ok(());
-                    }
-                    if let Some(size) = self.type_sizes.get(name) {
-                        let mut buf = vec![0; *size];
-                        input.read(&mut buf)?;
-                        output.write(&buf);
-                    } else {
-                        return Err(EventsError::TypeSizeUnavailable(name.to_owned()));
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
-
-    pub fn decode_events(
-        &self,
-        input: &mut &[u8],
-    ) -> Result<Vec<(Phase, RuntimeEvent)>, EventsError> {
-        log::debug!("Decoding compact len: {:?}", input);
+    /// Decode events.
+    pub fn decode_events(&self, input: &mut &[u8]) -> Result<Vec<(Phase, Raw)>, Error> {
         let compact_len = <Compact<u32>>::decode(input)?;
         let len = compact_len.0 as usize;
+        log::debug!("decoding {} events", len);
 
         let mut r = Vec::new();
         for _ in 0..len {
             // decode EventRecord
-            log::debug!("Decoding phase: {:?}", input);
             let phase = Phase::decode(input)?;
-            let module_variant = input.read_byte()?;
+            let pallet_index = input.read_byte()?;
+            let variant_index = input.read_byte()?;
+            log::debug!(
+                "phase {:?}, pallet_index {}, event_variant: {}",
+                phase,
+                pallet_index,
+                variant_index
+            );
+            log::debug!("remaining input: {}", hex::encode(&input));
 
-            let module = self.metadata.module_with_events(module_variant)?;
-            let event = if module.name() == "System" {
-                log::debug!("Decoding system event, intput: {:?}", input);
-                let system_event = SystemEvent::decode(input)?;
-                log::debug!("Decoding successful, system_event: {:?}", system_event);
-                match system_event {
-                    SystemEvent::ExtrinsicSuccess(_info) => RuntimeEvent::System(system_event),
-                    SystemEvent::ExtrinsicFailed(dispatch_error, _info) => match dispatch_error {
-                        DispatchError::Module { index, error, .. } => {
-                            let module = self.metadata.module_with_errors(index)?;
-                            log::debug!("Found module events {:?}", module.name());
-                            let error_metadata = module.error(error)?;
-                            log::debug!("received error '{}::{}'", module.name(), error_metadata);
-                            return Err(EventsError::ModuleError(error_metadata.to_owned()));
-                        }
-                        _ => {
-                            log::debug!("Ignoring unsupported ExtrinsicFailed event");
-                            RuntimeEvent::System(system_event)
-                        }
-                    },
+            let event_metadata = self.metadata.event(pallet_index, variant_index)?;
+
+            let mut event_data = Vec::<u8>::new();
+            let mut event_errors = Vec::<RuntimeError>::new();
+            let result =
+                self.decode_raw_event(event_metadata, input, &mut event_data, &mut event_errors);
+            let raw = match result {
+                Ok(()) => {
+                    log::debug!("raw bytes: {}", hex::encode(&event_data),);
+
+                    let event = RawEvent {
+                        pallet: event_metadata.pallet().to_string(),
+                        pallet_index,
+                        variant: event_metadata.event().to_string(),
+                        variant_index,
+                        data: event_data.into(),
+                    };
+
+                    // topics come after the event data in EventRecord
+                    let topics = Vec::<Hash>::decode(input)?;
+                    log::debug!("topics: {:?}", topics);
+
+                    Raw::Event(event)
                 }
-            } else {
-                let event_variant = input.read_byte()?;
-                let event_metadata = module.event(event_variant)?;
-                log::debug!(
-                    "decoding event '{}::{}'",
-                    module.name(),
-                    event_metadata.name
-                );
-
-                let mut event_data = Vec::<u8>::new();
-                self.decode_raw_bytes(&event_metadata.arguments(), input, &mut event_data)?;
-
-                log::debug!(
-                    "received event '{}::{}', raw bytes: {}",
-                    module.name(),
-                    event_metadata.name,
-                    hex::encode(&event_data),
-                );
-
-                RuntimeEvent::Raw(RawEvent {
-                    module: module.name().to_string(),
-                    variant: event_metadata.name.clone(),
-                    data: event_data,
-                })
+                Err(err) => return Err(err),
             };
 
-            // topics come after the event data in EventRecord
-            log::debug!("Phase {:?}, Event: {:?}", phase, event);
+            if event_errors.is_empty() {
+                r.push((phase.clone(), raw));
+            }
 
-            log::debug!("Decoding topics {:?}", input);
-            let _topics = Vec::<Hash>::decode(input)?;
-            r.push((phase, event));
+            for err in event_errors {
+                r.push((phase.clone(), Raw::Error(err)));
+            }
         }
         Ok(r)
     }
+
+    fn decode_raw_event(
+        &self,
+        event_metadata: &EventMetadata,
+        input: &mut &[u8],
+        output: &mut Vec<u8>,
+        errors: &mut Vec<RuntimeError>,
+    ) -> Result<(), Error> {
+        log::debug!(
+            "Decoding Event '{}::{}'",
+            event_metadata.pallet(),
+            event_metadata.event()
+        );
+        for arg in event_metadata.variant().fields() {
+            let type_id = arg.ty().id();
+            if event_metadata.pallet() == "System" && event_metadata.event() == "ExtrinsicFailed" {
+                let ty = self
+                    .metadata
+                    .resolve_type(type_id)
+                    .ok_or(MetadataError::TypeNotFound(type_id))?;
+
+                if ty.path().ident() == Some("DispatchError".to_string()) {
+                    let dispatch_error = sp_runtime::DispatchError::decode(input)?;
+                    log::info!("Dispatch Error {:?}", dispatch_error);
+                    dispatch_error.encode_to(output);
+                    let runtime_error =
+                        RuntimeError::from_dispatch(&self.metadata, dispatch_error)?;
+                    errors.push(runtime_error);
+                    continue;
+                }
+            }
+            self.decode_type(type_id, input, output)?
+        }
+        Ok(())
+    }
+
+    fn decode_type(
+        &self,
+        type_id: u32,
+        input: &mut &[u8],
+        output: &mut Vec<u8>,
+    ) -> Result<(), Error> {
+        let ty = self
+            .metadata
+            .resolve_type(type_id)
+            .ok_or(MetadataError::TypeNotFound(type_id))?;
+
+        fn decode_raw<T: Codec>(input: &mut &[u8], output: &mut Vec<u8>) -> Result<(), Error> {
+            let decoded = T::decode(input)?;
+            decoded.encode_to(output);
+            Ok(())
+        }
+
+        match ty.type_def() {
+            TypeDef::Composite(composite) => {
+                for field in composite.fields() {
+                    self.decode_type(field.ty().id(), input, output)?
+                }
+                Ok(())
+            }
+            TypeDef::Variant(variant) => {
+                let variant_index = u8::decode(input)?;
+                variant_index.encode_to(output);
+                let variant = variant
+                    .variants()
+                    .get(variant_index as usize)
+                    .ok_or_else(|| Error::Other(format!("Variant {} not found", variant_index)))?;
+                for field in variant.fields() {
+                    self.decode_type(field.ty().id(), input, output)?;
+                }
+                Ok(())
+            }
+            TypeDef::Sequence(seq) => {
+                let len = <Compact<u32>>::decode(input)?;
+                len.encode_to(output);
+                for _ in 0..len.0 {
+                    self.decode_type(seq.type_param().id(), input, output)?;
+                }
+                Ok(())
+            }
+            TypeDef::Array(arr) => {
+                for _ in 0..arr.len() {
+                    self.decode_type(arr.type_param().id(), input, output)?;
+                }
+                Ok(())
+            }
+            TypeDef::Tuple(tuple) => {
+                for field in tuple.fields() {
+                    self.decode_type(field.id(), input, output)?;
+                }
+                Ok(())
+            }
+            TypeDef::Primitive(primitive) => match primitive {
+                TypeDefPrimitive::Bool => decode_raw::<bool>(input, output),
+                TypeDefPrimitive::Char => {
+                    Err(EventsDecodingError::UnsupportedPrimitive(TypeDefPrimitive::Char).into())
+                }
+                TypeDefPrimitive::Str => decode_raw::<String>(input, output),
+                TypeDefPrimitive::U8 => decode_raw::<u8>(input, output),
+                TypeDefPrimitive::U16 => decode_raw::<u16>(input, output),
+                TypeDefPrimitive::U32 => decode_raw::<u32>(input, output),
+                TypeDefPrimitive::U64 => decode_raw::<u64>(input, output),
+                TypeDefPrimitive::U128 => decode_raw::<u128>(input, output),
+                TypeDefPrimitive::U256 => {
+                    Err(EventsDecodingError::UnsupportedPrimitive(TypeDefPrimitive::U256).into())
+                }
+                TypeDefPrimitive::I8 => decode_raw::<i8>(input, output),
+                TypeDefPrimitive::I16 => decode_raw::<i16>(input, output),
+                TypeDefPrimitive::I32 => decode_raw::<i32>(input, output),
+                TypeDefPrimitive::I64 => decode_raw::<i64>(input, output),
+                TypeDefPrimitive::I128 => decode_raw::<i128>(input, output),
+                TypeDefPrimitive::I256 => {
+                    Err(EventsDecodingError::UnsupportedPrimitive(TypeDefPrimitive::I256).into())
+                }
+            },
+            TypeDef::Compact(_compact) => {
+                let inner = self
+                    .metadata
+                    .resolve_type(type_id)
+                    .ok_or(MetadataError::TypeNotFound(type_id))?;
+                let mut decode_compact_primitive = |primitive: &TypeDefPrimitive| match primitive {
+                    TypeDefPrimitive::U8 => decode_raw::<Compact<u8>>(input, output),
+                    TypeDefPrimitive::U16 => decode_raw::<Compact<u16>>(input, output),
+                    TypeDefPrimitive::U32 => decode_raw::<Compact<u32>>(input, output),
+                    TypeDefPrimitive::U64 => decode_raw::<Compact<u64>>(input, output),
+                    TypeDefPrimitive::U128 => decode_raw::<Compact<u128>>(input, output),
+                    prim => Err(EventsDecodingError::InvalidCompactPrimitive(prim.clone()).into()),
+                };
+                match inner.type_def() {
+                    TypeDef::Primitive(primitive) => decode_compact_primitive(primitive),
+                    TypeDef::Composite(composite) => match composite.fields() {
+                        [field] => {
+                            let field_ty = self
+                                .metadata
+                                .resolve_type(field.ty().id())
+                                .ok_or_else(|| MetadataError::TypeNotFound(field.ty().id()))?;
+                            if let TypeDef::Primitive(primitive) = field_ty.type_def() {
+                                decode_compact_primitive(primitive)
+                            } else {
+                                Err(EventsDecodingError::InvalidCompactType(
+                                    "Composite type must have a single primitive field".into(),
+                                )
+                                .into())
+                            }
+                        }
+                        _ => Err(EventsDecodingError::InvalidCompactType(
+                            "Composite type must have a single field".into(),
+                        )
+                        .into()),
+                    },
+                    _ => Err(EventsDecodingError::InvalidCompactType(
+                        "Compact type must be a primitive or a composite type".into(),
+                    )
+                    .into()),
+                }
+            }
+            TypeDef::BitSequence(_bitseq) => {
+                // decode_raw::<bitvec::BitVec>
+                unimplemented!("BitVec decoding for events not implemented yet")
+            }
+        }
+    }
+}
+
+/// Raw event or error event
+#[derive(Debug)]
+pub enum Raw {
+    /// Event
+    Event(RawEvent),
+    /// Error
+    Error(RuntimeError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum EventsDecodingError {
+    /// Unsupported primitive type
+    #[error("Unsupported primitive type {0:?}")]
+    UnsupportedPrimitive(TypeDefPrimitive),
+    /// Invalid compact type, must be an unsigned int.
+    #[error("Invalid compact primitive {0:?}")]
+    InvalidCompactPrimitive(TypeDefPrimitive),
+    #[error("Invalid compact composite type {0}")]
+    InvalidCompactType(String),
 }

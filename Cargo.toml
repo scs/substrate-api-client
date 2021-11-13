@@ -102,9 +102,10 @@ path = "src/examples/example_event_callback.rs"
 name = "example_generic_extrinsic"
 path = "src/examples/example_generic_extrinsic.rs"
 
-[[example]]
-name = "example_print_metadata"
-path = "src/examples/example_print_metadata.rs"
+# Todo: #179
+#[[example]]
+#name = "example_print_metadata"
+#path = "src/examples/example_print_metadata.rs"
 
 [[example]]
 name = "example_compose_extrinsic_offline"
@@ -121,10 +122,6 @@ path = "src/examples/example_benchmark_bulk_xt.rs"
 [[example]]
 name = "example_sudo"
 path = "src/examples/example_sudo.rs"
-
-[[example]]
-name = "example_custom_client"
-path = "src/examples/example_custom_client.rs"
 
 [[example]]
 name = "example_get_existential_deposit"
