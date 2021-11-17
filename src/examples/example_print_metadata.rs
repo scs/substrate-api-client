@@ -19,12 +19,11 @@
 #[macro_use]
 extern crate clap;
 
-use std::convert::TryFrom;
-
 use clap::App;
 
 use sp_core::sr25519;
 
+use std::convert::TryFrom;
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{Api, Metadata};
 
@@ -38,10 +37,11 @@ fn main() {
     let meta = Metadata::try_from(api.get_metadata().unwrap()).unwrap();
 
     meta.print_overview();
-    meta.print_modules_with_calls();
-    meta.print_modules_with_events();
+    meta.print_pallets();
+    meta.print_pallets_with_calls();
+    meta.print_pallet_with_events();
     meta.print_modules_with_errors();
-    meta.print_modules_with_constants();
+    meta.print_pallet_with_constants();
 
     // print full substrate metadata json formatted
     println!(
@@ -56,7 +56,7 @@ pub fn get_node_url_from_cli() -> String {
     let matches = App::from_yaml(yml).get_matches();
 
     let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9944");
+    let node_port = matches.value_of("node-port").unwrap_or("9970");
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}\n", url);
     url
