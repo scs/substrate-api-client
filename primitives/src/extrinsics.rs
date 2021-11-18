@@ -15,6 +15,8 @@
 
 */
 
+extern crate alloc;
+
 use codec::{Compact, Decode, Encode, Error, Input};
 use sp_core::blake2_256;
 use sp_core::H256;
@@ -103,7 +105,7 @@ where
         }
     }
 
-    pub fn hex_encode(&self) -> String {
+    pub fn hex_encode(&self) -> alloc::string::String {
         let mut hex_str = hex::encode(self.encode());
         hex_str.insert_str(0, "0x");
         hex_str
