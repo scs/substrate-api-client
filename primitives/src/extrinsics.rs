@@ -15,6 +15,8 @@
 
 */
 
+//! Primitives for substrate extrinsics.
+
 extern crate alloc;
 
 use codec::{Compact, Decode, Encode, Error, Input};

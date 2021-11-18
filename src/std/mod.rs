@@ -522,7 +522,6 @@ fn inclusion_fee_with_balance(
 }
 
 #[derive(Debug, thiserror::Error)]
-
 pub enum ApiClientError {
     #[error("Fetching genesis hash failed. Are you connected to the correct endpoint?")]
     Genesis,
