@@ -34,6 +34,6 @@ pub use ac_primitives::{
 };
 
 #[cfg(feature = "std")]
-pub use ac_compose::compose_extrinsic;
+pub use ac_compose_macros::compose_extrinsic;
 
-pub use ac_compose::{compose_call, compose_extrinsic_offline};
+pub use ac_compose_macros::{compose_call, compose_extrinsic_offline};

@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ac-compose"
+name = "ac-compose-macros"
 version = "0.1.0"
 dependencies = [
  "ac-primitives",
@@ -3093,7 +3093,7 @@ dependencies = [
 name = "substrate-api-client"
 version = "0.6.0"
 dependencies = [
- "ac-compose",
+ "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
  "clap",
