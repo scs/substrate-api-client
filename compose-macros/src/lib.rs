@@ -112,7 +112,6 @@ macro_rules! compose_extrinsic_offline {
 /// * 'call' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
-
 #[macro_export]
 #[cfg(feature = "std")]
 macro_rules! compose_extrinsic {

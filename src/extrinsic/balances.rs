@@ -15,7 +15,7 @@
 
 */
 
-//! Extrinsics for `pallet-balances`
+//! Extrinsics for `pallet-balances`.
 
 use crate::std::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
