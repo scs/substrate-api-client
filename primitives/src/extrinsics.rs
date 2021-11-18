@@ -40,7 +40,7 @@ pub type CallIndex = [u8; 2];
 /// This can be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
+pub struct GenericExtra(pub Era, pub Compact<u32>, pub Compact<u128>);
 
 impl GenericExtra {
     pub fn new(era: Era, nonce: u32) -> GenericExtra {
