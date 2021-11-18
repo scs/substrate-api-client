@@ -15,16 +15,12 @@
 
 */
 
-use sp_std::prelude::*;
-
-#[cfg(feature = "std")]
-use std::fmt;
-
 use codec::{Compact, Decode, Encode, Error, Input};
-//use indices::address::Address;
 use sp_core::blake2_256;
 use sp_core::H256;
 use sp_runtime::{generic::Era, MultiSignature};
+use sp_std::fmt;
+use sp_std::prelude::*;
 
 pub use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 
@@ -39,8 +35,7 @@ pub type CallIndex = [u8; 2];
 /// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
 /// This can be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
-#[cfg_attr(feature = "std", derive(Debug))]
-#[derive(Decode, Encode, Clone, Eq, PartialEq)]
+#[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct GenericExtra(Era, Compact<u32>, Compact<u128>);
 
 impl GenericExtra {
@@ -59,7 +54,7 @@ impl Default for GenericExtra {
 /// Order is the same as declared in the extra.
 pub type AdditionalSigned = (u32, u32, H256, H256, (), (), ());
 
-#[derive(Encode, Clone)]
+#[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
 
 impl<Call> SignedPayload<Call>
@@ -84,9 +79,9 @@ where
     }
 }
 
-/// Mirrors the currently used Extrinsic format (V3) from substrate. Has less traits and methods though.
+/// Mirrors the currently used Extrinsic format (V4) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct UncheckedExtrinsicV4<Call> {
     pub signature: Option<(GenericAddress, MultiSignature, GenericExtra)>,
     pub function: Call,
@@ -115,7 +110,6 @@ where
     }
 }
 
-#[cfg(feature = "std")]
 impl<Call> fmt::Debug for UncheckedExtrinsicV4<Call>
 where
     Call: fmt::Debug,
