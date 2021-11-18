@@ -1,12 +1,11 @@
-pub use staking::RewardDestination;
-
+use crate::{Api, RpcClient};
+use ac_compose::compose_extrinsic;
+use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
 use sp_core::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
 
-use crate::extrinsic::balances::Balance;
-use crate::extrinsic::CallIndex;
-use crate::{compose_extrinsic, Api, GenericAddress, RpcClient, UncheckedExtrinsicV4};
+pub use staking::RewardDestination;
 
 const STAKING_MODULE: &str = "Staking";
 const STAKING_BOND: &str = "bond";

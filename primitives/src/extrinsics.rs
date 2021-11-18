@@ -32,6 +32,8 @@ pub type AccountIndex = u64;
 
 pub type GenericAddress = sp_runtime::MultiAddress<AccountId, ()>;
 
+pub type CallIndex = [u8; 2];
+
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
 /// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
@@ -106,7 +108,6 @@ where
         }
     }
 
-    #[cfg(feature = "std")]
     pub fn hex_encode(&self) -> String {
         let mut hex_str = hex::encode(self.encode());
         hex_str.insert_str(0, "0x");

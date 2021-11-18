@@ -14,21 +14,14 @@
    limitations under the License.
 
 */
-
+use crate::std::{Api, RpcClient};
+use ac_compose::compose_extrinsic;
+use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_core::H256 as Hash;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
-
-use crate::extrinsic::CallIndex;
-#[cfg(feature = "std")]
-use crate::{
-    compose_extrinsic,
-    std::{Api, RpcClient},
-};
-
-use super::xt_primitives::*;
 
 pub const CONTRACTS_MODULE: &str = "Contract";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";

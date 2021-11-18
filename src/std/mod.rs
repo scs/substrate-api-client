@@ -28,7 +28,7 @@ use sp_rpc::number::NumberOrHex;
 use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 
 use crate::rpc::json_req;
-use crate::{extrinsic, Balance};
+use crate::Balance;
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
@@ -547,7 +547,7 @@ pub enum ApiClientError {
     #[error("Events Error: {0}")]
     NodeApi(#[from] ac_node_api::error::Error),
     #[error("Error decoding storage value: {0}")]
-    StorageValueDecode(#[from] extrinsic::codec::Error),
+    StorageValueDecode(#[from] codec::Error),
     #[error("Received invalid hex string: {0}")]
     InvalidHexString(#[from] hex::FromHexError),
     #[error("Error deserializing with serde: {0}")]

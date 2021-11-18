@@ -2,6 +2,10 @@
 
 use codec::{Decode, Encode};
 
+pub use extrinsics::*;
+
+pub mod extrinsics;
+
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;
 /// The timestamp moment type used in this runtime.
