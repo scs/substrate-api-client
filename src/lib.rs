@@ -25,6 +25,8 @@ pub use crate::std::*;
 
 pub mod utils;
 
+pub mod extrinsic;
+
 pub use ac_primitives::{
     AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BlockNumber, GenericAddress,
     GenericExtra, Hash, Index, Moment, RefCount, UncheckedExtrinsicV4,

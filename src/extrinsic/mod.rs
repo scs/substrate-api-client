@@ -15,8 +15,7 @@
 
 */
 
-//! Offers macros that build extrinsics for custom runtime modules based on the metadata.
-//! Additionally, some predefined extrinsics for common runtime modules are implemented.
+//! Offers some predefined extrinsics for common runtime modules.
 
 #[cfg(feature = "std")]
 pub mod balances;
