@@ -69,7 +69,9 @@ macro_rules! compose_extrinsic_offline {
     $genesis_or_current_hash: expr,
     $runtime_spec_version: expr,
     $transaction_version: expr) => {{
-        use $crate::primitives::{GenericExtra, SignedPayload, UncheckedExtrinsicV4};
+        use $crate::primitives::{
+            GenericAddress, GenericExtra, SignedPayload, UncheckedExtrinsicV4,
+        };
         use $crate::sp_runtime::generic::Era;
         use $crate::sp_runtime::traits::IdentifyAccount;
         use $crate::sp_runtime::MultiSigner;
