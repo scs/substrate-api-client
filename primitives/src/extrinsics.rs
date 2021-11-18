@@ -206,7 +206,6 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::extrinsic::xt_primitives::{GenericAddress, GenericExtra};
     use sp_runtime::MultiSignature;
 
     #[test]
