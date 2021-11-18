@@ -21,11 +21,12 @@
 pub mod std;
 
 #[cfg(feature = "std")]
-pub use crate::std::*;
+pub mod extrinsic;
 
 pub mod utils;
 
-pub mod extrinsic;
+#[cfg(feature = "std")]
+pub use crate::std::*;
 
 pub use ac_primitives::{
     AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BlockNumber, GenericAddress,

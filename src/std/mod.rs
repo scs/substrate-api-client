@@ -14,7 +14,7 @@ pub use transaction_payment::FeeDetails;
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
 pub use ac_node_api::metadata::{InvalidMetadataError, Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo};
+use ac_primitives::{AccountData, AccountInfo, Balance};
 use sp_core::H256 as Hash;
 
 pub mod rpc;
@@ -28,7 +28,6 @@ use sp_rpc::number::NumberOrHex;
 use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 
 use crate::rpc::json_req;
-use crate::Balance;
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 

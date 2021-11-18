@@ -17,9 +17,7 @@
 
 //! Offers some predefined extrinsics for common runtime modules.
 
-#[cfg(feature = "std")]
 pub mod balances;
-#[cfg(feature = "std")]
 pub mod contract;
 #[cfg(feature = "staking-xt")]
 pub mod staking;
