@@ -1,22 +1,26 @@
 [package]
-name = "ac-primitives"
+name = "ac-compose-macros"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 codec = { package = 'parity-scale-codec', version = "2.0.0", default-features = false,  features = ['derive']}
-hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+log = { version = "0.4", default-features = false }
 
-sp-core = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+# substrate dependencies
 sp-runtime = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# local deps
+ac-primitives = { path = "../primitives", default-features = false }
 
 [features]
 default = ["std"]
 std = [
     "codec/std",
-    "hex/std",
-    "sp-core/std",
+    "log/std",
     "sp-runtime/std",
     "sp-std/std",
+    # local crates
+    "ac-primitives/std",
 ]

@@ -21,7 +21,9 @@ use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
 
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{compose_extrinsic, Api, UncheckedExtrinsicV4, XtStatus};
+use substrate_api_client::{
+    compose_extrinsic, Api, GenericAddress, UncheckedExtrinsicV4, XtStatus,
+};
 
 fn main() {
     env_logger::init();

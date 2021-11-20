@@ -13,7 +13,8 @@
     limitations under the License.
 */
 
-//! This examples floates the node with a series of transactions
+//! This examples floats the node with a series of transactions.
+
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 

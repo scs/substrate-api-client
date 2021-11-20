@@ -15,23 +15,18 @@
 
 */
 
-use codec::Compact;
+//! Extrinsics for `pallet-balances`.
 
-use super::xt_primitives::*;
-use crate::extrinsic::CallIndex;
-#[cfg(feature = "std")]
-use crate::{
-    compose_extrinsic,
-    std::{Api, RpcClient},
-};
+use crate::std::{Api, RpcClient};
+use ac_compose_macros::compose_extrinsic;
+use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4};
+use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
-
-pub type Balance = u128;
 
 pub type BalanceTransferFn = (CallIndex, GenericAddress, Compact<Balance>);
 pub type BalanceSetBalanceFn = (

@@ -7,6 +7,7 @@ edition = "2021"
 [workspace]
 members = [
 	".",
+	"compose-macros",
 	"client-keystore",
 	"node-api",
 	"test-no-std",
@@ -40,6 +41,7 @@ metadata = { version = "14.0.0", default-features = false, git = "https://github
 sp-application-crypto = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
 
 # local deps
+ac-compose-macros = { path = "compose-macros", default-features = false }
 ac-node-api = { path = "node-api", optional = true }
 ac-primitives = { path = "primitives", default-features = false }
 
@@ -72,6 +74,7 @@ std = [
 	"sp-rpc",
 	"transaction-payment/std",
 	# local deps
+	"ac-compose-macros/std",
 	"ac-node-api",
 	"ac-primitives/std",
 ]

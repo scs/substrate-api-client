@@ -13,6 +13,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ac-compose-macros"
+version = "0.1.0"
+dependencies = [
+ "ac-primitives",
+ "log",
+ "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "ac-node-api"
 version = "0.1.0"
 dependencies = [
@@ -35,8 +46,11 @@ dependencies = [
 name = "ac-primitives"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "parity-scale-codec",
  "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -3079,6 +3093,7 @@ dependencies = [
 name = "substrate-api-client"
 version = "0.6.0"
 dependencies = [
+ "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
  "clap",
