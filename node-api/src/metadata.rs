@@ -202,7 +202,7 @@ impl Metadata {
             }
         }
     }
-    pub fn print_pallet_with_constants(&self) {
+    pub fn print_pallets_with_constants(&self) {
         for m in self.pallets.values() {
             if !m.constants.is_empty() {
                 m.print_constants();
@@ -217,7 +217,7 @@ impl Metadata {
         }
     }
 
-    pub fn print_pallet_with_events(&self) {
+    pub fn print_pallets_with_events(&self) {
         for pallet in self.pallets.values() {
             println!(
                 "----------------- Events for Pallet: {} -----------------\n",
@@ -230,7 +230,7 @@ impl Metadata {
         }
     }
 
-    pub fn print_modules_with_errors(&self) {
+    pub fn print_pallets_with_errors(&self) {
         for pallet in self.pallets.values() {
             println!(
                 "----------------- Errors for Pallet: {} -----------------\n",

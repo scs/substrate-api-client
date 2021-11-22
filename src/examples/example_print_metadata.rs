@@ -39,9 +39,9 @@ fn main() {
     meta.print_overview();
     meta.print_pallets();
     meta.print_pallets_with_calls();
-    meta.print_pallet_with_events();
-    meta.print_modules_with_errors();
-    meta.print_pallet_with_constants();
+    meta.print_pallets_with_events();
+    meta.print_pallets_with_errors();
+    meta.print_pallets_with_constants();
 
     // print full substrate metadata json formatted
     println!(
