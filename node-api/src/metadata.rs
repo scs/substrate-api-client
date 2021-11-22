@@ -73,9 +73,9 @@ pub enum MetadataError {
 #[derive(Clone, Debug)]
 pub struct Metadata {
     metadata: RuntimeMetadataLastVersion,
-    pallets: HashMap<String, PalletMetadata>, //modules
-    events: HashMap<(u8, u8), EventMetadata>, //modules_with_events
-    errors: HashMap<(u8, u8), ErrorMetadata>, //modules_with_errors
+    pallets: HashMap<String, PalletMetadata>,
+    events: HashMap<(u8, u8), EventMetadata>,
+    errors: HashMap<(u8, u8), ErrorMetadata>,
 }
 
 impl Metadata {
@@ -99,6 +99,7 @@ impl Metadata {
         Ok(event)
     }
 
+    /// Returns the metadata for all events of a given pallet
     pub fn events(&self, pallet_index: u8) -> Vec<EventMetadata> {
         self.events
             .clone()
@@ -121,6 +122,7 @@ impl Metadata {
         Ok(error)
     }
 
+    /// Returns the metadata for all errors of a given pallet
     pub fn errors(&self, pallet_index: u8) -> Vec<ErrorMetadata> {
         self.errors
             .clone()
@@ -313,7 +315,7 @@ impl PalletMetadata {
         for (name, constant) in &self.constants {
             println!(
                 "Name: {}, Type {:?}, Value {:?}",
-                constant.name, constant.ty, constant.value
+                name, constant.ty, constant.value
             );
         }
         println!();
@@ -326,7 +328,7 @@ impl PalletMetadata {
         for (name, storage) in &self.storage {
             println!(
                 "Name: {}, Modifier: {:?}, Type {:?}, Default {:?}",
-                storage.name, storage.modifier, storage.ty, storage.default
+                name, storage.modifier, storage.ty, storage.default
             );
         }
         println!();
