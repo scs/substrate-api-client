@@ -52,7 +52,10 @@ fn main() {
     #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
         api.clone().signer.unwrap(),
-        Call::Balances(BalancesCall::transfer(to.clone(), 42)),
+        Call::Balances(BalancesCall::transfer {
+            dest: to.clone(),
+            value: 42
+        }),
         api.get_nonce().unwrap(),
         Era::mortal(period, h.number.into()),
         api.genesis_hash,
