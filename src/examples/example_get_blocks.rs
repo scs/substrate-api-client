@@ -39,6 +39,11 @@ fn main() {
 
     let head = api.get_finalized_head().unwrap().unwrap();
 
+    println!(
+        "Genesis block: \n {:?} \n",
+        api.get_block_by_num::<Block>(Some(0)).unwrap()
+    );
+
     println!("Finalized Head:\n {} \n", head);
 
     let h: Header = api.get_header(Some(head)).unwrap().unwrap();
