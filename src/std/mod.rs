@@ -246,11 +246,26 @@ where
         }
     }
 
+    pub fn get_block_hash(&self, number: Option<u32>) -> ApiResult<Option<Hash>> {
+        let h = self.get_request(json_req::chain_get_block_hash(number))?;
+        match h {
+            Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
+            None => Ok(None),
+        }
+    }
+
     pub fn get_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<B>>
     where
         B: Block + DeserializeOwned,
     {
         Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
+    }
+
+    pub fn get_block_by_num<B>(&self, number: Option<u32>) -> ApiResult<Option<B>>
+    where
+        B: Block + DeserializeOwned,
+    {
+        Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
     }
 
     /// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
@@ -266,6 +281,17 @@ where
             Some(block) => Ok(Some(serde_json::from_str(&block)?)),
             None => Ok(None),
         }
+    }
+
+    pub fn get_signed_block_by_num<B>(
+        &self,
+        number: Option<u32>,
+    ) -> ApiResult<Option<SignedBlock<B>>>
+    where
+        B: Block + DeserializeOwned,
+    {
+        self.get_block_hash(number)
+            .map(|h| self.get_signed_block(h))?
     }
 
     pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
@@ -554,4 +580,6 @@ pub enum ApiClientError {
     UnsupportedXtStatus(XtStatus),
     #[error("Error converting NumberOrHex to Balance")]
     TryFromIntError,
+    #[error(transparent)]
+    Other(#[from] Box<dyn std::error::Error>),
 }
