@@ -580,4 +580,6 @@ pub enum ApiClientError {
     UnsupportedXtStatus(XtStatus),
     #[error("Error converting NumberOrHex to Balance")]
     TryFromIntError,
+    #[error(transparent)]
+    Other(#[from] Box<dyn std::error::Error>),
 }
