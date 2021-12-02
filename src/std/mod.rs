@@ -261,11 +261,11 @@ where
         Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
     }
 
-    pub fn get_block_by_num<B>(&self, hash: Option<u32>) -> ApiResult<Option<B>>
+    pub fn get_block_by_num<B>(&self, number: Option<u32>) -> ApiResult<Option<B>>
     where
         B: Block + DeserializeOwned,
     {
-        Self::get_signed_block_by_num(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
+        Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
     }
 
     /// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
