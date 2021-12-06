@@ -483,16 +483,23 @@ where
         }
     }
 
-    pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
-        let ed_id: &'static str = "ExistentialDeposit";
-        let ed = self
+    pub fn get_constant<C: Decode>(
+        &self,
+        pallet: &'static str,
+        constant: &'static str,
+    ) -> ApiResult<C> {
+        let c = self
             .metadata
-            .pallet("Balances")?
+            .pallet(pallet)?
             .constants
-            .get(ed_id)
-            .ok_or(MetadataError::ConstantNotFound(ed_id))?;
+            .get(constant)
+            .ok_or(MetadataError::ConstantNotFound(constant))?;
 
-        Ok(Decode::decode(&mut ed.value.as_slice())?)
+        Ok(Decode::decode(&mut c.value.as_slice())?)
+    }
+
+    pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
+        self.get_constant("Balances", "ExistentialDeposit")
     }
 
     #[cfg(feature = "ws-client")]
