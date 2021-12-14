@@ -26,7 +26,7 @@ use sp_core::H256 as Hash;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
-pub const CONTRACTS_MODULE: &str = "Contract";
+pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";
 pub const CONTRACTS_INSTANTIATE: &str = "instantiate";
 pub const CONTRACTS_CALL: &str = "call";
