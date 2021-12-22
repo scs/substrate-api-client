@@ -164,8 +164,8 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
     fn get_map_prefix(&self, pallet_prefix: &str) -> Result<StorageKey, MetadataError> {
         match &self.ty {
             StorageEntryType::Map { .. } => {
-                let mut bytes = sp_core::twox_128(&pallet_prefix.as_bytes().to_vec()).to_vec();
-                bytes.extend(&sp_core::twox_128(&self.name.as_bytes().to_vec())[..]);
+                let mut bytes = sp_core::twox_128(pallet_prefix.as_bytes()).to_vec();
+                bytes.extend(&sp_core::twox_128(self.name.as_bytes())[..]);
                 Ok(StorageKey(bytes))
             }
             _ => Err(MetadataError::StorageTypeError),
