@@ -60,7 +60,7 @@ jobs:
         # The newest is currently not compatible
         run: |
           rustup default nightly-2021-12-10
-          rustup target add wasm32-unknown-unknown --toolchain nightly
+          rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-10
           rustup show
 
       - name: Checkout substrate
