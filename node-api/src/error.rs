@@ -95,6 +95,9 @@ pub enum RuntimeError {
     /// At least one consumer is remaining so the account cannot be destroyed.
     #[error("At least one consumer is remaining so the account cannot be destroyed.")]
     ConsumerRemaining,
+    /// There are too many consumers so the account cannot be created.
+    #[error("There are too many consumers so the account cannot be created.")]
+    TooManyConsumers,
     /// There are no providers so the account cannot be created.
     #[error("There are no providers so the account cannot be created.")]
     NoProviders,
@@ -128,6 +131,7 @@ impl RuntimeError {
             DispatchError::BadOrigin => Ok(Self::BadOrigin),
             DispatchError::CannotLookup => Ok(Self::CannotLookup),
             DispatchError::ConsumerRemaining => Ok(Self::ConsumerRemaining),
+            DispatchError::TooManyConsumers => Ok(Self::TooManyConsumers),
             DispatchError::NoProviders => Ok(Self::NoProviders),
             DispatchError::Arithmetic(_math_error) => Ok(Self::Other("math_error".into())),
             DispatchError::Token(_token_error) => Ok(Self::Other("token error".into())),

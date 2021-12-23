@@ -155,6 +155,7 @@ where
         })
     }
 
+    #[must_use]
     pub fn set_signer(mut self, signer: P) -> Self {
         self.signer = Some(signer);
         self
