@@ -1,7 +1,13 @@
+pub use crate::error::{ApiResult, Error as ApiClientError};
+pub use crate::std::rpc::XtStatus;
+pub use crate::utils::FromHexString;
+pub use ac_node_api::metadata::{InvalidMetadataError, Metadata, MetadataError};
+use ac_primitives::{AccountData, AccountInfo, Balance};
 pub use metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;
 pub use sp_core::crypto::Pair;
 pub use sp_core::storage::StorageKey;
+use sp_core::H256 as Hash;
 pub use sp_runtime::traits::{Block, Header};
 pub use sp_runtime::{
     generic::SignedBlock, traits::IdentifyAccount, AccountId32 as AccountId, MultiSignature,
@@ -11,12 +17,7 @@ pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 pub use transaction_payment::FeeDetails;
 
-pub use crate::std::rpc::XtStatus;
-pub use crate::utils::FromHexString;
-pub use ac_node_api::metadata::{InvalidMetadataError, Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance};
-use sp_core::H256 as Hash;
-
+pub mod error;
 pub mod rpc;
 
 use std::convert::{TryFrom, TryInto};
@@ -28,8 +29,6 @@ use sp_rpc::number::NumberOrHex;
 use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 
 use crate::rpc::json_req;
-
-pub type ApiResult<T> = Result<T, ApiClientError>;
 
 pub trait RpcClient {
     /// Sends a RPC request that returns a String
@@ -552,42 +551,4 @@ fn inclusion_fee_with_balance(
             .try_into()
             .map_err(|_| ApiClientError::TryFromIntError)?,
     })
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum ApiClientError {
-    #[error("Fetching genesis hash failed. Are you connected to the correct endpoint?")]
-    Genesis,
-    #[error("Fetching runtime version failed. Are you connected to the correct endpoint?")]
-    RuntimeVersion,
-    #[error("Fetching Metadata failed. Are you connected to the correct endpoint?")]
-    MetadataFetch,
-    #[error("Operation needs a signer to be set in the api")]
-    NoSigner,
-    #[cfg(feature = "ws-client")]
-    #[error("WebSocket Error: {0}")]
-    WebSocket(#[from] ws::Error),
-    #[error("RpcClient error: {0}")]
-    RpcClient(String),
-    #[error("ChannelReceiveError, sender is disconnected: {0}")]
-    Disconnected(#[from] sp_std::sync::mpsc::RecvError),
-    #[error("Metadata Error: {0}")]
-    Metadata(#[from] MetadataError),
-    #[error("InvalidMetadata: {0}")]
-    InvalidMetadata(#[from] InvalidMetadataError),
-    #[cfg(feature = "ws-client")]
-    #[error("Events Error: {0}")]
-    NodeApi(#[from] ac_node_api::error::Error),
-    #[error("Error decoding storage value: {0}")]
-    StorageValueDecode(#[from] codec::Error),
-    #[error("Received invalid hex string: {0}")]
-    InvalidHexString(#[from] hex::FromHexError),
-    #[error("Error deserializing with serde: {0}")]
-    Deserializing(#[from] serde_json::Error),
-    #[error("UnsupportedXtStatus Error: Can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
-    UnsupportedXtStatus(XtStatus),
-    #[error("Error converting NumberOrHex to Balance")]
-    TryFromIntError,
-    #[error(transparent)]
-    Other(#[from] Box<dyn std::error::Error>),
 }
