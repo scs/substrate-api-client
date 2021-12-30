@@ -13,6 +13,8 @@
     limitations under the License.
 */
 
+//! This example is community maintained and not CI tested, therefore it may not work as is.
+
 use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};

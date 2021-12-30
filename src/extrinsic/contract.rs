@@ -16,6 +16,7 @@
 */
 
 //! Extrinsics for `pallet-contract`.
+//! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
 use crate::std::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
