@@ -16,6 +16,7 @@
 */
 
 //! Extrinsics for `pallet-contract`.
+//! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
 use crate::std::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
@@ -26,13 +27,16 @@ use sp_core::H256 as Hash;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
-pub const CONTRACTS_MODULE: &str = "Contract";
+pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";
 pub const CONTRACTS_INSTANTIATE: &str = "instantiate";
+pub const CONTRACTS_INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
 pub const CONTRACTS_CALL: &str = "call";
 
 type Gas = u64;
 type Data = Vec<u8>;
+type Code = Vec<u8>;
+type Salt = Vec<u8>;
 
 type GasLimit = Compact<Gas>;
 type Endowment = Compact<Balance>;
@@ -41,10 +45,12 @@ type Destination = GenericAddress;
 
 pub type ContractPutCodeFn = (CallIndex, GasLimit, Data);
 pub type ContractInstantiateFn = (CallIndex, Endowment, GasLimit, Hash, Data);
+pub type ContractInstantiateWithCodeFn = (CallIndex, Endowment, GasLimit, Code, Data, Salt);
 pub type ContractCallFn = (CallIndex, Destination, Value, GasLimit, Data);
 
 pub type ContractPutCodeXt = UncheckedExtrinsicV4<ContractPutCodeFn>;
 pub type ContractInstantiateXt = UncheckedExtrinsicV4<ContractInstantiateFn>;
+pub type ContractInstantiateWithCodeXt = UncheckedExtrinsicV4<ContractInstantiateWithCodeFn>;
 pub type ContractCallXt = UncheckedExtrinsicV4<ContractCallFn>;
 
 #[cfg(feature = "std")]
@@ -80,6 +86,26 @@ where
             Compact(gas_limit),
             code_hash,
             data
+        )
+    }
+
+    pub fn contract_instantiate_with_code(
+        &self,
+        endowment: Balance,
+        gas_limit: Gas,
+        code: Data,
+        data: Data,
+        salt: Data,
+    ) -> ContractInstantiateWithCodeXt {
+        compose_extrinsic!(
+            self,
+            CONTRACTS_MODULE,
+            CONTRACTS_INSTANTIATE_WITH_CODE,
+            Compact(endowment),
+            Compact(gas_limit),
+            code,
+            data,
+            salt
         )
     }
 
