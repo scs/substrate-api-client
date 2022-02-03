@@ -228,7 +228,7 @@ impl SyncCryptoStore for LocalKeystore {
                     .0
                     .read()
                     .key_pair_by_type::<ed25519::Pair>(&pub_key, id)
-                    .map_err(|e| TraitError::from(e))?;
+                    .map_err(TraitError::from)?;
                 key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
             }
             sr25519::CRYPTO_ID => {
@@ -239,7 +239,7 @@ impl SyncCryptoStore for LocalKeystore {
                     .0
                     .read()
                     .key_pair_by_type::<sr25519::Pair>(&pub_key, id)
-                    .map_err(|e| TraitError::from(e))?;
+                    .map_err(TraitError::from)?;
                 key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
             }
             ecdsa::CRYPTO_ID => {
@@ -250,7 +250,7 @@ impl SyncCryptoStore for LocalKeystore {
                     .0
                     .read()
                     .key_pair_by_type::<ecdsa::Pair>(&pub_key, id)
-                    .map_err(|e| TraitError::from(e))?;
+                    .map_err(TraitError::from)?;
                 key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
             }
             _ => Err(TraitError::KeyNotSupported(id)),
@@ -360,7 +360,7 @@ impl SyncCryptoStore for LocalKeystore {
         public_keys.iter().all(|(p, t)| {
             self.0
                 .read()
-                .key_phrase_by_type(&p, *t)
+                .key_phrase_by_type(p, *t)
                 .ok()
                 .flatten()
                 .is_some()
@@ -402,12 +402,14 @@ impl SyncCryptoStore for LocalKeystore {
     }
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<SyncCryptoStorePtr> for LocalKeystore {
     fn into(self) -> SyncCryptoStorePtr {
         Arc::new(self)
     }
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<Arc<dyn CryptoStore>> for LocalKeystore {
     fn into(self) -> Arc<dyn CryptoStore> {
         Arc::new(self)
@@ -597,7 +599,7 @@ impl KeystoreInner {
                 if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                     match hex::decode(name) {
                         Ok(ref hex) if hex.len() > 4 => {
-                            if &hex[0..4] != &id.0 {
+                            if hex[0..4] != id.0 {
                                 continue;
                             }
                             let public = hex[4..].to_vec();
