@@ -206,14 +206,22 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use sp_core::Pair;
+    use sp_runtime::testing::sr25519;
     use sp_runtime::MultiSignature;
 
     #[test]
     fn encode_decode_roundtrip_works() {
+        let msg = &b"test-message"[..];
+        let (pair, _) = sr25519::Pair::generate();
+        let signature = pair.sign(&msg);
+        let multi_sig = MultiSignature::from(signature);
+        let account: AccountId = pair.public().into();
+
         let xt = UncheckedExtrinsicV4::new_signed(
             vec![1, 1, 1],
-            GenericAddress::default(),
-            MultiSignature::default(),
+            account.into(),
+            multi_sig,
             GenericExtra::default(),
         );
 
