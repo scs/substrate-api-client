@@ -24,7 +24,7 @@ use crate::{
     metadata::{InvalidMetadataError, Metadata, MetadataError},
 };
 use sp_core::crypto::SecretStringError;
-use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError};
+use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError, ModuleError};
 use thiserror::Error;
 
 /// Error enum.
@@ -116,11 +116,11 @@ impl RuntimeError {
     /// Converts a `DispatchError` into a subxt error.
     pub fn from_dispatch(metadata: &Metadata, error: DispatchError) -> Result<Self, Error> {
         match error {
-            DispatchError::Module {
+            DispatchError::Module(ModuleError {
                 index,
                 error,
                 message: _,
-            } => {
+            }) => {
                 let error = metadata.error(index, error)?;
                 Ok(Self::Module(PalletError {
                     pallet: error.pallet().to_string(),
