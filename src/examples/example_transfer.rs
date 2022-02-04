@@ -15,8 +15,8 @@
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
 use clap::{load_yaml, App};
-use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
+use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;

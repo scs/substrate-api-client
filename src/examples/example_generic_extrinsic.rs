@@ -17,8 +17,8 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use clap::{load_yaml, App};
-use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
+use sp_keyring::AccountKeyring;
 
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{

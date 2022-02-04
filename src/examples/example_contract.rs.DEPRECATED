@@ -25,7 +25,7 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use keyring::AccountKeyring;
+use sp_keyring::AccountKeyring;
 use sp_core::H256 as Hash;
 use sp_runtime::AccountId32 as AccountId;
 use sp_std::prelude::*;

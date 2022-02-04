@@ -17,8 +17,8 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use keyring::AccountKeyring;
 use sp_core::crypto::Pair;
+use sp_keyring::AccountKeyring;
 use sp_runtime::app_crypto::sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
 use sp_runtime::MultiAddress;

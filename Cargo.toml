@@ -48,7 +48,7 @@ ac-primitives = { path = "primitives", default-features = false }
 [dev-dependencies]
 env_logger = "0.9"
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-keyring = { version = "4.1.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master", package = "sp-keyring" }
+sp-keyring = { version = "5.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 clap = { version = "2.33", features = ["yaml"] }
 
 
