@@ -19,7 +19,7 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use keyring::AccountKeyring;
+use sp_keyring::AccountKeyring;
 use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, XtStatus};
 
 #[derive(Decode)]

@@ -20,9 +20,9 @@
 
 use clap::{load_yaml, App};
 
-use keyring::AccountKeyring;
 use node_template_runtime::{BalancesCall, Call};
 use sp_core::crypto::Pair;
+use sp_keyring::AccountKeyring;
 
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{compose_extrinsic_offline, Api, UncheckedExtrinsicV4, XtStatus};

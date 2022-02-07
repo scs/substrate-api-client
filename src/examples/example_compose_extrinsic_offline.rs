@@ -18,9 +18,9 @@
 
 use clap::{load_yaml, App};
 
-use keyring::AccountKeyring;
 use node_template_runtime::{BalancesCall, Call, Header};
 use sp_core::crypto::Pair;
+use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;

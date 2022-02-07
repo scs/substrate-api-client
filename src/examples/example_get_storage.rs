@@ -16,7 +16,7 @@
 ///! Very simple example that shows how to get some simple storage values.
 use clap::{load_yaml, App};
 
-use keyring::AccountKeyring;
+use sp_keyring::AccountKeyring;
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::AccountInfo;
 use substrate_api_client::Api;
