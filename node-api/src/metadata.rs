@@ -20,7 +20,7 @@
 //! This file is mostly subxt.
 
 use crate::{storage::GetStorage, Encoded};
-use codec::{Decode, Encode, Error as CodecError};
+use codec::{Encode, Error as CodecError};
 use frame_metadata::{
     PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
     StorageEntryMetadata, META_RESERVED,
