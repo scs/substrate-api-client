@@ -16,7 +16,7 @@
 //! This file is **not** from subxt.
 
 use crate::metadata::MetadataError;
-use codec::{Decode, Encode};
+use codec::Encode;
 use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
 use log::debug;
 use scale_info::form::PortableForm;
@@ -38,39 +38,33 @@ impl StorageValue {
 }
 
 #[derive(Clone, Debug)]
-pub struct StorageMap<K, V> {
+pub struct StorageMap<K> {
     _marker: PhantomData<K>,
     module_prefix: Vec<u8>,
     storage_prefix: Vec<u8>,
     hasher: StorageHasher,
-    default: V,
 }
 
-impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
+impl<K: Encode> StorageMap<K> {
     pub fn key(&self, key: K) -> StorageKey {
         let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
         bytes.extend(key_hash(&key, &self.hasher));
         StorageKey(bytes)
     }
-
-    pub fn default(&self) -> V {
-        self.default.clone()
-    }
 }
 
 #[derive(Clone, Debug)]
-pub struct StorageDoubleMap<K, Q, V> {
+pub struct StorageDoubleMap<K, Q> {
     _marker: PhantomData<K>,
     _marker2: PhantomData<Q>,
     module_prefix: Vec<u8>,
     storage_prefix: Vec<u8>,
     hasher: StorageHasher,
     key2_hasher: StorageHasher,
-    default: V,
 }
 
-impl<K: Encode, Q: Encode, V: Decode + Clone> StorageDoubleMap<K, Q, V> {
+impl<K: Encode, Q: Encode> StorageDoubleMap<K, Q> {
     pub fn key(&self, key1: K, key2: Q) -> StorageKey {
         let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
@@ -78,31 +72,24 @@ impl<K: Encode, Q: Encode, V: Decode + Clone> StorageDoubleMap<K, Q, V> {
         bytes.extend(key_hash(&key2, &self.key2_hasher));
         StorageKey(bytes)
     }
-
-    pub fn default(&self) -> V {
-        self.default.clone()
-    }
 }
 
 /// trait to extract the storage based on the [`StorageEntryMetadata`].
 pub trait GetStorage {
-    fn get_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
+    fn get_double_map<K: Encode, Q: Encode>(
         &self,
         pallet_prefix: &str,
-    ) -> Result<StorageDoubleMap<K, Q, V>, MetadataError>;
-    fn get_map<K: Encode, V: Decode + Clone>(
-        &self,
-        pallet_prefix: &str,
-    ) -> Result<StorageMap<K, V>, MetadataError>;
+    ) -> Result<StorageDoubleMap<K, Q>, MetadataError>;
+    fn get_map<K: Encode>(&self, pallet_prefix: &str) -> Result<StorageMap<K>, MetadataError>;
     fn get_map_prefix(&self, pallet_prefix: &str) -> Result<StorageKey, MetadataError>;
     fn get_value(&self, pallet_prefix: &str) -> Result<StorageValue, MetadataError>;
 }
 
 impl GetStorage for StorageEntryMetadata<PortableForm> {
-    fn get_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
+    fn get_double_map<K: Encode, Q: Encode>(
         &self,
         pallet_prefix: &str,
-    ) -> Result<StorageDoubleMap<K, Q, V>, MetadataError> {
+    ) -> Result<StorageDoubleMap<K, Q>, MetadataError> {
         match &self.ty {
             StorageEntryType::Map { hashers, .. } => {
                 let module_prefix = pallet_prefix.as_bytes().to_vec();
@@ -110,13 +97,11 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                 let hasher1 = hashers.get(0).ok_or(MetadataError::StorageTypeError)?;
                 let hasher2 = hashers.get(1).ok_or(MetadataError::StorageTypeError)?;
 
-                let default = Decode::decode(&mut &self.default[..])
-                    .map_err(|_| MetadataError::MapValueTypeError)?;
-
                 debug!(
                     "map for '{}' '{}' has hasher1 {:?} hasher2 {:?}",
                     pallet_prefix, self.name, hasher1, hasher2
                 );
+
                 Ok(StorageDoubleMap {
                     _marker: PhantomData,
                     _marker2: PhantomData,
@@ -124,16 +109,12 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                     storage_prefix,
                     hasher: hasher1.to_owned(),
                     key2_hasher: hasher2.to_owned(),
-                    default,
                 })
             }
             _ => Err(MetadataError::StorageTypeError),
         }
     }
-    fn get_map<K: Encode, V: Decode + Clone>(
-        &self,
-        pallet_prefix: &str,
-    ) -> Result<StorageMap<K, V>, MetadataError> {
+    fn get_map<K: Encode>(&self, pallet_prefix: &str) -> Result<StorageMap<K>, MetadataError> {
         match &self.ty {
             StorageEntryType::Map { hashers, .. } => {
                 let hasher = hashers
@@ -143,8 +124,6 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
 
                 let module_prefix = pallet_prefix.as_bytes().to_vec();
                 let storage_prefix = self.name.as_bytes().to_vec();
-                let default = Decode::decode(&mut &self.default[..])
-                    .map_err(|_| MetadataError::MapValueTypeError)?;
 
                 debug!(
                     "map for '{}' '{}' has hasher {:?}",
@@ -155,7 +134,6 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                     module_prefix,
                     storage_prefix,
                     hasher,
-                    default,
                 })
             }
             _ => Err(MetadataError::StorageTypeError),

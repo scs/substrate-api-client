@@ -20,7 +20,7 @@
 //! This file is mostly subxt.
 
 use crate::{storage::GetStorage, Encoded};
-use codec::{Decode, Encode, Error as CodecError};
+use codec::{Encode, Error as CodecError};
 use frame_metadata::{
     PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
     StorageEntryMetadata, META_RESERVED,
@@ -545,7 +545,7 @@ impl Metadata {
             .key())
     }
 
-    pub fn storage_map_key<K: Encode, V: Decode + Clone>(
+    pub fn storage_map_key<K: Encode>(
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
@@ -554,7 +554,7 @@ impl Metadata {
         Ok(self
             .pallet(storage_prefix)?
             .storage(storage_key_name)?
-            .get_map::<K, V>(storage_prefix)?
+            .get_map::<K>(storage_prefix)?
             .key(map_key))
     }
 
@@ -568,7 +568,7 @@ impl Metadata {
             .get_map_prefix(storage_prefix)
     }
 
-    pub fn storage_double_map_key<K: Encode, Q: Encode, V: Decode + Clone>(
+    pub fn storage_double_map_key<K: Encode, Q: Encode>(
         &self,
         storage_prefix: &'static str,
         storage_key_name: &'static str,
@@ -578,7 +578,7 @@ impl Metadata {
         Ok(self
             .pallet(storage_prefix)?
             .storage(storage_key_name)?
-            .get_double_map::<K, Q, V>(storage_prefix)?
+            .get_double_map::<K, Q>(storage_prefix)?
             .key(first, second))
     }
 }

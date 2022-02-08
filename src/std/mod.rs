@@ -214,9 +214,9 @@ where
     }
 
     pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
-        let storagekey: sp_core::storage::StorageKey = self
-            .metadata
-            .storage_map_key::<AccountId, AccountInfo>("System", "Account", address.clone())?;
+        let storagekey: sp_core::storage::StorageKey =
+            self.metadata
+                .storage_map_key::<AccountId>("System", "Account", address.clone())?;
 
         info!("storage key is: 0x{}", hex::encode(&storagekey));
         self.get_storage_by_key_hash(storagekey, None)
@@ -320,7 +320,7 @@ where
     ) -> ApiResult<Option<V>> {
         let storagekey =
             self.metadata
-                .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
+                .storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
         info!("storage key is: 0x{}", hex::encode(&storagekey));
         self.get_storage_by_key_hash(storagekey, at_block)
     }
@@ -343,7 +343,7 @@ where
         second: Q,
         at_block: Option<Hash>,
     ) -> ApiResult<Option<V>> {
-        let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
+        let storagekey = self.metadata.storage_double_map_key::<K, Q>(
             storage_prefix,
             storage_key_name,
             first,
@@ -401,7 +401,7 @@ where
     ) -> ApiResult<Option<rpc::ReadProof<Hash>>> {
         let storagekey =
             self.metadata
-                .storage_map_key::<K, V>(storage_prefix, storage_key_name, map_key)?;
+                .storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
         info!("storage key is: 0x{}", hex::encode(&storagekey));
         self.get_storage_proof_by_keys(vec![storagekey], at_block)
     }
@@ -414,7 +414,7 @@ where
         second: Q,
         at_block: Option<Hash>,
     ) -> ApiResult<Option<rpc::ReadProof<Hash>>> {
-        let storagekey = self.metadata.storage_double_map_key::<K, Q, V>(
+        let storagekey = self.metadata.storage_double_map_key::<K, Q>(
             storage_prefix,
             storage_key_name,
             first,
