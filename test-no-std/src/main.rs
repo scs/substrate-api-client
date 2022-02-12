@@ -10,13 +10,10 @@ extern crate substrate_api_client;
 extern crate libc;
 use core::panic::PanicInfo;
 
-use core::cell::UnsafeCell;
 use core::alloc::{GlobalAlloc, Layout};
+use core::cell::UnsafeCell;
 use core::ptr::null_mut;
-use core::sync::atomic::{
-    AtomicUsize,
-    Ordering::SeqCst,
-};
+use core::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 
 // A list of C functions that are being imported
 extern "C" {
