@@ -37,14 +37,15 @@ fn main() {
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 
-    let to = sr25519::Public::from_ss58check("2LNz3ia9jQsgpCdRVu4MUhrar6LrVue6aCYnCebEhoegJeW2").unwrap();
+    // Bob
+    let to = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty").unwrap();
 
     match api.get_account_data(&to.into()).unwrap() {
         Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
     // generate extrinsic
-    let xt = api.balance_transfer(MultiAddress::Id(to.into()), 1000);
+    let xt = api.balance_transfer(MultiAddress::Id(to.into()), 1000000000000);
 
     println!(
         "Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
@@ -61,8 +62,10 @@ fn main() {
     println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
     // verify that Bob's free Balance increased
-    let bob = api.get_account_data(&to.into()).unwrap().unwrap();
-    println!("[+] Bob's Free Balance is now {}\n", bob.free);
+    match api.get_account_data(&to.into()).unwrap() {
+        Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
+        None => println!("[+] Bob's Free Balance is is 0\n"),
+    }
 }
 
 pub fn get_node_url_from_cli() -> String {
