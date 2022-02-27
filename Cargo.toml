@@ -44,11 +44,12 @@ ac-node-api = { path = "node-api", optional = true }
 ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
+substrate-client-keystore = { path = "./client-keystore"}
 env_logger = "0.9"
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 keyring = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master", package = "sp-keyring" }
 clap = { version = "2.33", features = ["yaml"] }
-
+tempfile = "3.2.0"
 
 [features]
 default = ["std", "ws-client"]
@@ -130,6 +131,9 @@ path = "src/examples/example_custom_client.rs"
 name = "example_get_existential_deposit"
 path = "src/examples/example_get_existential_deposit.rs"
 
+[[example]]
+name = "example_transfer_using_seed"
+path = "src/examples/example_transfer_using_seed.rs"
 # DEPRECATED. might work but too much work to maintain, sorry
 
 # needed for contract example
