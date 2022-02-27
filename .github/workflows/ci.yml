@@ -86,6 +86,7 @@ jobs:
           #            example_print_metadata, // Todo: metadata print needs revamp: #179.
           example_sudo,
           example_transfer,
+          example_transfer_using_seed,
         ]
     steps:
       - uses: actions/checkout@v2
