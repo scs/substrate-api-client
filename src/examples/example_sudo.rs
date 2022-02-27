@@ -18,8 +18,7 @@
 
 use clap::{load_yaml, App};
 use codec::Compact;
-use keyring::AccountKeyring;
-use sp_core::crypto::Pair;
+use sp_core::{crypto::{Pair, Ss58Codec}, sr25519};
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{
     compose_call, compose_extrinsic, Api, GenericAddress, UncheckedExtrinsicV4, XtStatus,
@@ -29,13 +28,14 @@ fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
-    // initialize api and set the signer (sender) that is used to sign the extrinsics
-    let sudoer = AccountKeyring::Alice.pair();
+    // Alice's seed: subkey inspect //Alice (replace with real sudo seed!)
+    let sudoer: sr25519::Pair = Pair::from_string("0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a", None).unwrap();
+
     let client = WsRpcClient::new(&url);
     let api = Api::new(client).map(|api| api.set_signer(sudoer)).unwrap();
 
     // set the recipient of newly issued funds
-    let to = AccountKeyring::Bob.to_account_id();
+    let to = sr25519::Public::from_ss58check("2LNz3ia9jQsgpCdRVu4MUhrar6LrVue6aCYnCebEhoegJeW2").unwrap();
 
     // this call can only be called by sudo
     #[allow(clippy::redundant_clone)]
@@ -43,9 +43,9 @@ fn main() {
         api.metadata.clone(),
         "Balances",
         "set_balance",
-        GenericAddress::Id(to),
-        Compact(42_u128),
-        Compact(42_u128)
+        GenericAddress::Id(to.into()),
+        Compact(42_000_000_000_000u128),
+        Compact(0u128)
     );
     #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
