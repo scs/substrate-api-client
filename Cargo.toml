@@ -46,12 +46,10 @@ ac-node-api = { path = "node-api", optional = true }
 ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
-substrate-client-keystore = { path = "./client-keystore"}
 env_logger = "0.9"
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { version = "5.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 clap = { version = "2.33", features = ["yaml"] }
-tempfile = "3.2.0"
 
 [features]
 default = ["std", "ws-client"]
