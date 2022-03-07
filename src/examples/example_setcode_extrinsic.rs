@@ -40,7 +40,8 @@ fn main() {
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 
-    let new_wasm: &[u8] = include_bytes!("integritee_node_runtime-v6.compact.wasm");
+    //let new_wasm: &[u8] = include_bytes!("integritee_node_runtime-v6.compact.wasm");
+    let new_wasm: &[u8] = include_bytes!("integritee_runtime-v12.compact.compressed.wasm");
 
     // this call can only be called by sudo
     #[allow(clippy::redundant_clone)]
