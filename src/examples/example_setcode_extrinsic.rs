@@ -70,7 +70,7 @@ pub fn get_node_url_from_cli() -> String {
     let matches = App::from_yaml(yml).get_matches();
 
     let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9970");
+    let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}\n", url);
     url
