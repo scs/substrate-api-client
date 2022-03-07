@@ -132,6 +132,11 @@ path = "src/examples/example_get_existential_deposit.rs"
 [[example]]
 name = "example_transfer_using_seed"
 path = "src/examples/example_transfer_using_seed.rs"
+
+[[example]]
+name = "example_setcode_extrinsic"
+path = "src/examples/example_setcode_extrinsic.rs"
+
 # DEPRECATED. might work but too much work to maintain, sorry
 
 # needed for contract example
