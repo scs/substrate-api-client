@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 codec = { package = 'parity-scale-codec', version = "3.0.0", features = ['derive']}
+frame-metadata = { version = "15.0.0", features = ["v14"] }
 hex = { version = "0.4.3" }
 log = { version = "0.4" }
 scale-info = { version = "2.0.1", features = ["derive"] }
@@ -22,6 +23,3 @@ frame-support = { version = "4.0.0-dev", git = "https://github.com/paritytech/su
 frame-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
-
-# new parity repo
-frame-metadata = { version = "15.0.0", git = "https://github.com/paritytech/frame-metadata.git", branch = "main", features = ["v14"] }
