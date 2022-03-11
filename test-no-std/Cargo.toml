@@ -5,10 +5,10 @@ authors = ["Alain Brenzikofer <alain.brenzikofer@scs.ch>"]
 edition = "2021"
 
 [dependencies]
-libc = { version = "0.2", default-features = false }
+libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
 substrate-api-client = { path = "..", default-features = false }
 
 # substrate dependencies
-sp-io = { version = "5.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
