@@ -16,14 +16,14 @@ members = [
 
 [dependencies]
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
-log = { version = "0.4", optional = true }
+log = { version = "0.4.14", optional = true }
 metadata = { version = "15.0.0", default-features = false, package = "frame-metadata", features = ["v14"] }
-primitive-types = { version = "0.10.1", optional = true, features = ["codec"] }
-serde = { version = "1.0", optional = true, features = ["derive"] }
-serde_json = { version = "1.0", optional = true }
-thiserror = { version = "1.0", optional = true }
-ws = { version = "0.9.1", optional = true, features = ["ssl"] }
-codec = { package = 'parity-scale-codec', version = "3.0.0", default-features = false,  features = ['derive']}
+primitive-types = { version = "0.11.1", optional = true, features = ["codec"] }
+serde = { version = "1.0.136", optional = true, features = ["derive"] }
+serde_json = { version = "1.0.79", optional = true }
+thiserror = { version = "1.0.30", optional = true }
+ws = { version = "0.9.2", optional = true, features = ["ssl"] }
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 
 # Substrate dependencies
 sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -45,7 +45,7 @@ ac-node-api = { path = "node-api", optional = true }
 ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
-env_logger = "0.9"
+env_logger = "0.9.0"
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 clap = { version = "2.33", features = ["yaml"] }

@@ -5,7 +5,7 @@ authors = ["Alain Brenzikofer <alain.brenzikofer@scs.ch>"]
 edition = "2021"
 
 [dependencies]
-libc = { version = "0.2", default-features = false }
+libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
 substrate-api-client = { path = "..", default-features = false }
