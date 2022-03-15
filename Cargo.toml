@@ -49,6 +49,7 @@ env_logger = "0.9.0"
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 clap = { version = "2.33", features = ["yaml"] }
+wabt = "0.10.0"
 
 
 [features]
@@ -80,70 +81,3 @@ std = [
 ws-client = ["ws"]
 staking-xt = ["std", "staking"]
 
-[[example]]
-name = "example_get_storage"
-path = "src/examples/example_get_storage.rs"
-
-[[example]]
-name = "example_get_blocks"
-path = "src/examples/example_get_blocks.rs"
-
-[[example]]
-name = "example_transfer"
-path = "src/examples/example_transfer.rs"
-
-[[example]]
-name = "example_event_error_details"
-path = "src/examples/example_event_error_details.rs"
-
-[[example]]
-name = "example_event_callback"
-path = "src/examples/example_event_callback.rs"
-
-[[example]]
-name = "example_generic_extrinsic"
-path = "src/examples/example_generic_extrinsic.rs"
-
-# Todo: #179
-[[example]]
-name = "example_print_metadata"
-path = "src/examples/example_print_metadata.rs"
-
-[[example]]
-name = "example_compose_extrinsic_offline"
-path = "src/examples/example_compose_extrinsic_offline.rs"
-
-[[example]]
-name = "example_generic_event_callback"
-path = "src/examples/example_generic_event_callback.rs"
-
-[[example]]
-name = "example_benchmark_bulk_xt"
-path = "src/examples/example_benchmark_bulk_xt.rs"
-
-[[example]]
-name = "example_sudo"
-path = "src/examples/example_sudo.rs"
-
-[[example]]
-name = "example_get_existential_deposit"
-path = "src/examples/example_get_existential_deposit.rs"
-
-# DEPRECATED. might work but too much work to maintain, sorry
-
-# needed for contract example
-#[dev-dependencies]
-#wabt = "0.10.0"
-
-#[dev-dependencies.contracts]
-#git = "https://github.com/paritytech/substrate.git"
-#branch = "master"
-#package = "pallet-contracts"
-
-#[[example]]
-#name = "example_contract"
-#path = "src/examples/example_contract.rs"
-
-#[[example]]
-#name = "example_custom_storage_struct"
-#path = "src/examples/example_custom_storage_struct.rs"

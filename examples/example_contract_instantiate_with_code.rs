@@ -22,6 +22,7 @@ use codec::Decode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, XtStatus};
 
+#[allow(unused)]
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
     deployer: AccountId,
@@ -92,7 +93,7 @@ fn main() {
 }
 
 pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("../../src/examples/cli.yml");
+    let yml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
     let node_ip = matches.value_of("node-server").unwrap_or("127.0.0.1");
