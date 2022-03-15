@@ -22,6 +22,7 @@ use codec::Decode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, XtStatus};
 
+#[allow(unused)]
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
     deployer: AccountId,
