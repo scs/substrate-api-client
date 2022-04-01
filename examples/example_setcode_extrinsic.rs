@@ -46,7 +46,7 @@ fn main() {
     let call = compose_call!(
         api.metadata.clone(),
         "System",
-        "set_code_without_check",
+        "set_code_without_checks",
         new_wasm.to_vec()
     );
 
