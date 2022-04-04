@@ -1,7 +1,9 @@
 use codec::{Compact, Decode, Encode};
+use encointer_primitives::communities::CommunityIdentifier;
 use sp_core::{blake2_256, H256};
 use sp_runtime::generic::Era;
 use sp_std::prelude::*;
+use std::str::FromStr;
 
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
 /// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
@@ -9,11 +11,16 @@ use sp_std::prelude::*;
 /// This can be locked up in the System module. Fields that are merely PhantomData are not encoded and are
 /// therefore omitted here.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct GenericExtra(pub Era, pub Compact<u32>, pub Compact<u128>);
+pub struct GenericExtra(pub Era, pub Compact<u32>, pub AssetTip);
 
 impl GenericExtra {
     pub fn new(era: Era, nonce: u32) -> GenericExtra {
-        GenericExtra(era, Compact(nonce), Compact(0_u128))
+        GenericExtra(
+            era,
+            Compact(nonce),
+            // AssetTip::new(0), // without a community identifier the native token is used
+            AssetTip::new(0).of_asset(CommunityIdentifier::from_str("sqm1v79dF6b").unwrap()),
+        )
     }
 }
 
@@ -49,5 +56,36 @@ where
                 f(payload)
             }
         })
+    }
+}
+
+/// A tip payment made in the form of a specific asset.
+#[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
+pub struct AssetTip {
+    #[codec(compact)]
+    tip: u128,
+    asset: Option<CommunityIdentifier>,
+}
+
+impl AssetTip {
+    /// Create a new tip of the amount provided.
+    pub fn new(amount: u128) -> Self {
+        AssetTip {
+            tip: amount,
+            asset: None,
+        }
+    }
+
+    /// Designate the tip as being of a particular asset class.
+    /// If this is not set, then the native currency is used.
+    pub fn of_asset(mut self, asset: CommunityIdentifier) -> Self {
+        self.asset = Some(asset);
+        self
+    }
+}
+
+impl From<u128> for AssetTip {
+    fn from(n: u128) -> Self {
+        AssetTip::new(n)
     }
 }
