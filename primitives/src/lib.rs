@@ -3,8 +3,10 @@
 use codec::{Decode, Encode};
 
 pub use extrinsics::*;
+pub use signed_extra::*;
 
 pub mod extrinsics;
+pub mod signed_extra;
 
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;
