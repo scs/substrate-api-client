@@ -18,8 +18,8 @@ impl GenericExtra {
         GenericExtra(
             era,
             Compact(nonce),
-            // AssetTip::new(0), // without a community identifier the native token is used
-            AssetTip::new(0).of_asset(CommunityIdentifier::from_str("sqm1v79dF6b").unwrap()),
+            AssetTip::new(0), // without a community identifier the native token is used
+                              // AssetTip::new(0).of_asset(CommunityIdentifier::from_str("sqm1v79dF6b").unwrap()),
         )
     }
 }
