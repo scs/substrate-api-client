@@ -11,4 +11,4 @@ libc = { version = "0.2.119", default-features = false }
 substrate-api-client = { path = "..", default-features = false }
 
 # substrate dependencies
-sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
