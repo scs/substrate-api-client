@@ -133,7 +133,7 @@ macro_rules! compose_extrinsic {
                     Era::Immortal,
                     $api.genesis_hash,
                     $api.genesis_hash,
-                    $api.runtime_version.spec_version,
+                    2,
                     $api.runtime_version.transaction_version
                 )
             } else {
