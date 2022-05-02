@@ -23,7 +23,7 @@ use sp_runtime::app_crypto::sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
 use sp_runtime::MultiAddress;
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{Api, ApiResult, XtStatus};
+use substrate_api_client::{Api, ApiResult, PlainTipExtrinsicParams, XtStatus};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -41,7 +41,7 @@ fn main() {
     let from = AccountKeyring::Alice.pair();
 
     let client = WsRpcClient::new(&url);
-    let api = Api::<sr25519::Pair, _>::new(client)
+    let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 

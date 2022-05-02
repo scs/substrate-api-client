@@ -29,14 +29,14 @@ use node_template_runtime::Event;
 
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::utils::FromHexString;
-use substrate_api_client::Api;
+use substrate_api_client::{Api, PlainTipExtrinsicParams};
 
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
     let client = WsRpcClient::new(&url);
-    let api = Api::<sr25519::Pair, _>::new(client).unwrap();
+    let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams>::new(client).unwrap();
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();

@@ -21,8 +21,9 @@ use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 
 use substrate_api_client::rpc::WsRpcClient;
+use substrate_api_client::ExtrinsicParams;
 use substrate_api_client::{
-    compose_extrinsic, Api, GenericAddress, UncheckedExtrinsicV4, XtStatus,
+    compose_extrinsic, Api, GenericAddress, PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
 };
 
 fn main() {
@@ -32,7 +33,9 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::new(client).map(|api| api.set_signer(from)).unwrap();
+    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+        .map(|api| api.set_signer(from))
+        .unwrap();
 
     // set the recipient
     let to = AccountKeyring::Bob.to_account_id();

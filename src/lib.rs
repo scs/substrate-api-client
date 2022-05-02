@@ -29,8 +29,9 @@ pub mod utils;
 pub use crate::std::*;
 
 pub use ac_primitives::{
-    AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BlockNumber, GenericAddress,
-    GenericExtra, Hash, Index, Moment, RefCount, UncheckedExtrinsicV4,
+    AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BaseExtrinsicParams,
+    BlockNumber, ExtrinsicParams, GenericAddress, Hash, Index, Moment, PlainTipExtrinsicParams,
+    RefCount, UncheckedExtrinsicV4,
 };
 
 #[cfg(feature = "std")]

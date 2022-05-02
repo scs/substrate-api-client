@@ -18,7 +18,8 @@ use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 
 use substrate_api_client::{
-    compose_extrinsic, rpc::WsRpcClient, utils::FromHexString, Api, UncheckedExtrinsicV4, XtStatus,
+    compose_extrinsic, rpc::WsRpcClient, utils::FromHexString, Api, ExtrinsicParams,
+    PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[derive(Encode, Decode, Debug)]
@@ -34,7 +35,7 @@ fn main() {
     let client = WsRpcClient::new(url);
 
     let api = Api::new(client)
-        .map(|api| api.set_signer(signer.clone()))
+        .map(|api: Api<_, _, PlainTipExtrinsicParams>| api.set_signer(signer.clone()))
         .unwrap();
 
     let xt: UncheckedExtrinsicV4<_> =

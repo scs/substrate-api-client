@@ -19,7 +19,10 @@
 
 use crate::std::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4};
+use ac_primitives::{
+    Balance, CallIndex, ExtrinsicParams, GenericAddress, PlainTipExtrinsicParams,
+    PlainTipExtrinsicParamsBuilder, UncheckedExtrinsicV4,
+};
 use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
@@ -36,18 +39,23 @@ pub type BalanceSetBalanceFn = (
     Compact<Balance>,
 );
 
+pub type BalancesExtrinsicParamsBuilder = PlainTipExtrinsicParamsBuilder;
 pub type BalanceTransferXt = UncheckedExtrinsicV4<BalanceTransferFn>;
 pub type BalanceSetBalanceXt = UncheckedExtrinsicV4<BalanceSetBalanceFn>;
 
 #[cfg(feature = "std")]
-impl<P, Client> Api<P, Client>
+impl<P, Client, Params> Api<P, Client, Params>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
     MultiSigner: From<P::Public>,
     Client: RpcClient,
+    Params: ExtrinsicParams,
 {
-    pub fn balance_transfer(&self, to: GenericAddress, amount: Balance) -> BalanceTransferXt {
+    pub fn balance_transfer(&self, to: GenericAddress, amount: Balance) -> BalanceTransferXt
+    where
+        Params: ExtrinsicParams<OtherParams = BalancesExtrinsicParamsBuilder>,
+    {
         compose_extrinsic!(
             self,
             BALANCES_MODULE,
@@ -62,7 +70,10 @@ where
         who: GenericAddress,
         free_balance: Balance,
         reserved_balance: Balance,
-    ) -> BalanceSetBalanceXt {
+    ) -> BalanceSetBalanceXt
+    where
+        Params: ExtrinsicParams<OtherParams = BalancesExtrinsicParamsBuilder>,
+    {
         compose_extrinsic!(
             self,
             BALANCES_MODULE,

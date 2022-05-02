@@ -2,8 +2,10 @@
 
 use codec::{Decode, Encode};
 
+pub use extrinsic_params::*;
 pub use extrinsics::*;
 
+pub mod extrinsic_params;
 pub mod extrinsics;
 
 /// The block number type used in this runtime.
