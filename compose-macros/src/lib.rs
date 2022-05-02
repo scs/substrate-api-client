@@ -74,18 +74,10 @@ macro_rules! compose_extrinsic_offline {
         use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
 
         let other_params = $extrinsic_params.unwrap_or_default();
-        println!("Extrinsics param : {:?}", other_params);
 
-        let params = BaseExtrinsicParams::new(
-            $runtime_spec_version,
-            $transaction_version,
-            $nonce,
-            $genesis_hash,
-            other_params,
-        );
+        let params = BaseExtrinsicParams::new($nonce, other_params);
 
         let extra = GenericExtra::from(params);
-        println!("Generic extra : {:?}", extra);
         let raw_payload = SignedPayload::from_raw(
             $call.clone(),
             extra.clone(),

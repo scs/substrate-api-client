@@ -21,8 +21,8 @@
 use crate::std::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-    Balance, CallIndex, ExtrinsicParams, GenericAddress, PlainTipExtrinsicParams,
-    PlainTipExtrinsicParamsBuilder, UncheckedExtrinsicV4,
+    Balance, CallIndex, ExtrinsicParams, GenericAddress, PlainTipExtrinsicParamsBuilder,
+    UncheckedExtrinsicV4,
 };
 use codec::Compact;
 use sp_core::crypto::Pair;

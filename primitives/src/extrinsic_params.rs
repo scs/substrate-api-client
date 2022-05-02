@@ -1,5 +1,4 @@
 use codec::{Compact, Decode, Encode};
-use core::marker::PhantomData;
 use sp_core::{blake2_256, H256};
 use sp_runtime::generic::Era;
 use sp_std::prelude::*;
@@ -23,25 +22,13 @@ pub trait ExtrinsicParams {
     type OtherParams;
 
     /// Construct a new instance of our [`ExtrinsicParams`]
-    fn new(
-        spec_version: u32,
-        tx_version: u32,
-        nonce: u32,
-        genesis_hash: H256,
-        other_params: Self::OtherParams,
-    ) -> Self;
+    fn new(nonce: u32, other_params: Self::OtherParams) -> Self;
 
     /// This is expected to SCALE encode the "signed extra" parameters
     /// to some buffer that has been provided. These are the parameters
     /// which are sent along with the transaction, as well as taken into
     /// account when signing the transaction.
     fn encode_extra_to(&self, v: &mut Vec<u8>);
-
-    /// This is expected to SCALE encode the "additional" parameters
-    /// to some buffer that has been provided. These parameters are _not_
-    /// sent along with the transaction, but are taken into account when
-    /// signing it, meaning the client and node must agree on their values.
-    fn encode_additional_to(&self, v: &mut Vec<u8>);
 }
 
 /// A struct representing the signed extra and additional parameters required
@@ -63,11 +50,6 @@ pub struct BaseExtrinsicParams<Tip> {
     era: Era,
     nonce: u32,
     tip: Tip,
-    spec_version: u32,
-    transaction_version: u32,
-    genesis_hash: H256,
-    mortality_checkpoint: H256,
-    marker: PhantomData<()>,
 }
 
 /// This builder allows you to provide the parameters that can be configured in order to
@@ -120,16 +102,7 @@ where
     u128: From<Tip>,
 {
     fn from(p: BaseExtrinsicParams<Tip>) -> GenericExtra {
-        let BaseExtrinsicParams {
-            era,
-            nonce,
-            tip,
-            spec_version,
-            transaction_version,
-            genesis_hash,
-            mortality_checkpoint,
-            marker,
-        } = p;
+        let BaseExtrinsicParams { era, nonce, tip } = p;
         GenericExtra(era, Compact(nonce), Compact(tip.into()))
     }
 }
@@ -137,22 +110,11 @@ where
 impl<Tip: Encode> ExtrinsicParams for BaseExtrinsicParams<Tip> {
     type OtherParams = BaseExtrinsicParamsBuilder<Tip>;
 
-    fn new(
-        spec_version: u32,
-        transaction_version: u32,
-        nonce: u32,
-        genesis_hash: H256,
-        other_params: Self::OtherParams,
-    ) -> Self {
+    fn new(nonce: u32, other_params: Self::OtherParams) -> Self {
         BaseExtrinsicParams {
             era: other_params.era,
-            mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
             tip: other_params.tip,
             nonce,
-            spec_version,
-            transaction_version,
-            genesis_hash,
-            marker: PhantomData,
         }
     }
 
@@ -160,16 +122,6 @@ impl<Tip: Encode> ExtrinsicParams for BaseExtrinsicParams<Tip> {
         let nonce: u64 = self.nonce.into();
         let tip = self.tip.encode(); //?
         (self.era, Compact(nonce), tip).encode_to(v);
-    }
-
-    fn encode_additional_to(&self, v: &mut Vec<u8>) {
-        (
-            self.spec_version,
-            self.transaction_version,
-            self.genesis_hash,
-            self.mortality_checkpoint,
-        )
-            .encode_to(v);
     }
 }
 

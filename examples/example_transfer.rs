@@ -39,7 +39,6 @@ fn main() {
         Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
-    println!("sending extrinsic with nonce {}", api.get_nonce().unwrap());
 
     // generate extrinsic
     let xt = api.balance_transfer(MultiAddress::Id(to.clone()), 1000);

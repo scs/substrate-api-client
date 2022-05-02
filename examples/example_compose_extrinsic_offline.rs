@@ -59,26 +59,8 @@ fn main() {
     let tx_params = PlainTipExtrinsicParamsBuilder::new()
         .era(Era::mortal(period, h.number.into()), api.genesis_hash)
         .tip(0);
-    println!("xt params: {:?}", tx_params);
-    println!("xt spec version: {:?}", api.runtime_version.spec_version);
-    println!(
-        "xt trans version: {:?}",
-        api.runtime_version.transaction_version
-    );
-    println!("xt genesis hash: {:?}", api.genesis_hash);
 
     let updated_api = api.set_extrinsic_params(tx_params);
-    println!("xt params in api: {:?}", updated_api.extrinsic_params);
-
-    println!(
-        "xt updated spec version: {:?}",
-        updated_api.runtime_version.spec_version
-    );
-    println!(
-        "xt updated trans version: {:?}",
-        updated_api.runtime_version.transaction_version
-    );
-    println!("xt updated  genesis hash: {:?}", updated_api.genesis_hash);
 
     // compose the extrinsic with all the element
     #[allow(clippy::redundant_clone)]
