@@ -518,7 +518,7 @@ where
         xthex_prefixed: String,
         exit_on: XtStatus,
     ) -> ApiResult<Option<Hash>> {
-        //println!("sending extrinsic: {:?}", xthex_prefixed);
+        debug!("sending extrinsic: {:?}", xthex_prefixed);
         self.client.send_extrinsic(xthex_prefixed, exit_on)
     }
 
