@@ -63,7 +63,6 @@ where
     MultiSignature: From<P::Signature>,
     MultiSigner: From<P::Public>,
     Client: RpcClient,
-    Params: ExtrinsicParams,
     Params: ExtrinsicParams<OtherParams = BaseExtrinsicParamsBuilder<Tip>>,
     Tip: Default + Encode + Copy,
     u128: From<Tip>,
