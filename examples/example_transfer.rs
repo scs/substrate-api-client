@@ -20,7 +20,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{Api, XtStatus};
+use substrate_api_client::{Api, PlainTipExtrinsicParams, XtStatus};
 
 fn main() {
     env_logger::init();
@@ -29,7 +29,7 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::new(client)
+    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 
@@ -39,6 +39,7 @@ fn main() {
         Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
         None => println!("[+] Bob's Free Balance is is 0\n"),
     }
+
     // generate extrinsic
     let xt = api.balance_transfer(MultiAddress::Id(to.clone()), 1000);
 

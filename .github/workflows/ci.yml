@@ -76,6 +76,7 @@ jobs:
       - name: Build node-template
         run: |
           cd substrate
+          cargo update  # // Todo: remove when substrate fix #https://github.com/paritytech/substrate/issues/11402
           cargo build --release -p node-template
 
       - name: Upload node-template

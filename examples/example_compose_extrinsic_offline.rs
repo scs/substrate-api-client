@@ -18,13 +18,18 @@
 
 use clap::{load_yaml, App};
 
+use ac_primitives::PlainTipExtrinsicParamsBuilder;
 use node_template_runtime::{BalancesCall, Call, Header};
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
+use sp_runtime::generic::Era;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{compose_extrinsic_offline, Api, UncheckedExtrinsicV4, XtStatus};
+use substrate_api_client::ExtrinsicParams;
+use substrate_api_client::{
+    compose_extrinsic_offline, Api, PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+};
 
 fn main() {
     env_logger::init();
@@ -33,7 +38,10 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::new(client).map(|api| api.set_signer(from)).unwrap();
+
+    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+        .map(|api| api.set_signer(from))
+        .unwrap();
 
     // Information for Era for mortal transactions
     let head = api.get_finalized_head().unwrap().unwrap();
@@ -48,26 +56,34 @@ fn main() {
     // define the recipient
     let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
+    let tx_params = PlainTipExtrinsicParamsBuilder::new()
+        .era(Era::mortal(period, h.number.into()), api.genesis_hash)
+        .tip(0);
+
+    let updated_api = api.set_extrinsic_params(tx_params);
+
     // compose the extrinsic with all the element
     #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
-        api.clone().signer.unwrap(),
+        updated_api.clone().signer.unwrap(),
         Call::Balances(BalancesCall::transfer {
             dest: to.clone(),
             value: 42
         }),
-        api.get_nonce().unwrap(),
-        Era::mortal(period, h.number.into()),
-        api.genesis_hash,
+        updated_api.get_nonce().unwrap(),
+        updated_api.genesis_hash,
         head,
-        api.runtime_version.spec_version,
-        api.runtime_version.transaction_version
+        updated_api.runtime_version.spec_version,
+        updated_api.runtime_version.transaction_version,
+        updated_api.extrinsic_params
     );
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
+    //println!("[+] Encode Extrinsic:\n {:?}\n", xt.hex_encode());
+
     // send and watch extrinsic until in block
-    let blockh = api
+    let blockh = updated_api
         .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
     println!("[+] Transaction got included in block {:?}", blockh);

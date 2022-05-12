@@ -17,14 +17,14 @@ limitations under the License.
 use clap::{load_yaml, App};
 use sp_runtime::app_crypto::sp_core::sr25519;
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::Api;
+use substrate_api_client::{Api, PlainTipExtrinsicParams};
 
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
     let client = WsRpcClient::new(&url);
-    let api = Api::<sr25519::Pair, _>::new(client).unwrap();
+    let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams>::new(client).unwrap();
 
     // get existential deposit
     let min_balance = api.get_existential_deposit().unwrap();

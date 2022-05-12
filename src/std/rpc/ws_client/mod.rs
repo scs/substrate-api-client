@@ -17,6 +17,7 @@
 use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 
 use ac_node_api::events::{EventsDecoder, Raw, RawEvent};
+use ac_primitives::ExtrinsicParams;
 use codec::Decode;
 use log::{debug, error, info, warn};
 use serde_json::Value;
@@ -61,18 +62,22 @@ pub trait Subscriber {
         -> Result<(), Error>;
 }
 
-impl<P> Api<P, WsRpcClient> {
+impl<P, Params> Api<P, WsRpcClient, Params>
+where
+    Params: ExtrinsicParams,
+{
     pub fn default_with_url(url: &str) -> ApiResult<Self> {
         let client = WsRpcClient::new(url);
         Self::new(client)
     }
 }
 
-impl<P, Client> Api<P, Client>
+impl<P, Client, Params> Api<P, Client, Params>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
     Client: RpcClientTrait + Subscriber,
+    Params: ExtrinsicParams,
 {
     pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
         debug!("subscribing to events");

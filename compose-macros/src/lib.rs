@@ -62,17 +62,22 @@ macro_rules! compose_extrinsic_offline {
     ($signer: expr,
     $call: expr,
     $nonce: expr,
-    $era: expr,
     $genesis_hash: expr,
     $genesis_or_current_hash: expr,
     $runtime_spec_version: expr,
-    $transaction_version: expr) => {{
+    $transaction_version: expr,
+    $extrinsic_params: expr) => {{
         use $crate::primitives::{
-            GenericAddress, GenericExtra, SignedPayload, UncheckedExtrinsicV4,
+            BaseExtrinsicParams, BaseExtrinsicParamsBuilder, GenericAddress, GenericExtra,
+            SignedPayload, UncheckedExtrinsicV4,
         };
         use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
 
-        let extra = GenericExtra::new($era, $nonce);
+        let other_params = $extrinsic_params.unwrap_or_default();
+
+        let params = BaseExtrinsicParams::new($nonce, other_params);
+
+        let extra = GenericExtra::from(params);
         let raw_payload = SignedPayload::from_raw(
             $call.clone(),
             extra.clone(),
@@ -121,20 +126,20 @@ macro_rules! compose_extrinsic {
             use $crate::log::debug;
             use $crate::primitives::UncheckedExtrinsicV4;
             use $crate::sp_runtime::generic::Era;
+            use $crate::primitives::BaseExtrinsicParamsBuilder;
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
             let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
-
             if let Some(signer) = $api.signer.clone() {
                 $crate::compose_extrinsic_offline!(
                     signer,
                     call.clone(),
                     $api.get_nonce().unwrap(),
-                    Era::Immortal,
                     $api.genesis_hash,
                     $api.genesis_hash,
                     $api.runtime_version.spec_version,
-                    $api.runtime_version.transaction_version
+                    $api.runtime_version.transaction_version,
+                    $api.extrinsic_params
                 )
             } else {
                 UncheckedExtrinsicV4 {

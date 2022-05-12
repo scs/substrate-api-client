@@ -20,7 +20,7 @@ use std::sync::mpsc::channel;
 use clap::{load_yaml, App};
 use codec::Decode;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, XtStatus};
+use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, XtStatus};
 
 #[allow(unused)]
 #[derive(Decode)]
@@ -36,7 +36,9 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::new(client).map(|api| api.set_signer(from)).unwrap();
+    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+        .map(|api| api.set_signer(from))
+        .unwrap();
     println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
     // contract to be deployed on the chain

@@ -2,7 +2,7 @@ pub use crate::error::{ApiResult, Error as ApiClientError};
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
 pub use ac_node_api::metadata::{InvalidMetadataError, Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance};
+use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 pub use metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;
 pub use sp_core::crypto::Pair;
@@ -47,7 +47,7 @@ pub trait RpcClient {
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, Value, XtStatus,
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, Value, XtStatus, PlainTipExtrinsicParams
 /// };
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
@@ -93,27 +93,30 @@ pub trait RpcClient {
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<(), _>::new(client);
+/// let _api = Api::<(), _, PlainTipExtrinsicParams>::new(client);
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<P, Client>
+pub struct Api<P, Client, Params>
 where
     Client: RpcClient,
+    Params: ExtrinsicParams,
 {
     pub signer: Option<P>,
     pub genesis_hash: Hash,
     pub metadata: Metadata,
     pub runtime_version: RuntimeVersion,
     client: Client,
+    pub extrinsic_params: Option<Params::OtherParams>,
 }
 
-impl<P, Client> Api<P, Client>
+impl<P, Client, Params> Api<P, Client, Params>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
     MultiSigner: From<P::Public>,
     Client: RpcClient,
+    Params: ExtrinsicParams,
 {
     pub fn signer_account(&self) -> Option<AccountId> {
         let pair = self.signer.as_ref()?;
@@ -131,9 +134,10 @@ where
     }
 }
 
-impl<P, Client> Api<P, Client>
+impl<P, Client, Params> Api<P, Client, Params>
 where
     Client: RpcClient,
+    Params: ExtrinsicParams,
 {
     pub fn new(client: Client) -> ApiResult<Self> {
         let genesis_hash = Self::_get_genesis_hash(&client)?;
@@ -151,12 +155,18 @@ where
             metadata,
             runtime_version,
             client,
+            extrinsic_params: None,
         })
     }
 
     #[must_use]
     pub fn set_signer(mut self, signer: P) -> Self {
         self.signer = Some(signer);
+        self
+    }
+
+    pub fn set_extrinsic_params(mut self, extrinsic_params: Params::OtherParams) -> Self {
+        self.extrinsic_params = Some(extrinsic_params);
         self
     }
 

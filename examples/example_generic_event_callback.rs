@@ -22,7 +22,7 @@ use codec::Decode;
 use sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::Api;
+use substrate_api_client::{Api, PlainTipExtrinsicParams};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -37,7 +37,7 @@ fn main() {
     let url = get_node_url_from_cli();
 
     let client = WsRpcClient::new(&url);
-    let api = Api::<sr25519::Pair, _>::new(client).unwrap();
+    let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams>::new(client).unwrap();
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
