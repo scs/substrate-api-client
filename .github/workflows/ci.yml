@@ -76,6 +76,7 @@ jobs:
       - name: Build node-template
         run: |
           cd substrate
+          cargo update
           cargo build --release -p node-template
 
       - name: Upload node-template
