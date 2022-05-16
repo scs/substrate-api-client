@@ -52,14 +52,14 @@ Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
 The following examples can be found in the [examples](/src/examples) folder:
 
-* [example_compose_extrinsic_offline](/src/examples/example_compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
-* [example_contract](/src/examples/example_contract.rs): Handle ink! contracts (put, create, and call). **DEPRECATED!**
-* [example_custom_storage_struct](/src/examples/example_custom_storage_struct.rs): Fetch and decode custom structs from the runtime. **DEPRECATED!**
-* [example_event_callback](/src/examples/example_event_callback.rs): Subscribe and react on events.
-* [example_generic_extrinsic](/src/examples/example_generic_extrinsic.rs): Compose an extrinsic for any call in any module by supplying the module and call name as strings.
-* [example_get_storage](/src/examples/example_get_storage.rs): Read storage values.
-* [example_print_metadata](/src/examples/example_print_metadata.rs): Print the metadata of the node in a readable way.
-* [example_transfer](/src/examples/example_transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic
+* [compose_extrinsic_offline](/src/examples/compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
+* [contract](/src/examples/contract.rs): Handle ink! contracts (put, create, and call). **DEPRECATED!**
+* [custom_storage_struct](/src/examples/custom_storage_struct.rs): Fetch and decode custom structs from the runtime. **DEPRECATED!**
+* [event_callback](/src/examples/event_callback.rs): Subscribe and react on events.
+* [generic_extrinsic](/src/examples/generic_extrinsic.rs): Compose an extrinsic for any call in any module by supplying the module and call name as strings.
+* [get_storage](/src/examples/get_storage.rs): Read storage values.
+* [print_metadata](/src/examples/print_metadata.rs): Print the metadata of the node in a readable way.
+* [transfer](/src/examples/transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic
 
 ## Alternatives
 
