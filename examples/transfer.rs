@@ -14,7 +14,6 @@
 */
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
-use clap::{load_yaml, App};
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
@@ -24,11 +23,10 @@ use substrate_api_client::{Api, PlainTipExtrinsicParams, XtStatus};
 
 fn main() {
     env_logger::init();
-    let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
-    let client = WsRpcClient::new(&url);
+    let client = WsRpcClient::new("ws://127.0.0.1:9944");
     let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
@@ -60,15 +58,4 @@ fn main() {
     // verify that Bob's free Balance increased
     let bob = api.get_account_data(&to).unwrap().unwrap();
     println!("[+] Bob's Free Balance is now {}\n", bob.free);
-}
-
-pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yml).get_matches();
-
-    let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9944");
-    let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}\n", url);
-    url
 }

@@ -16,7 +16,6 @@
 //! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
 //! module, whereas the desired module and call are supplied as a string.
 
-use clap::{load_yaml, App};
 use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
@@ -28,11 +27,10 @@ use substrate_api_client::{ExtrinsicParams, PlainTipExtrinsicParams};
 
 fn main() {
     env_logger::init();
-    let url = get_node_url_from_cli();
 
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let sudoer = AccountKeyring::Alice.pair();
-    let client = WsRpcClient::new(&url);
+    let client = WsRpcClient::new("ws://127.0.0.1:9944");
     let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(sudoer))
         .unwrap();
@@ -58,15 +56,4 @@ fn main() {
         .send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
         .unwrap();
     println!("[+] Transaction got included. Hash: {:?}", tx_hash);
-}
-
-pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yml).get_matches();
-
-    let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9944");
-    let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}\n", url);
-    url
 }

@@ -17,7 +17,6 @@
 /// implying no runtime needs to be imported
 use std::sync::mpsc::channel;
 
-use clap::{load_yaml, App};
 use codec::Decode;
 use sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
@@ -34,9 +33,8 @@ struct TransferEventArgs {
 
 fn main() {
     env_logger::init();
-    let url = get_node_url_from_cli();
 
-    let client = WsRpcClient::new(&url);
+    let client = WsRpcClient::new("ws://127.0.0.1:9944");
     let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams>::new(client).unwrap();
 
     println!("Subscribe to events");
@@ -50,15 +48,4 @@ fn main() {
     println!("Transactor: {:?}", args.from);
     println!("Destination: {:?}", args.to);
     println!("Value: {:?}", args.value);
-}
-
-pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yml).get_matches();
-
-    let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-    let node_port = matches.value_of("node-port").unwrap_or("9944");
-    let url = format!("{}:{}", node_ip, node_port);
-    println!("Interacting with node on {}", url);
-    url
 }
