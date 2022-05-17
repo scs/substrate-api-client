@@ -61,11 +61,6 @@ macro_rules! compose_call {
 macro_rules! compose_extrinsic_offline {
     ($signer: expr,
     $call: expr,
-    $nonce: expr,
-    $genesis_hash: expr,
-    $genesis_or_current_hash: expr, ///Todo remove
-    $runtime_spec_version: expr,
-    $transaction_version: expr,
     $params: expr) => {{
         use $crate::primitives::{GenericAddress, SignedPayload, UncheckedExtrinsicV4};
         use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
@@ -111,17 +106,11 @@ macro_rules! compose_extrinsic {
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
             let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
-            let nonce = $api.get_nonce().unwrap();
             if let Some(signer) = $api.signer.clone() {
                 $crate::compose_extrinsic_offline!(
                     signer,
                     call.clone(),
-                    nonce,
-                    $api.genesis_hash,
-                    $api.genesis_hash,
-                    $api.runtime_version.spec_version,
-                    $api.runtime_version.transaction_version,
-                    $api.extrinsic_params(nonce)
+                    $api.extrinsic_params( $api.get_nonce().unwrap())
                 )
             } else {
                 UncheckedExtrinsicV4 {

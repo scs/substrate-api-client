@@ -57,7 +57,7 @@ fn main() {
     let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
     let tx_params = PlainTipExtrinsicParamsBuilder::new()
-        .era(Era::mortal(period, h.number.into()), api.genesis_hash)
+        .era(Era::mortal(period, h.number.into()), head)
         .tip(0);
 
     let updated_api = api.set_extrinsic_params_builder(tx_params);
@@ -70,11 +70,6 @@ fn main() {
             dest: to.clone(),
             value: 42
         }),
-        nonce,
-        updated_api.genesis_hash,
-        head,
-        updated_api.runtime_version.spec_version,
-        updated_api.runtime_version.transaction_version,
         updated_api.extrinsic_params(nonce)
     );
 

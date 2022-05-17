@@ -60,11 +60,6 @@ fn main() {
                 dest: GenericAddress::Id(to.clone()),
                 value: 1_000_000
             }),
-            nonce,
-            api.genesis_hash,
-            api.genesis_hash,
-            api.runtime_version.spec_version,
-            api.runtime_version.transaction_version,
             api.extrinsic_params(nonce)
         );
         // send and watch extrinsic until finalized
