@@ -23,7 +23,7 @@ pub trait ExtrinsicParams {
     type OtherParams: Default + Clone;
 
     /// SignedExtra format of the node.
-    type SignedExtra;
+    type SignedExtra: Copy + Encode;
 
     /// Additional Signed format of the node
     type AdditionalSigned: Encode;

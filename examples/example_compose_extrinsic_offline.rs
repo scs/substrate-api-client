@@ -64,7 +64,7 @@ fn main() {
     let nonce = updated_api.get_nonce().unwrap();
     // compose the extrinsic with all the element
     #[allow(clippy::redundant_clone)]
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
+    let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
         updated_api.clone().signer.unwrap(),
         Call::Balances(BalancesCall::transfer {
             dest: to.clone(),
