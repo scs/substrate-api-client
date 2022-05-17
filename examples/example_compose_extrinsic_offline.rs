@@ -60,8 +60,8 @@ fn main() {
         .era(Era::mortal(period, h.number.into()), api.genesis_hash)
         .tip(0);
 
-    let updated_api = api.set_extrinsic_params(tx_params);
-
+    let updated_api = api.set_extrinsic_params_builder(tx_params);
+    let nonce = updated_api.get_nonce().unwrap();
     // compose the extrinsic with all the element
     #[allow(clippy::redundant_clone)]
     let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
@@ -70,12 +70,12 @@ fn main() {
             dest: to.clone(),
             value: 42
         }),
-        updated_api.get_nonce().unwrap(),
+        nonce,
         updated_api.genesis_hash,
         head,
         updated_api.runtime_version.spec_version,
         updated_api.runtime_version.transaction_version,
-        updated_api.extrinsic_params
+        updated_api.extrinsic_params(nonce)
     );
 
     println!("[+] Composed Extrinsic:\n {:?}\n", xt);

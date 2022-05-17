@@ -65,7 +65,7 @@ fn main() {
             api.genesis_hash,
             api.runtime_version.spec_version,
             api.runtime_version.transaction_version,
-            api.extrinsic_params
+            api.extrinsic_params(nonce)
         );
         // send and watch extrinsic until finalized
         println!("sending extrinsic with nonce {}", nonce);

@@ -24,7 +24,7 @@ use sp_runtime::MultiSignature;
 use sp_std::fmt;
 use sp_std::prelude::*;
 
-use crate::GenericExtra;
+use crate::SubstrateDefaultSignedExtra;
 pub use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 
 pub type AccountIndex = u64;
@@ -37,7 +37,7 @@ pub type CallIndex = [u8; 2];
 /// The SingedExtra used does not need to implement SingedExtension here.
 #[derive(Clone, Eq, PartialEq)]
 pub struct UncheckedExtrinsicV4<Call> {
-    pub signature: Option<(GenericAddress, MultiSignature, GenericExtra)>,
+    pub signature: Option<(GenericAddress, MultiSignature, SubstrateDefaultSignedExtra)>,
     pub function: Call,
 }
 
@@ -49,7 +49,7 @@ where
         function: Call,
         signed: GenericAddress,
         signature: MultiSignature,
-        extra: GenericExtra,
+        extra: SubstrateDefaultSignedExtra,
     ) -> Self {
         UncheckedExtrinsicV4 {
             signature: Some((signed, signature, extra)),
@@ -173,12 +173,12 @@ mod tests {
         let tx_params =
             PlainTipExtrinsicParamsBuilder::new().era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
-        let default_extra = BaseExtrinsicParams::new(0, tx_params);
+        let default_extra = BaseExtrinsicParams::new(0, 0, 0, Hash::from([0u8; 32]), tx_params);
         let xt = UncheckedExtrinsicV4::new_signed(
             vec![1, 1, 1],
             account.into(),
             multi_sig,
-            GenericExtra::from(default_extra),
+            default_extra.signed_extra(),
         );
         let xt_enc = xt.encode();
         assert_eq!(xt, Decode::decode(&mut xt_enc.as_slice()).unwrap())
