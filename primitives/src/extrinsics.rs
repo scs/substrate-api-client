@@ -24,7 +24,6 @@ use sp_runtime::MultiSignature;
 use sp_std::fmt;
 use sp_std::prelude::*;
 
-use crate::SubstrateDefaultSignedExtra;
 pub use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 
 pub type AccountIndex = u64;
@@ -36,20 +35,21 @@ pub type CallIndex = [u8; 2];
 /// Mirrors the currently used Extrinsic format (V4) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
 #[derive(Clone, Eq, PartialEq)]
-pub struct UncheckedExtrinsicV4<Call> {
-    pub signature: Option<(GenericAddress, MultiSignature, SubstrateDefaultSignedExtra)>,
+pub struct UncheckedExtrinsicV4<Call, SignedExtra> {
+    pub signature: Option<(GenericAddress, MultiSignature, SignedExtra)>,
     pub function: Call,
 }
 
-impl<Call> UncheckedExtrinsicV4<Call>
+impl<Call, SignedExtra> UncheckedExtrinsicV4<Call, SignedExtra>
 where
     Call: Encode,
+    SignedExtra: Encode,
 {
     pub fn new_signed(
         function: Call,
         signed: GenericAddress,
         signature: MultiSignature,
-        extra: SubstrateDefaultSignedExtra,
+        extra: SignedExtra,
     ) -> Self {
         UncheckedExtrinsicV4 {
             signature: Some((signed, signature, extra)),
@@ -64,9 +64,10 @@ where
     }
 }
 
-impl<Call> fmt::Debug for UncheckedExtrinsicV4<Call>
+impl<Call, SignedExtra> fmt::Debug for UncheckedExtrinsicV4<Call, SignedExtra>
 where
     Call: fmt::Debug,
+    SignedExtra: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -80,9 +81,10 @@ where
 
 const V4: u8 = 4;
 
-impl<Call> Encode for UncheckedExtrinsicV4<Call>
+impl<Call, SignedExtra> Encode for UncheckedExtrinsicV4<Call, SignedExtra>
 where
     Call: Encode,
+    SignedExtra: Encode,
 {
     fn encode(&self) -> Vec<u8> {
         encode_with_vec_prefix::<Self, _>(|v| {
@@ -100,9 +102,10 @@ where
     }
 }
 
-impl<Call> Decode for UncheckedExtrinsicV4<Call>
+impl<Call, SignedExtra> Decode for UncheckedExtrinsicV4<Call, SignedExtra>
 where
     Call: Decode + Encode,
+    SignedExtra: Decode + Encode,
 {
     fn decode<I: Input>(input: &mut I) -> Result<Self, Error> {
         // This is a little more complicated than usual since the binary format must be compatible

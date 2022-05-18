@@ -43,7 +43,7 @@ fn main() {
     // call Balances::transfer
     // the names are given as strings
     #[allow(clippy::redundant_clone)]
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(
+    let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(
         api.clone(),
         "Balances",
         "transfer",
