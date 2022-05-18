@@ -110,7 +110,7 @@ macro_rules! compose_extrinsic {
                 $crate::compose_extrinsic_offline!(
                     signer,
                     call.clone(),
-                    $api.extrinsic_params( $api.get_nonce().unwrap())
+                    $api.extrinsic_params($api.get_nonce().unwrap())
                 )
             } else {
                 UncheckedExtrinsicV4 {
