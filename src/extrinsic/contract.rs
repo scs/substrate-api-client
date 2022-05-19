@@ -20,11 +20,8 @@
 
 use crate::std::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{
-    Balance, BaseExtrinsicParamsBuilder, CallIndex, ExtrinsicParams, GenericAddress,
-    UncheckedExtrinsicV4,
-};
-use codec::{Compact, Encode};
+use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
+use codec::Compact;
 use sp_core::crypto::Pair;
 use sp_core::H256 as Hash;
 use sp_runtime::{MultiSignature, MultiSigner};
@@ -51,23 +48,27 @@ pub type ContractInstantiateFn = (CallIndex, Endowment, GasLimit, Hash, Data);
 pub type ContractInstantiateWithCodeFn = (CallIndex, Endowment, GasLimit, Code, Data, Salt);
 pub type ContractCallFn = (CallIndex, Destination, Value, GasLimit, Data);
 
-pub type ContractPutCodeXt = UncheckedExtrinsicV4<ContractPutCodeFn>;
-pub type ContractInstantiateXt = UncheckedExtrinsicV4<ContractInstantiateFn>;
-pub type ContractInstantiateWithCodeXt = UncheckedExtrinsicV4<ContractInstantiateWithCodeFn>;
-pub type ContractCallXt = UncheckedExtrinsicV4<ContractCallFn>;
+pub type ContractPutCodeXt<SignedExtra> = UncheckedExtrinsicV4<ContractPutCodeFn, SignedExtra>;
+pub type ContractInstantiateXt<SignedExtra> =
+    UncheckedExtrinsicV4<ContractInstantiateFn, SignedExtra>;
+pub type ContractInstantiateWithCodeXt<SignedExtra> =
+    UncheckedExtrinsicV4<ContractInstantiateWithCodeFn, SignedExtra>;
+pub type ContractCallXt<SignedExtra> = UncheckedExtrinsicV4<ContractCallFn, SignedExtra>;
 
 #[cfg(feature = "std")]
-impl<P, Client, Params, Tip> Api<P, Client, Params>
+impl<P, Client, Params> Api<P, Client, Params>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
     MultiSigner: From<P::Public>,
     Client: RpcClient,
-    Params: ExtrinsicParams<OtherParams = BaseExtrinsicParamsBuilder<Tip>>,
-    Tip: Default + Encode + Copy,
-    u128: From<Tip>,
+    Params: ExtrinsicParams,
 {
-    pub fn contract_put_code(&self, gas_limit: Gas, code: Data) -> ContractPutCodeXt {
+    pub fn contract_put_code(
+        &self,
+        gas_limit: Gas,
+        code: Data,
+    ) -> ContractPutCodeXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
@@ -83,7 +84,7 @@ where
         gas_limit: Gas,
         code_hash: Hash,
         data: Data,
-    ) -> ContractInstantiateXt {
+    ) -> ContractInstantiateXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
@@ -102,7 +103,7 @@ where
         code: Data,
         data: Data,
         salt: Data,
-    ) -> ContractInstantiateWithCodeXt {
+    ) -> ContractInstantiateWithCodeXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             CONTRACTS_MODULE,
@@ -121,7 +122,7 @@ where
         value: Balance,
         gas_limit: Gas,
         data: Data,
-    ) -> ContractCallXt {
+    ) -> ContractCallXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             CONTRACTS_MODULE,

@@ -107,7 +107,7 @@ where
     pub metadata: Metadata,
     pub runtime_version: RuntimeVersion,
     client: Client,
-    pub extrinsic_params: Option<Params::OtherParams>,
+    pub extrinsic_params_builder: Option<Params::OtherParams>,
 }
 
 impl<P, Client, Params> Api<P, Client, Params>
@@ -155,7 +155,7 @@ where
             metadata,
             runtime_version,
             client,
-            extrinsic_params: None,
+            extrinsic_params_builder: None,
         })
     }
 
@@ -165,8 +165,8 @@ where
         self
     }
 
-    pub fn set_extrinsic_params(mut self, extrinsic_params: Params::OtherParams) -> Self {
-        self.extrinsic_params = Some(extrinsic_params);
+    pub fn set_extrinsic_params_builder(mut self, extrinsic_params: Params::OtherParams) -> Self {
+        self.extrinsic_params_builder = Some(extrinsic_params);
         self
     }
 
@@ -211,6 +211,16 @@ where
         }
     }
 
+    pub fn extrinsic_params(&self, nonce: u32) -> Params {
+        let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
+        <Params as ExtrinsicParams>::new(
+            self.runtime_version.spec_version,
+            self.runtime_version.transaction_version,
+            nonce,
+            self.genesis_hash,
+            extrinsic_params_builder,
+        )
+    }
     pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
         Self::_get_metadata(&self.client)
     }

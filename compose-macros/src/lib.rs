@@ -61,36 +61,13 @@ macro_rules! compose_call {
 macro_rules! compose_extrinsic_offline {
     ($signer: expr,
     $call: expr,
-    $nonce: expr,
-    $genesis_hash: expr,
-    $genesis_or_current_hash: expr,
-    $runtime_spec_version: expr,
-    $transaction_version: expr,
-    $extrinsic_params: expr) => {{
-        use $crate::primitives::{
-            BaseExtrinsicParams, BaseExtrinsicParamsBuilder, GenericAddress, GenericExtra,
-            SignedPayload, UncheckedExtrinsicV4,
-        };
+    $params: expr) => {{
+        use $crate::primitives::{GenericAddress, SignedPayload, UncheckedExtrinsicV4};
         use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
 
-        let other_params = $extrinsic_params.unwrap_or_default();
-
-        let params = BaseExtrinsicParams::new($nonce, other_params);
-
-        let extra = GenericExtra::from(params);
-        let raw_payload = SignedPayload::from_raw(
-            $call.clone(),
-            extra.clone(),
-            (
-                $runtime_spec_version,
-                $transaction_version,
-                $genesis_hash,
-                $genesis_or_current_hash,
-                (),
-                (),
-                (),
-            ),
-        );
+        let extra = $params.signed_extra();
+        let raw_payload =
+            SignedPayload::from_raw($call.clone(), extra, $params.additional_signed());
 
         let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
@@ -126,7 +103,6 @@ macro_rules! compose_extrinsic {
             use $crate::log::debug;
             use $crate::primitives::UncheckedExtrinsicV4;
             use $crate::sp_runtime::generic::Era;
-            use $crate::primitives::BaseExtrinsicParamsBuilder;
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
             let call = $crate::compose_call!($api.metadata.clone(), $module, $call $(, ($args)) *);
@@ -134,12 +110,7 @@ macro_rules! compose_extrinsic {
                 $crate::compose_extrinsic_offline!(
                     signer,
                     call.clone(),
-                    $api.get_nonce().unwrap(),
-                    $api.genesis_hash,
-                    $api.genesis_hash,
-                    $api.runtime_version.spec_version,
-                    $api.runtime_version.transaction_version,
-                    $api.extrinsic_params
+                    $api.extrinsic_params($api.get_nonce().unwrap())
                 )
             } else {
                 UncheckedExtrinsicV4 {

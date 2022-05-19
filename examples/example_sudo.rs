@@ -51,7 +51,7 @@ fn main() {
         Compact(42_u128)
     );
     #[allow(clippy::redundant_clone)]
-    let xt: UncheckedExtrinsicV4<_> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
+    let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
 
     // send and watch extrinsic until finalized
     let tx_hash = api

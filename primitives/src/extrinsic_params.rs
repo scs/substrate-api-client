@@ -1,15 +1,17 @@
 use codec::{Compact, Decode, Encode};
+use core::marker::PhantomData;
 use sp_core::{blake2_256, H256};
 use sp_runtime::generic::Era;
 use sp_std::prelude::*;
 
-/// Simple generic extra mirroring the SignedExtra currently used in extrinsics. Does not implement
-/// the SignedExtension trait. It simply encodes to the same bytes as the real SignedExtra. The
-/// Order is (CheckVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-/// This can be locked up in the System module. Fields that are merely PhantomData are not encoded and are
-/// therefore omitted here.
-#[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct GenericExtra(pub Era, pub Compact<u32>, pub Compact<u128>);
+/// Default SignedExtra.
+/// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
+#[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
+pub struct SubstrateDefaultSignedExtra(pub Era, pub Compact<u32>, pub Compact<u128>);
+
+/// Default AdditionalSigned fields of the respective SignedExtra fields.
+/// The Order is (CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+pub type SubstrateDefaultAdditionalSigned = (u32, u32, H256, H256, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in transactions.
@@ -17,18 +19,32 @@ pub struct GenericExtra(pub Era, pub Compact<u32>, pub Compact<u128>);
 /// a Polkadot node.
 pub trait ExtrinsicParams {
     /// These parameters can be provided to the constructor along with
-    /// some default parameters that `subxt` understands, in order to
-    /// help construct your [`ExtrinsicParams`] object.
-    type OtherParams;
+    /// some default parameters in order to help construct your [`ExtrinsicParams`] object.
+    type OtherParams: Default + Clone;
+
+    /// SignedExtra format of the node.
+    type SignedExtra: Copy + Encode;
+
+    /// Additional Signed format of the node
+    type AdditionalSigned: Encode;
 
     /// Construct a new instance of our [`ExtrinsicParams`]
-    fn new(nonce: u32, other_params: Self::OtherParams) -> Self;
+    fn new(
+        spec_version: u32,
+        transaction_version: u32,
+        nonce: u32,
+        genesis_hash: H256,
+        other_params: Self::OtherParams,
+    ) -> Self;
 
-    /// This is expected to SCALE encode the "signed extra" parameters
-    /// to some buffer that has been provided. These are the parameters
-    /// which are sent along with the transaction, as well as taken into
-    /// account when signing the transaction.
-    fn encode_extra_to(&self, v: &mut Vec<u8>);
+    /// These are the parameters which are sent along with the transaction,
+    /// as well as taken into account when signing the transaction.
+    fn signed_extra(&self) -> Self::SignedExtra;
+
+    /// These parameters are not sent along with the transaction, but are
+    /// taken into account when signing it, meaning the client and node must agree
+    /// on their values.
+    fn additional_signed(&self) -> Self::AdditionalSigned;
 }
 
 /// A struct representing the signed extra and additional parameters required
@@ -45,11 +61,19 @@ pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip>;
 /// This is what you provide to methods like `sign_and_submit()`.
 pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip>;
 
+/// An implementation of [`ExtrinsicParams`] that is suitable for constructing
+/// extrinsics that can be sent to a node with the same signed extra and additional
+/// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct BaseExtrinsicParams<Tip> {
     era: Era,
     nonce: u32,
     tip: Tip,
+    spec_version: u32,
+    transaction_version: u32,
+    genesis_hash: H256,
+    mortality_checkpoint: H256,
+    marker: PhantomData<()>,
 }
 
 /// This builder allows you to provide the parameters that can be configured in order to
@@ -96,47 +120,63 @@ impl<Tip: Default> Default for BaseExtrinsicParamsBuilder<Tip> {
     }
 }
 
-/// Get the generic extra from the BaseExtrinsicParams.
-impl<Tip> From<BaseExtrinsicParams<Tip>> for GenericExtra
+impl<Tip: Encode> ExtrinsicParams for BaseExtrinsicParams<Tip>
 where
     u128: From<Tip>,
+    Tip: Copy + Default,
 {
-    fn from(p: BaseExtrinsicParams<Tip>) -> GenericExtra {
-        let BaseExtrinsicParams { era, nonce, tip } = p;
-        GenericExtra(era, Compact(nonce), Compact(tip.into()))
-    }
-}
-
-impl<Tip: Encode> ExtrinsicParams for BaseExtrinsicParams<Tip> {
     type OtherParams = BaseExtrinsicParamsBuilder<Tip>;
+    type SignedExtra = SubstrateDefaultSignedExtra;
+    type AdditionalSigned = SubstrateDefaultAdditionalSigned;
 
-    fn new(nonce: u32, other_params: Self::OtherParams) -> Self {
+    fn new(
+        spec_version: u32,
+        transaction_version: u32,
+        nonce: u32,
+        genesis_hash: H256,
+        other_params: Self::OtherParams,
+    ) -> Self {
         BaseExtrinsicParams {
             era: other_params.era,
             tip: other_params.tip,
+            spec_version,
+            transaction_version,
+            genesis_hash,
+            mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
             nonce,
+            marker: Default::default(),
         }
     }
 
-    fn encode_extra_to(&self, v: &mut Vec<u8>) {
-        let nonce: u64 = self.nonce.into();
-        let tip = self.tip.encode(); //?
-        (self.era, Compact(nonce), tip).encode_to(v);
+    fn signed_extra(&self) -> Self::SignedExtra {
+        SubstrateDefaultSignedExtra(self.era, Compact(self.nonce), Compact(self.tip.into()))
+    }
+
+    fn additional_signed(&self) -> Self::AdditionalSigned {
+        (
+            self.spec_version,
+            self.transaction_version,
+            self.genesis_hash,
+            self.mortality_checkpoint,
+            (),
+            (),
+            (),
+        )
     }
 }
 
-/// additionalSigned fields of the respective SignedExtra fields.
-/// Order is the same as declared in the extra.
-pub type AdditionalSigned = (u32, u32, H256, H256, (), (), ());
-
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct SignedPayload<Call>((Call, GenericExtra, AdditionalSigned));
+pub struct SignedPayload<Call, SignedExtra, AdditionalSigned>(
+    (Call, SignedExtra, AdditionalSigned),
+);
 
-impl<Call> SignedPayload<Call>
+impl<Call, SignedExtra, AdditionalSigned> SignedPayload<Call, SignedExtra, AdditionalSigned>
 where
     Call: Encode,
+    SignedExtra: Encode,
+    AdditionalSigned: Encode,
 {
-    pub fn from_raw(call: Call, extra: GenericExtra, additional_signed: AdditionalSigned) -> Self {
+    pub fn from_raw(call: Call, extra: SignedExtra, additional_signed: AdditionalSigned) -> Self {
         Self((call, extra, additional_signed))
     }
 

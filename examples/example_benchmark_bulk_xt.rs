@@ -54,18 +54,13 @@ fn main() {
     while nonce < first_nonce + 500 {
         // compose the extrinsic with all the element
         #[allow(clippy::redundant_clone)]
-        let xt: UncheckedExtrinsicV4<_> = compose_extrinsic_offline!(
+        let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
             Call::Balances(BalancesCall::transfer {
                 dest: GenericAddress::Id(to.clone()),
                 value: 1_000_000
             }),
-            nonce,
-            api.genesis_hash,
-            api.genesis_hash,
-            api.runtime_version.spec_version,
-            api.runtime_version.transaction_version,
-            api.extrinsic_params
+            api.extrinsic_params(nonce)
         );
         // send and watch extrinsic until finalized
         println!("sending extrinsic with nonce {}", nonce);
