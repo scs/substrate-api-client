@@ -1,4 +1,4 @@
-use codec::{Compact, Decode, Encode};
+use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use sp_core::{blake2_256, H256};
 use sp_runtime::generic::Era;
@@ -7,7 +7,18 @@ use sp_std::prelude::*;
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateDefaultSignedExtra(pub Era, pub Compact<u32>, pub Compact<u128>);
+pub struct SubstrateDefaultSignedExtra<Tip> {
+    pub era: Era,
+    #[codec(compact)]
+    pub nonce: u32,
+    pub tip: Tip,
+}
+
+impl<Tip> SubstrateDefaultSignedExtra<Tip> {
+    pub fn new(era: Era, nonce: u32, tip: Tip) -> Self {
+        Self { era, nonce, tip }
+    }
+}
 
 /// Default AdditionalSigned fields of the respective SignedExtra fields.
 /// The Order is (CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
@@ -126,7 +137,7 @@ where
     Tip: Copy + Default,
 {
     type OtherParams = BaseExtrinsicParamsBuilder<Tip>;
-    type SignedExtra = SubstrateDefaultSignedExtra;
+    type SignedExtra = SubstrateDefaultSignedExtra<Tip>;
     type AdditionalSigned = SubstrateDefaultAdditionalSigned;
 
     fn new(
@@ -149,7 +160,7 @@ where
     }
 
     fn signed_extra(&self) -> Self::SignedExtra {
-        SubstrateDefaultSignedExtra(self.era, Compact(self.nonce), Compact(self.tip.into()))
+        Self::SignedExtra::new(self.era, self.nonce, self.tip)
     }
 
     fn additional_signed(&self) -> Self::AdditionalSigned {
