@@ -28,11 +28,7 @@ pub mod utils;
 #[cfg(feature = "std")]
 pub use crate::std::*;
 
-pub use ac_primitives::{
-    AccountData, AccountDataGen, AccountInfo, AccountInfoGen, Balance, BaseExtrinsicParams,
-    BlockNumber, ExtrinsicParams, GenericAddress, Hash, Index, Moment, PlainTipExtrinsicParams,
-    RefCount, UncheckedExtrinsicV4,
-};
+pub use ac_primitives::*;
 
 #[cfg(feature = "std")]
 pub use ac_compose_macros::compose_extrinsic;
