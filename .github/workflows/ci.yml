@@ -99,7 +99,4 @@ jobs:
       - name: Run Examples
         timeout-minutes: 5
         run: |
-          docker ps
-          apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y net-tools
-          nc -z -v 127.0.0.1 9944
           ./target/release/examples/${{ matrix.example }}
