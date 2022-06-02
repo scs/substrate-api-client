@@ -99,4 +99,5 @@ jobs:
       - name: Run Examples
         timeout-minutes: 5
         run: |
+          docker ps
           ./target/release/examples/${{ matrix.example }}
