@@ -86,7 +86,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 127.0.0.1:9944:9944 parity/substrate:latest --dev &
+          docker run -p 127.0.0.1:9944:9944 parity/substrate:latest --dev --ws-external &
 
       - name: Run Examples
         timeout-minutes: 5
