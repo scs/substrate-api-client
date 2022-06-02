@@ -55,12 +55,12 @@ jobs:
   examples:
     runs-on: ${{ matrix.os }}
 
-    services:
-      latest_node:
-        image: parity/substrate:latest
-        ports:
-        - 9944:9944
-        options: --dev --ws-external
+#    services:
+#      latest_node:
+#        image: parity/substrate:latest
+#        ports:
+#        - 9944:9944
+#        options: --dev --ws-external
 
     strategy:
       fail-fast: false
@@ -92,9 +92,9 @@ jobs:
       - name: Build examples
         run: cargo build --release --examples
 
-#      - name: Run latest node
-#        run: |
-#          docker run -p 127.0.0.1:9944:9944 -p 127.0.0.1:9933:9933 -p 127.0.0.1:30333:30333 parity/substrate:latest --dev --ws-external &
+      - name: Run latest node
+        run: |
+          docker run -p 127.0.0.1:9944:9944 -p 127.0.0.1:9933:9933 -p 127.0.0.1:30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
 
       - name: Run Examples
         timeout-minutes: 5
