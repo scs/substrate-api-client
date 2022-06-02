@@ -56,10 +56,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     services:
-      image: parity/substrate:latest
-      ports:
+      latest_node:
+        image: parity/substrate:latest
+        ports:
         - 9944:9944
-      options: --dev --ws-external
+        options: --dev --ws-external
 
     strategy:
       fail-fast: false
