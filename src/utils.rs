@@ -39,11 +39,7 @@ pub trait FromHexString {
 
 impl FromHexString for Vec<u8> {
     fn from_hex(hex: String) -> Result<Self, hex::FromHexError> {
-        let hexstr = hex
-            .trim_matches('\"')
-            .to_string()
-            .trim_start_matches("0x")
-            .to_string();
+        let hexstr = hex.trim_matches('\"').trim_start_matches("0x");
 
         hex::decode(&hexstr)
     }
