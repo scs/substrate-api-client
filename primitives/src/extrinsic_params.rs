@@ -21,8 +21,8 @@ impl<Tip> SubstrateDefaultSignedExtra<Tip> {
 }
 
 /// Default AdditionalSigned fields of the respective SignedExtra fields.
-/// The Order is (CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-pub type SubstrateDefaultAdditionalSigned = (u32, u32, H256, H256, (), (), ());
+/// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+pub type SubstrateDefaultAdditionalSigned = ((), u32, u32, H256, H256, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in transactions.
@@ -165,6 +165,7 @@ where
 
     fn additional_signed(&self) -> Self::AdditionalSigned {
         (
+            (),
             self.spec_version,
             self.transaction_version,
             self.genesis_hash,
