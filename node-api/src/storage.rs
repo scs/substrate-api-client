@@ -21,7 +21,9 @@ use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
 use log::debug;
 use scale_info::form::PortableForm;
 use sp_core::storage::StorageKey;
-use std::marker::PhantomData;
+
+#[cfg(not(feature = "std"))]
+use sp_std::{borrow::ToOwned, marker::PhantomData, vec::Vec};
 
 #[derive(Clone, Debug)]
 pub struct StorageValue {
@@ -37,7 +39,8 @@ impl StorageValue {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct StorageMap<K> {
     _marker: PhantomData<K>,
     module_prefix: Vec<u8>,
@@ -54,7 +57,8 @@ impl<K: Encode> StorageMap<K> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct StorageDoubleMap<K, Q> {
     _marker: PhantomData<K>,
     _marker2: PhantomData<Q>,
@@ -97,6 +101,8 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                 let hasher1 = hashers.get(0).ok_or(MetadataError::StorageTypeError)?;
                 let hasher2 = hashers.get(1).ok_or(MetadataError::StorageTypeError)?;
 
+                // hashers do not implement debug in no_std
+                #[cfg(feature = "std")]
                 debug!(
                     "map for '{}' '{}' has hasher1 {:?} hasher2 {:?}",
                     pallet_prefix, self.name, hasher1, hasher2
@@ -125,10 +131,13 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
                 let module_prefix = pallet_prefix.as_bytes().to_vec();
                 let storage_prefix = self.name.as_bytes().to_vec();
 
+                // hashers do not implement debug in no_std
+                #[cfg(feature = "std")]
                 debug!(
                     "map for '{}' '{}' has hasher {:?}",
                     pallet_prefix, self.name, hasher
                 );
+
                 Ok(StorageMap {
                     _marker: PhantomData,
                     module_prefix,
