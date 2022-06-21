@@ -304,11 +304,8 @@ pub enum Raw {
 #[derive(Debug)]
 pub enum EventsDecodingError {
     /// Unsupported primitive type
-    // #[error("Unsupported primitive type {0:?}")]
     UnsupportedPrimitive(TypeDefPrimitive),
     /// Invalid compact type, must be an unsigned int.
-    // #[error("Invalid compact primitive {0:?}")]
     InvalidCompactPrimitive(TypeDefPrimitive),
-    // #[error("Invalid compact composite type {0}")]
     InvalidCompactType(String),
 }
