@@ -25,8 +25,10 @@ use codec::Decode;
 pub mod error;
 pub mod events;
 pub mod metadata;
-pub mod pretty_format;
 pub mod storage;
+
+#[cfg(feature = "std")]
+mod print_metadata;
 
 /// Wraps an already encoded byte vector, prevents being encoded as a raw byte vector as part of
 /// the transaction payload
