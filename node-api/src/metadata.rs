@@ -155,13 +155,14 @@ impl Metadata {
         &self.metadata
     }
 
-    //     pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
-    //         let buf = Vec::new();
-    //         let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
-    //         let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
-    //         metadata.serialize(&mut ser).unwrap();
-    //         String::from_utf8(ser.into_inner()).ok()
-    //     }
+    #[cfg(feature = "std")]
+    pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
+        let buf = Vec::new();
+        let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
+        let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
+        metadata.serialize(&mut ser).unwrap();
+        String::from_utf8(ser.into_inner()).ok()
+    }
     //
     //     pub fn print_overview(&self) {
     //         let mut string = String::new();
