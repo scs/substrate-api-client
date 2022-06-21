@@ -18,17 +18,14 @@
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 #[cfg(not(feature = "std"))]
-use alloc::{
-    borrow::ToOwned,
-    string::{String, ToString},
-    vec::Vec,
-};
+use alloc::{borrow::ToOwned, vec::Vec};
 
 use codec::Decode;
 
 pub mod error;
 pub mod events;
 pub mod metadata;
+pub mod pretty_format;
 pub mod storage;
 
 /// Wraps an already encoded byte vector, prevents being encoded as a raw byte vector as part of
