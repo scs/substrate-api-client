@@ -300,6 +300,54 @@ impl PalletMetadata {
             .get(key)
             .ok_or(MetadataError::ConstantNotFound(key))
     }
+    //
+    //     pub fn print(&self) {
+    //         println!(
+    //             "----------------- Pallet: '{}' -----------------\n",
+    //             self.name
+    //         );
+    //         println!("Pallet id: {}", self.index);
+    //
+    //         //self.print_calls();
+    //     }
+    //
+    //     pub fn print_calls(&self) {
+    //         println!(
+    //             "----------------- Calls for Pallet: {} -----------------\n",
+    //             self.name
+    //         );
+    //         for (name, index) in &self.calls {
+    //             println!("Name: {}, index {}", name, index);
+    //         }
+    //         println!();
+    //     }
+    //
+    //     pub fn print_constants(&self) {
+    //         println!(
+    //             "----------------- Constants for Pallet: {} -----------------\n",
+    //             self.name
+    //         );
+    //         for (name, constant) in &self.constants {
+    //             println!(
+    //                 "Name: {}, Type {:?}, Value {:?}",
+    //                 name, constant.ty, constant.value
+    //             );
+    //         }
+    //         println!();
+    //     }
+    //     pub fn print_storages(&self) {
+    //         println!(
+    //             "----------------- Storages for Pallet: {} -----------------\n",
+    //             self.name
+    //         );
+    //         for (name, storage) in &self.storage {
+    //             println!(
+    //                 "Name: {}, Modifier: {:?}, Type {:?}, Default {:?}",
+    //                 name, storage.modifier, storage.ty, storage.default
+    //             );
+    //         }
+    //         println!();
+    //     }
 }
 
 #[derive(Clone, Debug)]
@@ -324,6 +372,12 @@ impl EventMetadata {
     pub fn variant(&self) -> &Variant<PortableForm> {
         &self.variant
     }
+    //
+    //     pub fn print(&self) {
+    //         println!("Name: {}", self.event());
+    //         println!("Variant: {:?}", self.variant());
+    //         println!()
+    //     }
 }
 
 #[derive(Clone, Debug)]
@@ -348,6 +402,12 @@ impl ErrorMetadata {
     pub fn description(&self) -> &[String] {
         self.variant.docs()
     }
+
+    // pub fn print(&self) {
+    //     println!("Name: {}", self.error());
+    //     println!("Description: {:?}", self.description());
+    //     println!()
+    // }
 }
 
 #[derive(Debug)]
