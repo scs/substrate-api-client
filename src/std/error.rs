@@ -20,13 +20,13 @@ pub enum Error {
     RpcClient(String),
     #[error("ChannelReceiveError, sender is disconnected: {0}")]
     Disconnected(#[from] sp_std::sync::mpsc::RecvError),
-    #[error("Metadata Error: {0}")]
-    Metadata(#[from] MetadataError),
-    #[error("InvalidMetadata: {0}")]
-    InvalidMetadata(#[from] InvalidMetadataError),
+    #[error("Metadata Error: {0:?}")]
+    Metadata(MetadataError),
+    #[error("InvalidMetadata: {0:?}")]
+    InvalidMetadata(InvalidMetadataError),
     #[cfg(feature = "ws-client")]
-    #[error("Events Error: {0}")]
-    NodeApi(#[from] ac_node_api::error::Error),
+    #[error("Events Error: {0:?}")]
+    NodeApi(ac_node_api::error::Error),
     #[error("Error decoding storage value: {0}")]
     StorageValueDecode(#[from] codec::Error),
     #[error("Received invalid hex string: {0}")]
@@ -39,4 +39,22 @@ pub enum Error {
     TryFromIntError,
     #[error(transparent)]
     Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+}
+
+impl From<InvalidMetadataError> for Error {
+    fn from(error: InvalidMetadataError) -> Self {
+        Error::InvalidMetadata(error)
+    }
+}
+
+impl From<MetadataError> for Error {
+    fn from(error: MetadataError) -> Self {
+        Error::Metadata(error)
+    }
+}
+
+impl From<ac_node_api::error::Error> for Error {
+    fn from(error: ac_node_api::error::Error) -> Self {
+        Error::NodeApi(error)
+    }
 }
