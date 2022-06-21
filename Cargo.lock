@@ -37,9 +37,11 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
+ "sp-application-crypto",
  "sp-core",
  "sp-runtime",
- "thiserror",
+ "sp-runtime-interface",
+ "sp-std",
 ]
 
 [[package]]
@@ -3307,6 +3309,7 @@ dependencies = [
 name = "test-no-std"
 version = "0.6.0"
 dependencies = [
+ "ac-node-api",
  "libc",
  "sp-io",
  "substrate-api-client",
