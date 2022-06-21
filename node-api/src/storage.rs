@@ -18,7 +18,6 @@
 use crate::metadata::MetadataError;
 use codec::Encode;
 use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
-use log::debug;
 use scale_info::form::PortableForm;
 use sp_core::storage::StorageKey;
 
@@ -103,9 +102,12 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
 
                 // hashers do not implement debug in no_std
                 #[cfg(feature = "std")]
-                debug!(
+                log::debug!(
                     "map for '{}' '{}' has hasher1 {:?} hasher2 {:?}",
-                    pallet_prefix, self.name, hasher1, hasher2
+                    pallet_prefix,
+                    self.name,
+                    hasher1,
+                    hasher2
                 );
 
                 Ok(StorageDoubleMap {
@@ -133,9 +135,11 @@ impl GetStorage for StorageEntryMetadata<PortableForm> {
 
                 // hashers do not implement debug in no_std
                 #[cfg(feature = "std")]
-                debug!(
+                log::debug!(
                     "map for '{}' '{}' has hasher {:?}",
-                    pallet_prefix, self.name, hasher
+                    pallet_prefix,
+                    self.name,
+                    hasher
                 );
 
                 Ok(StorageMap {
