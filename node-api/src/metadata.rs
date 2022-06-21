@@ -43,41 +43,30 @@ use alloc::{
 
 /// Metadata error.
 #[derive(Debug)]
-#[cfg_attr(feature = "std", derive(thiserror::Error))]
 pub enum MetadataError {
     /// Module is not in metadata.
-    #[cfg_attr(feature = "std", error("Pallet {0} not found"))]
     PalletNotFound(String),
     /// Pallet is not in metadata.
-    #[cfg_attr(feature = "std", error("Pallet index {0} not found"))]
     PalletIndexNotFound(u8),
     /// Call is not in metadata.
-    #[cfg_attr(feature = "std", error("Call {0} not found"))]
     CallNotFound(&'static str),
     /// Event is not in metadata.
-    #[cfg_attr(feature = "std", error("Pallet {0}, Event {0} not found"))]
     EventNotFound(u8, u8),
-    /// Event is not in metadata.
-    #[cfg_attr(feature = "std", error("Pallet {0}, Error {0} not found"))]
+    /// Error is not in metadata.
     ErrorNotFound(u8, u8),
     /// Storage is not in metadata.
-    #[cfg_attr(feature = "std", error("Storage {0} not found"))]
     StorageNotFound(&'static str),
     /// Storage type does not match requested type.
-    #[cfg_attr(feature = "std", error("Storage type error"))]
     StorageTypeError,
-    #[cfg_attr(feature = "std", error("Map value type error"))]
+    /// Map value type does not match requested type.
     MapValueTypeError,
-    /// Default error.
-    #[cfg_attr(feature = "std", error("Failed to decode default: {0}"))]
+    /// Failed to decode the value's default.
     DefaultError(CodecError),
     /// Failure to decode constant value.
-    #[cfg_attr(feature = "std", error("Failed to decode constant value: {0}"))]
     ConstantValueError(CodecError),
     /// Constant is not in metadata.
-    #[cfg_attr(feature = "std", error("Constant {0} not found"))]
     ConstantNotFound(&'static str),
-    #[cfg_attr(feature = "std", error("Type {0} missing from type registry"))]
+    /// Type is missing from type registry.
     TypeNotFound(u32),
 }
 
@@ -258,15 +247,12 @@ impl ErrorMetadata {
 }
 
 #[derive(Debug)]
-#[cfg_attr(feature = "std", derive(thiserror::Error))]
 pub enum InvalidMetadataError {
-    #[cfg_attr(feature = "std", error("Invalid prefix"))]
     InvalidPrefix,
-    #[cfg_attr(feature = "std", error("Invalid version"))]
     InvalidVersion,
-    #[cfg_attr(feature = "std", error("Type {0} missing from type registry"))]
+    /// Type is missing from type registry.
     MissingType(u32),
-    #[cfg_attr(feature = "std", error("Type {0} was not a variant/enum type"))]
+    /// Type was not variant/enum type.
     TypeDefNotVariant(u32),
 }
 
