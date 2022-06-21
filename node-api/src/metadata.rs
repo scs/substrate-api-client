@@ -25,57 +25,69 @@ use frame_metadata::{
     PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
     StorageEntryMetadata, META_RESERVED,
 };
-use frame_support::serde::Serialize;
 use scale_info::{form::PortableForm, Type, Variant};
+use serde::Serialize;
 use sp_core::storage::StorageKey;
-use std::{collections::HashMap, convert::TryFrom};
+
+// We use `BTreeMap` because we can't use `HashMap` in `no_std`.
+use sp_std::collections::btree_map::BTreeMap;
+
+#[cfg(not(feature = "std"))]
+use alloc::{
+    borrow::ToOwned,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 
 /// Metadata error.
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
+#[cfg_attr(feature = "std", derive(thiserror::Error))]
 pub enum MetadataError {
     /// Module is not in metadata.
-    #[error("Pallet {0} not found")]
+    #[cfg_attr(feature = "std", error("Pallet {0} not found"))]
     PalletNotFound(String),
     /// Pallet is not in metadata.
-    #[error("Pallet index {0} not found")]
+    #[cfg_attr(feature = "std", error("Pallet index {0} not found"))]
     PalletIndexNotFound(u8),
     /// Call is not in metadata.
-    #[error("Call {0} not found")]
+    #[cfg_attr(feature = "std", error("Call {0} not found"))]
     CallNotFound(&'static str),
     /// Event is not in metadata.
-    #[error("Pallet {0}, Event {0} not found")]
+    #[cfg_attr(feature = "std", error("Pallet {0}, Event {0} not found"))]
     EventNotFound(u8, u8),
     /// Event is not in metadata.
-    #[error("Pallet {0}, Error {0} not found")]
+    #[cfg_attr(feature = "std", error("Pallet {0}, Error {0} not found"))]
     ErrorNotFound(u8, u8),
     /// Storage is not in metadata.
-    #[error("Storage {0} not found")]
+    #[cfg_attr(feature = "std", error("Storage {0} not found"))]
     StorageNotFound(&'static str),
     /// Storage type does not match requested type.
-    #[error("Storage type error")]
+    #[cfg_attr(feature = "std", error("Storage type error"))]
     StorageTypeError,
-    #[error("Map value type error")]
+    #[cfg_attr(feature = "std", error("Map value type error"))]
     MapValueTypeError,
     /// Default error.
-    #[error("Failed to decode default: {0}")]
+    #[cfg_attr(feature = "std", error("Failed to decode default: {0}"))]
     DefaultError(CodecError),
     /// Failure to decode constant value.
-    #[error("Failed to decode constant value: {0}")]
+    #[cfg_attr(feature = "std", error("Failed to decode constant value: {0}"))]
     ConstantValueError(CodecError),
     /// Constant is not in metadata.
-    #[error("Constant {0} not found")]
+    #[cfg_attr(feature = "std", error("Constant {0} not found"))]
     ConstantNotFound(&'static str),
-    #[error("Type {0} missing from type registry")]
+    #[cfg_attr(feature = "std", error("Type {0} missing from type registry"))]
     TypeNotFound(u32),
 }
 
 /// Runtime metadata.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct Metadata {
     metadata: RuntimeMetadataLastVersion,
-    pallets: HashMap<String, PalletMetadata>,
-    events: HashMap<(u8, u8), EventMetadata>,
-    errors: HashMap<(u8, u8), ErrorMetadata>,
+    pallets: BTreeMap<String, PalletMetadata>,
+    events: BTreeMap<(u8, u8), EventMetadata>,
+    errors: BTreeMap<(u8, u8), ErrorMetadata>,
 }
 
 impl Metadata {
@@ -142,115 +154,116 @@ impl Metadata {
         &self.metadata
     }
 
-    pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
-        let buf = Vec::new();
-        let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
-        let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
-        metadata.serialize(&mut ser).unwrap();
-        String::from_utf8(ser.into_inner()).ok()
-    }
-
-    pub fn print_overview(&self) {
-        let mut string = String::new();
-        for (name, pallet) in &self.pallets {
-            string.push_str(name.as_str());
-            string.push('\n');
-            for storage in pallet.storage.keys() {
-                string.push_str(" s  ");
-                string.push_str(storage.as_str());
-                string.push('\n');
-            }
-
-            for call in pallet.calls.keys() {
-                string.push_str(" c  ");
-                string.push_str(call.as_str());
-                string.push('\n');
-            }
-
-            for constant in pallet.constants.keys() {
-                string.push_str(" cst  ");
-                string.push_str(constant.as_str());
-                string.push('\n');
-            }
-
-            for event in self.events(pallet.index) {
-                string.push_str(" e  ");
-                string.push_str(&event.event);
-                string.push('\n');
-            }
-
-            for error in self.errors(pallet.index) {
-                string.push_str(" err  ");
-                string.push_str(&error.error);
-                string.push('\n');
-            }
-        }
-
-        println!("{}", string);
-    }
-
-    pub fn print_pallets(&self) {
-        for m in self.pallets.values() {
-            m.print()
-        }
-    }
-
-    pub fn print_pallets_with_calls(&self) {
-        for m in self.pallets.values() {
-            if !m.calls.is_empty() {
-                m.print_calls();
-            }
-        }
-    }
-    pub fn print_pallets_with_constants(&self) {
-        for m in self.pallets.values() {
-            if !m.constants.is_empty() {
-                m.print_constants();
-            }
-        }
-    }
-    pub fn print_pallet_with_storages(&self) {
-        for m in self.pallets.values() {
-            if !m.storage.is_empty() {
-                m.print_storages();
-            }
-        }
-    }
-
-    pub fn print_pallets_with_events(&self) {
-        for pallet in self.pallets.values() {
-            println!(
-                "----------------- Events for Pallet: {} -----------------\n",
-                pallet.name
-            );
-            for m in self.events(pallet.index) {
-                m.print();
-            }
-            println!();
-        }
-    }
-
-    pub fn print_pallets_with_errors(&self) {
-        for pallet in self.pallets.values() {
-            println!(
-                "----------------- Errors for Pallet: {} -----------------\n",
-                pallet.name
-            );
-            for m in self.errors(pallet.index) {
-                m.print();
-            }
-            println!();
-        }
-    }
+    //     pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
+    //         let buf = Vec::new();
+    //         let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
+    //         let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
+    //         metadata.serialize(&mut ser).unwrap();
+    //         String::from_utf8(ser.into_inner()).ok()
+    //     }
+    //
+    //     pub fn print_overview(&self) {
+    //         let mut string = String::new();
+    //         for (name, pallet) in &self.pallets {
+    //             string.push_str(name.as_str());
+    //             string.push('\n');
+    //             for storage in pallet.storage.keys() {
+    //                 string.push_str(" s  ");
+    //                 string.push_str(storage.as_str());
+    //                 string.push('\n');
+    //             }
+    //
+    //             for call in pallet.calls.keys() {
+    //                 string.push_str(" c  ");
+    //                 string.push_str(call.as_str());
+    //                 string.push('\n');
+    //             }
+    //
+    //             for constant in pallet.constants.keys() {
+    //                 string.push_str(" cst  ");
+    //                 string.push_str(constant.as_str());
+    //                 string.push('\n');
+    //             }
+    //
+    //             for event in self.events(pallet.index) {
+    //                 string.push_str(" e  ");
+    //                 string.push_str(&event.event);
+    //                 string.push('\n');
+    //             }
+    //
+    //             for error in self.errors(pallet.index) {
+    //                 string.push_str(" err  ");
+    //                 string.push_str(&error.error);
+    //                 string.push('\n');
+    //             }
+    //         }
+    //
+    //         println!("{}", string);
+    //     }
+    //
+    //     pub fn print_pallets(&self) {
+    //         for m in self.pallets.values() {
+    //             m.print()
+    //         }
+    //     }
+    //
+    //     pub fn print_pallets_with_calls(&self) {
+    //         for m in self.pallets.values() {
+    //             if !m.calls.is_empty() {
+    //                 m.print_calls();
+    //             }
+    //         }
+    //     }
+    //     pub fn print_pallets_with_constants(&self) {
+    //         for m in self.pallets.values() {
+    //             if !m.constants.is_empty() {
+    //                 m.print_constants();
+    //             }
+    //         }
+    //     }
+    //     pub fn print_pallet_with_storages(&self) {
+    //         for m in self.pallets.values() {
+    //             if !m.storage.is_empty() {
+    //                 m.print_storages();
+    //             }
+    //         }
+    //     }
+    //
+    //     pub fn print_pallets_with_events(&self) {
+    //         for pallet in self.pallets.values() {
+    //             println!(
+    //                 "----------------- Events for Pallet: {} -----------------\n",
+    //                 pallet.name
+    //             );
+    //             for m in self.events(pallet.index) {
+    //                 m.print();
+    //             }
+    //             println!();
+    //         }
+    //     }
+    //
+    //     pub fn print_pallets_with_errors(&self) {
+    //         for pallet in self.pallets.values() {
+    //             println!(
+    //                 "----------------- Errors for Pallet: {} -----------------\n",
+    //                 pallet.name
+    //             );
+    //             for m in self.errors(pallet.index) {
+    //                 m.print();
+    //             }
+    //             println!();
+    //         }
+    //     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct PalletMetadata {
     pub index: u8,
     pub name: String,
-    pub calls: HashMap<String, u8>,
-    pub storage: HashMap<String, StorageEntryMetadata<PortableForm>>,
-    pub constants: HashMap<String, PalletConstantMetadata<PortableForm>>,
+    pub calls: BTreeMap<String, u8>,
+    pub storage: BTreeMap<String, StorageEntryMetadata<PortableForm>>,
+    pub constants: BTreeMap<String, PalletConstantMetadata<PortableForm>>,
 }
 
 impl PalletMetadata {
@@ -285,61 +298,61 @@ impl PalletMetadata {
             .get(key)
             .ok_or(MetadataError::ConstantNotFound(key))
     }
-
-    pub fn print(&self) {
-        println!(
-            "----------------- Pallet: '{}' -----------------\n",
-            self.name
-        );
-        println!("Pallet id: {}", self.index);
-
-        //self.print_calls();
-    }
-
-    pub fn print_calls(&self) {
-        println!(
-            "----------------- Calls for Pallet: {} -----------------\n",
-            self.name
-        );
-        for (name, index) in &self.calls {
-            println!("Name: {}, index {}", name, index);
-        }
-        println!();
-    }
-
-    pub fn print_constants(&self) {
-        println!(
-            "----------------- Constants for Pallet: {} -----------------\n",
-            self.name
-        );
-        for (name, constant) in &self.constants {
-            println!(
-                "Name: {}, Type {:?}, Value {:?}",
-                name, constant.ty, constant.value
-            );
-        }
-        println!();
-    }
-    pub fn print_storages(&self) {
-        println!(
-            "----------------- Storages for Pallet: {} -----------------\n",
-            self.name
-        );
-        for (name, storage) in &self.storage {
-            println!(
-                "Name: {}, Modifier: {:?}, Type {:?}, Default {:?}",
-                name, storage.modifier, storage.ty, storage.default
-            );
-        }
-        println!();
-    }
+    //
+    //     pub fn print(&self) {
+    //         println!(
+    //             "----------------- Pallet: '{}' -----------------\n",
+    //             self.name
+    //         );
+    //         println!("Pallet id: {}", self.index);
+    //
+    //         //self.print_calls();
+    //     }
+    //
+    //     pub fn print_calls(&self) {
+    //         println!(
+    //             "----------------- Calls for Pallet: {} -----------------\n",
+    //             self.name
+    //         );
+    //         for (name, index) in &self.calls {
+    //             println!("Name: {}, index {}", name, index);
+    //         }
+    //         println!();
+    //     }
+    //
+    //     pub fn print_constants(&self) {
+    //         println!(
+    //             "----------------- Constants for Pallet: {} -----------------\n",
+    //             self.name
+    //         );
+    //         for (name, constant) in &self.constants {
+    //             println!(
+    //                 "Name: {}, Type {:?}, Value {:?}",
+    //                 name, constant.ty, constant.value
+    //             );
+    //         }
+    //         println!();
+    //     }
+    //     pub fn print_storages(&self) {
+    //         println!(
+    //             "----------------- Storages for Pallet: {} -----------------\n",
+    //             self.name
+    //         );
+    //         for (name, storage) in &self.storage {
+    //             println!(
+    //                 "Name: {}, Modifier: {:?}, Type {:?}, Default {:?}",
+    //                 name, storage.modifier, storage.ty, storage.default
+    //             );
+    //         }
+    //         println!();
+    //     }
 }
 
 #[derive(Clone, Debug)]
 pub struct EventMetadata {
-    pallet: String,
-    event: String,
-    variant: Variant<PortableForm>,
+    pub pallet: String,
+    pub event: String,
+    pub variant: Variant<PortableForm>,
 }
 
 impl EventMetadata {
@@ -357,12 +370,12 @@ impl EventMetadata {
     pub fn variant(&self) -> &Variant<PortableForm> {
         &self.variant
     }
-
-    pub fn print(&self) {
-        println!("Name: {}", self.event());
-        println!("Variant: {:?}", self.variant());
-        println!()
-    }
+    //
+    //     pub fn print(&self) {
+    //         println!("Name: {}", self.event());
+    //         println!("Variant: {:?}", self.variant());
+    //         println!()
+    //     }
 }
 
 #[derive(Clone, Debug)]
@@ -388,22 +401,23 @@ impl ErrorMetadata {
         self.variant.docs()
     }
 
-    pub fn print(&self) {
-        println!("Name: {}", self.error());
-        println!("Description: {:?}", self.description());
-        println!()
-    }
+    // pub fn print(&self) {
+    //     println!("Name: {}", self.error());
+    //     println!("Description: {:?}", self.description());
+    //     println!()
+    // }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
+#[cfg_attr(feature = "std", derive(thiserror::Error))]
 pub enum InvalidMetadataError {
-    #[error("Invalid prefix")]
+    #[cfg_attr(feature = "std", error("Invalid prefix"))]
     InvalidPrefix,
-    #[error("Invalid version")]
+    #[cfg_attr(feature = "std", error("Invalid version"))]
     InvalidVersion,
-    #[error("Type {0} missing from type registry")]
+    #[cfg_attr(feature = "std", error("Type {0} missing from type registry"))]
     MissingType(u32),
-    #[error("Type {0} was not a variant/enum type")]
+    #[cfg_attr(feature = "std", error("Type {0} was not a variant/enum type"))]
     TypeDefNotVariant(u32),
 }
 
@@ -434,7 +448,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
             .pallets
             .iter()
             .map(|pallet| {
-                let calls = pallet.calls.as_ref().map_or(Ok(HashMap::new()), |call| {
+                let calls = pallet.calls.as_ref().map_or(Ok(BTreeMap::new()), |call| {
                     let type_def_variant = get_type_def_variant(call.ty.id())?;
                     let calls = type_def_variant
                         .variants()
@@ -444,7 +458,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
                     Ok(calls)
                 })?;
 
-                let storage = pallet.storage.as_ref().map_or(HashMap::new(), |storage| {
+                let storage = pallet.storage.as_ref().map_or(BTreeMap::new(), |storage| {
                     storage
                         .entries
                         .iter()

@@ -26,9 +26,15 @@ use crate::{
 };
 use ac_primitives::Hash;
 use codec::{Codec, Compact, Decode, Encode, Input};
-use scale_info::{TypeDef, TypeDefPrimitive};
+use scale_info::form::PortableForm;
+use scale_info::{prelude::format, TypeDef, TypeDefPrimitive, Variant};
 use sp_core::Bytes;
-use std::marker::PhantomData;
+
+#[cfg(not(feature = "std"))]
+use sp_std::{marker::PhantomData, vec::Vec};
+
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
 
 /// Raw bytes for an Event
 #[derive(Debug)]
@@ -49,7 +55,8 @@ pub struct RawEvent {
 ///
 /// In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
 /// hash type. We omitted this here and use the `ac_primitives::Hash` instead.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct EventsDecoder {
     metadata: Metadata,
     marker: PhantomData<()>,
@@ -294,14 +301,14 @@ pub enum Raw {
     Error(RuntimeError),
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum EventsDecodingError {
     /// Unsupported primitive type
-    #[error("Unsupported primitive type {0:?}")]
+    // #[error("Unsupported primitive type {0:?}")]
     UnsupportedPrimitive(TypeDefPrimitive),
     /// Invalid compact type, must be an unsigned int.
-    #[error("Invalid compact primitive {0:?}")]
+    // #[error("Invalid compact primitive {0:?}")]
     InvalidCompactPrimitive(TypeDefPrimitive),
-    #[error("Invalid compact composite type {0}")]
+    // #[error("Invalid compact composite type {0}")]
     InvalidCompactType(String),
 }
