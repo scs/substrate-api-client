@@ -33,9 +33,9 @@ sp-runtime-interface = { version = "6.0.0", default-features = false, features =
 default = ["std"]
 std = [
     "codec/std",
+    "frame-metadata/std",
     "hex/std",
     "log/std",
-    "frame-metadata/std",
     "scale-info/std",
     "serde/std",
     "serde_json/std",
