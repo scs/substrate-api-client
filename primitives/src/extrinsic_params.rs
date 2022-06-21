@@ -1,7 +1,8 @@
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
-use sp_core::{blake2_256, H256};
-use sp_runtime::generic::Era;
+use sp_core::H256;
+use sp_runtime::traits::Hash;
+use sp_runtime::{generic::Era, traits::BlakeTwo256};
 use sp_std::prelude::*;
 
 /// Default SignedExtra.
@@ -198,7 +199,7 @@ where
     pub fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
         self.0.using_encoded(|payload| {
             if payload.len() > 256 {
-                f(&blake2_256(payload)[..])
+                f(&BlakeTwo256::hash(payload)[..])
             } else {
                 f(payload)
             }
