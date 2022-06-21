@@ -224,9 +224,9 @@ impl EventMetadata {
 
 #[derive(Clone, Debug)]
 pub struct ErrorMetadata {
-    pallet: String,
-    error: String,
-    variant: Variant<PortableForm>,
+    pub pallet: String,
+    pub error: String,
+    pub variant: Variant<PortableForm>,
 }
 
 impl ErrorMetadata {

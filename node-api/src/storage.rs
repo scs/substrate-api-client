@@ -20,9 +20,10 @@ use codec::Encode;
 use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
 use scale_info::form::PortableForm;
 use sp_core::storage::StorageKey;
+use sp_std::marker::PhantomData;
 
 #[cfg(not(feature = "std"))]
-use sp_std::{borrow::ToOwned, marker::PhantomData, vec::Vec};
+use sp_std::{borrow::ToOwned, vec::Vec};
 
 #[derive(Clone, Debug)]
 pub struct StorageValue {

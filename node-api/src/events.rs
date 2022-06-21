@@ -28,12 +28,13 @@ use ac_primitives::Hash;
 use codec::{Codec, Compact, Decode, Encode, Input};
 use scale_info::{prelude::format, TypeDef, TypeDefPrimitive};
 use sp_core::Bytes;
+use sp_std::marker::PhantomData;
 
 #[cfg(not(feature = "std"))]
-use sp_std::{marker::PhantomData, vec::Vec};
-
-#[cfg(not(feature = "std"))]
-use alloc::string::{String, ToString};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 /// Raw bytes for an Event
 #[derive(Debug)]
