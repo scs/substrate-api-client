@@ -8,7 +8,14 @@ edition = "2021"
 libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
-substrate-api-client = { path = "..", default-features = false }
+ac-node-api = { path = "../node-api", default-features = false, optional = true }
+substrate-api-client = { path = "..", default-features = false, optional = true }
 
 # substrate dependencies
 sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+[features]
+# It is better to test the no-std crates standalone (don't enable both features at the same time) because dependency
+# leaks might cause successful `no-std` builds, which would fail in standalone build.
+api-client = ["substrate-api-client"]
+node-api = ["ac-node-api"]

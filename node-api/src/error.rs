@@ -23,92 +23,56 @@ use crate::{
     events::EventsDecodingError,
     metadata::{InvalidMetadataError, Metadata, MetadataError},
 };
+use codec::{Decode, Encode};
+use derive_more::From;
 use sp_core::crypto::SecretStringError;
 use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError, ModuleError};
-use thiserror::Error;
+
+#[cfg(not(feature = "std"))]
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 /// Error enum.
-#[derive(Debug, Error)]
+#[derive(Debug, From)]
 pub enum Error {
-    /// Io error.
-    #[error("Io error: {0}")]
-    Io(#[from] std::io::Error),
-    /// Codec error.
-    #[error("Scale codec error: {0}")]
-    Codec(#[from] codec::Error),
+    /// scale-codec error.
+    Codec(codec::Error),
     /// Serde serialization error
-    #[error("Serde json error: {0}")]
-    Serialization(#[from] serde_json::error::Error),
+    Serialization(serde_json::error::Error),
     /// Secret string error.
-    #[error("Secret String Error")]
     SecretString(SecretStringError),
     /// Extrinsic validity error
-    #[error("Transaction Validity Error: {0:?}")]
     Invalid(TransactionValidityError),
     /// Invalid metadata error
-    #[error("Invalid Metadata: {0}")]
-    InvalidMetadata(#[from] InvalidMetadataError),
+    InvalidMetadata(InvalidMetadataError),
     /// Invalid metadata error
-    #[error("Metadata: {0}")]
-    Metadata(#[from] MetadataError),
+    Metadata(MetadataError),
     /// Runtime error.
-    #[error("Runtime error: {0}")]
-    Runtime(#[from] RuntimeError),
+    Runtime(RuntimeError),
     /// Events decoding error.
-    #[error("Events decoding error: {0}")]
-    EventsDecoding(#[from] EventsDecodingError),
+    EventsDecoding(EventsDecodingError),
     /// Other error.
-    #[error("Other error: {0}")]
     Other(String),
 }
 
-impl From<SecretStringError> for Error {
-    fn from(error: SecretStringError) -> Self {
-        Error::SecretString(error)
-    }
-}
-
-impl From<TransactionValidityError> for Error {
-    fn from(error: TransactionValidityError) -> Self {
-        Error::Invalid(error)
-    }
-}
-
-impl From<&str> for Error {
-    fn from(error: &str) -> Self {
-        Error::Other(error.into())
-    }
-}
-
-impl From<String> for Error {
-    fn from(error: String) -> Self {
-        Error::Other(error)
-    }
-}
-
 /// Runtime error.
-#[derive(Clone, Debug, Eq, Error, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, From, Encode, Decode)]
 pub enum RuntimeError {
     /// Module error.
-    #[error("Runtime module error: {0}")]
     Module(PalletError),
     /// At least one consumer is remaining so the account cannot be destroyed.
-    #[error("At least one consumer is remaining so the account cannot be destroyed.")]
     ConsumerRemaining,
     /// There are too many consumers so the account cannot be created.
-    #[error("There are too many consumers so the account cannot be created.")]
     TooManyConsumers,
     /// There are no providers so the account cannot be created.
-    #[error("There are no providers so the account cannot be created.")]
     NoProviders,
-    /// Bad origin.
-    #[error("Bad origin: throw by ensure_signed, ensure_root or ensure_none.")]
+    /// Bad origin: thrown by ensure_signed, ensure_root or ensure_none.
     BadOrigin,
-    /// Cannot lookup.
-    #[error("Cannot lookup some information required to validate the transaction.")]
+    /// Cannot lookup some information required to validate the transaction.
     CannotLookup,
     /// Other error.
-    #[error("Other error: {0}")]
     Other(String),
 }
 
@@ -144,8 +108,7 @@ impl RuntimeError {
 }
 
 /// Module error.
-#[derive(Clone, Debug, Eq, Error, PartialEq)]
-#[error("{error} from {pallet}")]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
 pub struct PalletError {
     /// The module where the error originated.
     pub pallet: String,

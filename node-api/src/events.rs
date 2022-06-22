@@ -26,12 +26,18 @@ use crate::{
 };
 use ac_primitives::Hash;
 use codec::{Codec, Compact, Decode, Encode, Input};
-use scale_info::{TypeDef, TypeDefPrimitive};
+use scale_info::{prelude::format, TypeDef, TypeDefPrimitive};
 use sp_core::Bytes;
-use std::marker::PhantomData;
+use sp_std::marker::PhantomData;
+
+#[cfg(not(feature = "std"))]
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 /// Raw bytes for an Event
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode)]
 pub struct RawEvent {
     /// The name of the pallet from whence the Event originated.
     pub pallet: String,
@@ -49,7 +55,8 @@ pub struct RawEvent {
 ///
 /// In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
 /// hash type. We omitted this here and use the `ac_primitives::Hash` instead.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct EventsDecoder {
     metadata: Metadata,
     marker: PhantomData<()>,
@@ -286,7 +293,7 @@ impl EventsDecoder {
 }
 
 /// Raw event or error event
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode)]
 pub enum Raw {
     /// Event
     Event(RawEvent),
@@ -294,14 +301,11 @@ pub enum Raw {
     Error(RuntimeError),
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
 pub enum EventsDecodingError {
     /// Unsupported primitive type
-    #[error("Unsupported primitive type {0:?}")]
     UnsupportedPrimitive(TypeDefPrimitive),
     /// Invalid compact type, must be an unsigned int.
-    #[error("Invalid compact primitive {0:?}")]
     InvalidCompactPrimitive(TypeDefPrimitive),
-    #[error("Invalid compact composite type {0}")]
     InvalidCompactType(String),
 }

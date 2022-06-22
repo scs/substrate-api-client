@@ -3,15 +3,19 @@
 #![no_std]
 #![no_main]
 
-// DUT
+// DUTs
+
+#[cfg(feature = "api-client")]
 extern crate substrate_api_client;
+
+#[cfg(feature = "node-api")]
+extern crate ac_node_api;
 
 // The libc crate allows importing functions from C.
 extern crate libc;
-use core::panic::PanicInfo;
-
 use core::alloc::{GlobalAlloc, Layout};
 use core::cell::UnsafeCell;
+use core::panic::PanicInfo;
 use core::ptr::null_mut;
 use core::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 

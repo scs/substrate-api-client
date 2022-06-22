@@ -6,20 +6,48 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", features = ['derive'] }
-frame-metadata = { version = "15.0.0", features = ["v14"], package = "frame-metadata" }
-hex = "0.4.3"
-log = "0.4.14"
-scale-info = { version = "2.0.1", features = ["derive"] }
-serde = { version = "1.0.136", features = ["derive"] }
-thiserror = "1.0.30"
-serde_json = "1.0.79"
+codec = { package = "parity-scale-codec", version = "3.0.0", features = ['derive'], default-features = false }
+derive_more = { version = "0.99.17" }
+frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
+hex = { version = "0.4.3", default-features = false }
+log = { version = "0.4.14", default-features = false }
+scale-info = { version = "2.0.1", features = ["derive", "decode"] , default-features = false }
+serde = { version = "1.0.136", features = ["derive"], default-features = false }
+serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # local deps
-ac-primitives = { path = "../primitives" }
+ac-primitives = { path = "../primitives", default-features = false }
 
 # substrate deps
-frame-support = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
-frame-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-core = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-support = { version = "4.0.0-dev",  default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# need to add this for `no_std`
+sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
+sp-runtime-interface = { version = "6.0.0", default-features = false, features = ["disable_target_static_assertions"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "frame-metadata/std",
+    "hex/std",
+    "log/std",
+    "scale-info/std",
+    "serde/std",
+    "serde_json/std",
+    # local deps
+    "ac-primitives/std",
+    # substrate-deps
+    "frame-support/std",
+    "frame-system/std",
+    "sp-core/std",
+    "sp-std/std",
+    "sp-runtime/std",
+    # no_std support
+    "sp-application-crypto/std",
+    "sp-runtime-interface/std",
+]
