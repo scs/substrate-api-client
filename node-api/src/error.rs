@@ -23,6 +23,7 @@ use crate::{
     events::EventsDecodingError,
     metadata::{InvalidMetadataError, Metadata, MetadataError},
 };
+use codec::{Decode, Encode};
 use derive_more::From;
 use sp_core::crypto::SecretStringError;
 use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError, ModuleError};
@@ -57,7 +58,7 @@ pub enum Error {
 }
 
 /// Runtime error.
-#[derive(Clone, Debug, Eq, PartialEq, From)]
+#[derive(Clone, Debug, Eq, PartialEq, From, Encode, Decode)]
 pub enum RuntimeError {
     /// Module error.
     Module(PalletError),
@@ -107,7 +108,7 @@ impl RuntimeError {
 }
 
 /// Module error.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
 pub struct PalletError {
     /// The module where the error originated.
     pub pallet: String,

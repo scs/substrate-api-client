@@ -20,7 +20,7 @@ extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec::Vec};
 
-use codec::Decode;
+use codec::{Decode, Encode};
 
 pub mod error;
 pub mod events;
@@ -42,7 +42,7 @@ impl codec::Encode for Encoded {
 }
 
 /// A phase of a block's execution.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Decode)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
 pub enum Phase {
     /// Applying an extrinsic.
     ApplyExtrinsic(u32),

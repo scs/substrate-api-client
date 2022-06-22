@@ -37,7 +37,7 @@ use alloc::{
 };
 
 /// Raw bytes for an Event
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode)]
 pub struct RawEvent {
     /// The name of the pallet from whence the Event originated.
     pub pallet: String,
@@ -293,7 +293,7 @@ impl EventsDecoder {
 }
 
 /// Raw event or error event
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode)]
 pub enum Raw {
     /// Event
     Event(RawEvent),
@@ -301,7 +301,7 @@ pub enum Raw {
     Error(RuntimeError),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
 pub enum EventsDecodingError {
     /// Unsupported primitive type
     UnsupportedPrimitive(TypeDefPrimitive),

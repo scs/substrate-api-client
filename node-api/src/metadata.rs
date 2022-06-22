@@ -20,7 +20,7 @@
 //! This file is mostly subxt.
 
 use crate::{storage::GetStorage, Encoded};
-use codec::{Encode, Error as CodecError};
+use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
     PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
     StorageEntryMetadata, META_RESERVED,
@@ -198,7 +198,7 @@ impl PalletMetadata {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct EventMetadata {
     pub pallet: String,
     pub event: String,
@@ -222,7 +222,7 @@ impl EventMetadata {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
 pub struct ErrorMetadata {
     pub pallet: String,
     pub error: String,
@@ -246,7 +246,7 @@ impl ErrorMetadata {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
 pub enum InvalidMetadataError {
     InvalidPrefix,
     InvalidVersion,
