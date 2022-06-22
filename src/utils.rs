@@ -18,7 +18,7 @@
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 #[cfg(not(feature = "std"))]
-use alloc::{string::String, string::ToString, vec::Vec};
+use alloc::{string::String, vec::Vec};
 
 use hex::FromHexError;
 use sp_core::storage::StorageKey;
