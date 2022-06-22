@@ -25,7 +25,7 @@ use sp_std::marker::PhantomData;
 #[cfg(not(feature = "std"))]
 use sp_std::{borrow::ToOwned, vec::Vec};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub struct StorageValue {
     module_prefix: Vec<u8>,
     storage_prefix: Vec<u8>,
@@ -39,7 +39,7 @@ impl StorageValue {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct StorageMap<K> {
     _marker: PhantomData<K>,
@@ -57,7 +57,7 @@ impl<K: Encode> StorageMap<K> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct StorageDoubleMap<K, Q> {
     _marker: PhantomData<K>,

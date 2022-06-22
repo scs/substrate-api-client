@@ -42,7 +42,7 @@ use alloc::{
 };
 
 /// Metadata error.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MetadataError {
     /// Module is not in metadata.
     PalletNotFound(String),
@@ -222,7 +222,7 @@ impl EventMetadata {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub struct ErrorMetadata {
     pub pallet: String,
     pub error: String,
@@ -246,7 +246,7 @@ impl ErrorMetadata {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub enum InvalidMetadataError {
     InvalidPrefix,
     InvalidVersion,

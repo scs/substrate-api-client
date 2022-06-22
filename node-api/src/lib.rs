@@ -32,7 +32,7 @@ mod print_metadata;
 
 /// Wraps an already encoded byte vector, prevents being encoded as a raw byte vector as part of
 /// the transaction payload
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Encoded(pub Vec<u8>);
 
 impl codec::Encode for Encoded {
@@ -42,7 +42,7 @@ impl codec::Encode for Encoded {
 }
 
 /// A phase of a block's execution.
-#[derive(Clone, Debug, Eq, PartialEq, Decode)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Decode)]
 pub enum Phase {
     /// Applying an extrinsic.
     ApplyExtrinsic(u32),

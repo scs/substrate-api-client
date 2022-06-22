@@ -57,7 +57,7 @@ pub enum Error {
 }
 
 /// Runtime error.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, From)]
 pub enum RuntimeError {
     /// Module error.
     Module(PalletError),
@@ -107,7 +107,7 @@ impl RuntimeError {
 }
 
 /// Module error.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct PalletError {
     /// The module where the error originated.
     pub pallet: String,
