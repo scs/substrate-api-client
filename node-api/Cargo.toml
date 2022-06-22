@@ -47,4 +47,7 @@ std = [
     "sp-core/std",
     "sp-std/std",
     "sp-runtime/std",
+    # no_std support
+    "sp-application-crypto/std",
+    "sp-runtime-interface/std",
 ]
