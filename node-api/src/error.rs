@@ -29,10 +29,10 @@ use sp_core::crypto::SecretStringError;
 use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError, ModuleError};
 
 #[cfg(not(feature = "std"))]
-use alloc::string::{String, ToString};
-
-#[cfg(not(feature = "std"))]
-use sp_std::vec::Vec;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 /// Error enum.
 #[derive(Debug, From)]
