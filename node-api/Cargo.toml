@@ -27,10 +27,14 @@ sp-runtime = { version = "6.0.0", default-features = false, git = "https://githu
 
 # need to add this for `no_std`
 sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
-sp-runtime-interface = { version = "6.0.0", default-features = false, features = ["disable_target_static_assertions"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
+# To support `no_std` builds in non-32 bit environments.
+disable_target_static_assertions = [
+    "sp-runtime-interface/disable_target_static_assertions"
+]
 std = [
     "codec/std",
     "frame-metadata/std",

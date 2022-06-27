@@ -39,9 +39,7 @@ sp-std = { version = "4.0.0-dev", default-features = false, git = "https://githu
 # need to add this for the app_crypto macro
 sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
 
-# Need to explicitly activate `disable_target_static_assertions` to make `no_std` builds always work without throwing
-# the error `cannot transmute between types of different sizes`
-sp-runtime-interface = { version = "6.0.0", default-features = false, features = ["disable_target_static_assertions"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
@@ -58,6 +56,10 @@ wabt = "0.10.0"
 
 [features]
 default = ["std", "ws-client"]
+# To support `no_std` builds in non-32 bit environments.
+disable_target_static_assertions = [
+ "sp-runtime-interface/disable_target_static_assertions"
+]
 std = [
 	"sp-application-crypto/std",
 	"sp-core/std",

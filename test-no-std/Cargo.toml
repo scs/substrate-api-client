@@ -8,8 +8,8 @@ edition = "2021"
 libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
-ac-node-api = { path = "../node-api", default-features = false, optional = true }
-substrate-api-client = { path = "..", default-features = false, optional = true }
+ac-node-api = { path = "../node-api", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
+substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 
 # substrate dependencies
 sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
