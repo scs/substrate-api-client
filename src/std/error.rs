@@ -53,6 +53,7 @@ impl From<MetadataError> for Error {
     }
 }
 
+#[cfg(feature = "ws-client")]
 impl From<ac_node_api::error::Error> for Error {
     fn from(error: ac_node_api::error::Error) -> Self {
         Error::NodeApi(error)
