@@ -39,6 +39,8 @@ sp-std = { version = "4.0.0-dev", default-features = false, git = "https://githu
 # need to add this for the app_crypto macro
 sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
 
+sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
 ac-node-api = { path = "node-api", optional = true }
@@ -54,6 +56,10 @@ wabt = "0.10.0"
 
 [features]
 default = ["std", "ws-client"]
+# To support `no_std` builds in non-32 bit environments.
+disable_target_static_assertions = [
+ "sp-runtime-interface/disable_target_static_assertions"
+]
 std = [
 	"sp-application-crypto/std",
 	"sp-core/std",
@@ -72,6 +78,7 @@ std = [
 	"primitive-types",
 	"thiserror",
 	"sp-rpc",
+	"sp-runtime-interface/std",
 	"transaction-payment/std",
 	# local deps
 	"ac-compose-macros/std",

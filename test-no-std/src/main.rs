@@ -3,6 +3,9 @@
 #![no_std]
 #![no_main]
 
+#[cfg(not(any(feature = "api-client", feature = "node-api")))]
+compile_error!("either feature \"api-client\" or feature \"node-api\" must be enabled");
+
 // DUTs
 
 #[cfg(feature = "api-client")]
