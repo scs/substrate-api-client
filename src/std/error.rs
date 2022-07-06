@@ -1,5 +1,5 @@
 use crate::std::rpc::XtStatus;
-pub use ac_node_api::metadata::{InvalidMetadataError, MetadataError};
+use ac_node_api::metadata::{InvalidMetadataError, MetadataError};
 
 pub type ApiResult<T> = Result<T, Error>;
 

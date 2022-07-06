@@ -8,7 +8,9 @@ edition = "2021"
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", features = ['derive'], default-features = false }
 derive_more = { version = "0.99.17" }
-frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
+#TODO get from parity when our changes are accepted
+frame-metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", features = ["v14", "full_derive"] }
+#frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
 scale-info = { version = "2.0.1", features = ["derive", "decode"] , default-features = false }

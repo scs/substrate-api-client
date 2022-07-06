@@ -1,7 +1,7 @@
-pub use crate::error::{ApiResult, Error as ApiClientError};
+pub use crate::std::error::{ApiResult, Error as ApiClientError};
 pub use crate::std::rpc::XtStatus;
 pub use crate::utils::FromHexString;
-pub use ac_node_api::metadata::{InvalidMetadataError, Metadata, MetadataError};
+use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 pub use metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;

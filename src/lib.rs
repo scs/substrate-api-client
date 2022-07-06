@@ -30,6 +30,8 @@ pub use crate::std::*;
 
 pub use ac_primitives::*;
 
+pub use ac_node_api::*;
+
 #[cfg(feature = "std")]
 pub use ac_compose_macros::compose_extrinsic;
 

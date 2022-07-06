@@ -22,6 +22,11 @@ use alloc::{borrow::ToOwned, vec::Vec};
 
 use codec::{Decode, Encode};
 
+pub use error::*;
+pub use events::*;
+pub use metadata::*;
+pub use storage::*;
+
 pub mod error;
 pub mod events;
 pub mod metadata;
