@@ -71,8 +71,7 @@ pub enum MetadataError {
 }
 
 /// Runtime metadata.
-#[derive(Clone)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct Metadata {
     pub metadata: RuntimeMetadataLastVersion,
     pub pallets: BTreeMap<String, PalletMetadata>,
@@ -154,8 +153,7 @@ impl Metadata {
     }
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct PalletMetadata {
     pub index: u8,
     pub name: String,

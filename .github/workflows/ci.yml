@@ -60,8 +60,8 @@ jobs:
         # need to set rust nightly as substrate does not have a rust-toolchain.toml
         # The newest is currently not compatible
         run: |
-          rustup default nightly-2021-12-10
-          rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-10
+          rustup default nightly-2022-02-01
+          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-02-01
           rustup show
 
       - name: Checkout substrate
