@@ -18,13 +18,12 @@
 
 use clap::{load_yaml, App};
 use codec::Compact;
-use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::rpc::WsRpcClient;
+use substrate_api_client::PlainTipExtrinsicParams;
 use substrate_api_client::{
     compose_call, compose_extrinsic, Api, GenericAddress, UncheckedExtrinsicV4, XtStatus,
 };
-use substrate_api_client::{ExtrinsicParams, PlainTipExtrinsicParams};
 
 fn main() {
     env_logger::init();
