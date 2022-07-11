@@ -19,6 +19,7 @@ dependencies = [
  "ac-primitives",
  "log",
  "parity-scale-codec",
+ "sp-core",
  "sp-runtime",
  "sp-std",
 ]
