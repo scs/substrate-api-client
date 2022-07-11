@@ -32,6 +32,7 @@ jobs:
         # we omit clippy and test there.
         check: [ cargo build --release --all --exclude test-no-std,
                  cargo build --release -p test-no-std --features api-client,
+                 cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
                  cargo clippy --all --exclude test-no-std -- -D warnings,

@@ -19,6 +19,7 @@ dependencies = [
  "ac-primitives",
  "log",
  "parity-scale-codec",
+ "sp-application-crypto",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -3340,6 +3341,7 @@ dependencies = [
 name = "test-no-std"
 version = "0.6.0"
 dependencies = [
+ "ac-compose-macros",
  "ac-node-api",
  "libc",
  "sp-io",

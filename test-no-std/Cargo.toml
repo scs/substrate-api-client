@@ -8,6 +8,7 @@ edition = "2021"
 libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
+ac-compose-macros = { path = "../compose-macros", default-features = false, optional = true }
 ac-node-api = { path = "../node-api", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 
@@ -18,4 +19,5 @@ sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom"
 # It is better to test the no-std crates standalone (don't enable both features at the same time) because dependency
 # leaks might cause successful `no-std` builds, which would fail in standalone build.
 api-client = ["substrate-api-client"]
+compose-macros = ["ac-compose-macros"]
 node-api = ["ac-node-api"]
