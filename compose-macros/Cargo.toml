@@ -23,6 +23,7 @@ default = ["std"]
 std = [
     "codec/std",
     "log/std",
+    "sp-application-crypto/std",
     "sp-core/std",
     "sp-runtime/std",
     "sp-std/std",
