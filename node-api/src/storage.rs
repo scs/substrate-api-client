@@ -39,8 +39,7 @@ impl StorageValue {
     }
 }
 
-#[derive(Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct StorageMap<K> {
     _marker: PhantomData<K>,
     module_prefix: Vec<u8>,
@@ -57,8 +56,7 @@ impl<K: Encode> StorageMap<K> {
     }
 }
 
-#[derive(Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct StorageDoubleMap<K, Q> {
     _marker: PhantomData<K>,
     _marker2: PhantomData<Q>,

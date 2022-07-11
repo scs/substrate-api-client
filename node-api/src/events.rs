@@ -55,8 +55,7 @@ pub struct RawEvent {
 ///
 /// In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
 /// hash type. We omitted this here and use the `ac_primitives::Hash` instead.
-#[derive(Clone)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, Debug)]
 pub struct EventsDecoder {
     metadata: Metadata,
     marker: PhantomData<()>,
