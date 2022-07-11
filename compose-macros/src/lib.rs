@@ -62,7 +62,9 @@ macro_rules! compose_extrinsic_offline {
     ($signer: expr,
     $call: expr,
     $params: expr) => {{
-        use $crate::primitives::{GenericAddress, SignedPayload, UncheckedExtrinsicV4};
+        use $crate::primitives::{
+            ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4,
+        };
         use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
 
         let extra = $params.signed_extra();
