@@ -3,13 +3,22 @@
 #![no_std]
 #![no_main]
 
-#[cfg(not(any(feature = "api-client", feature = "node-api")))]
-compile_error!("either feature \"api-client\" or feature \"node-api\" must be enabled");
+#[cfg(not(any(
+    feature = "api-client",
+    feature = "node-api",
+    feature = "compose-macros"
+)))]
+compile_error!(
+    "either feature \"api-client\", \"compose-macro\", or feature \"node-api\" must be enabled"
+);
 
 // DUTs
 
 #[cfg(feature = "api-client")]
 extern crate substrate_api_client;
+
+#[cfg(feature = "compose-macros")]
+extern crate ac_compose_macros;
 
 #[cfg(feature = "node-api")]
 extern crate ac_node_api;

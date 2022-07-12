@@ -18,8 +18,8 @@ use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 
 use substrate_api_client::{
-    compose_extrinsic, rpc::WsRpcClient, utils::FromHexString, Api, ExtrinsicParams,
-    PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+    compose_extrinsic, rpc::WsRpcClient, utils::FromHexString, Api, PlainTipExtrinsicParams,
+    UncheckedExtrinsicV4, XtStatus,
 };
 
 #[derive(Encode, Decode, Debug)]

@@ -20,13 +20,11 @@ use clap::{load_yaml, App};
 
 use ac_primitives::PlainTipExtrinsicParamsBuilder;
 use node_template_runtime::{BalancesCall, Call, Header};
-use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::generic::Era;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::ExtrinsicParams;
 use substrate_api_client::{
     compose_extrinsic_offline, Api, PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
 };

@@ -25,6 +25,7 @@ pub use ac_primitives as primitives;
 pub use codec;
 #[cfg(feature = "std")]
 pub use log;
+pub use sp_core;
 pub use sp_runtime;
 
 /// Generates the extrinsic's call field for a given module and call passed as &str
@@ -62,7 +63,10 @@ macro_rules! compose_extrinsic_offline {
     ($signer: expr,
     $call: expr,
     $params: expr) => {{
-        use $crate::primitives::{GenericAddress, SignedPayload, UncheckedExtrinsicV4};
+        use $crate::primitives::{
+            ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4,
+        };
+        use $crate::sp_core::crypto::Pair;
         use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
 
         let extra = $params.signed_extra();
