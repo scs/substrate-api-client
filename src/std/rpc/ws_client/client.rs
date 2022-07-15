@@ -36,11 +36,7 @@ impl WsRpcClient {
 
 impl RpcClientTrait for WsRpcClient {
     fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
-        let (result_in, result_out) = channel();
-        self.get(jsonreq.to_string(), result_in)?;
-
-        let str = result_out.recv()?;
-        Ok(str)
+        self.direct_rpc_request(jsonreq.to_string(), on_get_request_msg)
     }
 
     fn send_extrinsic(
@@ -55,35 +51,29 @@ impl RpcClientTrait for WsRpcClient {
             _ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
         };
 
-        let (result_in, result_out) = channel();
         match exit_on {
             XtStatus::Finalized => {
-                self.send_extrinsic_and_wait_until_finalized(jsonreq, result_in)?;
-                let res = result_out.recv()?;
+                let res = self.direct_rpc_request(jsonreq, on_extrinsic_msg_until_finalized)?;
                 info!("finalized: {}", res);
                 Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::InBlock => {
-                self.send_extrinsic_and_wait_until_in_block(jsonreq, result_in)?;
-                let res = result_out.recv()?;
+                let res = self.direct_rpc_request(jsonreq, on_extrinsic_msg_until_in_block)?;
                 info!("inBlock: {}", res);
                 Ok(Some(Hash::from_hex(res)?))
             }
             XtStatus::Broadcast => {
-                self.send_extrinsic_and_wait_until_broadcast(jsonreq, result_in)?;
-                let res = result_out.recv()?;
+                let res = self.direct_rpc_request(jsonreq, on_extrinsic_msg_until_broadcast)?;
                 info!("broadcast: {}", res);
                 Ok(None)
             }
             XtStatus::Ready => {
-                self.send_extrinsic_until_ready(jsonreq, result_in)?;
-                let res = result_out.recv()?;
+                let res = self.direct_rpc_request(jsonreq, on_extrinsic_msg_until_ready)?;
                 info!("ready: {}", res);
                 Ok(None)
             }
             XtStatus::SubmitOnly => {
-                self.send_extrinsic(jsonreq, result_in)?;
-                let res = result_out.recv()?;
+                let res = self.direct_rpc_request(jsonreq, on_extrinsic_msg_submit_only)?;
                 info!("submitted xt: {}", res);
                 Ok(None)
             }
@@ -166,5 +156,16 @@ impl WsRpcClient {
                     })
                 })?;
         Ok(())
+    }
+
+    fn direct_rpc_request(&self, jsonreq: String, on_message_fn: OnMessageFn) -> ApiResult<String> {
+        let (result_in, result_out) = channel();
+        connect(self.url.as_str(), |out| RpcClient {
+            out,
+            request: jsonreq.clone(),
+            result: result_in.clone(),
+            on_message_fn,
+        })?;
+        Ok(result_out.recv()?)
     }
 }
