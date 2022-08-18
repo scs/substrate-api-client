@@ -29,14 +29,14 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 
 # Substrate dependencies
 sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "sp-version" , branch = "master" }
-balances = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-balances" , branch = "master" }
-staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-staking" , branch = "master" }
-system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "frame-system" , branch = "master" }
-transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-transaction-payment" , branch = "master" }
+sp-version = { version = "5.0.0-dev", package = "sp-version", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+balances = { version = "4.0.0-dev", package = "pallet-balances", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+staking = { version = "4.0.0-dev", package = "pallet-staking", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+system = { version = "4.0.0-dev", package = "frame-system", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+transaction-payment = { version = "4.0.0-dev", package = "pallet-transaction-payment", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { version = "6.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", package = "frame-support", branch = "master" }
+support = { version = "4.0.0-dev", package = "frame-support", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
