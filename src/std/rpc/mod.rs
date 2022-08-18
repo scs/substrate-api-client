@@ -51,7 +51,7 @@ pub enum XtStatus {
 // Exact structure from
 // https://github.com/paritytech/substrate/blob/master/client/rpc-api/src/state/helpers.rs
 // Adding manually so we don't need sc-rpc-api, which brings in async dependencies
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReadProof<Hash> {
     /// Block hash used to generate the proof
