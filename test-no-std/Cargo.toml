@@ -1,7 +1,8 @@
 [package]
 name = "test-no-std"
 version = "0.6.0"
-authors = ["Alain Brenzikofer <alain.brenzikofer@scs.ch>"]
+authors = ["Supercomputing Systems AG <info@scs.ch>"]
+license = "Apache-2.0"
 edition = "2021"
 
 [dependencies]
