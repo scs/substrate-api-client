@@ -25,18 +25,13 @@ For more information, please refer to the [substrate](https://github.com/parityt
 ## Substrate node
 
 To execute the examples, a running substrate node is needed. You can download our node artifact from our GitHub Actions
-CI, which can be found in the 'Actions' tab.
+CI, which can be found in the 'Actions' tab (to the right of the Pull requests tab).
 
 The unpacked node can be run with:
 
 ```
 ./node-template --dev
 ```
-
-
-## Tutorial
-
-There is a detailed tutorial in the [tutorials](/tutorials) folder.
 
 ## Examples
 
