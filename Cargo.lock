@@ -109,16 +109,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4361135be9122e0870de935d7c439aef945b9f9ddd4199a553b5270b49c82a27"
 
 [[package]]
-name = "api-client-tutorial"
-version = "0.6.0"
-dependencies = [
- "parity-scale-codec",
- "sp-core",
- "sp-keyring",
- "substrate-api-client",
-]
-
-[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
