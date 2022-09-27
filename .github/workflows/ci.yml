@@ -43,15 +43,11 @@ jobs:
                  cargo test --all --exclude test-no-std,
 
                  cargo fmt --all -- --check,
-
-                 taplo fmt --check,
         ]
     steps:
       - uses: actions/checkout@v2
       - name: init-rust-target
         run: rustup show
-      - name: Install taplo
-        run: cargo install taplo-cli --locked
 
       - uses: Swatinem/rust-cache@v1
         with:
@@ -59,6 +55,19 @@ jobs:
 
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
+
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install taplo
+        run: cargo install taplo-cli --locked
+      - name: Cargo.toml fmt
+        run: taplo fmt --check
+      - name: Fail-fast; cancel other jobs
+        if: failure()
+        uses: andymckay/cancel-action@0.2
+
 
   build-node-template:
     runs-on: ubuntu-latest
