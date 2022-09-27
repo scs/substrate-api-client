@@ -19,7 +19,7 @@
 
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4};
+use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4, ExtrinsicParams};
 use codec::Compact;
 use sp_core::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
@@ -50,22 +50,23 @@ pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
 pub type StakingChillFn = CallIndex;
 pub type StakingSetControllerFn = (CallIndex, GenericAddress);
 
-pub type StakingBondXt = UncheckedExtrinsicV4<StakingBondFn>;
-pub type StakingBondExtraXt = UncheckedExtrinsicV4<StakingBondExtraFn>;
-pub type StakingUnbondXt = UncheckedExtrinsicV4<StakingUnbondFn>;
-pub type StakingRebondXt = UncheckedExtrinsicV4<StakingRebondFn>;
-pub type StakingWithdrawUnbondedXt = UncheckedExtrinsicV4<StakingWithdrawUnbondedFn>;
-pub type StakingNominateXt = UncheckedExtrinsicV4<StakingNominateFn>;
-pub type StakingChillXt = UncheckedExtrinsicV4<StakingChillFn>;
-pub type StakingSetControllerXt = UncheckedExtrinsicV4<StakingSetControllerFn>;
+pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn,SignedExtra>;
+pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn,SignedExtra>;
+pub type StakingUnbondXt<SignedExtra> = UncheckedExtrinsicV4<StakingUnbondFn,SignedExtra>;
+pub type StakingRebondXt<SignedExtra> = UncheckedExtrinsicV4<StakingRebondFn,SignedExtra>;
+pub type StakingWithdrawUnbondedXt<SignedExtra> = UncheckedExtrinsicV4<StakingWithdrawUnbondedFn,SignedExtra>;
+pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn,SignedExtra>;
+pub type StakingChillXt<SignedExtra> = UncheckedExtrinsicV4<StakingChillFn, SignedExtra>;
+pub type StakingSetControllerXt<SignedExtra>= UncheckedExtrinsicV4<StakingSetControllerFn,SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
-impl<P, Client> Api<P, Client>
+impl<P, Client, Params> Api<P, Client, Params>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
     MultiSigner: From<P::Public>,
     Client: RpcClient,
+    Params: ExtrinsicParams,
 {
     /// Bond `value` amount to `controller`
     pub fn staking_bond(
@@ -73,7 +74,7 @@ where
         controller: GenericAddress,
         value: Balance,
         payee: RewardDestination<GenericAddress>,
-    ) -> StakingBondXt {
+    ) -> StakingBondXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             STAKING_MODULE,
@@ -85,26 +86,26 @@ where
     }
 
     /// Bonds extra funds from the stash's free balance to the balance for staking.
-    pub fn staking_bond_extra(&self, value: Balance) -> StakingBondExtraXt {
+    pub fn staking_bond_extra(&self, value: Balance) -> StakingBondExtraXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND_EXTRA, Compact(value))
     }
 
     /// Unbond `value` portion of the stash.
     /// If `value` is less than the minimum required, then the entire amount is unbound.
     /// Must be signed by the controller of the stash.
-    pub fn staking_unbond(&self, value: Balance) -> StakingUnbondXt {
+    pub fn staking_unbond(&self, value: Balance) -> StakingUnbondXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_UNBOND, Compact(value))
     }
 
     /// Rebond `value` portion of the current amount that is in the process of unbonding.
-    pub fn staking_rebond(&self, value: Balance) -> StakingRebondXt {
+    pub fn staking_rebond(&self, value: Balance) -> StakingRebondXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_REBOND, Compact(value))
     }
 
     /// Free the balance of the stash so the stash account can do whatever it wants.
     /// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
     /// For most users, `num_slashing_spans` should be 0.
-    pub fn staking_withdraw_unbonded(&self, num_slashing_spans: u32) -> StakingWithdrawUnbondedXt {
+    pub fn staking_withdraw_unbonded(&self, num_slashing_spans: u32) -> StakingWithdrawUnbondedXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             STAKING_MODULE,
@@ -115,19 +116,19 @@ where
 
     /// Nominate `targets` as validators.
     /// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
-    pub fn staking_nominate(&self, targets: Vec<GenericAddress>) -> StakingNominateXt {
+    pub fn staking_nominate(&self, targets: Vec<GenericAddress>) -> StakingNominateXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_NOMINATE, targets)
     }
 
     /// Stop nominating por validating. Effects take place in the next era
-    pub fn staking_chill(&self) -> StakingChillXt {
+    pub fn staking_chill(&self) -> StakingChillXt<Params::SignedExtra>  {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_CHILL)
     }
 
     /// (Re-)set the controller of the stash
     /// Effects will be felt at the beginning of the next era.
     /// Must be Signed by the stash, not the controller.
-    pub fn staking_set_controller(&self, controller: GenericAddress) -> StakingSetControllerXt {
+    pub fn staking_set_controller(&self, controller: GenericAddress) -> StakingSetControllerXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
     }
 }
