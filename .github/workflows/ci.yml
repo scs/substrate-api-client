@@ -32,6 +32,7 @@ jobs:
         # we omit clippy and test there.
         #
         # `--locked` to enforce an up-to-date Cargo.lock
+        install: [ cargo install taplo-cli --locked]
         check: [ cargo build --release --all --locked --exclude test-no-std,
                  cargo build --release -p test-no-std --features api-client,
                  cargo build --release -p test-no-std --features compose-macros,
@@ -44,7 +45,6 @@ jobs:
 
                  cargo fmt --all -- --check,
 
-                 cargo install taplo-cli --locked,
                  taplo fmt --check,
         ]
     steps:
@@ -56,6 +56,8 @@ jobs:
         with:
           key: ${{ matrix.check }}
 
+      - name: ${{ matrix.install }}
+        run: ${{ matrix.install }}
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
