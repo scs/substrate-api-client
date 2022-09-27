@@ -32,7 +32,6 @@ jobs:
         # we omit clippy and test there.
         #
         # `--locked` to enforce an up-to-date Cargo.lock
-        install: [ cargo install taplo-cli --locked]
         check: [ cargo build --release --all --locked --exclude test-no-std,
                  cargo build --release -p test-no-std --features api-client,
                  cargo build --release -p test-no-std --features compose-macros,
@@ -51,13 +50,13 @@ jobs:
       - uses: actions/checkout@v2
       - name: init-rust-target
         run: rustup show
+      - name: Install taplo
+        run: cargo install taplo-cli --locked
 
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.check }}
 
-      - name: ${{ matrix.install }}
-        run: ${{ matrix.install }}
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
