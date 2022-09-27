@@ -43,6 +43,9 @@ jobs:
                  cargo test --all --exclude test-no-std,
 
                  cargo fmt --all -- --check,
+
+                 cargo install taplo-cli --locked,
+                 taplo fmt --check,
         ]
     steps:
       - uses: actions/checkout@v2
@@ -140,3 +143,4 @@ jobs:
         timeout-minutes: 5
         run: |
           ./target/release/examples/${{ matrix.example }}
+
