@@ -87,3 +87,5 @@ std = [
 ws-client = ["ws"]
 staking-xt = ["std", "staking"]
 
+[patch.crates-io]
+ed25519-zebra = { git = "https://github.com/ZcashFoundation/ed25519-zebra", branch = "main" }
