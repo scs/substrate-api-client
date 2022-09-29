@@ -56,18 +56,16 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-  fmt:
+  cargo-toml-fmt:
     runs-on: ubuntu-latest
+    container: "tamasfe/taplo:0.7.0-alpine"
     steps:
-      - uses: actions/checkout@v2
-      - name: Install taplo
-        run: cargo install taplo-cli --locked
-      - name: Cargo.toml fmt
+      - uses: actions/checkout@v3
+      - name: Run Taplo fmt
         run: taplo fmt --check
       - name: Fail-fast; cancel other jobs
         if: failure()
         uses: andymckay/cancel-action@0.2
-
 
   build-node-template:
     runs-on: ubuntu-latest
