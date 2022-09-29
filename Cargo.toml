@@ -87,3 +87,6 @@ std = [
 ws-client = ["ws"]
 staking-xt = ["std", "staking"]
 
+# Remove when fixed: https://github.com/scs/substrate-api-client/issues/286
+[patch.crates-io]
+ed25519-zebra = { git = "https://github.com/ZcashFoundation/ed25519-zebra", branch = "main" }
