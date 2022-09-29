@@ -63,12 +63,15 @@ jobs:
         # need to set rust nightly as substrate does not have a rust-toolchain.toml
         # The newest is currently not compatible
         run: |
-          rustup default nightly-2022-08-18
-          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-08-18
+          rustup default nightly-2022-09-29
+          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-09-29
           rustup show
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+
       - name: Checkout substrate
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: paritytech/substrate
           path: substrate
@@ -83,7 +86,7 @@ jobs:
           cargo build --release -p node-template
 
       - name: Upload node-template
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: node-template
           path: substrate/target/release/node-template
@@ -97,18 +100,18 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         example: [
-            example_benchmark_bulk_xt,
-            example_compose_extrinsic_offline,
-            example_event_callback,
-#            example_generic_event_callback, does not work without somebody executing a transfer. So we don't run it.
-#            example_event_error_details , Todo: this example hangs: #134
-            example_generic_extrinsic,
-            example_get_blocks,
-            example_get_existential_deposit,
-            example_get_storage,
-#            example_print_metadata, // Todo: metadata print needs revamp: #179.
-            example_sudo,
-            example_transfer,
+          example_benchmark_bulk_xt,
+          example_compose_extrinsic_offline,
+          example_event_callback,
+          #            example_generic_event_callback, does not work without somebody executing a transfer. So we don't run it.
+          #            example_event_error_details , Todo: this example hangs: #134
+          example_generic_extrinsic,
+          example_get_blocks,
+          example_get_existential_deposit,
+          example_get_storage,
+          #            example_print_metadata, // Todo: metadata print needs revamp: #179.
+          example_sudo,
+          example_transfer,
         ]
     steps:
       - uses: actions/checkout@v2
