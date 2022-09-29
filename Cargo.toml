@@ -7,11 +7,11 @@ edition = "2021"
 
 [workspace]
 members = [
-	".",
-	"compose-macros",
-	"client-keystore",
-	"node-api",
-	"test-no-std",
+    ".",
+    "compose-macros",
+    "client-keystore",
+    "node-api",
+    "test-no-std",
 ]
 
 [dependencies]
@@ -20,24 +20,24 @@ log = { version = "0.4.14", optional = true }
 #TODO get from parity when our changes are accepted
 metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", package = "frame-metadata", features = ["v14", "full_derive"] }
 #metadata = { version = "15.0.0", default-features = false, package = "frame-metadata", features = ["v14"] }
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 primitive-types = { version = "0.11.1", optional = true, features = ["codec"] }
 serde = { version = "1.0.136", optional = true, features = ["derive"] }
 serde_json = { version = "1.0.79", optional = true }
 thiserror = { version = "1.0.30", optional = true }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 
 # Substrate dependencies
-sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "sp-version" }
 balances = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-balances" }
-staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-staking" }
-system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "frame-system" }
-transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-transaction-payment" }
+sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { version = "6.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", package = "frame-support", branch = "master" }
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "sp-version" }
+staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-staking" }
+support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", package = "frame-support", branch = "master" }
+system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "frame-system" }
+transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-transaction-payment" }
 
 sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
@@ -58,31 +58,31 @@ wabt = "0.10.0"
 default = ["std", "ws-client"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
- "sp-runtime-interface/disable_target_static_assertions"
+    "sp-runtime-interface/disable_target_static_assertions",
 ]
 std = [
-	"sp-core/std",
-	"codec/std",
-	"metadata/std",
-	"sp-version",
-	"balances",
-	"system",
-	"sp-runtime/std",
-	"support/std",
-	"sp-std/std",
-	"serde/std",
-	"serde_json",
-	"log",
-	"hex/std",
-	"primitive-types",
-	"thiserror",
-	"sp-rpc",
-	"sp-runtime-interface/std",
-	"transaction-payment/std",
-	# local deps
-	"ac-compose-macros/std",
-	"ac-node-api/std",
-	"ac-primitives/std",
+    "sp-core/std",
+    "codec/std",
+    "metadata/std",
+    "sp-version",
+    "balances",
+    "system",
+    "sp-runtime/std",
+    "support/std",
+    "sp-std/std",
+    "serde/std",
+    "serde_json",
+    "log",
+    "hex/std",
+    "primitive-types",
+    "thiserror",
+    "sp-rpc",
+    "sp-runtime-interface/std",
+    "transaction-payment/std",
+    # local deps
+    "ac-compose-macros/std",
+    "ac-node-api/std",
+    "ac-primitives/std",
 ]
 ws-client = ["ws"]
 staking-xt = ["std", "staking"]
