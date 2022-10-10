@@ -13,7 +13,7 @@ frame-metadata = { version = "15.0.0", default-features = false, git = "https://
 #frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
-scale-info = { version = "2.0.1", features = ["derive", "decode"] , default-features = false }
+scale-info = { version = "2.0.1", features = ["derive", "decode"], default-features = false }
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
@@ -21,11 +21,11 @@ serde_json = { version = "1.0.79", default-features = false, features = ["alloc"
 ac-primitives = { path = "../primitives", default-features = false }
 
 # substrate deps
-frame-support = { version = "4.0.0-dev",  default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # need to add this for `no_std`
 sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
@@ -35,7 +35,7 @@ sp-runtime-interface = { version = "6.0.0", default-features = false, git = "htt
 default = ["std"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
-    "sp-runtime-interface/disable_target_static_assertions"
+    "sp-runtime-interface/disable_target_static_assertions",
 ]
 std = [
     "codec/std",
