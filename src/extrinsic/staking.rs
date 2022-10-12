@@ -35,6 +35,7 @@ const STAKING_WITHDRAW_UNBONDED: &str = "withdraw_unbonded";
 const STAKING_NOMINATE: &str = "nominate";
 const STAKING_CHILL: &str = "chill";
 const STAKING_SET_CONTROLLER: &str = "set_controller";
+const PAYOUT_STAKERS: &str = "payout_stakers"; 
 
 pub type StakingBondFn = (
     CallIndex,
@@ -49,6 +50,7 @@ pub type StakingWithdrawUnbondedFn = (CallIndex, u32);
 pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
 pub type StakingChillFn = CallIndex;
 pub type StakingSetControllerFn = (CallIndex, GenericAddress);
+pub type StakingPayoutStakersFn = (CallIndex, PayoutStakers);
 
 pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn,SignedExtra>;
 pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn,SignedExtra>;
@@ -58,6 +60,7 @@ pub type StakingWithdrawUnbondedXt<SignedExtra> = UncheckedExtrinsicV4<StakingWi
 pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn,SignedExtra>;
 pub type StakingChillXt<SignedExtra> = UncheckedExtrinsicV4<StakingChillFn, SignedExtra>;
 pub type StakingSetControllerXt<SignedExtra>= UncheckedExtrinsicV4<StakingSetControllerFn,SignedExtra>;
+pub type StakingPayoutStakersXt<SignedExtra>= UncheckedExtrinsicV4<StakingPayoutStakersFn,SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<P, Client, Params> Api<P, Client, Params>
@@ -131,4 +134,18 @@ where
     pub fn staking_set_controller(&self, controller: GenericAddress) -> StakingSetControllerXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
     }
+
+    pub fn payout_stakers(&self, era: u32, account : AccountId32) -> StakingPayoutStakersXt<Params::SignedExtra> {
+        let value = PayoutStakers{
+            validator_stash: account,
+            era,
+        };
+        compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, value)
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
+pub struct PayoutStakers {
+    pub validator_stash: AccountId32,
+    pub era: u32,
 }
