@@ -23,6 +23,8 @@ use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4, Ex
 use codec::Compact;
 use sp_core::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
+use codec::{Decode, Encode};
+use sp_runtime::AccountId32;
 
 pub use staking::RewardDestination;
 
@@ -140,7 +142,7 @@ where
             validator_stash: account,
             era,
         };
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, value)
+        compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
     }
 }
 
