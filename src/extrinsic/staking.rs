@@ -19,12 +19,12 @@
 
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{Balance, CallIndex, GenericAddress, UncheckedExtrinsicV4, ExtrinsicParams};
+use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
-use sp_core::Pair;
-use sp_runtime::{MultiSignature, MultiSigner};
 use codec::{Decode, Encode};
+use sp_core::Pair;
 use sp_runtime::AccountId32;
+use sp_runtime::{MultiSignature, MultiSigner};
 
 pub use staking::RewardDestination;
 
@@ -37,7 +37,10 @@ const STAKING_WITHDRAW_UNBONDED: &str = "withdraw_unbonded";
 const STAKING_NOMINATE: &str = "nominate";
 const STAKING_CHILL: &str = "chill";
 const STAKING_SET_CONTROLLER: &str = "set_controller";
-const PAYOUT_STAKERS: &str = "payout_stakers"; 
+const PAYOUT_STAKERS: &str = "payout_stakers";
+
+const UTILITY_MODULE: &str = "Utility";
+const UTILITY_BATCH: &str = "batch";
 
 pub type StakingBondFn = (
     CallIndex,
@@ -52,17 +55,24 @@ pub type StakingWithdrawUnbondedFn = (CallIndex, u32);
 pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
 pub type StakingChillFn = CallIndex;
 pub type StakingSetControllerFn = (CallIndex, GenericAddress);
-pub type StakingPayoutStakersFn = (CallIndex, PayoutStakers);
 
-pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn,SignedExtra>;
-pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn,SignedExtra>;
-pub type StakingUnbondXt<SignedExtra> = UncheckedExtrinsicV4<StakingUnbondFn,SignedExtra>;
-pub type StakingRebondXt<SignedExtra> = UncheckedExtrinsicV4<StakingRebondFn,SignedExtra>;
-pub type StakingWithdrawUnbondedXt<SignedExtra> = UncheckedExtrinsicV4<StakingWithdrawUnbondedFn,SignedExtra>;
-pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn,SignedExtra>;
+pub type StakingPayoutStakersFn = (CallIndex, PayoutStakers);
+pub type UtilityBatchFn = (CallIndex, Batch);
+
+pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn, SignedExtra>;
+pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn, SignedExtra>;
+pub type StakingUnbondXt<SignedExtra> = UncheckedExtrinsicV4<StakingUnbondFn, SignedExtra>;
+pub type StakingRebondXt<SignedExtra> = UncheckedExtrinsicV4<StakingRebondFn, SignedExtra>;
+pub type StakingWithdrawUnbondedXt<SignedExtra> =
+    UncheckedExtrinsicV4<StakingWithdrawUnbondedFn, SignedExtra>;
+pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn, SignedExtra>;
 pub type StakingChillXt<SignedExtra> = UncheckedExtrinsicV4<StakingChillFn, SignedExtra>;
-pub type StakingSetControllerXt<SignedExtra>= UncheckedExtrinsicV4<StakingSetControllerFn,SignedExtra>;
-pub type StakingPayoutStakersXt<SignedExtra>= UncheckedExtrinsicV4<StakingPayoutStakersFn,SignedExtra>;
+pub type StakingSetControllerXt<SignedExtra> =
+    UncheckedExtrinsicV4<StakingSetControllerFn, SignedExtra>;
+
+pub type StakingPayoutStakersXt<SignedExtra> =
+    UncheckedExtrinsicV4<StakingPayoutStakersFn, SignedExtra>;
+pub type UtilityBatchXt<SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn, SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<P, Client, Params> Api<P, Client, Params>
@@ -110,7 +120,10 @@ where
     /// Free the balance of the stash so the stash account can do whatever it wants.
     /// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
     /// For most users, `num_slashing_spans` should be 0.
-    pub fn staking_withdraw_unbonded(&self, num_slashing_spans: u32) -> StakingWithdrawUnbondedXt<Params::SignedExtra> {
+    pub fn staking_withdraw_unbonded(
+        &self,
+        num_slashing_spans: u32,
+    ) -> StakingWithdrawUnbondedXt<Params::SignedExtra> {
         compose_extrinsic!(
             self,
             STAKING_MODULE,
@@ -121,28 +134,48 @@ where
 
     /// Nominate `targets` as validators.
     /// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
-    pub fn staking_nominate(&self, targets: Vec<GenericAddress>) -> StakingNominateXt<Params::SignedExtra> {
+    pub fn staking_nominate(
+        &self,
+        targets: Vec<GenericAddress>,
+    ) -> StakingNominateXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_NOMINATE, targets)
     }
 
     /// Stop nominating por validating. Effects take place in the next era
-    pub fn staking_chill(&self) -> StakingChillXt<Params::SignedExtra>  {
+    pub fn staking_chill(&self) -> StakingChillXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_CHILL)
     }
 
     /// (Re-)set the controller of the stash
     /// Effects will be felt at the beginning of the next era.
     /// Must be Signed by the stash, not the controller.
-    pub fn staking_set_controller(&self, controller: GenericAddress) -> StakingSetControllerXt<Params::SignedExtra> {
+    pub fn staking_set_controller(
+        &self,
+        controller: GenericAddress,
+    ) -> StakingSetControllerXt<Params::SignedExtra> {
         compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
     }
 
-    pub fn payout_stakers(&self, era: u32, account : AccountId32) -> StakingPayoutStakersXt<Params::SignedExtra> {
-        let value = PayoutStakers{
+    pub fn payout_stakers(
+        &self,
+        era: u32,
+        account: AccountId32,
+    ) -> StakingPayoutStakersXt<Params::SignedExtra> {
+        let value = PayoutStakers {
             validator_stash: account,
             era,
         };
         compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
+    }
+
+    pub fn batch(
+        &self,
+        calls: Vec<
+            UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
+        >,
+    ) -> UtilityBatchXt<Params::SignedExtra> {
+        let calls = Batch { calls };
+        compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
     }
 }
 
@@ -150,4 +183,10 @@ where
 pub struct PayoutStakers {
     pub validator_stash: AccountId32,
     pub era: u32,
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
+pub struct Batch {
+    pub calls:
+        Vec<UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>>,
 }
