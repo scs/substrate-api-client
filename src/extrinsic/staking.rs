@@ -187,7 +187,7 @@ pub struct PayoutStakers {
     pub era: u32,
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
 pub struct Batch {
     pub calls:
         Vec<UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>>,
