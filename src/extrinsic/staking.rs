@@ -43,6 +43,7 @@ const PAYOUT_STAKERS: &str = "payout_stakers";
 
 const UTILITY_MODULE: &str = "Utility";
 const UTILITY_BATCH: &str = "batch";
+const UTILITY_FORCE_BATCH: &str = "force_batch";
 
 pub type StakingBondFn = (
     CallIndex,
@@ -178,6 +179,16 @@ where
     ) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
+    }
+
+    pub fn force_batch(
+        &self,
+        calls: Vec<
+            UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
+        >,
+    ) -> UtilityBatchXt<Params::SignedExtra> {
+        let calls = Batch { calls };
+        compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
     }
 }
 
