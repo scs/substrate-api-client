@@ -20,7 +20,7 @@
 
 use clap::{load_yaml, App};
 
-use node_template_runtime::{BalancesCall, RuntimeCall};
+use node_template_runtime::{BalancesCall, Call};
 use sp_keyring::AccountKeyring;
 
 use substrate_api_client::rpc::WsRpcClient;
@@ -54,7 +54,7 @@ fn main() {
         #[allow(clippy::redundant_clone)]
         let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
-            RuntimeCall::Balances(BalancesCall::transfer {
+            Call::Balances(BalancesCall::transfer {
                 dest: GenericAddress::Id(to.clone()),
                 value: 1_000_000
             }),
