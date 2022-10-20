@@ -17,7 +17,7 @@
 use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
-use code::Decode;
+use codec::Decode;
 use log::{debug, error};
 use sp_core::sr25519;
 use sp_core::H256 as Hash;
