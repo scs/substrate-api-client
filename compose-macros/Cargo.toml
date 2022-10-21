@@ -15,7 +15,7 @@ sp-runtime = { version = "6.0.0", default-features = false, git = "https://githu
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # need to add this for the app_crypto macro
-sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", features = ["full_crypto"] }
+sp-application-crypto = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 
 # local deps
 ac-primitives = { path = "../primitives", default-features = false }
