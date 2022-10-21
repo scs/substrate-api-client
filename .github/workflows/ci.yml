@@ -49,7 +49,7 @@ jobs:
       - name: init-rust-target
         run: rustup show
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.check }}
 
@@ -87,7 +87,7 @@ jobs:
           repository: paritytech/substrate
           path: substrate
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           working-directory: substrate
 
@@ -129,7 +129,7 @@ jobs:
       - name: init-rust-target
         run: rustup show
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.example }}
 
