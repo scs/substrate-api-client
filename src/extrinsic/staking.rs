@@ -19,8 +19,8 @@
 
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::SubstrateDefaultSignedExtra;
 use ac_primitives::PlainTip;
+use ac_primitives::SubstrateDefaultSignedExtra;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
 use codec::{Decode, Encode};
@@ -173,9 +173,10 @@ where
 
     pub fn batch(
         &self,
-        calls: Vec<
-            UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
-        >,
+        calls: 
+            // UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
+            Vec<([u8; 2], PayoutStakers)>
+        ,
     ) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
@@ -201,5 +202,6 @@ pub struct PayoutStakers {
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
 pub struct Batch {
     pub calls:
-        Vec<UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>>,
+        // Vec<UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>>,
+        Vec<([u8; 2], PayoutStakers)>
 }
