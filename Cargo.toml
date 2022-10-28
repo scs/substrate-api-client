@@ -28,16 +28,16 @@ thiserror = { version = "1.0.30", optional = true }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate dependencies
-balances = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-balances" }
+balances = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-balances", branch = "master" }
 sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { version = "6.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "sp-version" }
-staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-staking" }
+sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "sp-version", branch = "master" }
+staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-staking", branch = "master" }
 support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", package = "frame-support", branch = "master" }
-system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "frame-system" }
-transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master", package = "pallet-transaction-payment" }
+system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "frame-system", branch = "master" }
+transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-transaction-payment", branch = "master" }
 
 sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
