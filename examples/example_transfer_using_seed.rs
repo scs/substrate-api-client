@@ -15,20 +15,26 @@
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
 use clap::{load_yaml, App};
-use sp_core::{crypto::{Pair, Ss58Codec}, sr25519};
+use sp_core::{
+    crypto::{Pair, Ss58Codec},
+    sr25519,
+};
 
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{Api, XtStatus};
 
-
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
     // Alice's seed: subkey inspect //Alice
-    let from: sr25519::Pair = Pair::from_string("0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a", None).unwrap();
+    let from: sr25519::Pair = Pair::from_string(
+        "0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
+        None,
+    )
+    .unwrap();
     println!("signer account: {}", from.public().to_ss58check());
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     //let from = AccountKeyring::Alice.pair();
@@ -38,7 +44,8 @@ fn main() {
         .unwrap();
 
     // Bob
-    let to = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty").unwrap();
+    let to = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+        .unwrap();
 
     match api.get_account_data(&to.into()).unwrap() {
         Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
