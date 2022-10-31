@@ -17,7 +17,7 @@
 
 //! Extrinsics for `pallet-staking`.
 
-use super::common::PayoutStakers;
+use super::common::*;
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::PlainTip;
@@ -41,6 +41,11 @@ const STAKING_NOMINATE: &str = "nominate";
 const STAKING_CHILL: &str = "chill";
 const STAKING_SET_CONTROLLER: &str = "set_controller";
 const PAYOUT_STAKERS: &str = "payout_stakers";
+const FORCE_NEW_ERA: &str = "force_new_era";
+const FORCE_NEW_ERA_ALWAYS: &str = "force_new_era_always";
+const FORCE_NO_ERA: &str = "force_no_era";
+const STAKING_SET_PAYEE: &str = "set_payee";
+const SET_VALIDATOR_COUNT: &str = "set_validator_count";
 
 pub type StakingBondFn = (
     CallIndex,
@@ -55,8 +60,12 @@ pub type StakingWithdrawUnbondedFn = (CallIndex, u32);
 pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
 pub type StakingChillFn = CallIndex;
 pub type StakingSetControllerFn = (CallIndex, GenericAddress);
-
 pub type StakingPayoutStakersFn = (CallIndex, PayoutStakers);
+pub type StakingForceNewEraFn = (CallIndex, ForceEra);
+pub type StakingForceNewEraAlwaysFn = (CallIndex, ForceEra);
+pub type StakingForceNoEraFn = (CallIndex, ForceEra);
+pub type StakingSetPayeeFn = (CallIndex,GenericAddress);
+pub type StakingSetValidatorCountFn = (CallIndex, u32);
 
 pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn, SignedExtra>;
 pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn, SignedExtra>;
@@ -68,9 +77,15 @@ pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn
 pub type StakingChillXt<SignedExtra> = UncheckedExtrinsicV4<StakingChillFn, SignedExtra>;
 pub type StakingSetControllerXt<SignedExtra> =
     UncheckedExtrinsicV4<StakingSetControllerFn, SignedExtra>;
-
 pub type StakingPayoutStakersXt<SignedExtra> =
     UncheckedExtrinsicV4<StakingPayoutStakersFn, SignedExtra>;
+pub type StakingForceNewEraXt<SignedExtra> =
+    UncheckedExtrinsicV4<StakingForceNewEraFn, SignedExtra>;
+pub type StakingForceNewEraAlwaysXt<SignedExtra> =
+    UncheckedExtrinsicV4<StakingForceNewEraAlwaysFn, SignedExtra>;
+pub type StakingForceNoEraXt<SignedExtra> = UncheckedExtrinsicV4<StakingForceNoEraFn, SignedExtra>;
+pub type StakingSetPayeeXt<SignedExtra> = UncheckedExtrinsicV4<StakingSetPayeeFn, SignedExtra>;
+pub type StakingSetValidatorCountXt<SignedExtra> =UncheckedExtrinsicV4<StakingSetValidatorCountFn, SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<P, Client, Params> Api<P, Client, Params>
@@ -154,6 +169,7 @@ where
         compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
     }
 
+    /// Return the payout call for the given era
     pub fn payout_stakers(
         &self,
         era: u32,
@@ -164,5 +180,30 @@ where
             era,
         };
         compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
+    }
+
+    /// For New Era at the end of Next Session.
+    pub fn force_new_era(&self) -> StakingForceNewEraXt<Params::SignedExtra> {
+        compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA, ForceEra {})
+    }
+
+    /// Force there to be a new era at the end of sessions indefinitely.
+    pub fn force_new_era_always(&self) -> StakingForceNewEraAlwaysXt<Params::SignedExtra> {
+        compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA_ALWAYS, ForceEra {})
+    }
+
+    /// Force there to be no new eras indefinitely.
+    pub fn force_no_era(&self) -> StakingForceNewEraAlwaysXt<Params::SignedExtra> {
+        compose_extrinsic!(self, STAKING_MODULE, FORCE_NO_ERA, ForceEra {})
+    }
+
+    /// Re-set the payment target for a controller.
+    pub fn set_payee(&self, payee: GenericAddress) -> StakingSetControllerXt<Params::SignedExtra> {
+        compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_PAYEE, payee)
+    }
+
+    /// Sets the number of validators.
+    pub fn set_validator_count(&self, count :u32) -> StakingSetValidatorCountXt<Params::SignedExtra> {
+        compose_extrinsic!(self, STAKING_MODULE, SET_VALIDATOR_COUNT, count)
     }
 }

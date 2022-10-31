@@ -17,18 +17,13 @@
 
 //! Extrinsics for `pallet-utility`.
 
+use super::common::{Batch, PayoutStakers};
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::PlainTip;
-use ac_primitives::SubstrateDefaultSignedExtra;
-use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
-use codec::Compact;
-use codec::{Decode, Encode};
+use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
 use sp_core::Pair;
-use sp_runtime::AccountId32;
 use sp_runtime::{MultiSignature, MultiSigner};
-// use crate::extrinsic::common::PayoutStakers;
-use super::common::{Batch,PayoutStakers};
+
 const UTILITY_MODULE: &str = "Utility";
 const UTILITY_BATCH: &str = "batch";
 const UTILITY_FORCE_BATCH: &str = "force_batch";
@@ -44,26 +39,19 @@ where
     Client: RpcClient,
     Params: ExtrinsicParams,
 {
-        pub fn batch(
+    pub fn batch_payout_stakers(
         &self,
-        calls: 
-            Vec<([u8; 2], PayoutStakers)>
-        ,
+        calls: Vec<([u8; 2], PayoutStakers)>,
     ) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
     }
 
-    pub fn force_batch(
+    pub fn force_batch_payout_stakers(
         &self,
-        calls:
-            Vec<([u8; 2], PayoutStakers)>
-        ,
+        calls: Vec<([u8; 2], PayoutStakers)>,
     ) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
     }
 }
-
-
-
