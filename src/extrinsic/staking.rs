@@ -184,9 +184,10 @@ where
 
     pub fn force_batch(
         &self,
-        calls: Vec<
-            UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
-        >,
+        calls:
+            // UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
+            Vec<([u8; 2], PayoutStakers)>
+        ,
     ) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
