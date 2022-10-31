@@ -17,6 +17,7 @@
 
 //! Extrinsics for `pallet-staking`.
 
+use super::common::PayoutStakers;
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::PlainTip;
@@ -41,10 +42,6 @@ const STAKING_CHILL: &str = "chill";
 const STAKING_SET_CONTROLLER: &str = "set_controller";
 const PAYOUT_STAKERS: &str = "payout_stakers";
 
-const UTILITY_MODULE: &str = "Utility";
-const UTILITY_BATCH: &str = "batch";
-const UTILITY_FORCE_BATCH: &str = "force_batch";
-
 pub type StakingBondFn = (
     CallIndex,
     GenericAddress,
@@ -60,7 +57,6 @@ pub type StakingChillFn = CallIndex;
 pub type StakingSetControllerFn = (CallIndex, GenericAddress);
 
 pub type StakingPayoutStakersFn = (CallIndex, PayoutStakers);
-pub type UtilityBatchFn = (CallIndex, Batch);
 
 pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn, SignedExtra>;
 pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn, SignedExtra>;
@@ -75,7 +71,6 @@ pub type StakingSetControllerXt<SignedExtra> =
 
 pub type StakingPayoutStakersXt<SignedExtra> =
     UncheckedExtrinsicV4<StakingPayoutStakersFn, SignedExtra>;
-pub type UtilityBatchXt<SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn, SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<P, Client, Params> Api<P, Client, Params>
@@ -170,39 +165,4 @@ where
         };
         compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
     }
-
-    pub fn batch(
-        &self,
-        calls: 
-            // UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
-            Vec<([u8; 2], PayoutStakers)>
-        ,
-    ) -> UtilityBatchXt<Params::SignedExtra> {
-        let calls = Batch { calls };
-        compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
-    }
-
-    pub fn force_batch(
-        &self,
-        calls:
-            // UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>,
-            Vec<([u8; 2], PayoutStakers)>
-        ,
-    ) -> UtilityBatchXt<Params::SignedExtra> {
-        let calls = Batch { calls };
-        compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
-    }
-}
-
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
-pub struct PayoutStakers {
-    pub validator_stash: AccountId32,
-    pub era: u32,
-}
-
-#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
-pub struct Batch {
-    pub calls:
-        // Vec<UncheckedExtrinsicV4<([u8; 2], PayoutStakers), SubstrateDefaultSignedExtra<PlainTip>>>,
-        Vec<([u8; 2], PayoutStakers)>
 }
