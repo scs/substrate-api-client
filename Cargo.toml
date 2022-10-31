@@ -53,6 +53,7 @@ sp-keyring = { version = "6.0.0", git = "https://github.com/paritytech/substrate
 clap = { version = "2.33", features = ["yaml"] }
 wabt = "0.10.0"
 
+
 [features]
 default = ["std", "ws-client"]
 # To support `no_std` builds in non-32 bit environments.
