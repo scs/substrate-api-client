@@ -23,6 +23,7 @@ use sp_core::{
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
+use substrate_api_client::PlainTipExtrinsicParams;
 use substrate_api_client::{Api, XtStatus};
 
 fn main() {
@@ -39,7 +40,7 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     //let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::new(client)
+    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 
@@ -76,7 +77,7 @@ fn main() {
 }
 
 pub fn get_node_url_from_cli() -> String {
-    let yml = load_yaml!("../../src/examples/cli.yml");
+    let yml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
     let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
