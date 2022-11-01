@@ -15,11 +15,26 @@
 
 */
 
-//! Offers some predefined extrinsics for common runtime modules.
+// Common types.
 
-pub mod balances;
-pub mod contract;
-pub mod utility;
-pub mod common;
-#[cfg(feature = "staking-xt")]
-pub mod staking;
+use codec::{Decode, Encode};
+use node_template_runtime::RuntimeCall;
+use sp_runtime::AccountId32;
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
+pub struct PayoutStakers {
+    pub validator_stash: AccountId32,
+    pub era: u32,
+}
+
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
+pub struct BatchPayout {
+    pub calls: Vec<([u8; 2], PayoutStakers)>,
+}
+
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
+pub struct ForceEra {}
+
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
+pub struct Batch {
+    pub calls: Vec<RuntimeCall>,
+}

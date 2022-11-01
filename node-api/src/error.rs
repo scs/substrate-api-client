@@ -103,6 +103,7 @@ impl RuntimeError {
                 Ok(Self::Other("transactional error".into()))
             }
             DispatchError::Other(msg) => Ok(Self::Other(msg.to_string())),
+            _ => todo!(),
         }
     }
 }

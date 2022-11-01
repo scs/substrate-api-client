@@ -41,6 +41,7 @@ To run an example, clone the `substrate-api-client` repository and run the desir
     git clone https://github.com/scs/substrate-api-client.git
     cd substrate-api-client
     cargo run --example example_get_storage
+    cargo run --example example_staking_payout --features staking-xt 
 ```
 
 Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
@@ -55,6 +56,7 @@ The following examples can be found in the [examples](/src/examples) folder:
 * [example_get_storage](/src/examples/example_get_storage.rs): Read storage values.
 * [example_print_metadata](/src/examples/example_print_metadata.rs): Print the metadata of the node in a readable way.
 * [example_transfer](/src/examples/example_transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic
+* [example_staking_payout](/src/examples/example_staking_payout.rs): Westend staking reward payout for validator 
 
 ## Alternatives
 
