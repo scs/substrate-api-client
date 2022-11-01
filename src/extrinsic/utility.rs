@@ -21,18 +21,19 @@ use super::common::{Batch, PayoutStakers};
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
-use sp_core::{Pair, Encode, Decode};
+use sp_core::{Decode, Encode, Pair};
 use sp_runtime::{MultiSignature, MultiSigner};
 
 use node_template_runtime::pallet_template::{pallet::Call, Config};
+use node_template_runtime::RuntimeCall;
 use std::fmt::Debug;
 
 const UTILITY_MODULE: &str = "Utility";
 const UTILITY_BATCH: &str = "batch";
 const UTILITY_FORCE_BATCH: &str = "force_batch";
 
-pub type UtilityBatchFn<T> = (CallIndex, Batch1<T>);
-pub type UtilityBatchXt<T,SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn<T>, SignedExtra>;
+pub type UtilityBatchFn = (CallIndex, Batch1);
+pub type UtilityBatchXt<SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn, SignedExtra>;
 
 impl<P, Client, Params> Api<P, Client, Params>
 where
@@ -58,24 +59,18 @@ where
     //     compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
     // }
 
-    pub fn batch<T : Config>(
-        &self,
-        calls: Vec<Call<T>>,
-    ) -> UtilityBatchXt<T, Params::SignedExtra> {
+    pub fn batch<T: Config>(&self, calls: Vec<RuntimeCall>) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch1 { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
     }
 
-    pub fn force_batch<T : Config>(
-        &self,
-        calls: Vec<Call<T>>,
-    ) -> UtilityBatchXt<T, Params::SignedExtra> {
+    pub fn force_batch(&self, calls: Vec<RuntimeCall>) -> UtilityBatchXt<Params::SignedExtra> {
         let calls = Batch1 { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
     }
 }
 
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
-pub struct Batch1<T:Config> {
-    pub calls: Vec<Call<T>>,
+pub struct Batch1 {
+    pub calls: Vec<RuntimeCall>,
 }
