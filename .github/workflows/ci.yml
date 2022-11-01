@@ -109,7 +109,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/node-template:latest --dev --ws-external --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest node-template --dev --ws-external --rpc-external &
           sleep 150
 
       - name: Run Examples
