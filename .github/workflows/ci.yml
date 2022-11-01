@@ -69,14 +69,6 @@ jobs:
 
   examples:
     runs-on: ${{ matrix.os }}
-
-#    services:
-#      latest_node:
-#        image: parity/substrate:latest
-#        ports:
-#        - 9944:9944
-#        options: --dev --ws-external
-
     strategy:
       fail-fast: false
       matrix:
