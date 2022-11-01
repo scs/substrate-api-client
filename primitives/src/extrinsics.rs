@@ -28,7 +28,7 @@ pub use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 
 pub type AccountIndex = u64;
 
-pub type GenericAddress = sp_runtime::MultiAddress<AccountId, ()>;
+pub type GenericAddress = sp_runtime::MultiAddress<AccountId, u32>;
 
 pub type CallIndex = [u8; 2];
 

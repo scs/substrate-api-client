@@ -21,7 +21,7 @@ extern crate clap;
 
 use clap::App;
 
-use node_template_runtime::{Block, Header};
+use kitchensink_runtime::{Block, Header};
 use sp_core::sr25519;
 use sp_runtime::generic::SignedBlock as SignedBlockG;
 use std::sync::mpsc::channel;
