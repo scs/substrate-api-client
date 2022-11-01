@@ -18,7 +18,7 @@
 
 use clap::{load_yaml, App};
 
-use ac_primitives::PlainTipExtrinsicParamsBuilder;
+use ac_primitives::AssetTipExtrinsicParamsBuilder;
 use node_template_runtime::{BalancesCall, Call, Header};
 use sp_keyring::AccountKeyring;
 use sp_runtime::generic::Era;
@@ -26,7 +26,7 @@ use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{
-    compose_extrinsic_offline, Api, PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+    compose_extrinsic_offline, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
 };
 
 fn main() {
@@ -37,7 +37,7 @@ fn main() {
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
 
-    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+    let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from))
         .unwrap();
 
@@ -54,7 +54,7 @@ fn main() {
     // define the recipient
     let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
-    let tx_params = PlainTipExtrinsicParamsBuilder::new()
+    let tx_params = AssetTipExtrinsicParamsBuilder::new()
         .era(Era::mortal(period, h.number.into()), head)
         .tip(0);
 

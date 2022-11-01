@@ -20,7 +20,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{Api, PlainTipExtrinsicParams, XtStatus};
+use substrate_api_client::{Api, AssetTipExtrinsicParams, XtStatus};
 
 fn main() {
     env_logger::init();
@@ -29,7 +29,7 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+    let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from.clone()))
         .unwrap();
 
