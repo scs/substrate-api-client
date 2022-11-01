@@ -38,7 +38,7 @@ staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/pa
 support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", package = "frame-support", branch = "master" }
 system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "frame-system", branch = "master" }
 transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-transaction-payment", branch = "master" }
-
+node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # local deps
