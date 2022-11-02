@@ -36,16 +36,14 @@ pub enum RpcClientError {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
-	// Todo: some variants to not return a hash with `send_extrinsics`: #175.
-	Finalized,
-	InBlock,
-	Broadcast,
-	Ready,
-	Future,
-	/// uses `author_submit`
-	SubmitOnly,
-	Error,
-	Unknown,
+	Unknown = 11,
+	Future = 10,
+	Finalized = 4,
+	InBlock = 3,
+	Broadcast = 2,
+	Ready = 1,
+	/// uses `author_submit` without watching.
+	SubmitOnly = 0,
 }
 
 // Exact structure from
