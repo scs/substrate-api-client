@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,12 +29,7 @@ pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
 
 pub type BalanceTransferFn = (CallIndex, GenericAddress, Compact<Balance>);
-pub type BalanceSetBalanceFn = (
-    CallIndex,
-    GenericAddress,
-    Compact<Balance>,
-    Compact<Balance>,
-);
+pub type BalanceSetBalanceFn = (CallIndex, GenericAddress, Compact<Balance>, Compact<Balance>);
 
 pub type BalanceTransferXt<SignedExtra> = UncheckedExtrinsicV4<BalanceTransferFn, SignedExtra>;
 pub type BalanceSetBalanceXt<SignedExtra> = UncheckedExtrinsicV4<BalanceSetBalanceFn, SignedExtra>;
@@ -42,39 +37,33 @@ pub type BalanceSetBalanceXt<SignedExtra> = UncheckedExtrinsicV4<BalanceSetBalan
 #[cfg(feature = "std")]
 impl<P, Client, Params> Api<P, Client, Params>
 where
-    P: Pair,
-    MultiSignature: From<P::Signature>,
-    MultiSigner: From<P::Public>,
-    Client: RpcClient,
-    Params: ExtrinsicParams,
+	P: Pair,
+	MultiSignature: From<P::Signature>,
+	MultiSigner: From<P::Public>,
+	Client: RpcClient,
+	Params: ExtrinsicParams,
 {
-    pub fn balance_transfer(
-        &self,
-        to: GenericAddress,
-        amount: Balance,
-    ) -> BalanceTransferXt<Params::SignedExtra> {
-        compose_extrinsic!(
-            self,
-            BALANCES_MODULE,
-            BALANCES_TRANSFER,
-            to,
-            Compact(amount)
-        )
-    }
+	pub fn balance_transfer(
+		&self,
+		to: GenericAddress,
+		amount: Balance,
+	) -> BalanceTransferXt<Params::SignedExtra> {
+		compose_extrinsic!(self, BALANCES_MODULE, BALANCES_TRANSFER, to, Compact(amount))
+	}
 
-    pub fn balance_set_balance(
-        &self,
-        who: GenericAddress,
-        free_balance: Balance,
-        reserved_balance: Balance,
-    ) -> BalanceSetBalanceXt<Params::SignedExtra> {
-        compose_extrinsic!(
-            self,
-            BALANCES_MODULE,
-            BALANCES_SET_BALANCE,
-            who,
-            Compact(free_balance),
-            Compact(reserved_balance)
-        )
-    }
+	pub fn balance_set_balance(
+		&self,
+		who: GenericAddress,
+		free_balance: Balance,
+		reserved_balance: Balance,
+	) -> BalanceSetBalanceXt<Params::SignedExtra> {
+		compose_extrinsic!(
+			self,
+			BALANCES_MODULE,
+			BALANCES_SET_BALANCE,
+			who,
+			Compact(free_balance),
+			Compact(reserved_balance)
+		)
+	}
 }
