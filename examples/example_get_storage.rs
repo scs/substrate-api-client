@@ -19,14 +19,14 @@ use clap::{load_yaml, App};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::Api;
-use substrate_api_client::{AccountInfo, PlainTipExtrinsicParams};
+use substrate_api_client::{AccountInfo, AssetTipExtrinsicParams};
 
 fn main() {
     env_logger::init();
     let url = get_node_url_from_cli();
 
     let client = WsRpcClient::new(&url);
-    let mut api = Api::<_, _, PlainTipExtrinsicParams>::new(client).unwrap();
+    let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
     // get some plain storage value
     let result: u128 = api

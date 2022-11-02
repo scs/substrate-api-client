@@ -22,7 +22,7 @@ use codec::Decode;
 use sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::{Api, PlainTipExtrinsicParams};
+use substrate_api_client::{Api, AssetTipExtrinsicParams};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -37,7 +37,7 @@ fn main() {
     let url = get_node_url_from_cli();
 
     let client = WsRpcClient::new(&url);
-    let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams>::new(client).unwrap();
+    let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
     println!("Subscribe to events");
     let (events_in, events_out) = channel();
@@ -56,7 +56,7 @@ pub fn get_node_url_from_cli() -> String {
     let yml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yml).get_matches();
 
-    let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
+    let node_ip = matches.value_of("node-server").unwrap_or("ws://localhost");
     let node_port = matches.value_of("node-port").unwrap_or("9944");
     let url = format!("{}:{}", node_ip, node_port);
     println!("Interacting with node on {}", url);

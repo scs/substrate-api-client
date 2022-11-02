@@ -20,7 +20,7 @@ use clap::{load_yaml, App};
 use codec::Compact;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::rpc::WsRpcClient;
-use substrate_api_client::PlainTipExtrinsicParams;
+use substrate_api_client::AssetTipExtrinsicParams;
 use substrate_api_client::{
     compose_call, compose_extrinsic, Api, GenericAddress, UncheckedExtrinsicV4, XtStatus,
 };
@@ -32,7 +32,7 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let sudoer = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+    let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(sudoer))
         .unwrap();
 

@@ -20,12 +20,13 @@
 
 use clap::{load_yaml, App};
 
-use node_template_runtime::{BalancesCall, Call};
+use kitchensink_runtime::BalancesCall;
+use kitchensink_runtime::RuntimeCall;
 use sp_keyring::AccountKeyring;
 
 use substrate_api_client::rpc::WsRpcClient;
 use substrate_api_client::{
-    compose_extrinsic_offline, Api, PlainTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+    compose_extrinsic_offline, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
 };
 
 fn main() {
@@ -35,7 +36,7 @@ fn main() {
     // initialize api and set the signer (sender) that is used to sign the extrinsics
     let from = AccountKeyring::Alice.pair();
     let client = WsRpcClient::new(&url);
-    let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
+    let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
         .map(|api| api.set_signer(from))
         .unwrap();
 
@@ -54,7 +55,7 @@ fn main() {
         #[allow(clippy::redundant_clone)]
         let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
             api.clone().signer.unwrap(),
-            Call::Balances(BalancesCall::transfer {
+            RuntimeCall::Balances(BalancesCall::transfer {
                 dest: GenericAddress::Id(to.clone()),
                 value: 1_000_000
             }),

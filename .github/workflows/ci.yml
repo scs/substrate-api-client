@@ -67,44 +67,7 @@ jobs:
         if: failure()
         uses: andymckay/cancel-action@0.2
 
-  build-node-template:
-    runs-on: ubuntu-latest
-    steps:
-      - name: init-rust-target
-        # need to set rust nightly as substrate does not have a rust-toolchain.toml
-        # The newest is currently not compatible
-        run: |
-          rustup default nightly-2022-09-29
-          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-09-29
-          rustup show
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-
-      - name: Checkout substrate
-        uses: actions/checkout@v3
-        with:
-          repository: paritytech/substrate
-          path: substrate
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          working-directory: substrate
-
-      - name: Build node-template
-        run: |
-          cd substrate
-          cargo build --release -p node-template
-
-      - name: Upload node-template
-        uses: actions/upload-artifact@v3
-        with:
-          name: node-template
-          path: substrate/target/release/node-template
-
-
   examples:
-    needs: build-node-template
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -136,19 +99,14 @@ jobs:
       - name: Build examples
         run: cargo build --release --examples
 
-      - name: Download node-template
-        uses: actions/download-artifact@v2
-        with:
-          name: node-template
-          path: node
-
-      - name: Run node-template
+      - name: Run latest node
         run: |
-          chmod +x node/node-template
-          ./node/node-template --dev &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
+          sleep 150
 
       - name: Run Examples
         timeout-minutes: 5
         run: |
+          docker ps
+          nc -z -v 127.0.0.1 9944
           ./target/release/examples/${{ matrix.example }}
-
