@@ -127,9 +127,8 @@ where
 					for (phase, event) in raw_events.into_iter() {
 						info!("Decoded Event: {:?}, {:?}", phase, event);
 						match event {
-							Raw::Event(raw) if raw.pallet == module && raw.variant == variant => {
-								return Ok(raw)
-							},
+							Raw::Event(raw) if raw.pallet == module && raw.variant == variant =>
+								return Ok(raw),
 							Raw::Error(runtime_error) => {
 								error!("Some extrinsic Failed: {:?}", runtime_error);
 							},
