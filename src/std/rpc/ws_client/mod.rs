@@ -238,7 +238,7 @@ impl HandleMessage for SubmitAndWatchHandler {
 		match parse_status(return_string) {
 			Ok((xt_status, val)) => {
 				if xt_status as u32 >= 10 {
-					warn!("Node returned unexpected {:?}, ending watch process.", xt_status);
+					error!("Node returned unexpected {:?}, ending watch process.", xt_status);
 					end_process(out, result, val)?;
 				} else if xt_status as u32 >= self.exit_on as u32 {
 					end_process(out, result, val)?;
@@ -246,6 +246,7 @@ impl HandleMessage for SubmitAndWatchHandler {
 				Ok(())
 			},
 			Err(e) => {
+				error!("Node returned error {:?}, ending watch process.", e);
 				end_process(out, result, None)?;
 				Err(Box::new(e).into())
 			},
