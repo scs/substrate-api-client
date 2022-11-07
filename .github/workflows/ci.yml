@@ -72,7 +72,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: examples
-          path: ./target/release/examples/*
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*d
+            !target/release/examples/*-*
 
   fmt:
     runs-on: ubuntu-latest
@@ -125,4 +128,4 @@ jobs:
         run: |
           docker ps
           nc -z -v 127.0.0.1 9944
-          ./${{ matrix.example }}
+          ./examples/${{ matrix.example }}
