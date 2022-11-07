@@ -37,6 +37,8 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
+                 cargo build --release --examples
+
                  cargo clippy --all --exclude test-no-std -- -D warnings,
                  cargo clippy --examples -- -D warnings,
 
@@ -57,19 +59,9 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-  build-examples:
-    name: Build Examples
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: init-rust-target
-        run: rustup show
-
-      - name: Build examples
-        run: cargo build --release --examples
-
       - name: Upload examples
         uses: actions/upload-artifact@v3
+        if: matrix.check == 'cargo build --release --examples'
         with:
           name: examples
           path:  |
@@ -88,7 +80,7 @@ jobs:
 
   examples:
     runs-on: ${{ matrix.os }}
-    needs: build-examples
+    needs: build
     strategy:
       fail-fast: false
       matrix:
@@ -109,10 +101,6 @@ jobs:
         ]
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.example }}
-
       - name: Run latest node
         run: |
           docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
@@ -121,11 +109,11 @@ jobs:
       - name: Download example from previous run
         uses: actions/download-artifact@v3
         with:
-          name: ${{ matrix.example }}
+          name: examples/${{ matrix.example }}
 
       - name: Run Examples
         timeout-minutes: 5
         run: |
           docker ps
           nc -z -v 127.0.0.1 9944
-          ./examples/${{ matrix.example }}
+          .${{ matrix.example }}
