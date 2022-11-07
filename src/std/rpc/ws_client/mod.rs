@@ -234,7 +234,7 @@ impl SubmitAndWatchHandler {
 impl HandleMessage for SubmitAndWatchHandler {
 	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
 		let return_string = msg.as_text()?;
-		error!("got msg {}", return_string);
+		debug!("got msg {}", return_string);
 		match parse_status(return_string) {
 			Ok((xt_status, val)) => {
 				if xt_status as u32 >= 10 {
