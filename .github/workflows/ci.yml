@@ -108,6 +108,7 @@ jobs:
 
       - name: Wait until node has started
         run: sleep 20s
+        shell: bash
 
       - name: Download example from previous run
         uses: actions/download-artifact@v3
