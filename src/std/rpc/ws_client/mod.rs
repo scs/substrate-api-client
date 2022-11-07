@@ -209,7 +209,7 @@ impl HandleMessage for SubscriptionHandler {
 pub struct SubmitOnlyHandler {}
 impl HandleMessage for SubmitOnlyHandler {
 	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
-		let retstr = msg.as_text().unwrap();
+		let retstr = msg.as_text()?;
 		debug!("got msg {}", retstr);
 		match result_from_json_response(retstr) {
 			Ok(val) => end_process(out, result, Some(val)),
@@ -233,7 +233,7 @@ impl SubmitAndWatchHandler {
 
 impl HandleMessage for SubmitAndWatchHandler {
 	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
-		let return_string = msg.as_text().unwrap();
+		let return_string = msg.as_text()?;
 		debug!("got msg {}", return_string);
 		match parse_status(return_string) {
 			Ok((xt_status, val)) => {
@@ -299,11 +299,14 @@ fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
 /// Todo: this is the code that was used in `parse_status` Don't we want to just print the
 /// error as is instead of introducing our custom format here?
 fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
-	let err_obj = resp_with_err["error"].as_object().unwrap();
+	let err_obj = match resp_with_err["error"].as_object() {
+		Some(obj) => obj,
+		None => return RpcClientError::NoErrorInformationFound,
+	};
 
-	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap());
-	let code = err_obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap());
-	let details = err_obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap());
+	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap_or_default());
+	let code = err_obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap_or_default());
+	let details = err_obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap_or_default());
 
 	RpcClientError::Extrinsic(format!("extrinsic error code {}: {}: {}", code, error, details))
 }
