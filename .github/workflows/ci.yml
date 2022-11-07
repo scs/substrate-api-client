@@ -107,7 +107,7 @@ jobs:
           docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external
 
       - name: Wait until node has started
-        run: sleep 20
+        run: sleep 20s
 
       - name: Download example from previous run
         uses: actions/download-artifact@v3
