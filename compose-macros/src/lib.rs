@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,30 +60,30 @@ macro_rules! compose_call {
 /// * 'runtime_spec_version' - RuntimeVersion.spec_version/u32
 #[macro_export]
 macro_rules! compose_extrinsic_offline {
-    ($signer: expr,
+	($signer: expr,
     $call: expr,
     $params: expr) => {{
-        use $crate::primitives::{
-            ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4,
-        };
-        use $crate::sp_core::crypto::Pair;
-        use $crate::sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner};
+		use $crate::{
+			primitives::{ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4},
+			sp_core::crypto::Pair,
+			sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner},
+		};
 
-        let extra = $params.signed_extra();
-        let raw_payload =
-            SignedPayload::from_raw($call.clone(), extra, $params.additional_signed());
+		let extra = $params.signed_extra();
+		let raw_payload =
+			SignedPayload::from_raw($call.clone(), extra, $params.additional_signed());
 
-        let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
+		let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
-        let multi_signer: MultiSigner = $signer.public().into();
+		let multi_signer: MultiSigner = $signer.public().into();
 
-        UncheckedExtrinsicV4::new_signed(
-            $call,
-            GenericAddress::from(multi_signer.into_account()),
-            signature.into(),
-            extra,
-        )
-    }};
+		UncheckedExtrinsicV4::new_signed(
+			$call,
+			GenericAddress::from(multi_signer.into_account()),
+			signature.into(),
+			extra,
+		)
+	}};
 }
 
 /// Generates an Unchecked extrinsic for a given module and call passed as a &str.
