@@ -41,6 +41,9 @@ jobs:
                  cargo clippy --examples -- -D warnings,
 
                  cargo test --all --exclude test-no-std,
+
+                 cargo fmt --all -- --check
+
         ]
     steps:
       - uses: actions/checkout@v3
@@ -70,11 +73,6 @@ jobs:
     container: "tamasfe/taplo:0.7.0-alpine"
     steps:
       - uses: actions/checkout@v3
-      - name: init rust
-        run: rustup show
-
-      - name: cargo fmt
-        run: cargo fmt --all -- --check
 
       - name: Run Taplo fmt
         run: taplo fmt --check
