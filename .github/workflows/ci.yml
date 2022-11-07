@@ -101,6 +101,7 @@ jobs:
         ]
     steps:
       - uses: actions/checkout@v3
+
       - name: Run latest node
         run: |
           docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
@@ -109,8 +110,7 @@ jobs:
       - name: Download example from previous run
         uses: actions/download-artifact@v3
         with:
-          name: ${{ matrix.example }}
-          path: examples
+          name: examples
 
       - name: Run Examples
         timeout-minutes: 5
