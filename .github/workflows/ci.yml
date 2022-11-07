@@ -37,7 +37,7 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
-                 cargo build --release --examples
+                 cargo build --release --examples,
 
                  cargo clippy --all --exclude test-no-std -- -D warnings,
                  cargo clippy --examples -- -D warnings,
@@ -104,7 +104,7 @@ jobs:
       - name: Run latest node
         run: |
           docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
-          sleep 150
+          sleep 10
 
       - name: Download example from previous run
         uses: actions/download-artifact@v3
