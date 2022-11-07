@@ -15,7 +15,7 @@ jobs:
     name: Cancel Previous Runs
     runs-on: ubuntu-20.04
     steps:
-      - uses: styfle/cancel-workflow-action@0.4.1
+      - uses: styfle/cancel-workflow-action@0.11.0
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -116,4 +116,4 @@ jobs:
         run: |
           docker ps
           nc -z -v 127.0.0.1 9944
-          .${{ matrix.example }}
+          ./${{ matrix.example }}
