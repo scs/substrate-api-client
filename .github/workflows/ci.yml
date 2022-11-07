@@ -41,11 +41,9 @@ jobs:
                  cargo clippy --examples -- -D warnings,
 
                  cargo test --all --exclude test-no-std,
-
-                 cargo fmt --all -- --check,
         ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: init-rust-target
         run: rustup show
 
@@ -56,19 +54,37 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-  cargo-toml-fmt:
+  build-examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.step1.outputs.test }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: init-rust-target
+          run: rustup show
+
+      - name: Build examples
+        run: cargo build --release --examples
+
+  fmt:
     runs-on: ubuntu-latest
     container: "tamasfe/taplo:0.7.0-alpine"
     steps:
       - uses: actions/checkout@v3
+
+      - name: init rust
+        run: rustup show
+
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+
       - name: Run Taplo fmt
         run: taplo fmt --check
-      - name: Fail-fast; cancel other jobs
-        if: failure()
-        uses: andymckay/cancel-action@0.2
 
   examples:
     runs-on: ${{ matrix.os }}
+    needs: build-examples
     strategy:
       fail-fast: false
       matrix:
@@ -88,16 +104,11 @@ jobs:
           example_transfer,
         ]
     steps:
-      - uses: actions/checkout@v2
-      - name: init-rust-target
-        run: rustup show
+      - uses: actions/checkout@v3
 
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.example }}
-
-      - name: Build examples
-        run: cargo build --release --examples
 
       - name: Run latest node
         run: |
