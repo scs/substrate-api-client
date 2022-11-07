@@ -330,7 +330,7 @@ where
 		self.get_storage_by_key_hash(storagekey, at_block)
 	}
 
-	pub fn get_storage_map<K: Encode, V: Decode + Clone>(
+	pub fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -353,7 +353,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode + Clone>(
+	pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
