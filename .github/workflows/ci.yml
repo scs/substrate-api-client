@@ -117,4 +117,5 @@ jobs:
         run: |
           docker ps
           nc -z -v 127.0.0.1 9944
+          chmod +x ${{ matrix.example }}
           ./${{ matrix.example }}
