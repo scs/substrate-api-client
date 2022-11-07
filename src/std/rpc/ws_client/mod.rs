@@ -301,7 +301,7 @@ fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
 fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
 	let err_obj = match resp_with_err["error"].as_object() {
 		Some(obj) => obj,
-		None => return RpcClientError::NoErrorInformationFound,
+		None => return RpcClientError::NoErrorInformationFound(format!("{:?}", resp_with_err)),
 	};
 
 	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap_or_default());
