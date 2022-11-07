@@ -273,26 +273,24 @@ fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
 		return Err(into_extrinsic_err(&value))
 	}
 
-	match value["params"]["result"].as_object() {
-		Some(obj) =>
-			if let Some(hash) = obj.get("finalized") {
-				info!("finalized: {:?}", hash);
-				Ok((XtStatus::Finalized, Some(hash.to_string())))
-			} else if let Some(hash) = obj.get("inBlock") {
-				info!("inBlock: {:?}", hash);
-				Ok((XtStatus::InBlock, Some(hash.to_string())))
-			} else if let Some(array) = obj.get("broadcast") {
-				info!("broadcast: {:?}", array);
-				Ok((XtStatus::Broadcast, Some(array.to_string())))
-			} else {
-				Ok((XtStatus::Unknown, None))
-			},
-		None => match value["params"]["result"].as_str() {
-			Some("ready") => Ok((XtStatus::Ready, None)),
-			Some("future") => Ok((XtStatus::Future, None)),
-			Some(&_) => Ok((XtStatus::Unknown, None)),
-			None => Ok((XtStatus::Unknown, None)),
-		},
+	if let Some(obj) = value["params"]["result"].as_object() {
+		if let Some(hash) = obj.get("finalized") {
+			info!("finalized: {:?}", hash);
+			return Ok((XtStatus::Finalized, Some(hash.to_string())))
+		} else if let Some(hash) = obj.get("inBlock") {
+			info!("inBlock: {:?}", hash);
+			return Ok((XtStatus::InBlock, Some(hash.to_string())))
+		} else if let Some(array) = obj.get("broadcast") {
+			info!("broadcast: {:?}", array);
+			return Ok((XtStatus::Broadcast, Some(array.to_string())))
+		}
+	};
+
+	match value["params"]["result"].as_str() {
+		Some("ready") => Ok((XtStatus::Ready, None)),
+		Some("future") => Ok((XtStatus::Future, None)),
+		Some(&_) => Ok((XtStatus::Unknown, None)),
+		None => Ok((XtStatus::Unknown, None)),
 	}
 }
 
