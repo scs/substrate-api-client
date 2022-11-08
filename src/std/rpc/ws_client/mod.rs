@@ -60,6 +60,7 @@ impl Handler for RpcClient {
 	}
 }
 
+#[allow(clippy::result_large_err)]
 pub trait Subscriber {
 	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>)
 		-> Result<(), Error>;
@@ -141,6 +142,7 @@ where
 	}
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
 	out.close(CloseCode::Normal)
 		.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
@@ -153,6 +155,7 @@ pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) 
 	result.send(result_str).map_err(|e| Box::new(RpcClientError::Send(e)).into())
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
 	info!("got on_subscription_msg {}", msg);
 	let value: serde_json::Value =
@@ -193,6 +196,7 @@ pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>)
 	Ok(())
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_extrinsic_msg_until_finalized(
 	msg: Message,
 	out: Sender,
@@ -214,6 +218,7 @@ pub fn on_extrinsic_msg_until_finalized(
 	}
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_extrinsic_msg_until_in_block(
 	msg: Message,
 	out: Sender,
@@ -233,6 +238,7 @@ pub fn on_extrinsic_msg_until_in_block(
 	}
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_extrinsic_msg_until_broadcast(
 	msg: Message,
 	out: Sender,
@@ -252,6 +258,7 @@ pub fn on_extrinsic_msg_until_broadcast(
 	}
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_extrinsic_msg_until_ready(
 	msg: Message,
 	out: Sender,
@@ -271,6 +278,7 @@ pub fn on_extrinsic_msg_until_ready(
 	}
 }
 
+#[allow(clippy::result_large_err)]
 pub fn on_extrinsic_msg_submit_only(
 	msg: Message,
 	out: Sender,
@@ -287,10 +295,11 @@ pub fn on_extrinsic_msg_submit_only(
 	}
 }
 
+#[allow(clippy::result_large_err)]
 fn end_process(out: Sender, result: ThreadOut<String>, value: Option<String>) -> WsResult<()> {
 	// return result to calling thread
 	debug!("Thread end result :{:?} value:{:?}", result, value);
-	let val = value.unwrap_or_else(|| "".to_string());
+	let val = value.unwrap_or_default();
 
 	out.close(CloseCode::Normal)
 		.unwrap_or_else(|_| warn!("Could not close WebSocket normally"));
