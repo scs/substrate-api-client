@@ -39,6 +39,7 @@ pub mod client;
 
 type RpcResult<T> = Result<T, RpcClientError>;
 
+#[allow(clippy::result_large_err)]
 pub trait HandleMessage {
 	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
 }
