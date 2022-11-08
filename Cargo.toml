@@ -21,7 +21,7 @@ log = { version = "0.4.14", optional = true }
 metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", package = "frame-metadata", features = ["v14", "full_derive"] }
 #metadata = { version = "15.0.0", default-features = false, package = "frame-metadata", features = ["v14"] }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
-primitive-types = { version = "0.11.1", optional = true, features = ["codec"] }
+primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
 serde = { version = "1.0.136", optional = true, features = ["derive"] }
 serde_json = { version = "1.0.79", optional = true }
 thiserror = { version = "1.0.30", optional = true }
