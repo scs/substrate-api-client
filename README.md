@@ -56,7 +56,7 @@ The following examples can be found in the [examples](/examples) folder:
 * [example_contract](/examples/example_contract.rs): Handle ink! contracts (put, create, and call). **DEPRECATED!**
 * [example_custom_storage_struct](/examples/example_custom_storage_struct.rs): Fetch and decode custom structs from the runtime. **DEPRECATED!**
 * [example_event_callback](/examples/example_event_callback.rs): Subscribe and react on events.
-* [example_event_error_details](/examples/example_event_error_details.rs): Listen to error events from the node to determine if extrinsic was successful or not.
+* [example_event_error_details](/examples/example_event_error_details.rs): Listen to error events from the node to determine if an extrinsic was successful or not.
 * [example_generic_event_callback](/examples/example_generic_event_callback.rs): Listen to an example event from the node.
 * [example_generic_extrinsic](/examples/example_generic_extrinsic.rs): Compose an extrinsic for any call in any module by supplying the module and call name as strings.
 * [example_get_block](/examples/example_get_block.rs): Read header, block and signed block from storage.
