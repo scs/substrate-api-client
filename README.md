@@ -63,7 +63,7 @@ The following examples can be found in the [examples](/examples) folder:
 * [example_get_storage](/examples/example_get_storage.rs): Read storage values.
 * [example_print_metadata](/examples/example_print_metadata.rs): Print the metadata of the node in a readable way.
 * [example_sudo](/examples/example_sudo.rs): Create and send a sudo wrapped call.
-* [example_transfer](/examples/example_transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic
+* [example_transfer](/examples/example_transfer.rs): Transfer tokens by using a wrapper of compose_extrinsic.
 
 ## Alternatives
 
