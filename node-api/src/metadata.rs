@@ -16,7 +16,7 @@ use frame_metadata::{
 	PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
 	StorageEntryMetadata, META_RESERVED,
 };
-use scale_info::{form::PortableForm, PortableRegistry, Type, Variant};
+use scale_info::{form::PortableForm, PortableRegistry, Type};
 use sp_core::storage::StorageKey;
 
 #[cfg(feature = "std")]
