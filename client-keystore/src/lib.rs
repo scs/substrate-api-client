@@ -551,7 +551,7 @@ impl KeystoreInner {
 			.collect();
 
 		if let Some(path) = &self.path {
-			for entry in fs::read_dir(&path)? {
+			for entry in fs::read_dir(path)? {
 				let entry = entry?;
 				let path = entry.path();
 
