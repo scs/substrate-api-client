@@ -15,7 +15,7 @@ jobs:
     name: Cancel Previous Runs
     runs-on: ubuntu-20.04
     steps:
-      - uses: styfle/cancel-workflow-action@0.4.1
+      - uses: styfle/cancel-workflow-action@0.11.0
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -37,15 +37,18 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
+                 cargo build --release --examples,
+
                  cargo clippy --all --exclude test-no-std -- -D warnings,
                  cargo clippy --examples -- -D warnings,
 
                  cargo test --all --exclude test-no-std,
 
-                 cargo fmt --all -- --check,
+                 cargo fmt --all -- --check
+
         ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: init-rust-target
         run: rustup show
 
@@ -56,19 +59,28 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-  cargo-toml-fmt:
+      - name: Upload examples
+        uses: actions/upload-artifact@v3
+        if: matrix.check == 'cargo build --release --examples'
+        with:
+          name: examples
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*d
+            !target/release/examples/*-*
+
+  fmt:
     runs-on: ubuntu-latest
     container: "tamasfe/taplo:0.7.0-alpine"
     steps:
       - uses: actions/checkout@v3
+
       - name: Run Taplo fmt
         run: taplo fmt --check
-      - name: Fail-fast; cancel other jobs
-        if: failure()
-        uses: andymckay/cancel-action@0.2
 
   examples:
     runs-on: ${{ matrix.os }}
+    needs: build
     strategy:
       fail-fast: false
       matrix:
@@ -88,25 +100,25 @@ jobs:
           example_transfer,
         ]
     steps:
-      - uses: actions/checkout@v2
-      - name: init-rust-target
-        run: rustup show
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.example }}
-
-      - name: Build examples
-        run: cargo build --release --examples
+      - uses: actions/checkout@v3
 
       - name: Run latest node
         run: |
           docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
-          sleep 150
+
+      - name: Wait until node has started
+        run: sleep 20s
+        shell: bash
+
+      - name: Download example from previous run
+        uses: actions/download-artifact@v3
+        with:
+          name: examples
 
       - name: Run Examples
         timeout-minutes: 5
         run: |
           docker ps
           nc -z -v 127.0.0.1 9944
-          ./target/release/examples/${{ matrix.example }}
+          chmod +x ${{ matrix.example }}
+          ./${{ matrix.example }}
