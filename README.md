@@ -14,8 +14,9 @@ substrate-api-client a library written in Rust for connecting to the substrate's
 ## Prerequisites
 
 In order to build the substrate-api-client and the examples, Rust and the wasm target are needed. For Linux:
-```
+```bash
 curl https://sh.rustup.rs -sSf | sh
+# Install the rust toolchain specified in rust-toolchain.toml
 rustup show
 ```
 For more information, please refer to the [substrate](https://github.com/paritytech/substrate) repository.
@@ -41,8 +42,8 @@ cargo run --example example_get_storage
 or download the already built binaries from Github Actions: https://github.com/scs/substrate-api-client/actions and run them without any building:
 
 ```bash
-chmod +x EXAMPLE
-./EXAMPLE
+chmod +x <example>
+./<example>
 ```
 
 
