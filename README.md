@@ -15,9 +15,8 @@ substrate-api-client a library written in Rust for connecting to the substrate's
 
 In order to build the substrate-api-client and the examples, Rust and the wasm target are needed. For Linux:
 ```
-    curl https://sh.rustup.rs -sSf | sh
-
-    rustup show
+curl https://sh.rustup.rs -sSf | sh
+rustup show
 ```
 For more information, please refer to the [substrate](https://github.com/paritytech/substrate) repository.
 
@@ -35,15 +34,15 @@ docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --de
 To run an example, clone the `substrate-api-client` repository and run the desired example directly with the cargo command:
 
 ```bash
-    git clone https://github.com/scs/substrate-api-client.git
-    cd substrate-api-client
-    cargo run --example example_get_storage
+git clone https://github.com/scs/substrate-api-client.git
+cd substrate-api-client
+cargo run --example example_get_storage
 ```
 or download the already built binaries from Github Actions: https://github.com/scs/substrate-api-client/actions and run them without any building:
 
 ```bash
-    chmod +x EXAMPLE
-    ./EXAMPLE
+chmod +x EXAMPLE
+./EXAMPLE
 ```
 
 
