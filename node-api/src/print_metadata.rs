@@ -12,7 +12,7 @@ impl Metadata {
 				string.push('\n');
 			}
 
-			for call in pallet.calls.keys() {
+			for call in pallet.call_indexes.keys() {
 				string.push_str(" c  ");
 				string.push_str(call.as_str());
 				string.push('\n');
@@ -26,13 +26,13 @@ impl Metadata {
 
 			for event in self.events(pallet.index) {
 				string.push_str(" e  ");
-				string.push_str(&event.event);
+				string.push_str(&event.event());
 				string.push('\n');
 			}
 
 			for error in self.errors(pallet.index) {
 				string.push_str(" err  ");
-				string.push_str(&error.error);
+				string.push_str(&error.error());
 				string.push('\n');
 			}
 		}
@@ -48,7 +48,7 @@ impl Metadata {
 
 	pub fn print_pallets_with_calls(&self) {
 		for m in self.pallets.values() {
-			if !m.calls.is_empty() {
+			if !m.call_indexes.is_empty() {
 				m.print_calls();
 			}
 		}
@@ -99,7 +99,7 @@ impl PalletMetadata {
 
 	pub fn print_calls(&self) {
 		println!("----------------- Calls for Pallet: {} -----------------\n", self.name);
-		for (name, index) in &self.calls {
+		for (name, index) in &self.call_indexes {
 			println!("Name: {}, index {}", name, index);
 		}
 		println!();
@@ -127,7 +127,8 @@ impl PalletMetadata {
 impl EventMetadata {
 	pub fn print(&self) {
 		println!("Name: {}", self.event());
-		println!("Variant: {:?}", self.variant());
+		println!("Field: {:?}", self.fields());
+		println!("Docs: {:?}", self.docs());
 		println!()
 	}
 }
@@ -135,7 +136,7 @@ impl EventMetadata {
 impl ErrorMetadata {
 	pub fn print(&self) {
 		println!("Name: {}", self.error());
-		println!("Description: {:?}", self.description());
+		println!("Docs: {:?}", self.docs());
 		println!()
 	}
 }
