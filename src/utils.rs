@@ -25,7 +25,7 @@ use sp_core::{storage::StorageKey, twox_128, H256 as Hash};
 
 pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
 	let mut key = twox_128(module.as_bytes()).to_vec();
-	key.extend(&twox_128(storage_key_name.as_bytes()));
+	key.extend(twox_128(storage_key_name.as_bytes()));
 	StorageKey(key)
 }
 
@@ -39,7 +39,7 @@ impl FromHexString for Vec<u8> {
 	fn from_hex(hex: String) -> Result<Self, hex::FromHexError> {
 		let hexstr = hex.trim_matches('\"').trim_start_matches("0x");
 
-		hex::decode(&hexstr)
+		hex::decode(hexstr)
 	}
 }
 

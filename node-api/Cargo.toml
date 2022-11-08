@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", features = ['derive'], default-features = false }
 derive_more = { version = "0.99.17" }
-#TODO get from parity when our changes are accepted
+#TODO get from parity when our changes are accepted https://github.com/scs/substrate-api-client/issues/304
 frame-metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", features = ["v14", "full_derive"] }
 #frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
 hex = { version = "0.4.3", default-features = false }

@@ -92,6 +92,7 @@ impl Subscriber for WsRpcClient {
 	}
 }
 
+#[allow(clippy::result_large_err)]
 impl WsRpcClient {
 	pub fn get(&self, json_req: String, result_in: ThreadOut<String>) -> WsResult<()> {
 		self.start_rpc_client_thread(json_req, result_in, on_get_request_msg)
