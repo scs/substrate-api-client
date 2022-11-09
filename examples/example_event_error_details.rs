@@ -85,9 +85,9 @@ fn main() {
 	//Transfer will failed as Alice want to transfer all her balance. She has not enough money to pay the fee
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
-	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
+	let args: ApiResult<Option<TransferEventArgs>> = api.wait_for_event(&events_out);
 	match args {
-		Ok(transfer_event) => {
+		Ok(Some(transfer_event)) => {
 			println!("Transfer event received!!!\n");
 			println!("Transactor: {:?}", transfer_event.from);
 			println!("Destination: {:?}", transfer_event.to);
@@ -95,6 +95,9 @@ fn main() {
 		},
 		Err(e) => {
 			println!("[+] Alice couldn't transfer {} to Bob because {:?}\n", amount, e)
+		},
+		Ok(None) => {
+			println!("[+] Couldn't find the specified Event\n")
 		},
 	}
 
