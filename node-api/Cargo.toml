@@ -43,7 +43,7 @@ disable_target_static_assertions = [
 std = [
     "bitvec/std",
     "codec/std",
-    "either/std",
+    "either/default",
     "frame-metadata/std",
     "hex/std",
     "log/std",
