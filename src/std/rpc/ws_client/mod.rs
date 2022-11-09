@@ -1,3 +1,4 @@
+use ac_node_api::Events;
 /*
    Copyright 2019 Supercomputing Systems AG
 
@@ -14,15 +15,14 @@
    limitations under the License.
 
 */
-use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
+pub use ac_node_api::{events::EventDetails, StaticEvent};
 
-use ac_node_api::events::{EventsDecoder, Raw, RawEvent};
 use ac_primitives::ExtrinsicParams;
-use codec::Decode;
-use log::{debug, error, info, warn};
+use log::*;
 use serde_json::Value;
 use sp_core::Pair;
 use sp_runtime::MultiSignature;
+use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
 use ws::{CloseCode, Error, Handler, Handshake, Message, Result as WsResult, Sender};
 
 use crate::{
@@ -99,47 +99,36 @@ where
 		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<E: Decode>(
+	pub fn wait_for_event<Ev: StaticEvent>(
 		&self,
-		module: &str,
-		variant: &str,
-		decoder: Option<EventsDecoder>,
 		receiver: &Receiver<String>,
-	) -> ApiResult<E> {
-		let raw = self.wait_for_raw_event(module, variant, decoder, receiver)?;
-		E::decode(&mut &raw.data[..]).map_err(|e| e.into())
+	) -> ApiResult<Option<Ev>> {
+		let event_detail = self.wait_for_event_details::<Ev>(receiver)?;
+		event_detail.as_event().map_err(|e| e.into())
 	}
 
-	pub fn wait_for_raw_event(
+	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		module: &str,
-		variant: &str,
-		decoder: Option<EventsDecoder>,
 		receiver: &Receiver<String>,
-	) -> ApiResult<RawEvent> {
-		let event_decoder = match decoder {
-			Some(d) => d,
-			None => EventsDecoder::new(self.metadata.clone()),
-		};
-
+	) -> ApiResult<EventDetails> {
 		loop {
-			let event_str = receiver.recv()?;
-			let _events = event_decoder.decode_events(&mut Vec::from_hex(event_str)?.as_slice());
-			info!("wait for raw event");
-			match _events {
-				Ok(raw_events) =>
-					for (phase, event) in raw_events.into_iter() {
-						info!("Decoded Event: {:?}, {:?}", phase, event);
-						match event {
-							Raw::Event(raw) if raw.pallet == module && raw.variant == variant =>
-								return Ok(raw),
-							Raw::Error(runtime_error) => {
-								error!("Some extrinsic Failed: {:?}", runtime_error);
-							},
-							_ => debug!("ignoring unsupported module event: {:?}", event),
+			let events_str = receiver.recv()?;
+			let event_bytes = Vec::from_hex(events_str)?;
+			let events = Events::new(self.metadata, Default::default(), event_bytes);
+
+			for maybe_event_details in events.iter() {
+				match maybe_event_details {
+					Ok(event_details) => {
+						info!("Decoded Event: {:?}", event_details);
+						match event_details.as_event::<Ev>() {
+							Ok(Some(event)) => return Ok(event_details),
+							Ok(None) => trace!("ignoring unsupported module event."),
+							Err(e) =>
+								error!("Could not decode an field bytes of extrinsic: {:?}", e),
 						}
 					},
-				Err(error) => error!("couldn't decode event record list: {:?}", error),
+					Err(e) => error!("couldn't decode event record list: {:?}", e),
+				}
 			}
 		}
 	}
