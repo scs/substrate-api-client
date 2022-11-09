@@ -78,7 +78,7 @@ jobs:
       - name: Run Taplo fmt
         run: taplo fmt --check
 
-    license-check:
+  license-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
