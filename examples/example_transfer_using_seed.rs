@@ -15,8 +15,11 @@
 
 ///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
 use clap::{load_yaml, App};
-use sp_core::crypto::Pair;
-use sp_keyring::AccountKeyring;
+use sp_core::{
+	crypto::{Pair, Ss58Codec},
+	sr25519,
+};
+
 use sp_runtime::MultiAddress;
 
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
@@ -25,38 +28,46 @@ fn main() {
 	env_logger::init();
 	let url = get_node_url_from_cli();
 
-	// initialize api and set the signer (sender) that is used to sign the extrinsics
-	let from = AccountKeyring::Alice.pair();
+	// Alice's seed: subkey inspect //Alice.
+	let alice: sr25519::Pair = Pair::from_string(
+		"0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
+		None,
+	)
+	.unwrap();
+	println!("signer account: {}", alice.public().to_ss58check());
+
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::new(&url);
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(from.clone()))
+		.map(|api| api.set_signer(alice.clone()))
 		.unwrap();
 
-	let to = AccountKeyring::Bob.to_account_id();
+	// Bob
+	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+		.unwrap();
 
-	match api.get_account_data(&to).unwrap() {
-		Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
+	match api.get_account_data(&bob.into()).unwrap() {
+		Some(account_data) => println!("[+] Bob's Free Balance is is {}\n", account_data.free),
 		None => println!("[+] Bob's Free Balance is is 0\n"),
 	}
-
-	// generate extrinsic
-	let xt = api.balance_transfer(MultiAddress::Id(to.clone()), 1000);
+	// Generate extrinsic.
+	let xt = api.balance_transfer(MultiAddress::Id(bob.into()), 1000000000000);
 
 	println!(
 		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
-		from.public(),
-		to
+		alice.public(),
+		bob
 	);
 
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
-	// send and watch extrinsic until finalized
+	// Send and watch extrinsic until finalized.
 	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
-	// verify that Bob's free Balance increased
-	let bob = api.get_account_data(&to).unwrap().unwrap();
-	println!("[+] Bob's Free Balance is now {}\n", bob.free);
+	// Verify that Bob's free Balance increased.
+	let bob_account_data = api.get_account_data(&bob.into()).unwrap().unwrap();
+	println!("[+] Bob's Free Balance is now {}\n", bob_account_data.free);
 }
 
 pub fn get_node_url_from_cli() -> String {
