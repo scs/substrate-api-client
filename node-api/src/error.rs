@@ -1,19 +1,10 @@
-// Copyright 2019-2021 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
-// and Integritee AG.
-// This file is part of subxt.
+// This file was taken from subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+// And was adapted by Supercomputing Systems AG and Integritee AG.
 //
-// subxt is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// subxt is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with subxt.  If not, see <http://www.gnu.org/licenses/>.
+// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG and Integritee AG.
+// This file is licensed as Apache-2.0
+// see LICENSE for license details.
 
 //! The errors use in the node-api crate.
 //!
