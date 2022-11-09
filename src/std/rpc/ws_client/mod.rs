@@ -317,7 +317,7 @@ mod tests {
 	fn assert_extrinsic_err<T: Debug>(result: Result<T, RpcClientError>, msg: &str) {
 		assert_matches!(result.unwrap_err(), RpcClientError::Extrinsic(
 			m,
-		) if &m == msg)
+		) if m == msg)
 	}
 
 	#[test]
