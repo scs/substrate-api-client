@@ -20,7 +20,9 @@ use codec::Decode;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::sp_core::sr25519, AccountId32 as AccountId, MultiAddress};
-use substrate_api_client::{rpc::WsRpcClient, Api, ApiResult, AssetTipExtrinsicParams, XtStatus};
+use substrate_api_client::{
+	rpc::WsRpcClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
+};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -28,6 +30,11 @@ struct TransferEventArgs {
 	from: AccountId,
 	to: AccountId,
 	value: u128,
+}
+
+impl StaticEvent for TransferEventArgs {
+	const PALLET: &'static str = "Balances";
+	const EVENT: &'static str = "Transfer";
 }
 
 fn main() {
@@ -78,8 +85,7 @@ fn main() {
 	//Transfer will failed as Alice want to transfer all her balance. She has not enough money to pay the fee
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
-	let args: ApiResult<TransferEventArgs> =
-		api.wait_for_event("Balances", "Transfer", None, &events_out);
+	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
 	match args {
 		Ok(transfer_event) => {
 			println!("Transfer event received!!!\n");

@@ -20,13 +20,20 @@ use std::sync::mpsc::channel;
 use clap::{load_yaml, App};
 use codec::Decode;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, XtStatus};
+use substrate_api_client::{
+	rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
+};
 
 #[allow(unused)]
 #[derive(Decode)]
 struct ContractInstantiatedEventArgs {
 	deployer: AccountId,
 	contract: AccountId,
+}
+
+impl StaticEvent for ContractInstantiatedEventArgs {
+	const PALLET: &'static str = "Contracts";
+	const EVENT: &'static str = "Instantiated";
 }
 
 fn main() {
@@ -67,8 +74,7 @@ fn main() {
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs =
-		api.wait_for_event("Contracts", "Instantiated", None, &events_out).unwrap();
+	let args: ContractInstantiatedEventArgs = api.wait_for_event(&events_out).unwrap();
 
 	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
 
