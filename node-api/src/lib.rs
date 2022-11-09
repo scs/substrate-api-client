@@ -20,13 +20,13 @@ extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec::Vec};
 
-use codec::{Decode, Encode};
-
+pub use decoder::*;
 pub use error::*;
 pub use events::*;
 pub use metadata::*;
 pub use storage::*;
 
+pub mod decoder;
 pub mod error;
 pub mod events;
 pub mod metadata;
@@ -44,15 +44,4 @@ impl codec::Encode for Encoded {
 	fn encode(&self) -> Vec<u8> {
 		self.0.to_owned()
 	}
-}
-
-/// A phase of a block's execution.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
-pub enum Phase {
-	/// Applying an extrinsic.
-	ApplyExtrinsic(u32),
-	/// Finalizing the block.
-	Finalization,
-	/// Initializing the block.
-	Initialization,
 }
