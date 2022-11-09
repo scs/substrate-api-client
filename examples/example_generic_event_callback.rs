@@ -21,7 +21,7 @@ use clap::{load_yaml, App};
 use codec::Decode;
 use sp_core::sr25519;
 use sp_runtime::AccountId32 as AccountId;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, StaticEvent};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -29,6 +29,11 @@ struct TransferEventArgs {
 	from: AccountId,
 	to: AccountId,
 	value: u128,
+}
+
+impl StaticEvent for TransferEventArgs {
+	const PALLET: &'static str = "Transfer";
+	const EVENT: &'static str = "Balance";
 }
 
 fn main() {
