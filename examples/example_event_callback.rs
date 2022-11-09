@@ -18,7 +18,7 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use log::{debug, error};
+use log::{debug};
 use sp_core::{sr25519, H256 as Hash};
 
 // This module depends on node_runtime.
