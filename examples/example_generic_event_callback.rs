@@ -42,8 +42,7 @@ fn main() {
 	let (events_in, events_out) = channel();
 
 	api.subscribe_events(events_in).unwrap();
-	let args: TransferEventArgs =
-		api.wait_for_event("Balances", "Transfer", None, &events_out).unwrap().unwrap();
+	let args: TransferEventArgs = api.wait_for_event(&events_out).unwrap().unwrap();
 
 	println!("Transactor: {:?}", args.from);
 	println!("Destination: {:?}", args.to);
