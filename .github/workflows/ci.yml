@@ -89,7 +89,7 @@ jobs:
           example_benchmark_bulk_xt,
           example_compose_extrinsic_offline,
           example_event_callback,
-          #            example_generic_event_callback, does not work without somebody executing a transfer. So we don't run it.
+          example_generic_event_callback
           #            example_event_error_details , Todo: this example hangs: #134
           example_generic_extrinsic,
           example_get_blocks,
