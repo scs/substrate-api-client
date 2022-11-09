@@ -50,7 +50,7 @@ fn main() {
 	let bob = AccountKeyring::Bob.to_account_id();
 
 	// Generate extrinsic.
-	let xt = api.balance_transfer(MultiAddress::Id(bob.into()), 1000000000000);
+	let xt = api.balance_transfer(MultiAddress::Id(bob), 1000000000000);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send extrinsic.
