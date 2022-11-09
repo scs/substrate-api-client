@@ -26,13 +26,13 @@ impl Metadata {
 
 			for event in self.events(pallet.index) {
 				string.push_str(" e  ");
-				string.push_str(&event.event());
+				string.push_str(event.event());
 				string.push('\n');
 			}
 
 			for error in self.errors(pallet.index) {
 				string.push_str(" err  ");
-				string.push_str(&error.error());
+				string.push_str(error.error());
 				string.push('\n');
 			}
 		}

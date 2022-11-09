@@ -41,7 +41,7 @@ pub struct Events {
 }
 
 impl Events {
-	pub(crate) fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
+	pub fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
 		// event_bytes is a SCALE encoded vector of events. So, pluck the
 		// compact encoded length from the front, leaving the remaining bytes
 		// for our iterating to decode.
@@ -437,13 +437,8 @@ mod tests {
 		let actual_fields = actual.field_values().expect("can decode field values (1)");
 		let mut actual_bytes = vec![];
 		for field in actual_fields.into_values() {
-			crate::decoder::encode_as_type(
-				field.clone(),
-				field.context.clone(),
-				types,
-				&mut actual_bytes,
-			)
-			.expect("should be able to encode properly");
+			crate::decoder::encode_as_type(field.clone(), field.context, types, &mut actual_bytes)
+				.expect("should be able to encode properly");
 		}
 		assert_eq!(actual_bytes, actual.field_bytes());
 
