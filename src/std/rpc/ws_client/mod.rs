@@ -119,7 +119,7 @@ where
 			for maybe_event_details in events.iter() {
 				match maybe_event_details {
 					Ok(event_details) => {
-						info!("Decoded Event: {:?}", event_details);
+						error!("Decoded Event: {:?}", event_details);
 						match event_details.as_event::<Ev>() {
 							Ok(Some(_event)) => return Ok(event_details),
 							Ok(None) => trace!("ignoring unsupported module event."),
