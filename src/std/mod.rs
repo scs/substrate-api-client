@@ -50,8 +50,9 @@ pub trait RpcClient {
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, Value, XtStatus, PlainTipExtrinsicParams
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, XtStatus, PlainTipExtrinsicParams
 /// };
+/// use serde_json::Value;
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
 ///     _inner: (),
@@ -76,7 +77,7 @@ pub trait RpcClient {
 /// }
 ///
 /// impl RpcClient for MyClient {
-///     fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<String> {
+///     fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
 ///         self.send_json::<Value>("".into(), jsonreq)
 ///             .map(|v| v.to_string())
 ///             .map_err(|err| ApiClientError::RpcClient(err.to_string()))

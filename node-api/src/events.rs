@@ -9,6 +9,7 @@
 //! A representation of a block of events.
 //!
 //! This file is very similar to subxt, except where noted.
+//! Based on https://github.com/paritytech/subxt/commit/1e8d0956cc6aeb882637bde1d09ac44186181781#
 
 use crate::{
 	alloc::{string::ToString, sync::Arc, vec, vec::Vec},
@@ -693,7 +694,7 @@ mod tests {
 				pallet_index: 0,
 				variant: "A".to_string(),
 				variant_index: 0,
-				fields: vec![Value::uint(1u8)],
+				fields: vec![Value::unnamed_composite(vec![Value::uint(1u8)])],
 			},
 		);
 		assert!(event_details.next().is_none());

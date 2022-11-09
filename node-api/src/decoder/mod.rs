@@ -8,6 +8,7 @@
 
 //! Decode helper.
 //! It was not possible to take the scale-value as crate, because it's not no_std compatible.
+//! Based on https://github.com/paritytech/scale-value/blob/4d30d609dc86cbcf102385bc34ef2c01b8c9bbb1/src/scale_impls/decode.rs
 
 mod bit_sequence;
 mod decode;
@@ -85,7 +86,7 @@ impl From<&TypeId> for TypeId {
 /// #     (id.id(), portable_registry)
 /// # }
 /// # let (type_id, registry) = make_type::<Foo>();
-/// use decoder::Value;
+/// use ac_node_api::Value;
 ///
 /// // Imagine we have a `registry` (of type [`scale_info::PortableRegistry`]) containing this type,
 /// // and a `type_id` (a `u32`) pointing to it in the registry.
@@ -102,12 +103,12 @@ impl From<&TypeId> for TypeId {
 ///
 /// // Encode the Value to bytes:
 /// let mut bytes = Vec::new();
-/// decoder::encode_as_type(value.clone(), type_id, &registry, &mut bytes).unwrap();
+/// ac_node_api::encode_as_type(value.clone(), type_id, &registry, &mut bytes).unwrap();
 ///
 /// // Decode the bytes back into a matching Value.
 /// // This value contains contextual information about which type was used
 /// // to decode each part of it, which we can throw away with `.remove_context()`.
-/// let new_value = decoder::decode_as_type(&mut &*bytes, type_id, &registry).unwrap();
+/// let new_value = ac_node_api::decode_as_type(&mut &*bytes, type_id, &registry).unwrap();
 ///
 /// assert_eq!(value, new_value.remove_context());
 /// ```
