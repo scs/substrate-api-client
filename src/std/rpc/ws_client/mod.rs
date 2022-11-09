@@ -114,14 +114,14 @@ where
 		loop {
 			let events_str = receiver.recv()?;
 			let event_bytes = Vec::from_hex(events_str)?;
-			let events = Events::new(self.metadata, Default::default(), event_bytes);
+			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
 
 			for maybe_event_details in events.iter() {
 				match maybe_event_details {
 					Ok(event_details) => {
 						info!("Decoded Event: {:?}", event_details);
 						match event_details.as_event::<Ev>() {
-							Ok(Some(event)) => return Ok(event_details),
+							Ok(Some(_event)) => return Ok(event_details),
 							Ok(None) => trace!("ignoring unsupported module event."),
 							Err(e) =>
 								error!("Could not decode an field bytes of extrinsic: {:?}", e),
