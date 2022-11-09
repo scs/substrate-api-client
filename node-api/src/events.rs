@@ -10,16 +10,14 @@
 //!
 //! This file is very similar to subxt, except where noted.
 
-extern crate alloc;
-
 use crate::{
+	alloc::{string::ToString, sync::Arc, vec, vec::Vec},
 	decoder::{decode_as_type, Composite, TypeId},
 	error::Error,
 	metadata::EventMetadata,
 	Metadata, Phase, StaticEvent,
 };
 use ac_primitives::Hash;
-use alloc::sync::Arc;
 use codec::{Compact, Decode, Error as CodecError};
 use log::*;
 

@@ -18,6 +18,7 @@ use super::{
 	value::{Composite, Primitive, Value, ValueDef, Variant},
 	ScaleTypeDef as TypeDef, TypeId,
 };
+use crate::alloc::{string::String, vec::Vec};
 use bitvec::{
 	order::{Lsb0, Msb0},
 	vec::BitVec,

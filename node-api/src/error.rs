@@ -19,13 +19,20 @@
 //!
 //! This file is mostly subxt.
 
-use crate::metadata::Metadata;
+use crate::{
+	alloc::{
+		borrow::Cow,
+		format,
+		string::{String, ToString},
+		vec::Vec,
+	},
+	metadata::Metadata,
+};
 use codec::Decode;
 use core::fmt::Debug;
 use derive_more::From;
 use log::*;
 use scale_info::TypeDef;
-use std::borrow::Cow;
 
 // Re-expose the errors we use from other crates here:
 pub use crate::{
@@ -40,8 +47,6 @@ pub use sp_runtime::transaction_validity::TransactionValidityError;
 /// using this type directly.
 #[derive(Debug, From)]
 pub enum Error {
-	/// Io error.
-	Io(std::io::Error),
 	/// Codec error.
 	Codec(codec::Error),
 	/// Serde serialization error

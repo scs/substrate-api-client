@@ -18,7 +18,7 @@ mod value;
 type ScaleType = scale_info::Type<scale_info::form::PortableForm>;
 
 /// The portable version of a [`scale_info`] type ID.
-type ScaleTypeId = scale_info::interner::UntrackedSymbol<std::any::TypeId>; // equivalent to: <scale_info::form::PortableForm as scale_info::form::Form>::Type;
+type ScaleTypeId = scale_info::interner::UntrackedSymbol<core::any::TypeId>; // equivalent to: <scale_info::form::PortableForm as scale_info::form::Form>::Type;
 
 /// The portable version of [`scale_info::TypeDef`]
 type ScaleTypeDef = scale_info::TypeDef<scale_info::form::PortableForm>;
@@ -29,6 +29,7 @@ pub use encode::{encode_value_as_type, EncodeError};
 pub use scale_info::PortableRegistry;
 pub use value::*;
 
+use crate::alloc::vec::Vec;
 use core::{fmt::Display, hash::Hash};
 use derive_more::From;
 
@@ -45,7 +46,7 @@ impl TypeId {
 }
 
 impl Display for TypeId {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
 		write!(f, "{}", self.0)
 	}
 }

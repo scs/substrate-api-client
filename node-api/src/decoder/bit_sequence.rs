@@ -6,9 +6,8 @@
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
-extern crate alloc;
 use super::ScaleTypeDef as TypeDef;
-use alloc::string::String;
+use crate::alloc::{format, string::String};
 use scale_info::{form::PortableForm, PortableRegistry, TypeDefBitSequence, TypeDefPrimitive};
 
 /// An error that can occur when we try to encode or decode to a SCALE bit sequence type.

@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::alloc::{string::String, vec::Vec};
 use bitvec::{order::Lsb0, vec::BitVec};
+use core::{convert::From, fmt::Debug};
 use either::Either;
-use std::{convert::From, fmt::Debug};
 
 /// [`Value`] holds a representation of some value that has been decoded, as well as some arbitrary context.
 ///
@@ -136,7 +137,7 @@ impl<T> ValueDef<T> {
 }
 
 impl<T: Debug> Debug for ValueDef<T> {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
 		match self {
 			Self::Composite(val) => Debug::fmt(val, f),
 			Self::Variant(val) => Debug::fmt(val, f),
