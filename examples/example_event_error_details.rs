@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-use std::sync::mpsc::channel;
-
 use clap::{load_yaml, App};
 use codec::Decode;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::sp_core::sr25519, AccountId32 as AccountId, MultiAddress};
+use std::sync::mpsc::channel;
 use substrate_api_client::{
 	rpc::WsRpcClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
 };
@@ -78,11 +77,11 @@ fn main() {
 	);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
-	// send and watch extrinsic until finalized
+	// Send and watch extrinsic until in block.
 	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
-	// Transfer should fail as Alice wants to transfer all her balance. She has not enough money to pay the fee
+	// Transfer should fail as Alice wants to transfer all her balance. She has not enough money to pay the fee.
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
 	let args: ApiResult<Option<TransferEventArgs>> = api.wait_for_event(&events_out);
