@@ -5,6 +5,7 @@
 // Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG and Integritee AG.
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
+
 use super::{
 	bit_sequence::{get_bitsequence_details, BitOrderTy, BitSequenceError, BitStoreTy},
 	value::{Composite, Primitive, Value, ValueDef, Variant},
