@@ -82,7 +82,7 @@ fn main() {
 	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
-	//Transfer will failed as Alice want to transfer all her balance. She has not enough money to pay the fee
+	// Transfer should fail as Alice wants to transfer all her balance. She has not enough money to pay the fee
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
 	let args: ApiResult<Option<TransferEventArgs>> = api.wait_for_event(&events_out);
