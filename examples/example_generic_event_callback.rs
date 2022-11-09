@@ -19,7 +19,7 @@ use clap::{load_yaml, App};
 use codec::Decode;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-use std::sync::mpsc::channel;
+use std::{sync::mpsc::channel, thread};
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus};
 
 // Look at the how the transfer event looks like in in the metadata
@@ -46,6 +46,16 @@ fn main() {
 		.map(|api| api.set_signer(alice.clone()))
 		.unwrap();
 
+	println!("Subscribe to events");
+
+	let api2 = api.clone();
+	let thread_output = thread::spawn(move || {
+		let (events_in, events_out) = channel();
+		api2.subscribe_events(events_in).unwrap();
+		let args: TransferEventArgs = api2.wait_for_event(&events_out).unwrap().unwrap();
+		args
+	});
+
 	// Bob
 	let bob = AccountKeyring::Bob.to_account_id();
 
@@ -57,10 +67,7 @@ fn main() {
 	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
-	println!("Subscribe to events");
-	let (events_in, events_out) = channel();
-	api.subscribe_events(events_in).unwrap();
-	let args: TransferEventArgs = api.wait_for_event(&events_out).unwrap().unwrap();
+	let args = thread_output.join().unwrap();
 
 	println!("Transactor: {:?}", args.from);
 	println!("Destination: {:?}", args.to);
