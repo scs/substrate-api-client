@@ -200,7 +200,7 @@ impl PalletMetadata {
 
 	/// Attempt to resolve a call into an index in this pallet, failing
 	/// if the call is not found in this pallet.
-	pub fn call_index(&self, function: &str) -> Result<u8, MetadataError> {
+	pub fn call_index(&self, function: &'static str) -> Result<u8, MetadataError> {
 		let fn_index =
 			*self.call_indexes.get(function).ok_or(MetadataError::CallNotFound(function))?;
 		Ok(fn_index)

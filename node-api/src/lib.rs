@@ -20,6 +20,8 @@ extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec::Vec};
 
+use codec::{Decode, Encode};
+
 pub use decoder::*;
 pub use error::*;
 pub use events::*;
@@ -44,4 +46,36 @@ impl codec::Encode for Encoded {
 	fn encode(&self) -> Vec<u8> {
 		self.0.to_owned()
 	}
+}
+
+// This following types were taken from subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+
+/// Trait to uniquely identify the events's identity from the runtime metadata.
+///
+/// Generated API structures that represent an event implement this trait.
+///
+/// The trait is utilized to decode emitted events from a block, via obtaining the
+/// form of the `Event` from the metadata.
+pub trait StaticEvent: Decode {
+	/// Pallet name.
+	const PALLET: &'static str;
+	/// Event name.
+	const EVENT: &'static str;
+
+	/// Returns true if the given pallet and event names match this event.
+	fn is_event(pallet: &str, event: &str) -> bool {
+		Self::PALLET == pallet && Self::EVENT == event
+	}
+}
+
+/// A phase of a block's execution.
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
+pub enum Phase {
+	/// Applying an extrinsic.
+	ApplyExtrinsic(u32),
+	/// Finalizing the block.
+	Finalization,
+	/// Initializing the block.
+	Initialization,
 }

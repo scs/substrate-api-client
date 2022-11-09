@@ -9,7 +9,7 @@
 //! A representation of a block of events.
 //!
 //! This file is very similar to subxt, except where noted.
-//!
+
 extern crate alloc;
 
 use crate::{
@@ -200,7 +200,7 @@ impl EventDetails {
 
 	/// When was the event produced?
 	pub fn phase(&self) -> Phase {
-		self.phase
+		self.phase.clone()
 	}
 
 	/// What index is this event in the stored events for this block.
@@ -437,8 +437,13 @@ mod tests {
 		let actual_fields = actual.field_values().expect("can decode field values (1)");
 		let mut actual_bytes = vec![];
 		for field in actual_fields.into_values() {
-			crate::decoder::encode_as_type(field, field.context, types, &mut actual_bytes)
-				.expect("should be able to encode properly");
+			crate::decoder::encode_as_type(
+				field.clone(),
+				field.context.clone(),
+				types,
+				&mut actual_bytes,
+			)
+			.expect("should be able to encode properly");
 		}
 		assert_eq!(actual_bytes, actual.field_bytes());
 

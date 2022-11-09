@@ -90,7 +90,7 @@ fn decode_variant_value(
 	ty: &TypeDefVariant<PortableForm>,
 	types: &PortableRegistry,
 ) -> Result<Variant<TypeId>, DecodeError> {
-	let index = *data.get(0).ok_or(DecodeError::Eof)?;
+	let index = *data.first().ok_or(DecodeError::Eof)?;
 	*data = &data[1..];
 
 	// Does a variant exist with the index we're looking for?
