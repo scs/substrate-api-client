@@ -38,14 +38,14 @@ pub enum RpcClientError {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
-	Future = 10,
-	Finalized = 5,
-	InBlock = 4,
-	Broadcast = 3,
-	Ready = 2,
+	Unknown = 0,
 	/// uses `author_submit` without watching.
 	SubmitOnly = 1,
-	Unknown = 0,
+	Ready = 2,
+	Broadcast = 3,
+	InBlock = 4,
+	Finalized = 5,
+	Future = 10,
 }
 
 // Exact structure from

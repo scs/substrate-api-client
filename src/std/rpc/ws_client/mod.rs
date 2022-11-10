@@ -147,7 +147,7 @@ where
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
 
-pub struct GetRequestHandler {}
+pub struct GetRequestHandler;
 
 impl HandleMessage for GetRequestHandler {
 	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
@@ -207,7 +207,8 @@ impl HandleMessage for SubscriptionHandler {
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct SubmitOnlyHandler {}
+pub struct SubmitOnlyHandler;
+
 impl HandleMessage for SubmitOnlyHandler {
 	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
 		let retstr = msg.as_text()?;
