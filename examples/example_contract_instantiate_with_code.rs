@@ -74,7 +74,7 @@ fn main() {
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs = api.wait_for_event(&events_out).unwrap().unwrap();
+	let args: ContractInstantiatedEventArgs = api.wait_for_event(&events_out).unwrap();
 
 	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
 

@@ -52,7 +52,8 @@ fn main() {
 	let thread_output = thread::spawn(move || {
 		let (events_in, events_out) = channel();
 		api2.subscribe_events(events_in).unwrap();
-		let args: TransferEventArgs = api2.wait_for_event(&events_out).unwrap().unwrap();
+		let args: TransferEventArgs =
+			api2.wait_for_event::<TransferEventArgs>(&events_out).unwrap();
 		args
 	});
 
