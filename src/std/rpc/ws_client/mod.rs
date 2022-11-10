@@ -131,6 +131,11 @@ where
 				}
 
 				let event_metadata = event_details.event_metadata();
+				error!(
+					"Found extrinsic, checking for metadata: {:?}, {:?}",
+					event_metadata.pallet(),
+					event_metadata.event()
+				);
 				if event_metadata.pallet() == Ev::PALLET && event_metadata.event() == Ev::EVENT {
 					return Ok(event_details)
 				} else {
