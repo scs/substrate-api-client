@@ -37,18 +37,21 @@ pub use client::WsRpcClient;
 
 pub mod client;
 
-pub type OnMessageFn = fn(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
-
 type RpcResult<T> = Result<T, RpcClientError>;
 
-pub struct RpcClient {
+#[allow(clippy::result_large_err)]
+pub trait HandleMessage {
+	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()>;
+}
+
+pub struct RpcClient<MessageHandler> {
 	pub out: Sender,
 	pub request: String,
 	pub result: ThreadOut<String>,
-	pub on_message_fn: OnMessageFn,
+	pub message_handler: MessageHandler,
 }
 
-impl Handler for RpcClient {
+impl<MessageHandler: HandleMessage> Handler for RpcClient<MessageHandler> {
 	fn on_open(&mut self, _: Handshake) -> WsResult<()> {
 		info!("sending request: {}", self.request);
 		self.out.send(self.request.clone())?;
@@ -56,7 +59,7 @@ impl Handler for RpcClient {
 	}
 
 	fn on_message(&mut self, msg: Message) -> WsResult<()> {
-		(self.on_message_fn)(msg, self.out.clone(), self.result.clone())
+		self.message_handler.handle_message(msg, self.out.clone(), self.result.clone())
 	}
 }
 
@@ -142,156 +145,114 @@ where
 	}
 }
 
-#[allow(clippy::result_large_err)]
-pub fn on_get_request_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
-	out.close(CloseCode::Normal)
-		.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
+#[derive(Default, Debug, PartialEq, Eq, Clone)]
 
-	info!("Got get_request_msg {}", msg);
-	let result_str = serde_json::from_str(msg.as_text()?)
-		.map(|v: serde_json::Value| v["result"].to_string())
-		.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+pub struct GetRequestHandler;
 
-	result.send(result_str).map_err(|e| Box::new(RpcClientError::Send(e)).into())
+impl HandleMessage for GetRequestHandler {
+	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
+		out.close(CloseCode::Normal)
+			.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
+
+		info!("Got get_request_msg {}", msg);
+		let result_str = serde_json::from_str(msg.as_text()?)
+			.map(|v: serde_json::Value| v["result"].to_string())
+			.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+
+		result.send(result_str).map_err(|e| Box::new(RpcClientError::Send(e)).into())
+	}
 }
+#[derive(Default, Debug, PartialEq, Eq, Clone)]
+pub struct SubscriptionHandler {}
+impl HandleMessage for SubscriptionHandler {
+	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
+		info!("got on_subscription_msg {}", msg);
+		let value: serde_json::Value =
+			serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(RpcClientError::Serde(e)))?;
 
-#[allow(clippy::result_large_err)]
-pub fn on_subscription_msg(msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
-	info!("got on_subscription_msg {}", msg);
-	let value: serde_json::Value =
-		serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+		match value["id"].as_str() {
+			Some(_idstr) => {},
+			_ => {
+				// subscriptions
+				debug!("no id field found in response. must be subscription");
+				debug!("method: {:?}", value["method"].as_str());
+				match value["method"].as_str() {
+					Some("state_storage") => {
+						let changes = &value["params"]["result"]["changes"];
+						match changes[0][1].as_str() {
+							Some(change_set) => {
+								if let Err(SendError(e)) = result.send(change_set.to_owned()) {
+									debug!("SendError: {}. will close ws", e);
+									out.close(CloseCode::Normal)?;
+								}
+							},
+							None => println!("No events happened"),
+						};
+					},
+					Some("chain_finalizedHead") => {
+						let head = serde_json::to_string(&value["params"]["result"])
+							.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
 
-	match value["id"].as_str() {
-		Some(_idstr) => {},
-		_ => {
-			// subscriptions
-			debug!("no id field found in response. must be subscription");
-			debug!("method: {:?}", value["method"].as_str());
-			match value["method"].as_str() {
-				Some("state_storage") => {
-					let changes = &value["params"]["result"]["changes"];
-					match changes[0][1].as_str() {
-						Some(change_set) => {
-							if let Err(SendError(e)) = result.send(change_set.to_owned()) {
-								debug!("SendError: {}. will close ws", e);
-								out.close(CloseCode::Normal)?;
-							}
-						},
-						None => println!("No events happened"),
-					};
-				},
-				Some("chain_finalizedHead") => {
-					let head = serde_json::to_string(&value["params"]["result"])
-						.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
-
-					if let Err(e) = result.send(head) {
-						debug!("SendError: {}. will close ws", e);
-						out.close(CloseCode::Normal)?;
-					}
-				},
-				_ => error!("unsupported method"),
-			}
-		},
-	};
-	Ok(())
-}
-
-#[allow(clippy::result_large_err)]
-pub fn on_extrinsic_msg_until_finalized(
-	msg: Message,
-	out: Sender,
-	result: ThreadOut<String>,
-) -> WsResult<()> {
-	let retstr = msg.as_text().unwrap();
-	debug!("got msg {}", retstr);
-	match parse_status(retstr) {
-		Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
-		Ok((XtStatus::Future, _)) => {
-			warn!("extrinsic has 'future' status. aborting");
-			end_process(out, result, None)
-		},
-		Err(e) => {
-			end_process(out, result, None)?;
-			Err(Box::new(e).into())
-		},
-		_ => Ok(()),
+						if let Err(e) = result.send(head) {
+							debug!("SendError: {}. will close ws", e);
+							out.close(CloseCode::Normal)?;
+						}
+					},
+					_ => error!("unsupported method"),
+				}
+			},
+		};
+		Ok(())
 	}
 }
 
-#[allow(clippy::result_large_err)]
-pub fn on_extrinsic_msg_until_in_block(
-	msg: Message,
-	out: Sender,
-	result: ThreadOut<String>,
-) -> WsResult<()> {
-	let retstr = msg.as_text().unwrap();
-	debug!("got msg {}", retstr);
-	match parse_status(retstr) {
-		Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
-		Ok((XtStatus::InBlock, val)) => end_process(out, result, val),
-		Ok((XtStatus::Future, _)) => end_process(out, result, None),
-		Err(e) => {
-			end_process(out, result, None)?;
-			Err(Box::new(e).into())
-		},
-		_ => Ok(()),
+#[derive(Default, Debug, PartialEq, Eq, Clone)]
+pub struct SubmitOnlyHandler;
+
+impl HandleMessage for SubmitOnlyHandler {
+	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
+		let retstr = msg.as_text()?;
+		debug!("got msg {}", retstr);
+		match result_from_json_response(retstr) {
+			Ok(val) => end_process(out, result, Some(val)),
+			Err(e) => {
+				end_process(out, result, None)?;
+				Err(Box::new(e).into())
+			},
+		}
 	}
 }
 
-#[allow(clippy::result_large_err)]
-pub fn on_extrinsic_msg_until_broadcast(
-	msg: Message,
-	out: Sender,
-	result: ThreadOut<String>,
-) -> WsResult<()> {
-	let retstr = msg.as_text().unwrap();
-	debug!("got msg {}", retstr);
-	match parse_status(retstr) {
-		Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
-		Ok((XtStatus::Broadcast, _)) => end_process(out, result, None),
-		Ok((XtStatus::Future, _)) => end_process(out, result, None),
-		Err(e) => {
-			end_process(out, result, None)?;
-			Err(Box::new(e).into())
-		},
-		_ => Ok(()),
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct SubmitAndWatchHandler {
+	exit_on: XtStatus,
+}
+impl SubmitAndWatchHandler {
+	pub fn new(exit_on: XtStatus) -> Self {
+		Self { exit_on }
 	}
 }
 
-#[allow(clippy::result_large_err)]
-pub fn on_extrinsic_msg_until_ready(
-	msg: Message,
-	out: Sender,
-	result: ThreadOut<String>,
-) -> WsResult<()> {
-	let retstr = msg.as_text().unwrap();
-	debug!("got msg {}", retstr);
-	match parse_status(retstr) {
-		Ok((XtStatus::Finalized, val)) => end_process(out, result, val),
-		Ok((XtStatus::Ready, _)) => end_process(out, result, None),
-		Ok((XtStatus::Future, _)) => end_process(out, result, None),
-		Err(e) => {
-			end_process(out, result, None)?;
-			Err(Box::new(e).into())
-		},
-		_ => Ok(()),
-	}
-}
-
-#[allow(clippy::result_large_err)]
-pub fn on_extrinsic_msg_submit_only(
-	msg: Message,
-	out: Sender,
-	result: ThreadOut<String>,
-) -> WsResult<()> {
-	let retstr = msg.as_text().unwrap();
-	debug!("got msg {}", retstr);
-	match result_from_json_response(retstr) {
-		Ok(val) => end_process(out, result, Some(val)),
-		Err(e) => {
-			end_process(out, result, None)?;
-			Err(Box::new(e).into())
-		},
+impl HandleMessage for SubmitAndWatchHandler {
+	fn handle_message(&self, msg: Message, out: Sender, result: ThreadOut<String>) -> WsResult<()> {
+		let return_string = msg.as_text()?;
+		debug!("got msg {}", return_string);
+		match parse_status(return_string) {
+			Ok((xt_status, val)) => {
+				if xt_status as u32 >= 10 {
+					error!("Node returned unexpected {:?}, ending watch process.", xt_status);
+					end_process(out, result, val)?;
+				} else if xt_status as u32 >= self.exit_on as u32 {
+					end_process(out, result, val)?;
+				}
+				Ok(())
+			},
+			Err(e) => {
+				error!("Node returned error {:?}, ending watch process.", e);
+				end_process(out, result, None)?;
+				Err(Box::new(e).into())
+			},
+		}
 	}
 }
 
@@ -314,37 +275,38 @@ fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
 		return Err(into_extrinsic_err(&value))
 	}
 
-	match value["params"]["result"].as_object() {
-		Some(obj) =>
-			if let Some(hash) = obj.get("finalized") {
-				info!("finalized: {:?}", hash);
-				Ok((XtStatus::Finalized, Some(hash.to_string())))
-			} else if let Some(hash) = obj.get("inBlock") {
-				info!("inBlock: {:?}", hash);
-				Ok((XtStatus::InBlock, Some(hash.to_string())))
-			} else if let Some(array) = obj.get("broadcast") {
-				info!("broadcast: {:?}", array);
-				Ok((XtStatus::Broadcast, Some(array.to_string())))
-			} else {
-				Ok((XtStatus::Unknown, None))
-			},
-		None => match value["params"]["result"].as_str() {
-			Some("ready") => Ok((XtStatus::Ready, None)),
-			Some("future") => Ok((XtStatus::Future, None)),
-			Some(&_) => Ok((XtStatus::Unknown, None)),
-			None => Ok((XtStatus::Unknown, None)),
-		},
+	if let Some(obj) = value["params"]["result"].as_object() {
+		if let Some(hash) = obj.get("finalized") {
+			info!("finalized: {:?}", hash);
+			return Ok((XtStatus::Finalized, Some(hash.to_string())))
+		} else if let Some(hash) = obj.get("inBlock") {
+			info!("inBlock: {:?}", hash);
+			return Ok((XtStatus::InBlock, Some(hash.to_string())))
+		} else if let Some(array) = obj.get("broadcast") {
+			info!("broadcast: {:?}", array);
+			return Ok((XtStatus::Broadcast, Some(array.to_string())))
+		}
+	};
+
+	match value["params"]["result"].as_str() {
+		Some("ready") => Ok((XtStatus::Ready, None)),
+		Some("future") => Ok((XtStatus::Future, None)),
+		Some(&_) => Ok((XtStatus::Unknown, None)),
+		None => Ok((XtStatus::Unknown, None)),
 	}
 }
 
 /// Todo: this is the code that was used in `parse_status` Don't we want to just print the
 /// error as is instead of introducing our custom format here?
 fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
-	let err_obj = resp_with_err["error"].as_object().unwrap();
+	let err_obj = match resp_with_err["error"].as_object() {
+		Some(obj) => obj,
+		None => return RpcClientError::NoErrorInformationFound(format!("{:?}", resp_with_err)),
+	};
 
-	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap());
-	let code = err_obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap());
-	let details = err_obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap());
+	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap_or_default());
+	let code = err_obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap_or_default());
+	let details = err_obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap_or_default());
 
 	RpcClientError::Extrinsic(format!("extrinsic error code {}: {}: {}", code, error, details))
 }

@@ -32,20 +32,20 @@ pub enum RpcClientError {
 	Extrinsic(String),
 	#[error("mpsc send Error: {0}")]
 	Send(#[from] std::sync::mpsc::SendError<String>),
+	#[error("Expected some error information, but nothing was found: {0}")]
+	NoErrorInformationFound(String),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
-	// Todo: some variants to not return a hash with `send_extrinsics`: #175.
-	Finalized,
-	InBlock,
-	Broadcast,
-	Ready,
-	Future,
-	/// uses `author_submit`
-	SubmitOnly,
-	Error,
-	Unknown,
+	Unknown = 0,
+	/// uses `author_submit` without watching.
+	SubmitOnly = 1,
+	Ready = 2,
+	Broadcast = 3,
+	InBlock = 4,
+	Finalized = 5,
+	Future = 10,
 }
 
 // Exact structure from
