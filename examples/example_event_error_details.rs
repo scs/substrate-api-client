@@ -26,9 +26,9 @@ use substrate_api_client::{
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
 struct TransferEventArgs {
-	from: AccountId,
-	to: AccountId,
-	value: u128,
+	_from: AccountId,
+	_to: AccountId,
+	_value: u128,
 }
 
 impl StaticEvent for TransferEventArgs {
@@ -63,10 +63,12 @@ fn main() {
 
 	let to = AccountKeyring::Bob.to_account_id();
 
-	match api.get_account_data(&to).unwrap() {
-		Some(bob) => println!("[+] Bob's Free Balance is is {}\n", bob.free),
-		None => println!("[+] Bob's Free Balance is is 0\n"),
-	}
+	let balance_of_bob = match api.get_account_data(&to).unwrap() {
+		Some(bob) => bob.free,
+		None => 0,
+	};
+
+	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 	// generate extrinsic
 	let xt = api.balance_transfer(MultiAddress::Id(to.clone()), amount);
 
@@ -86,24 +88,26 @@ fn main() {
 	api.subscribe_events(events_in).unwrap();
 	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
 	match args {
-		Ok(transfer_event) => {
-			println!("Transfer event received!!!\n");
-			println!("Transactor: {:?}", transfer_event.from);
-			println!("Destination: {:?}", transfer_event.to);
-			println!("Value: {:?}", transfer_event.value);
+		Ok(_transfer) => {
+			panic!("Exptected the call to fail.");
 		},
 		Err(e) => {
-			println!("[+] Alice couldn't transfer {} to Bob because {:?}\n", amount, e)
+			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
+			let string_error = format!("{:?}", e);
+			assert!(string_error.contains("pallet: Balances"));
+			assert!(string_error.contains("error: InsufficientBalance"));
 		},
-	}
+	};
 
-	// verify that Bob's free Balance haven't changed
+	// Verify that Bob's free Balance hasn't changed.
 	let bob = api.get_account_data(&to).unwrap().unwrap();
 	println!("[+] Bob's Free Balance is now {}\n", bob.free);
+	assert_eq!(balance_of_bob, bob.free);
 
-	// verify that Alice's free Balance decreased: paid fees
+	// Verify that Alice's free Balance decreased: paid fees.
 	let alice = api.get_account_data(&from_account_id).unwrap().unwrap();
 	println!("[+] Alice's Free Balance is now {}\n", alice.free);
+	assert_eq!(amount, alice.free);
 }
 
 pub fn get_node_url_from_cli() -> String {
