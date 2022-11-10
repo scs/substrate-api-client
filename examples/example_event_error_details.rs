@@ -80,10 +80,10 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
-	// Transfer should fail as Alice wants to transfer all her balance. She has not enough money to pay the fee.
+	// Transfer should fail as Alice wants to transfer all her balance. She has not enough money to pay the fees.
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
 	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
