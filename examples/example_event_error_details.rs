@@ -107,7 +107,7 @@ fn main() {
 	// Verify that Alice's free Balance decreased: paid fees.
 	let alice = api.get_account_data(&from_account_id).unwrap().unwrap();
 	println!("[+] Alice's Free Balance is now {}\n", alice.free);
-	assert_eq!(amount, alice.free);
+	assert!(amount > alice.free);
 }
 
 pub fn get_node_url_from_cli() -> String {
