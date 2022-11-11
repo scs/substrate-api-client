@@ -1,4 +1,4 @@
-use crate::std::rpc::XtStatus;
+use crate::{rpc::RpcClientError, std::rpc::XtStatus};
 use ac_node_api::{
 	metadata::{InvalidMetadataError, MetadataError},
 	DispatchError,
@@ -19,8 +19,8 @@ pub enum Error {
 	#[cfg(feature = "ws-client")]
 	#[error("WebSocket Error: {0}")]
 	WebSocket(#[from] ws::Error),
-	#[error("RpcClient error: {0}")]
-	RpcClient(String),
+	#[error("RpcClient error: {0:?}")]
+	RpcClient(#[from] RpcClientError),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]
 	Disconnected(#[from] sp_std::sync::mpsc::RecvError),
 	#[error("Metadata Error: {0:?}")]

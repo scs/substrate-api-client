@@ -31,9 +31,11 @@ pub enum RpcClientError {
 	#[error("Extrinsic Error: {0}")]
 	Extrinsic(String),
 	#[error("mpsc send Error: {0}")]
-	Send(#[from] std::sync::mpsc::SendError<String>),
+	Send(String),
 	#[error("Expected some error information, but nothing was found: {0}")]
 	NoErrorInformationFound(String),
+	#[error(transparent)]
+	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]

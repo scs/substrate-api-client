@@ -57,8 +57,12 @@ fn main() {
 	api.subscribe_finalized_heads(sender).unwrap();
 
 	for _ in 0..5 {
-		let head: Header =
-			receiver.recv().map(|header| serde_json::from_str(&header).unwrap()).unwrap();
+		let head: Header = receiver
+			.recv()
+			.unwrap()
+			.unwrap()
+			.map(|header| serde_json::from_str(&header).unwrap())
+			.unwrap();
 		println!("Got new Block {:?}", head);
 	}
 }

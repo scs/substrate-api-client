@@ -88,6 +88,7 @@ jobs:
         example: [
           example_benchmark_bulk_xt,
           example_compose_extrinsic_offline,
+          example_custom_nonce,
           example_event_callback,
           example_event_error_details,
           example_generic_event_callback,
