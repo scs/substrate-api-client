@@ -52,7 +52,7 @@ kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", bra
 sp-keyring = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 clap = { version = "2.33", features = ["yaml"] }
 wabt = "0.10.0"
-
+pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std", "ws-client"]
