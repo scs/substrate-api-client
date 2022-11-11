@@ -79,11 +79,11 @@ fn main() {
 	);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
-	// Send and watch extrinsic until in block.
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
-	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
+	// Send and watch extrinsic until Ready.
+	let _tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
+	println!("[+] Transaction got included into the TxPool.");
 
-	// Transfer should fail as Alice wants to transfer all her balance. She has not enough money to pay the fees.
+	// Transfer should fail as Alice wants to transfer all her balance. She does not have enough money to pay the fees.
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
 	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
@@ -94,8 +94,8 @@ fn main() {
 		Err(e) => {
 			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
 			let string_error = format!("{:?}", e);
-			assert!(string_error.contains("pallet: Balances"));
-			assert!(string_error.contains("error: InsufficientBalance"));
+			assert!(string_error.contains("pallet: \"Balances\""));
+			assert!(string_error.contains("error: \"InsufficientBalance\""));
 		},
 	};
 

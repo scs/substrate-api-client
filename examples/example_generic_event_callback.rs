@@ -31,8 +31,8 @@ struct TransferEventArgs {
 }
 
 impl StaticEvent for TransferEventArgs {
-	const PALLET: &'static str = "Transfer";
-	const EVENT: &'static str = "Balance";
+	const PALLET: &'static str = "Balances";
+	const EVENT: &'static str = "Transfer";
 }
 
 fn main() {

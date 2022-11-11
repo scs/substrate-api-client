@@ -131,8 +131,8 @@ where
 				}
 
 				let event_metadata = event_details.event_metadata();
-				error!(
-					"Found extrinsic, checking for metadata: {:?}, {:?}",
+				trace!(
+					"Found extrinsic: {:?}, {:?}",
 					event_metadata.pallet(),
 					event_metadata.event()
 				);
