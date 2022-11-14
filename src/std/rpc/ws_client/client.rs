@@ -15,7 +15,7 @@
 
 */
 
-use super::{HandleMessage, ThreadMessage};
+use super::HandleMessage;
 use crate::{
 	rpc::ws_client::{
 		GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler, SubscriptionHandler,
@@ -32,6 +32,7 @@ use log::info;
 use serde_json::Value;
 use sp_core::H256 as Hash;
 use std::{
+	fmt::Debug,
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 };
@@ -81,7 +82,7 @@ impl Subscriber for WsRpcClient {
 	fn start_subscriber(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
 	) -> Result<(), ws::Error> {
 		self.start_subscriber(json_req, result_in)
 	}
@@ -89,14 +90,18 @@ impl Subscriber for WsRpcClient {
 
 #[allow(clippy::result_large_err)]
 impl WsRpcClient {
-	pub fn get(&self, json_req: String, result_in: ThreadOut<ThreadMessage>) -> WsResult<()> {
+	pub fn get(
+		&self,
+		json_req: String,
+		result_in: ThreadOut<<GetRequestHandler as HandleMessage>::ThreadMessage>,
+	) -> WsResult<()> {
 		self.start_rpc_client_thread(json_req, result_in, GetRequestHandler::default())
 	}
 
 	pub fn send_extrinsic(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubmitOnlyHandler as HandleMessage>::ThreadMessage>,
 	) -> WsResult<()> {
 		self.start_rpc_client_thread(json_req, result_in, SubmitOnlyHandler::default())
 	}
@@ -104,7 +109,7 @@ impl WsRpcClient {
 	pub fn send_extrinsic_until_ready(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
 	) -> WsResult<()> {
 		self.start_rpc_client_thread(
 			json_req,
@@ -116,7 +121,7 @@ impl WsRpcClient {
 	pub fn send_extrinsic_and_wait_until_broadcast(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
 	) -> WsResult<()> {
 		self.start_rpc_client_thread(
 			json_req,
@@ -128,7 +133,7 @@ impl WsRpcClient {
 	pub fn send_extrinsic_and_wait_until_in_block(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
 	) -> WsResult<()> {
 		self.start_rpc_client_thread(
 			json_req,
@@ -140,7 +145,7 @@ impl WsRpcClient {
 	pub fn send_extrinsic_and_wait_until_finalized(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
 	) -> WsResult<()> {
 		self.start_rpc_client_thread(
 			json_req,
@@ -152,17 +157,21 @@ impl WsRpcClient {
 	pub fn start_subscriber(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
 	) -> WsResult<()> {
 		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())
 	}
 
-	fn start_rpc_client_thread<MessageHandler: HandleMessage + Clone + Send + 'static>(
+	fn start_rpc_client_thread<MessageHandler>(
 		&self,
 		jsonreq: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<MessageHandler::ThreadMessage>,
 		message_handler: MessageHandler,
-	) -> WsResult<()> {
+	) -> WsResult<()>
+	where
+		MessageHandler: HandleMessage + Clone + Send + 'static,
+		MessageHandler::ThreadMessage: Send + Sync + Debug,
+	{
 		let url = self.url.clone();
 		let _client =
 			thread::Builder::new()
@@ -178,11 +187,15 @@ impl WsRpcClient {
 		Ok(())
 	}
 
-	fn direct_rpc_request<MessageHandler: HandleMessage + Clone + Send + 'static>(
+	fn direct_rpc_request<MessageHandler>(
 		&self,
 		jsonreq: String,
 		message_handler: MessageHandler,
-	) -> ApiResult<ThreadMessage> {
+	) -> ApiResult<MessageHandler::ThreadMessage>
+	where
+		MessageHandler: HandleMessage + Clone + Send + 'static,
+		MessageHandler::ThreadMessage: Send + Sync + Debug,
+	{
 		let (result_in, result_out) = channel();
 		connect(self.url.as_str(), |out| RpcClient {
 			out,

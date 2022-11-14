@@ -30,7 +30,10 @@ use log::*;
 use serde_json::Value;
 use sp_core::Pair;
 use sp_runtime::MultiSignature;
-use std::sync::mpsc::{Receiver, SendError, Sender as ThreadOut};
+use std::{
+	fmt::Debug,
+	sync::mpsc::{Receiver, SendError, Sender as ThreadOut},
+};
 use ws::{CloseCode, Error as WsError, Handler, Handshake, Message, Result as WsResult, Sender};
 
 pub use client::WsRpcClient;
@@ -39,26 +42,30 @@ pub mod client;
 
 type RpcResult<T> = Result<T, RpcClientError>;
 
-pub type ThreadMessage = RpcResult<Option<String>>;
+pub type RpcMessage = RpcResult<Option<String>>;
 
 #[allow(clippy::result_large_err)]
 pub trait HandleMessage {
+	type ThreadMessage;
+
 	fn handle_message(
 		&self,
 		msg: Message,
 		out: Sender,
-		result: ThreadOut<ThreadMessage>,
+		result: ThreadOut<Self::ThreadMessage>,
 	) -> WsResult<()>;
 }
 
-pub struct RpcClient<MessageHandler> {
+pub struct RpcClient<MessageHandler, ThreadMessage> {
 	pub out: Sender,
 	pub request: String,
 	pub result: ThreadOut<ThreadMessage>,
 	pub message_handler: MessageHandler,
 }
 
-impl<MessageHandler: HandleMessage> Handler for RpcClient<MessageHandler> {
+impl<MessageHandler: HandleMessage> Handler
+	for RpcClient<MessageHandler, MessageHandler::ThreadMessage>
+{
 	fn on_open(&mut self, _: Handshake) -> WsResult<()> {
 		info!("sending request: {}", self.request);
 		self.out.send(self.request.clone())?;
@@ -75,7 +82,7 @@ pub trait Subscriber {
 	fn start_subscriber(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<ThreadMessage>,
+		result_in: ThreadOut<String>,
 	) -> Result<(), WsError>;
 }
 
@@ -96,23 +103,20 @@ where
 	Client: RpcClientTrait + Subscriber,
 	Params: ExtrinsicParams,
 {
-	pub fn subscribe_events(&self, sender: ThreadOut<ThreadMessage>) -> ApiResult<()> {
+	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
 		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<ThreadMessage>) -> ApiResult<()> {
+	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to finalized heads");
 		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
 		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<Ev: StaticEvent>(
-		&self,
-		receiver: &Receiver<ThreadMessage>,
-	) -> ApiResult<Ev> {
+	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver)?;
 		maybe_event_details
 			.as_event()?
@@ -121,10 +125,10 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		receiver: &Receiver<ThreadMessage>,
+		receiver: &Receiver<String>,
 	) -> ApiResult<EventDetails> {
 		loop {
-			let events_str = receiver.recv()?.unwrap_or_default().unwrap_or_default();
+			let events_str = receiver.recv()?;
 			let event_bytes = Vec::from_hex(events_str)?;
 			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
 
@@ -165,11 +169,13 @@ fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
 pub struct GetRequestHandler;
 
 impl HandleMessage for GetRequestHandler {
+	type ThreadMessage = RpcMessage;
+
 	fn handle_message(
 		&self,
 		msg: Message,
 		out: Sender,
-		result: ThreadOut<ThreadMessage>,
+		result: ThreadOut<Self::ThreadMessage>,
 	) -> WsResult<()> {
 		out.close(CloseCode::Normal)
 			.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
@@ -187,11 +193,13 @@ impl HandleMessage for GetRequestHandler {
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
 pub struct SubscriptionHandler {}
 impl HandleMessage for SubscriptionHandler {
+	type ThreadMessage = String;
+
 	fn handle_message(
 		&self,
 		msg: Message,
 		out: Sender,
-		result: ThreadOut<ThreadMessage>,
+		result: ThreadOut<Self::ThreadMessage>,
 	) -> WsResult<()> {
 		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value =
@@ -208,9 +216,7 @@ impl HandleMessage for SubscriptionHandler {
 						let changes = &value["params"]["result"]["changes"];
 						match changes[0][1].as_str() {
 							Some(change_set) => {
-								if let Err(SendError(e)) =
-									result.send(Ok(Some(change_set.to_owned())))
-								{
+								if let Err(SendError(e)) = result.send(change_set.to_owned()) {
 									debug!("SendError: {:?}. will close ws", e);
 									out.close(CloseCode::Normal)?;
 								}
@@ -222,7 +228,7 @@ impl HandleMessage for SubscriptionHandler {
 						let head = serde_json::to_string(&value["params"]["result"])
 							.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
 
-						if let Err(e) = result.send(Ok(Some(head))) {
+						if let Err(e) = result.send(head) {
 							debug!("SendError: {}. will close ws", e);
 							out.close(CloseCode::Normal)?;
 						}
@@ -239,11 +245,13 @@ impl HandleMessage for SubscriptionHandler {
 pub struct SubmitOnlyHandler;
 
 impl HandleMessage for SubmitOnlyHandler {
+	type ThreadMessage = RpcMessage;
+
 	fn handle_message(
 		&self,
 		msg: Message,
 		out: Sender,
-		result: ThreadOut<ThreadMessage>,
+		result: ThreadOut<Self::ThreadMessage>,
 	) -> WsResult<()> {
 		let retstr = msg.as_text()?;
 		debug!("got msg {}", retstr);
@@ -265,11 +273,13 @@ impl SubmitAndWatchHandler {
 }
 
 impl HandleMessage for SubmitAndWatchHandler {
+	type ThreadMessage = RpcMessage;
+
 	fn handle_message(
 		&self,
 		msg: Message,
 		out: Sender,
-		result: ThreadOut<ThreadMessage>,
+		result: ThreadOut<Self::ThreadMessage>,
 	) -> WsResult<()> {
 		let return_string = msg.as_text()?;
 		debug!("got msg {}", return_string);
@@ -292,7 +302,7 @@ impl HandleMessage for SubmitAndWatchHandler {
 }
 
 #[allow(clippy::result_large_err)]
-fn end_process(
+fn end_process<ThreadMessage: Send + Sync + Debug>(
 	out: Sender,
 	result: ThreadOut<ThreadMessage>,
 	value: ThreadMessage,
