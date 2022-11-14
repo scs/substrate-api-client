@@ -12,8 +12,6 @@
 */
 
 //! For querying runtime storage.
-//!
-//! This file is **not** from subxt.
 
 use crate::metadata::MetadataError;
 use codec::Encode;

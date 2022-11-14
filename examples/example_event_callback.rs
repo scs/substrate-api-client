@@ -18,7 +18,7 @@ use std::sync::mpsc::channel;
 
 use clap::{load_yaml, App};
 use codec::Decode;
-use log::{debug, error};
+use log::debug;
 use sp_core::{sr25519, H256 as Hash};
 
 // This module depends on node_runtime.
@@ -44,30 +44,26 @@ fn main() {
 
 		let _unhex = Vec::from_hex(event_str).unwrap();
 		let mut _er_enc = _unhex.as_slice();
-		let _events = Vec::<system::EventRecord<RuntimeEvent, Hash>>::decode(&mut _er_enc);
-		match _events {
-			Ok(evts) =>
-				for evr in &evts {
-					println!("decoded: {:?} {:?}", evr.phase, evr.event);
-					match &evr.event {
-						RuntimeEvent::Balances(be) => {
-							println!(">>>>>>>>>> balances event: {:?}", be);
-							match &be {
-								balances::Event::Transfer { from, to, amount } => {
-									println!("Transactor: {:?}", from);
-									println!("Destination: {:?}", to);
-									println!("Value: {:?}", amount);
-									return
-								},
-								_ => {
-									debug!("ignoring unsupported balances event");
-								},
-							}
+		let events = Vec::<system::EventRecord<RuntimeEvent, Hash>>::decode(&mut _er_enc).unwrap();
+		for evr in &events {
+			println!("decoded: {:?} {:?}", evr.phase, evr.event);
+			match &evr.event {
+				RuntimeEvent::Balances(be) => {
+					println!(">>>>>>>>>> balances event: {:?}", be);
+					match &be {
+						balances::Event::Transfer { from, to, amount } => {
+							println!("Transactor: {:?}", from);
+							println!("Destination: {:?}", to);
+							println!("Value: {:?}", amount);
+							return
 						},
-						_ => debug!("ignoring unsupported module event: {:?}", evr.event),
+						_ => {
+							debug!("ignoring unsupported balances event");
+						},
 					}
 				},
-			Err(_) => error!("couldn't decode event record list"),
+				_ => debug!("ignoring unsupported module event: {:?}", evr.event),
+			}
 		}
 	}
 }

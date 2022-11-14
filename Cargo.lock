@@ -30,7 +30,9 @@ name = "ac-node-api"
 version = "0.1.0"
 dependencies = [
  "ac-primitives",
+ "bitvec",
  "derive_more",
+ "either",
  "frame-metadata 15.0.0 (git+https://github.com/integritee-network/frame-metadata)",
  "frame-support",
  "frame-system",

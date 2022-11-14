@@ -15,18 +15,18 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(feature = "std"))]
 extern crate alloc;
-#[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec::Vec};
 
 use codec::{Decode, Encode};
 
+pub use decoder::*;
 pub use error::*;
 pub use events::*;
 pub use metadata::*;
 pub use storage::*;
 
+pub mod decoder;
 pub mod error;
 pub mod events;
 pub mod metadata;
@@ -43,6 +43,27 @@ pub struct Encoded(pub Vec<u8>);
 impl codec::Encode for Encoded {
 	fn encode(&self) -> Vec<u8> {
 		self.0.to_owned()
+	}
+}
+
+// This following types were taken from subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+
+/// Trait to uniquely identify the events's identity from the runtime metadata.
+///
+/// Generated API structures that represent an event implement this trait.
+///
+/// The trait is utilized to decode emitted events from a block, via obtaining the
+/// form of the `Event` from the metadata.
+pub trait StaticEvent: Decode {
+	/// Pallet name.
+	const PALLET: &'static str;
+	/// Event name.
+	const EVENT: &'static str;
+
+	/// Returns true if the given pallet and event names match this event.
+	fn is_event(pallet: &str, event: &str) -> bool {
+		Self::PALLET == pallet && Self::EVENT == event
 	}
 }
 

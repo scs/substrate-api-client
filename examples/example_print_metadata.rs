@@ -42,12 +42,8 @@ fn main() {
 	meta.print_pallets_with_errors();
 	meta.print_pallets_with_constants();
 
-	// print full substrate metadata json formatted
-	println!(
-		"{}",
-		Metadata::pretty_format(&api.get_metadata().unwrap())
-			.unwrap_or_else(|| "pretty format failed".to_string())
-	)
+	// Print full substrate metadata json formatted.
+	println!("{}", Metadata::pretty_format(&api.get_metadata().unwrap()).unwrap())
 }
 
 pub fn get_node_url_from_cli() -> String {

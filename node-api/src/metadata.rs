@@ -1,31 +1,22 @@
-// Copyright 2019-2021 Parity Technologies (UK) Ltd. and Supercomputing Systems AG
-// and Integritee AG.
-// This file is part of subxt.
+// This file was taken from subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+// And was adapted by Supercomputing Systems AG and Integritee AG.
 //
-// subxt is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// subxt is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with subxt.  If not, see <http://www.gnu.org/licenses/>.
+// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG and Integritee AG.
+// This file is licensed as Apache-2.0
+// see LICENSE for license details.
 
 //! Handle substrate chain metadata
 //!
 //! This file is mostly subxt.
 
-use crate::{storage::GetStorage, Encoded};
+use crate::{alloc::borrow::ToOwned, storage::GetStorage, Encoded};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
 	PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
 	StorageEntryMetadata, META_RESERVED,
 };
-use scale_info::{form::PortableForm, Type, Variant};
+use scale_info::{form::PortableForm, PortableRegistry, Type};
 use sp_core::storage::StorageKey;
 
 #[cfg(feature = "std")]
@@ -41,7 +32,7 @@ use alloc::{
 	vec::Vec,
 };
 
-/// Metadata error.
+/// Metadata error originated from inspecting the internal representation of the runtime metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MetadataError {
 	/// Module is not in metadata.
@@ -58,25 +49,41 @@ pub enum MetadataError {
 	StorageNotFound(&'static str),
 	/// Storage type does not match requested type.
 	StorageTypeError,
-	/// Map value type does not match requested type.
-	MapValueTypeError,
-	/// Failed to decode the value's default.
+	/// Default error.
 	DefaultError(CodecError),
 	/// Failure to decode constant value.
 	ConstantValueError(CodecError),
 	/// Constant is not in metadata.
 	ConstantNotFound(&'static str),
-	/// Type is missing from type registry.
+	/// Type is not in metadata.
 	TypeNotFound(u32),
+	/// Runtime constant metadata is incompatible with the static one.
+	IncompatibleConstantMetadata(String, String),
+	/// Runtime call metadata is incompatible with the static one.
+	IncompatibleCallMetadata(String, String),
+	/// Runtime storage metadata is incompatible with the static one.
+	IncompatibleStorageMetadata(String, String),
+	/// Runtime metadata is not fully compatible with the static one.
+	IncompatibleMetadata,
 }
 
-/// Runtime metadata.
 #[derive(Clone, Debug, Encode, Decode)]
 pub struct Metadata {
 	pub metadata: RuntimeMetadataLastVersion,
 	pub pallets: BTreeMap<String, PalletMetadata>,
 	pub events: BTreeMap<(u8, u8), EventMetadata>,
 	pub errors: BTreeMap<(u8, u8), ErrorMetadata>,
+	// Type of the DispatchError type, which is what comes back if
+	// an extrinsic fails.
+	dispatch_error_ty: Option<u32>,
+	// subxt implements caches, but this is not no_std compatible,
+	// so we leave it commented for the time being.
+	// Could be made available in std modus #307
+
+	// cached_metadata_hash: RwLock<Option<[u8; 32]>>,
+	// cached_call_hashes: HashCache,
+	// cached_constant_hashes: HashCache,
+	// cached_storage_hashes: HashCache,
 }
 
 impl Metadata {
@@ -100,7 +107,7 @@ impl Metadata {
 		Ok(event)
 	}
 
-	/// Returns the metadata for all events of a given pallet
+	/// Returns the metadata for all events of a given pallet.
 	pub fn events(&self, pallet_index: u8) -> Vec<EventMetadata> {
 		self.events
 			.clone()
@@ -123,7 +130,7 @@ impl Metadata {
 		Ok(error)
 	}
 
-	/// Returns the metadata for all errors of a given pallet
+	/// Returns the metadata for all errors of a given pallet.
 	pub fn errors(&self, pallet_index: u8) -> Vec<ErrorMetadata> {
 		self.errors
 			.clone()
@@ -131,6 +138,16 @@ impl Metadata {
 			.filter(|(k, _v)| k.0 == pallet_index)
 			.map(|(_k, v)| v)
 			.collect()
+	}
+
+	/// Return the DispatchError type ID if it exists.
+	pub fn dispatch_error_ty(&self) -> Option<u32> {
+		self.dispatch_error_ty
+	}
+
+	/// Return the type registry embedded within the metadata.
+	pub fn types(&self) -> &PortableRegistry {
+		&self.metadata.types
 	}
 
 	/// Resolve a type definition.
@@ -153,24 +170,40 @@ impl Metadata {
 	}
 }
 
+/// Metadata for a specific pallet.
 #[derive(Clone, Debug, Encode, Decode)]
 pub struct PalletMetadata {
 	pub index: u8,
 	pub name: String,
-	pub calls: BTreeMap<String, u8>,
+	pub call_indexes: BTreeMap<String, u8>,
+	pub call_ty_id: Option<u32>,
 	pub storage: BTreeMap<String, StorageEntryMetadata<PortableForm>>,
 	pub constants: BTreeMap<String, PalletConstantMetadata<PortableForm>>,
 }
 
 impl PalletMetadata {
-	pub fn encode_call<C>(&self, call_name: &'static str, args: C) -> Result<Encoded, MetadataError>
-	where
-		C: Encode,
-	{
-		let fn_index = self.calls.get(call_name).ok_or(MetadataError::CallNotFound(call_name))?;
-		let mut bytes = vec![self.index, *fn_index];
-		bytes.extend(args.encode());
-		Ok(Encoded(bytes))
+	/// Get the name of the pallet.
+	pub fn name(&self) -> &str {
+		&self.name
+	}
+
+	/// Get the index of this pallet.
+	pub fn index(&self) -> u8 {
+		self.index
+	}
+
+	/// If calls exist for this pallet, this returns the type ID of the variant
+	/// representing the different possible calls.
+	pub fn call_ty_id(&self) -> Option<u32> {
+		self.call_ty_id
+	}
+
+	/// Attempt to resolve a call into an index in this pallet, failing
+	/// if the call is not found in this pallet.
+	pub fn call_index(&self, function: &'static str) -> Result<u8, MetadataError> {
+		let fn_index =
+			*self.call_indexes.get(function).ok_or(MetadataError::CallNotFound(function))?;
+		Ok(fn_index)
 	}
 
 	pub fn storage(
@@ -187,13 +220,55 @@ impl PalletMetadata {
 	) -> Result<&PalletConstantMetadata<PortableForm>, MetadataError> {
 		self.constants.get(key).ok_or(MetadataError::ConstantNotFound(key))
 	}
+
+	pub fn encode_call<C>(&self, call_name: &'static str, args: C) -> Result<Encoded, MetadataError>
+	where
+		C: Encode,
+	{
+		let fn_index = self.call_index(call_name)?;
+		let mut bytes = vec![self.index, fn_index];
+		bytes.extend(args.encode());
+		Ok(Encoded(bytes))
+	}
 }
 
+/// Metadata for specific field.
+#[derive(Clone, Debug, Encode, Decode)]
+pub struct EventFieldMetadata {
+	name: Option<String>,
+	type_name: Option<String>,
+	type_id: u32,
+}
+
+impl EventFieldMetadata {
+	/// Construct a new [`EventFieldMetadata`]
+	pub fn new(name: Option<String>, type_name: Option<String>, type_id: u32) -> Self {
+		EventFieldMetadata { name, type_name, type_id }
+	}
+
+	/// Get the name of the field.
+	pub fn name(&self) -> Option<&str> {
+		self.name.as_deref()
+	}
+
+	/// Get the type name of the field as it appears in the code
+	pub fn type_name(&self) -> Option<&str> {
+		self.type_name.as_deref()
+	}
+
+	/// Get the id of a type
+	pub fn type_id(&self) -> u32 {
+		self.type_id
+	}
+}
+
+/// Metadata for specific events.
 #[derive(Clone, Debug, Encode, Decode)]
 pub struct EventMetadata {
-	pub pallet: String,
-	pub event: String,
-	pub variant: Variant<PortableForm>,
+	pallet: String,
+	event: String,
+	fields: Vec<EventFieldMetadata>,
+	docs: Vec<String>,
 }
 
 impl EventMetadata {
@@ -207,19 +282,23 @@ impl EventMetadata {
 		&self.event
 	}
 
-	/// Get the type def variant for the pallet event.
-	pub fn variant(&self) -> &Variant<PortableForm> {
-		&self.variant
+	/// The names, type names & types of each field in the event.
+	pub fn fields(&self) -> &[EventFieldMetadata] {
+		&self.fields
+	}
+
+	/// Documentation for this event.
+	pub fn docs(&self) -> &[String] {
+		&self.docs
 	}
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
 pub struct ErrorMetadata {
-	pub pallet: String,
-	pub error: String,
-	pub variant: Variant<PortableForm>,
+	pallet: String,
+	error: String,
+	docs: Vec<String>,
 }
-
 impl ErrorMetadata {
 	/// Get the name of the pallet from which the error originates.
 	pub fn pallet(&self) -> &str {
@@ -231,9 +310,9 @@ impl ErrorMetadata {
 		&self.error
 	}
 
-	/// Get the description of the specific pallet error.
-	pub fn description(&self) -> &[String] {
-		self.variant.docs()
+	/// Documentation for the error.
+	pub fn docs(&self) -> &[String] {
+		&self.docs
 	}
 }
 
@@ -274,14 +353,16 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			.pallets
 			.iter()
 			.map(|pallet| {
-				let calls = pallet.calls.as_ref().map_or(Ok(BTreeMap::new()), |call| {
+				let call_ty_id = pallet.calls.as_ref().map(|c| c.ty.id());
+
+				let call_indexes = pallet.calls.as_ref().map_or(Ok(BTreeMap::new()), |call| {
 					let type_def_variant = get_type_def_variant(call.ty.id())?;
-					let calls = type_def_variant
+					let call_indexes = type_def_variant
 						.variants()
 						.iter()
 						.map(|v| (v.name().clone(), v.index()))
 						.collect();
-					Ok(calls)
+					Ok(call_indexes)
 				})?;
 
 				let storage = pallet.storage.as_ref().map_or(BTreeMap::new(), |storage| {
@@ -301,7 +382,8 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 				let pallet_metadata = PalletMetadata {
 					index: pallet.index,
 					name: pallet.name.to_string(),
-					calls,
+					call_indexes,
+					call_ty_id,
 					storage,
 					constants,
 				};
@@ -310,57 +392,62 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			})
 			.collect::<Result<_, _>>()?;
 
-		let pallet_events = metadata
-			.pallets
-			.iter()
-			.filter_map(|pallet| {
-				pallet.event.as_ref().map(|event| {
-					let type_def_variant = get_type_def_variant(event.ty.id())?;
-					Ok((pallet, type_def_variant))
-				})
-			})
-			.collect::<Result<Vec<_>, _>>()?;
-		let events = pallet_events
-			.iter()
-			.flat_map(|(pallet, type_def_variant)| {
-				type_def_variant.variants().iter().map(move |var| {
-					let key = (pallet.index, var.index());
-					let value = EventMetadata {
-						pallet: pallet.name.clone(),
-						event: var.name().clone(),
-						variant: var.clone(),
-					};
-					(key, value)
-				})
-			})
-			.collect();
+		let mut events = BTreeMap::<(u8, u8), EventMetadata>::new();
+		for pallet in &metadata.pallets {
+			if let Some(event) = &pallet.event {
+				let pallet_name: String = pallet.name.to_string();
+				let event_type_id = event.ty.id();
+				let event_variant = get_type_def_variant(event_type_id)?;
+				for variant in event_variant.variants() {
+					events.insert(
+						(pallet.index, variant.index()),
+						EventMetadata {
+							pallet: pallet_name.clone(),
+							event: variant.name().to_owned(),
+							fields: variant
+								.fields()
+								.iter()
+								.map(|f| {
+									EventFieldMetadata::new(
+										f.name().map(|n| n.to_owned()),
+										f.type_name().map(|n| n.to_owned()),
+										f.ty().id(),
+									)
+								})
+								.collect(),
+							docs: variant.docs().to_vec(),
+						},
+					);
+				}
+			}
+		}
 
-		let pallet_errors = metadata
-			.pallets
-			.iter()
-			.filter_map(|pallet| {
-				pallet.error.as_ref().map(|error| {
-					let type_def_variant = get_type_def_variant(error.ty.id())?;
-					Ok((pallet, type_def_variant))
-				})
-			})
-			.collect::<Result<Vec<_>, _>>()?;
-		let errors = pallet_errors
-			.iter()
-			.flat_map(|(pallet, type_def_variant)| {
-				type_def_variant.variants().iter().map(move |var| {
-					let key = (pallet.index, var.index());
-					let value = ErrorMetadata {
-						pallet: pallet.name.clone(),
-						error: var.name().clone(),
-						variant: var.clone(),
-					};
-					(key, value)
-				})
-			})
-			.collect();
+		let mut errors = BTreeMap::<(u8, u8), ErrorMetadata>::new();
+		for pallet in &metadata.pallets {
+			if let Some(error) = &pallet.error {
+				let pallet_name: String = pallet.name.to_string();
+				let error_variant = get_type_def_variant(error.ty.id())?;
+				for variant in error_variant.variants() {
+					errors.insert(
+						(pallet.index, variant.index()),
+						ErrorMetadata {
+							pallet: pallet_name.clone(),
+							error: variant.name().clone(),
+							docs: variant.docs().to_vec(),
+						},
+					);
+				}
+			}
+		}
 
-		Ok(Self { metadata, pallets, events, errors })
+		let dispatch_error_ty = metadata
+			.types
+			.types()
+			.iter()
+			.find(|ty| ty.ty().path().segments() == ["sp_runtime", "DispatchError"])
+			.map(|ty| ty.id());
+
+		Ok(Metadata { metadata, pallets, events, errors, dispatch_error_ty })
 	}
 }
 

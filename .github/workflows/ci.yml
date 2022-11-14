@@ -89,13 +89,13 @@ jobs:
           example_benchmark_bulk_xt,
           example_compose_extrinsic_offline,
           example_event_callback,
-          #            example_generic_event_callback, does not work without somebody executing a transfer. So we don't run it.
-          #            example_event_error_details , Todo: this example hangs: #134
+          example_generic_event_callback,
+          example_event_error_details,
           example_generic_extrinsic,
           example_get_blocks,
           example_get_existential_deposit,
           example_get_storage,
-          #            example_print_metadata, // Todo: metadata print needs revamp: #179.
+          example_print_metadata,
           example_sudo,
           example_transfer_using_seed,
         ]

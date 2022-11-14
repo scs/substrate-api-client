@@ -42,7 +42,7 @@ macro_rules! compose_call {
         {
             let pallet = $node_metadata.pallet($pallet).unwrap().to_owned();
 
-            let call_index = pallet.calls.get($call_name).unwrap();
+            let call_index = pallet.call_indexes.get($call_name).unwrap();
 
             ([pallet.index, *call_index as u8] $(, ($args)) *)
         }

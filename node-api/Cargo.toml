@@ -1,19 +1,22 @@
 [package]
 name = "ac-node-api"
 version = "0.1.0"
+license = "Apache-2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", features = ['derive'], default-features = false }
+bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
+codec = { package = "parity-scale-codec", version = "3.2.1", features = ["derive", "bit-vec"], default-features = false }
 derive_more = { version = "0.99.17" }
+either = { version = "1.6.1", default-features = false }
 #TODO get from parity when our changes are accepted https://github.com/scs/substrate-api-client/issues/304
 frame-metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", features = ["v14", "full_derive"] }
 #frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
-scale-info = { version = "2.0.1", features = ["derive", "decode"], default-features = false }
+scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
@@ -38,7 +41,9 @@ disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
 std = [
+    "bitvec/std",
     "codec/std",
+    "either/default",
     "frame-metadata/std",
     "hex/std",
     "log/std",

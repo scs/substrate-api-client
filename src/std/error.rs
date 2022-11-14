@@ -1,5 +1,8 @@
 use crate::std::rpc::XtStatus;
-use ac_node_api::metadata::{InvalidMetadataError, MetadataError};
+use ac_node_api::{
+	metadata::{InvalidMetadataError, MetadataError},
+	DispatchError,
+};
 
 pub type ApiResult<T> = Result<T, Error>;
 
@@ -37,6 +40,8 @@ pub enum Error {
 	UnsupportedXtStatus(XtStatus),
 	#[error("Error converting NumberOrHex to Balance")]
 	TryFromIntError,
+	#[error("The node runtime could not dispatch an extrinsic")]
+	Dispatch(DispatchError),
 	#[error(transparent)]
 	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
