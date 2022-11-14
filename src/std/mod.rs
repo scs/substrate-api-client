@@ -50,7 +50,7 @@ pub trait RpcClient {
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::RpcClientError, Value, XtStatus, PlainTipExtrinsicParams
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::RpcClientError,  XtStatus, PlainTipExtrinsicParams
 /// };
 /// use serde_json::Value;
 /// struct MyClient {
