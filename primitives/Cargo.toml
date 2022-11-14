@@ -12,6 +12,7 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-support = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
@@ -21,4 +22,5 @@ std = [
     "sp-core/std",
     "sp-runtime/std",
     "sp-std/std",
+    "frame-support/std",
 ]

@@ -1,24 +1,28 @@
 use codec::{Decode, Encode};
-use core::marker::PhantomData;
-use sp_core::H256;
+use core::{fmt::Debug, marker::PhantomData};
+use frame_support::Parameter;
+use sp_core::{offchain::storage::InMemOffchainStorage, MaxEncodedLen, H256};
 use sp_runtime::{
 	generic::Era,
-	traits::{BlakeTwo256, Hash},
+	traits::{
+		AtLeast32Bit, CheckEqual, MaybeDisplay, MaybeMallocSizeOf, MaybeSerializeDeserialize,
+		Member, SimpleBitOps,
+	},
 };
 use sp_std::prelude::*;
 
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateDefaultSignedExtra<Tip> {
+pub struct SubstrateDefaultSignedExtra<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
-	pub nonce: u32,
+	pub nonce: Index,
 	pub tip: Tip,
 }
 
-impl<Tip> SubstrateDefaultSignedExtra<Tip> {
-	pub fn new(era: Era, nonce: u32, tip: Tip) -> Self {
+impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
+	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		Self { era, nonce, tip }
 	}
 }
@@ -42,12 +46,40 @@ pub trait ExtrinsicParams {
 	/// Additional Signed format of the node
 	type AdditionalSigned: Encode;
 
+	/// Account index (aka nonce) type. This stores the number of previous transactions
+	/// associated with a sender account.
+	type Index: Member
+		+ MaybeSerializeDeserialize
+		+ Debug
+		+ Default
+		+ MaybeDisplay
+		+ AtLeast32Bit
+		+ Copy
+		+ MaxEncodedLen;
+
+	/// The genesis Hash type. Compatible with substrate.
+	type Hash: Parameter
+		+ Member
+		+ MaybeSerializeDeserialize
+		+ Debug
+		+ MaybeDisplay
+		+ SimpleBitOps
+		+ Ord
+		+ Default
+		+ Copy
+		+ CheckEqual
+		+ sp_std::hash::Hash
+		+ AsRef<[u8]>
+		+ AsMut<[u8]>
+		+ MaybeMallocSizeOf
+		+ MaxEncodedLen;
+
 	/// Construct a new instance of our [`ExtrinsicParams`]
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
-		nonce: u32,
-		genesis_hash: H256,
+		nonce: Self::Index,
+		genesis_hash: Self::Hash,
 		other_params: Self::OtherParams,
 	) -> Self;
 
@@ -63,43 +95,43 @@ pub trait ExtrinsicParams {
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip>;
+pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip, u32, H256>;
 /// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip>;
+pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip, u32, H256>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip>;
+pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip, H256>;
 /// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip>;
+pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip, H256>;
 
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParams<Tip> {
+pub struct BaseExtrinsicParams<Tip, Index, Hash> {
 	era: Era,
-	nonce: u32,
+	nonce: Index,
 	tip: Tip,
 	spec_version: u32,
 	transaction_version: u32,
-	genesis_hash: H256,
-	mortality_checkpoint: H256,
+	genesis_hash: Hash,
+	mortality_checkpoint: Hash,
 	marker: PhantomData<()>,
 }
 
 /// This builder allows you to provide the parameters that can be configured in order to
 /// construct a [`BaseExtrinsicParams`] value.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParamsBuilder<Tip> {
+pub struct BaseExtrinsicParamsBuilder<Tip, Hash> {
 	era: Era,
-	mortality_checkpoint: Option<H256>,
+	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
 }
 
-impl<Tip: Default> BaseExtrinsicParamsBuilder<Tip> {
+impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
 	/// Instantiate the default set of [`BaseExtrinsicParamsBuilder`]
 	pub fn new() -> Self {
 		Self::default()
@@ -110,7 +142,7 @@ impl<Tip: Default> BaseExtrinsicParamsBuilder<Tip> {
 	/// of time). The second argument is the block hash after which the transaction
 	/// becomes valid, and must align with the era phase (see the [`Era::Mortal`] docs
 	/// for more detail on that).
-	pub fn era(mut self, era: Era, checkpoint: H256) -> Self {
+	pub fn era(mut self, era: Era, checkpoint: Hash) -> Self {
 		self.era = era;
 		self.mortality_checkpoint = Some(checkpoint);
 		self
@@ -124,26 +156,28 @@ impl<Tip: Default> BaseExtrinsicParamsBuilder<Tip> {
 	}
 }
 
-impl<Tip: Default> Default for BaseExtrinsicParamsBuilder<Tip> {
+impl<Tip: Default, Hash> Default for BaseExtrinsicParamsBuilder<Tip, Hash> {
 	fn default() -> Self {
 		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
 	}
 }
 
-impl<Tip: Encode> ExtrinsicParams for BaseExtrinsicParams<Tip>
+impl<Tip, Hash, Index> ExtrinsicParams for BaseExtrinsicParams<Tip, Hash>
 where
 	u128: From<Tip>,
-	Tip: Copy + Default,
+	Tip: Copy + Default + Encode,
 {
-	type OtherParams = BaseExtrinsicParamsBuilder<Tip>;
-	type SignedExtra = SubstrateDefaultSignedExtra<Tip>;
+	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
+	type SignedExtra = SubstrateDefaultSignedExtra<Tip, Index>;
 	type AdditionalSigned = SubstrateDefaultAdditionalSigned;
+	type Hash = Hash;
+	type Index = Index;
 
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
-		nonce: u32,
-		genesis_hash: H256,
+		nonce: Self::Index,
+		genesis_hash: Self::Hash,
 		other_params: Self::OtherParams,
 	) -> Self {
 		BaseExtrinsicParams {
