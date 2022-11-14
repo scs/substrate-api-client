@@ -1,12 +1,12 @@
 use codec::{Decode, Encode};
 use core::{fmt::Debug, marker::PhantomData};
 use frame_support::Parameter;
-use sp_core::{offchain::storage::InMemOffchainStorage, MaxEncodedLen, H256};
+use sp_core::{Hasher, MaxEncodedLen, H256};
 use sp_runtime::{
 	generic::Era,
 	traits::{
-		AtLeast32Bit, CheckEqual, MaybeDisplay, MaybeMallocSizeOf, MaybeSerializeDeserialize,
-		Member, SimpleBitOps,
+		AtLeast32Bit, BlakeTwo256, CheckEqual, MaybeDisplay, MaybeMallocSizeOf,
+		MaybeSerializeDeserialize, Member, SimpleBitOps,
 	},
 };
 use sp_std::prelude::*;
@@ -29,7 +29,7 @@ impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
 
 /// Default AdditionalSigned fields of the respective SignedExtra fields.
 /// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-pub type SubstrateDefaultAdditionalSigned = ((), u32, u32, H256, H256, (), (), ());
+pub type SubstrateDefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in transactions.
@@ -98,11 +98,11 @@ pub trait ExtrinsicParams {
 pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip, u32, H256>;
 /// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip, u32, H256>;
+pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip, H256>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip, H256>;
+pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip, u32, H256>;
 /// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
 pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip, H256>;
@@ -162,14 +162,37 @@ impl<Tip: Default, Hash> Default for BaseExtrinsicParamsBuilder<Tip, Hash> {
 	}
 }
 
-impl<Tip, Hash, Index> ExtrinsicParams for BaseExtrinsicParams<Tip, Hash>
+impl<Tip, Index, Hash> ExtrinsicParams for BaseExtrinsicParams<Tip, Index, Hash>
 where
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
+	Index: Member
+		+ MaybeSerializeDeserialize
+		+ Debug
+		+ Default
+		+ MaybeDisplay
+		+ AtLeast32Bit
+		+ Copy
+		+ MaxEncodedLen,
+	Hash: Parameter
+		+ Member
+		+ MaybeSerializeDeserialize
+		+ Debug
+		+ MaybeDisplay
+		+ SimpleBitOps
+		+ Ord
+		+ Default
+		+ Copy
+		+ CheckEqual
+		+ sp_std::hash::Hash
+		+ AsRef<[u8]>
+		+ AsMut<[u8]>
+		+ MaybeMallocSizeOf
+		+ MaxEncodedLen,
 {
 	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
 	type SignedExtra = SubstrateDefaultSignedExtra<Tip, Index>;
-	type AdditionalSigned = SubstrateDefaultAdditionalSigned;
+	type AdditionalSigned = SubstrateDefaultAdditionalSigned<Hash>;
 	type Hash = Hash;
 	type Index = Index;
 

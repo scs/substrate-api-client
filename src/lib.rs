@@ -26,7 +26,7 @@ pub mod extrinsic;
 pub mod utils;
 
 #[cfg(feature = "std")]
-pub use crate::std::*;
+pub use crate::api_client::*;
 
 pub use ac_primitives::*;
 

@@ -53,6 +53,7 @@ dependencies = [
 name = "ac-primitives"
 version = "0.1.0"
 dependencies = [
+ "frame-support",
  "hex",
  "parity-scale-codec",
  "sp-core",
