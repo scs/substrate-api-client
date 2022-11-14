@@ -18,7 +18,6 @@
 
 use clap::{load_yaml, App};
 use sp_keyring::AccountKeyring;
-
 use substrate_api_client::{
 	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GenericAddress,
 	UncheckedExtrinsicV4, XtStatus,
