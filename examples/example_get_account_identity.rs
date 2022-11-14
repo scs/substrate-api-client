@@ -15,32 +15,38 @@
 
 ///! Example to show how to get the account identity display name from the identity pallet.
 use clap::{load_yaml, App};
-use frame_metadata::StorageEntryType;
 use kitchensink_runtime::Runtime as KitchensinkRuntime;
-use pallet_identity::types::Registration;
-use scale_info::form::PortableForm;
+use pallet_identity::Registration;
+use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, AccountInfo, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+use support::traits::Currency;
+
+type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
+	<T as system::Config>::AccountId,
+>>::Balance;
+type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
+type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
 fn main() {
 	env_logger::init();
 	let url = get_node_url_from_cli();
 
 	let client = WsRpcClient::new(&url);
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let api = Api::<Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	let account = AccountKeyring::Alice.public();
 
 	// Get the storage value from the pallet. Check out the pallet itself to know it's type:
 	// see https://github.com/paritytech/substrate/blob/e6768a3bd553ddbed12fe1a0e4a2ef8d4f8fdf52/frame/identity/src/lib.rs#L167
 	type RegistrationType = Registration<
 		BalanceOf<KitchensinkRuntime>,
-		KitchensinkRuntime::MaxRegistrars,
-		KitchensinkRuntime::MaxAdditionalFields,
+		MaxRegistrarsOf<KitchensinkRuntime>,
+		MaxAdditionalFieldsOf<KitchensinkRuntime>,
 	>;
 
 	let registration: RegistrationType =
 		api.get_storage_map("Identity", "IdentityOf", account, None).unwrap().unwrap();
-	println!("[+] Registration is {}", registration);
+	println!("[+] Registration is {:?}", registration);
 }
 
 pub fn get_node_url_from_cli() -> String {
