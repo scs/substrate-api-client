@@ -17,15 +17,15 @@
 
 use super::HandleMessage;
 use crate::{
-	rpc::ws_client::{
-		GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler, SubscriptionHandler,
-	},
-	std::{
+	api_client::{
 		rpc::{
 			json_req,
 			ws_client::{RpcClient, Subscriber},
 		},
 		ApiClientError, ApiResult, FromHexString, RpcClient as RpcClientTrait, XtStatus,
+	},
+	rpc::ws_client::{
+		GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler, SubscriptionHandler,
 	},
 };
 use log::info;
@@ -49,8 +49,14 @@ impl WsRpcClient {
 }
 
 impl RpcClientTrait for WsRpcClient {
-	fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
-		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())
+	fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
+		let response =
+			self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())?;
+
+		match response {
+			"null" => Ok(None),
+			_ => Ok(Some(str)),
+		}
 	}
 
 	fn send_extrinsic(

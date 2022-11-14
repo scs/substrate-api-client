@@ -1,5 +1,6 @@
+use crate::rpc::json_req;
 pub use crate::{
-	std::{
+	api_client::{
 		error::{ApiResult, Error as ApiClientError},
 		rpc::XtStatus,
 	},
@@ -7,10 +8,14 @@ pub use crate::{
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
+use codec::{Decode, Encode};
+use log::{debug, info};
 pub use metadata::RuntimeMetadataPrefixed;
+use serde::de::DeserializeOwned;
 pub use serde_json::Value;
 use sp_core::H256 as Hash;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
+use sp_rpc::number::NumberOrHex;
 pub use sp_runtime::{
 	generic::SignedBlock,
 	traits::{Block, Header, IdentifyAccount},
@@ -18,28 +23,9 @@ pub use sp_runtime::{
 };
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
-pub use transaction_payment::FeeDetails;
-
-pub mod error;
-pub mod rpc;
-
 use std::convert::{TryFrom, TryInto};
-
-use codec::{Decode, Encode};
-use log::{debug, info};
-use serde::de::DeserializeOwned;
-use sp_rpc::number::NumberOrHex;
+pub use transaction_payment::FeeDetails;
 use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
-
-use crate::rpc::json_req;
-
-pub trait RpcClient {
-	/// Sends a RPC request that returns a String
-	fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<String>;
-
-	/// Send a RPC request that returns a SHA256 hash
-	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
-}
 
 /// Api to talk with substrate-nodes
 ///
@@ -50,7 +36,7 @@ pub trait RpcClient {
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, XtStatus, PlainTipExtrinsicParams
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcInterface, XtStatus, PlainTipExtrinsicParams
 /// };
 /// use serde_json::Value;
 /// struct MyClient {
@@ -101,70 +87,57 @@ pub trait RpcClient {
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<P, Client, Params>
-where
-	Client: RpcClient,
-	Params: ExtrinsicParams,
-{
-	pub signer: Option<P>,
-	pub genesis_hash: Hash,
-	pub metadata: Metadata,
-	pub runtime_version: RuntimeVersion,
+pub struct Api<Signer, Client, Params, Hash> {
+	signer: Option<Signer>,
+	genesis_hash: Hash,
+	metadata: Metadata,
+	runtime_version: RuntimeVersion,
 	client: Client,
-	pub extrinsic_params_builder: Option<Params::OtherParams>,
+	extrinsic_params_builder: Option<Params>,
 }
 
-impl<P, Client, Params> Api<P, Client, Params>
+/// Public Api Interface.
+impl<Signer, Client, Params> Api<Signer, Client, Params, Params::Hash>
 where
-	P: Pair,
-	MultiSignature: From<P::Signature>,
-	MultiSigner: From<P::Public>,
-	Client: RpcClient,
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
+	Client: RpcInterface + RuntimeInterface,
 	Params: ExtrinsicParams,
 {
-	pub fn signer_account(&self) -> Option<AccountId> {
-		let pair = self.signer.as_ref()?;
-		let multi_signer = MultiSigner::from(pair.public());
-		Some(multi_signer.into_account())
-	}
-
-	pub fn get_nonce(&self) -> ApiResult<u32> {
-		if self.signer.is_none() {
-			return Err(ApiClientError::NoSigner)
-		}
-
-		self.get_account_info(&self.signer_account().unwrap())
-			.map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
-	}
-}
-
-impl<P, Client, Params> Api<P, Client, Params>
-where
-	Client: RpcClient,
-	Params: ExtrinsicParams,
-{
+	/// Creates a new Api by retrieving data directly from the substrate node.
 	pub fn new(client: Client) -> ApiResult<Self> {
-		let genesis_hash = Self::_get_genesis_hash(&client)?;
+		let genesis_hash = self.get_genesis_hash_from_node()?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
-		let metadata = Self::_get_metadata(&client).map(Metadata::try_from)??;
+		let metadata = client.get_metadata(&client).map(Metadata::try_from)??;
 		debug!("Metadata: {:?}", metadata);
 
-		let runtime_version = Self::_get_runtime_version(&client)?;
+		let runtime_version = client.get_runtime_version(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
 
-		Ok(Self {
+		Ok(Self::new_offline(client, genesis_hash, metadata, runtime_version));
+	}
+
+	/// Creates a new Api, without any connection to the substrate node.
+	pub fn new_offline(
+		client: Client,
+		genesis_hash: Params::Hash,
+		metadata: Metadata,
+		runtime_version: RuntimeVersion,
+	) -> Self {
+		Self {
 			signer: None,
 			genesis_hash,
 			metadata,
 			runtime_version,
 			client,
 			extrinsic_params_builder: None,
-		})
+		}
 	}
 
 	#[must_use]
-	pub fn set_signer(mut self, signer: P) -> Self {
+	pub fn set_signer(mut self, signer: Signer) -> Self {
 		self.signer = Some(signer);
 		self
 	}
@@ -174,16 +147,69 @@ where
 		self
 	}
 
-	fn _get_genesis_hash(client: &Client) -> ApiResult<Hash> {
+	pub fn signer_account<AccountId: IdentifyAccount>(&self) -> Option<AccountId> {
+		let pair = self.signer.as_ref()?;
+		let multi_signer = MultiSigner::from(pair.public());
+		Some(multi_signer.into_account())
+	}
+
+	pub fn extrinsic_params(&self, nonce: Params::Index) -> Params {
+		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
+		<Params as ExtrinsicParams>::new(
+			self.runtime_version.spec_version,
+			self.runtime_version.transaction_version,
+			nonce,
+			self.genesis_hash,
+			extrinsic_params_builder,
+		)
+	}
+
+	pub fn genesis_hash(&self) -> Params::Hash {
+		self.genesis_hash
+	}
+
+	pub fn runtime_version(&self) -> RuntimeVersion {
+		self.runtime_version
+	}
+
+	// Get nonce of signer account from substrate node.
+	pub fn get_nonce(&self) -> ApiResult<Params::Index> {
+		if self.signer.is_none() {
+			return Err(ApiClientError::NoSigner)
+		}
+
+		self.get_account_info(&self.signer_account().unwrap()).unwrap_or_default()
+	}
+
+	/// Private function, should only be called at start up.
+	fn get_genesis_hash_from_node(&self) -> ApiResult<Params::Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = Self::_get_request(client, jsonreq)?;
+		let genesis = client.get_request(jsonreq)?;
 
 		match genesis {
 			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
 			None => Err(ApiClientError::Genesis),
 		}
 	}
+}
 
+/// Private Api Interface. Should only be used at creation.
+impl<Signer, Client, Params> Api<Signer, Client, Params, Params::Hash>
+where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
+	Client: RpcInterface + RuntimeInterface,
+	Params: ExtrinsicParams,
+{
+}
+
+impl<P, Client, Params, Runtime> FrameSystemInterface<Runtime> for Api<P, Client, Params>
+where
+	Client: RpcInterface,
+	Params: ExtrinsicParams,
+	Runtime: system::Config,
+{
 	fn _get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
 		let jsonreq = json_req::state_get_runtime_version();
 		let version = Self::_get_request(client, jsonreq)?;
@@ -213,28 +239,6 @@ where
 			"null" => Ok(None),
 			_ => Ok(Some(str)),
 		}
-	}
-
-	pub fn extrinsic_params(&self, nonce: u32) -> Params {
-		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
-		<Params as ExtrinsicParams>::new(
-			self.runtime_version.spec_version,
-			self.runtime_version.transaction_version,
-			nonce,
-			self.genesis_hash,
-			extrinsic_params_builder,
-		)
-	}
-	pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
-		Self::_get_metadata(&self.client)
-	}
-
-	pub fn get_spec_version(&self) -> ApiResult<u32> {
-		Self::_get_runtime_version(&self.client).map(|v| v.spec_version)
-	}
-
-	pub fn get_genesis_hash(&self) -> ApiResult<Hash> {
-		Self::_get_genesis_hash(&self.client)
 	}
 
 	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
