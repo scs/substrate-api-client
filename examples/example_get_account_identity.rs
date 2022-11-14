@@ -76,7 +76,7 @@ fn main() {
 		.get_storage_map("Identity", "IdentityOf", alice.public(), None)
 		.unwrap()
 		.unwrap();
-	println!("[+] Registration is {:?}", registration);
+	println!("[+] Retrieved {:?}", registration);
 	assert_eq!(registration.info, info);
 }
 
