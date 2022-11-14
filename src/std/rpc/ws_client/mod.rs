@@ -124,7 +124,7 @@ where
 		receiver: &Receiver<ThreadMessage>,
 	) -> ApiResult<EventDetails> {
 		loop {
-			let events_str = receiver.recv().unwrap().unwrap()?;
+			let events_str = receiver.recv()?.unwrap_or_default().unwrap_or_default();
 			let event_bytes = Vec::from_hex(events_str)?;
 			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
 
