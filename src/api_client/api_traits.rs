@@ -36,7 +36,7 @@ pub trait RuntimeInterface {
 		-> ApiResult<C>;
 }
 
-/// Interface to the substrate rpc interface
+/// Interface to the substrate rpc interface.
 pub trait RpcInterface {
 	/// Sends a RPC request that returns a String.
 	fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<Option<String>>;

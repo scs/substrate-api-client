@@ -7,7 +7,7 @@ pub use crate::{
 	utils::FromHexString,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
+use ac_primitives::ExtrinsicParams;
 use codec::{Decode, Encode};
 use log::{debug, info};
 pub use metadata::RuntimeMetadataPrefixed;
@@ -116,7 +116,7 @@ where
 		let runtime_version = client.get_runtime_version(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
 
-		Ok(Self::new_offline(client, genesis_hash, metadata, runtime_version));
+		Ok(Self::new_offline(client, genesis_hash, metadata, runtime_version))
 	}
 
 	/// Creates a new Api, without any connection to the substrate node.
@@ -193,6 +193,27 @@ where
 	}
 }
 
+impl<Signer, Client, Params> RpcInterface for Api<Signer, Client, Params, Params::Hash>
+where
+	Client: RpcInterface + RuntimeInterface,
+{
+	fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<Option<String>> {
+		self.client.get_request(jsonreq)
+	}
+
+	fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Hash>> {
+		self.client.send_extrinsic(xthex_prefixed)
+	}
+
+	fn submit_and_watch_extrinsic(
+		&self,
+		xthex_prefixed: String,
+		exit_on: XtStatus,
+	) -> ApiResult<Option<Hash>> {
+		self.client.submit_and_watch_extrinsic(xthex_prefixed, exit_on)
+	}
+}
+
 impl<Signer, Client, Params> RuntimeInterface for Api<Signer, Client, Params, Params::Hash>
 where
 	Signer: Pair,
@@ -222,8 +243,20 @@ where
 		}
 	}
 
-	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str)
-		-> ApiResult<C>;
+	fn get_constant<C: Decode>(
+		&self,
+		pallet: &'static str,
+		constant: &'static str,
+	) -> ApiResult<C> {
+		let c = self
+			.metadata
+			.pallet(pallet)?
+			.constants
+			.get(constant)
+			.ok_or(MetadataError::ConstantNotFound(constant))?;
+
+		Ok(Decode::decode(&mut c.value.as_slice())?)
+	}
 }
 
 impl<Signer, Client, Params, Runtime> FrameSystemInterface<Runtime>
@@ -312,17 +345,17 @@ where
 	}
 }
 
-impl<P, Client, Params, Runtime> FrameSystemInterface<Runtime> for Api<P, Client, Params>
+impl<P, Client, Params, Runtime> GenericStorageInterface<Runtime> for Api<P, Client, Params>
 where
 	Client: RpcInterface,
 	Params: ExtrinsicParams,
 	Runtime: system::Config,
 {
-	pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
+	fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
 		Self::_get_request(&self.client, jsonreq)
 	}
 
-	pub fn get_storage_value<V: Decode>(
+	fn get_storage_value<V: Decode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -333,7 +366,7 @@ where
 		self.get_storage_by_key_hash(storagekey, at_block)
 	}
 
-	pub fn get_storage_map<K: Encode, V: Decode>(
+	fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -346,7 +379,7 @@ where
 		self.get_storage_by_key_hash(storagekey, at_block)
 	}
 
-	pub fn get_storage_map_key_prefix(
+	fn get_storage_map_key_prefix(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -356,7 +389,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
+	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -374,7 +407,7 @@ where
 		self.get_storage_by_key_hash(storagekey, at_block)
 	}
 
-	pub fn get_storage_by_key_hash<V: Decode>(
+	fn get_storage_by_key_hash<V: Decode>(
 		&self,
 		key: StorageKey,
 		at_block: Option<Hash>,
@@ -386,7 +419,7 @@ where
 		}
 	}
 
-	pub fn get_opaque_storage_by_key_hash(
+	fn get_opaque_storage_by_key_hash(
 		&self,
 		key: StorageKey,
 		at_block: Option<Hash>,
@@ -400,7 +433,7 @@ where
 		}
 	}
 
-	pub fn get_storage_value_proof(
+	fn get_storage_value_proof(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -411,7 +444,7 @@ where
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
 
-	pub fn get_storage_map_proof<K: Encode, V: Decode + Clone>(
+	fn get_storage_map_proof<K: Encode, V: Decode + Clone>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -424,7 +457,7 @@ where
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
 
-	pub fn get_storage_double_map_proof<K: Encode, Q: Encode, V: Decode + Clone>(
+	fn get_storage_double_map_proof<K: Encode, Q: Encode, V: Decode + Clone>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -442,7 +475,7 @@ where
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
 
-	pub fn get_storage_proof_by_keys(
+	fn get_storage_proof_by_keys(
 		&self,
 		keys: Vec<StorageKey>,
 		at_block: Option<Hash>,
@@ -455,11 +488,7 @@ where
 		}
 	}
 
-	pub fn get_keys(
-		&self,
-		key: StorageKey,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<Vec<String>>> {
+	fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> ApiResult<Option<Vec<String>>> {
 		let jsonreq = json_req::state_get_keys(key, at_block);
 		let k = self.get_request(jsonreq)?;
 		match k {
@@ -467,8 +496,14 @@ where
 			None => Ok(None),
 		}
 	}
-
-	pub fn get_fee_details(
+}
+impl<P, Client, Params, Runtime> BalanceInterface<Runtime> for Api<P, Client, Params>
+where
+	Client: RpcInterface,
+	Params: ExtrinsicParams,
+	Runtime: balances::Config + system::Config,
+{
+	fn get_fee_details(
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
@@ -485,7 +520,7 @@ where
 		}
 	}
 
-	pub fn get_payment_info(
+	fn get_payment_info(
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
@@ -501,40 +536,8 @@ where
 		}
 	}
 
-	pub fn get_constant<C: Decode>(
-		&self,
-		pallet: &'static str,
-		constant: &'static str,
-	) -> ApiResult<C> {
-		let c = self
-			.metadata
-			.pallet(pallet)?
-			.constants
-			.get(constant)
-			.ok_or(MetadataError::ConstantNotFound(constant))?;
-
-		Ok(Decode::decode(&mut c.value.as_slice())?)
-	}
-
-	pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
+	fn get_existential_deposit(&self) -> ApiResult<Balance> {
 		self.get_constant("Balances", "ExistentialDeposit")
-	}
-
-	#[cfg(feature = "ws-client")]
-	pub fn send_extrinsic(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> ApiResult<Option<Hash>> {
-		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		self.client.send_extrinsic(xthex_prefixed, exit_on)
-	}
-
-	#[cfg(not(feature = "ws-client"))]
-	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Hash>> {
-		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		// XtStatus should never be used used but we need to put something
-		self.client.send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
 	}
 }
 

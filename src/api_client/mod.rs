@@ -7,7 +7,6 @@ pub use crate::{
 	utils::FromHexString,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 use codec::{Decode, Encode};
 use log::{debug, info};
 pub use metadata::RuntimeMetadataPrefixed;
@@ -27,7 +26,7 @@ pub use transaction_payment::FeeDetails;
 use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 
 pub mod api;
-pub mod api_trait;
+pub mod api_traits;
 pub mod error;
 pub mod rpc;
 
