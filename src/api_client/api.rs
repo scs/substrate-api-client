@@ -172,7 +172,7 @@ where
 		self.runtime_version
 	}
 
-	// Get nonce of signer account from substrate node.
+	/// Get nonce of signer account from substrate node.
 	pub fn get_nonce(&self) -> ApiResult<Params::Index> {
 		if self.signer.is_none() {
 			return Err(ApiClientError::NoSigner)
@@ -193,8 +193,7 @@ where
 	}
 }
 
-/// Private Api Interface. Should only be used at creation.
-impl<Signer, Client, Params> Api<Signer, Client, Params, Params::Hash>
+impl<Signer, Client, Params> RuntimeInterface for Api<Signer, Client, Params, Params::Hash>
 where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
@@ -202,27 +201,9 @@ where
 	Client: RpcInterface + RuntimeInterface,
 	Params: ExtrinsicParams,
 {
-}
-
-impl<P, Client, Params, Runtime> FrameSystemInterface<Runtime> for Api<P, Client, Params>
-where
-	Client: RpcInterface,
-	Params: ExtrinsicParams,
-	Runtime: system::Config,
-{
-	fn _get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
-		let jsonreq = json_req::state_get_runtime_version();
-		let version = Self::_get_request(client, jsonreq)?;
-
-		match version {
-			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-			None => Err(ApiClientError::RuntimeVersion),
-		}
-	}
-
-	fn _get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
+	fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
 		let jsonreq = json_req::state_get_metadata();
-		let meta = Self::_get_request(client, jsonreq)?;
+		let meta = client.get_request(jsonreq)?;
 
 		if meta.is_none() {
 			return Err(ApiClientError::MetadataFetch)
@@ -231,95 +212,112 @@ where
 		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
 	}
 
-	// low level access
-	fn _get_request(client: &Client, jsonreq: Value) -> ApiResult<Option<String>> {
-		let str = client.get_request(jsonreq)?;
+	fn get_runtime_version(&self) -> ApiResult<RuntimeVersion> {
+		let jsonreq = json_req::state_get_runtime_version();
+		let version = client.get_request(jsonreq)?;
 
-		match &str[..] {
-			"null" => Ok(None),
-			_ => Ok(Some(str)),
+		match version {
+			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
+			None => Err(ApiClientError::RuntimeVersion),
 		}
 	}
 
-	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
-		let storagekey: sp_core::storage::StorageKey =
-			self.metadata
-				.storage_map_key::<AccountId>("System", "Account", address.clone())?;
+	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str)
+		-> ApiResult<C>;
+}
 
-		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key_hash(storagekey, None)
+impl<Signer, Client, Params, Runtime> FrameSystemInterface<Runtime>
+	for Api<Signer, Client, Params, Params::Hash>
+where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
+	Client: RpcInterface + RuntimeInterface,
+	Params: ExtrinsicParams,
+	Runtime: system::Config,
+{
+	fn get_account_info(
+		&self,
+		address: &Runtime::AccountId,
+	) -> ApiResult<Option<AccountInfoFor<Runtime>>> {
+		let storage_key: sp_core::storage::StorageKey = self
+			.metadata
+			.storage_map_key::<AccountId>("System", "Account", address.clone())?;
+
+		info!("storage key is: 0x{}", hex::encode(&storage_key));
+		self.get_storage_by_key_hash(storage_key, None)
 	}
 
-	pub fn get_account_data(&self, address: &AccountId) -> ApiResult<Option<AccountData>> {
+	fn get_account_data(
+		&self,
+		address: &Runtime::AccountId,
+	) -> ApiResult<Option<Runtime::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 
-	pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
-		let h = self.get_request(json_req::chain_get_finalized_head())?;
+	fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
+		let h = self.client.get_request(json_req::chain_get_finalized_head())?;
 		match h {
 			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
 			None => Ok(None),
 		}
 	}
 
-	pub fn get_header<H>(&self, hash: Option<Hash>) -> ApiResult<Option<H>>
-	where
-		H: Header + DeserializeOwned,
-	{
-		let h = self.get_request(json_req::chain_get_header(hash))?;
+	fn get_header(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Runtime::Header>> {
+		let h = client.get_request(json_req::chain_get_header(hash))?;
 		match h {
 			Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
 			None => Ok(None),
 		}
 	}
 
-	pub fn get_block_hash(&self, number: Option<u32>) -> ApiResult<Option<Hash>> {
-		let h = self.get_request(json_req::chain_get_block_hash(number))?;
+	fn get_block_hash(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<Runtime::Hash>> {
+		let h = self.client.get_request(json_req::chain_get_block_hash(number))?;
 		match h {
 			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
 			None => Ok(None),
 		}
 	}
 
-	pub fn get_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<B>>
-	where
-		B: Block + DeserializeOwned,
-	{
+	fn get_block(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Self::Block>> {
 		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	pub fn get_block_by_num<B>(&self, number: Option<u32>) -> ApiResult<Option<B>>
-	where
-		B: Block + DeserializeOwned,
-	{
+	fn get_block_by_num(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<Self::Block>> {
 		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	/// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
-	/// The interval at which finality proofs are provided is set via the
-	/// the `GrandpaConfig.justification_period` in a node's service.rs.
-	/// The Justification may be none.
-	pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<SignedBlock<B>>>
-	where
-		B: Block + DeserializeOwned,
-	{
-		let b = self.get_request(json_req::chain_get_block(hash))?;
+	fn get_signed_block(
+		&self,
+		hash: Option<Runtime::Hash>,
+	) -> ApiResult<Option<SignedBlock<Self::Block>>> {
+		let b = self.client.get_request(json_req::chain_get_block(hash))?;
 		match b {
 			Some(block) => Ok(Some(serde_json::from_str(&block)?)),
 			None => Ok(None),
 		}
 	}
 
-	pub fn get_signed_block_by_num<B>(
+	fn get_signed_block_by_num(
 		&self,
-		number: Option<u32>,
-	) -> ApiResult<Option<SignedBlock<B>>>
-	where
-		B: Block + DeserializeOwned,
-	{
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<SignedBlock<Self::Block>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
+}
 
+impl<P, Client, Params, Runtime> FrameSystemInterface<Runtime> for Api<P, Client, Params>
+where
+	Client: RpcInterface,
+	Params: ExtrinsicParams,
+	Runtime: system::Config,
+{
 	pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
 		Self::_get_request(&self.client, jsonreq)
 	}

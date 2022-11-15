@@ -30,10 +30,7 @@ use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 pub trait RuntimeInterface {
 	fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed>;
 
-	fn get_spec_version(&self) -> ApiResult<u32>;
-
-	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str)
-		-> ApiResult<C>;
+	fn get_runtime_version(&self) -> ApiResult<RuntimeVersion>;
 
 	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str)
 		-> ApiResult<C>;
@@ -44,9 +41,16 @@ pub trait RpcInterface {
 	/// Sends a RPC request that returns a String.
 	fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<Option<String>>;
 
+	/// Send an extrinsic, but returns immediately. It does not wait for any status responses.
+	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
+
 	/// Send a hex encoded extrinsic and optionally returns the block hash the extrinsic is included in.
 	/// Provided it is watched until InBlock or Finalized. Otherwise a None is returned.
-	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
+	fn submit_and_watch_extrinsic(
+		&self,
+		xthex_prefixed: String,
+		exit_on: XtStatus,
+	) -> ApiResult<Option<Hash>>;
 }
 
 /// Interface to common frame system pallet information.
@@ -83,12 +87,12 @@ pub trait FrameSystemInterface<Runtime: system::Config> {
 	/// The interval at which finality proofs are provided is set via the
 	/// the `GrandpaConfig.justification_period` in a node's service.rs.
 	/// The Justification may be None.
-	pub fn get_signed_block(
+	fn get_signed_block(
 		&self,
 		hash: Option<Runtime::Hash>,
 	) -> ApiResult<Option<SignedBlock<Self::Block>>>;
 
-	pub fn get_signed_block_by_num(
+	fn get_signed_block_by_num(
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> ApiResult<Option<SignedBlock<Self::Block>>>;
@@ -167,6 +171,7 @@ pub trait GenericStorageInterface<Hash> {
 		keys: Vec<StorageKey>,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<ReadProof<Hash>>>;
+
 	fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> ApiResult<Option<Vec<String>>>;
 }
 

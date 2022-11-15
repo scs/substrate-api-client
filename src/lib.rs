@@ -18,7 +18,7 @@
 #![feature(assert_matches)]
 
 #[cfg(feature = "std")]
-pub mod std;
+pub mod api_client;
 
 #[cfg(feature = "std")]
 pub mod extrinsic;
