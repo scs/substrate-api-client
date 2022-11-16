@@ -6,7 +6,6 @@ pub use crate::{
 	utils::FromHexString,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 use codec::{Decode, Encode};
 use log::{debug, info};
 pub use metadata::RuntimeMetadataPrefixed;
