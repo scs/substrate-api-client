@@ -50,7 +50,7 @@ pub trait RpcClient {
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, XtStatus, PlainTipExtrinsicParams
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::RpcClientError,  XtStatus, PlainTipExtrinsicParams
 /// };
 /// use serde_json::Value;
 /// struct MyClient {
@@ -70,7 +70,7 @@ pub trait RpcClient {
 ///         &self,
 ///         _path: String,
 ///         _json: Value,
-///     ) -> Result<R, Box<dyn std::error::Error>> {
+///     ) -> Result<R, RpcClientError> {
 ///         // you can figure this out...self.inner...send_json...
 ///         todo!()
 ///     }
@@ -80,7 +80,7 @@ pub trait RpcClient {
 ///     fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
 ///         self.send_json::<Value>("".into(), jsonreq)
 ///             .map(|v| v.to_string())
-///             .map_err(|err| ApiClientError::RpcClient(err.to_string()))
+///             .map_err(|err| ApiClientError::RpcClient(err))
 ///     }
 ///
 ///     fn send_extrinsic(
@@ -91,7 +91,7 @@ pub trait RpcClient {
 ///         let jsonreq = author_submit_extrinsic(&xthex_prefixed);
 ///         let res: String = self
 ///             .send_json("".into(), jsonreq)
-///             .map_err(|err| ApiClientError::RpcClient(err.to_string()))?;
+///             .map_err(|err| ApiClientError::RpcClient(err))?;
 ///         Ok(Some(Hash::from_hex(res)?))
 ///     }
 /// }
