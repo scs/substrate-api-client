@@ -1,3 +1,31 @@
+/*
+   Copyright 2019 Supercomputing Systems AG
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+	   http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+use crate::rpc::json_req;
+use ac_node_api::metadata::{Metadata, MetadataError};
+use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
+use codec::{Decode, Encode};
+use log::{debug, info};
+use serde::de::DeserializeOwned;
+use sp_core::H256 as Hash;
+use sp_rpc::number::NumberOrHex;
+use std::convert::{TryFrom, TryInto};
+use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
+
 pub use crate::{
 	std::{
 		error::{ApiResult, Error as ApiClientError},
@@ -5,11 +33,8 @@ pub use crate::{
 	},
 	utils::FromHexString,
 };
-use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 pub use metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;
-use sp_core::H256 as Hash;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
 	generic::SignedBlock,
@@ -19,18 +44,9 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 pub use transaction_payment::FeeDetails;
+
 pub mod error;
 pub mod rpc;
-
-use std::convert::{TryFrom, TryInto};
-
-use codec::{Decode, Encode};
-use log::{debug, info};
-use serde::de::DeserializeOwned;
-use sp_rpc::number::NumberOrHex;
-use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
-
-use crate::rpc::json_req;
 
 pub trait RpcClient {
 	/// Sends a RPC request that returns a String
