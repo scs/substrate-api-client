@@ -112,7 +112,6 @@ where
 	pub runtime_version: RuntimeVersion,
 	client: Client,
 	pub extrinsic_params_builder: Option<Params::OtherParams>,
-	timeout: Duration,
 }
 
 impl<P, Client, Params> Api<P, Client, Params>
@@ -161,7 +160,6 @@ where
 			runtime_version,
 			client,
 			extrinsic_params_builder: None,
-			timeout: Duration::from_secs(900),
 		})
 	}
 
@@ -173,12 +171,6 @@ where
 
 	pub fn set_extrinsic_params_builder(mut self, extrinsic_params: Params::OtherParams) -> Self {
 		self.extrinsic_params_builder = Some(extrinsic_params);
-		self
-	}
-
-	/// The the maximum amount of time the api client waits for a specific event from the node.
-	pub fn set_event_timeout(mut self, timeout: Duration) -> Self {
-		self.timeout = timeout;
 		self
 	}
 

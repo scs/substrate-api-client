@@ -19,7 +19,7 @@ use clap::{load_yaml, App};
 use codec::Decode;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-use std::{sync::mpsc::channel, thread};
+use std::{sync::mpsc::channel, thread, time::Duration};
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus};
 
 // Look at the how the transfer event looks like in in the metadata
@@ -51,9 +51,10 @@ fn main() {
 	let api2 = api.clone();
 	let thread_output = thread::spawn(move || {
 		let (events_in, events_out) = channel();
+		let timeout = Duration::from_secs(1);
 		api2.subscribe_events(events_in).unwrap();
 		let args: TransferEventArgs =
-			api2.wait_for_event::<TransferEventArgs>(&events_out).unwrap();
+			api2.wait_for_event::<TransferEventArgs>(&events_out, Some(timeout)).unwrap();
 		args
 	});
 

@@ -86,7 +86,7 @@ fn main() {
 	// Transfer should fail as Alice wants to transfer all her balance. She does not have enough money to pay the fees.
 	let (events_in, events_out) = channel();
 	api.subscribe_events(events_in).unwrap();
-	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
+	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out, None);
 	match args {
 		Ok(_transfer) => {
 			panic!("Exptected the call to fail.");

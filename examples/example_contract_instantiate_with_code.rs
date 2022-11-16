@@ -15,11 +15,10 @@
 
 //! This example is community maintained and not CI tested, therefore it may not work as is.
 
-use std::sync::mpsc::channel;
-
 use clap::{load_yaml, App};
 use codec::Decode;
 use sp_keyring::AccountKeyring;
+use std::{sync::mpsc::channel, time::Duration};
 use substrate_api_client::{
 	rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
 };
@@ -74,7 +73,9 @@ fn main() {
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs = api.wait_for_event(&events_out).unwrap();
+	let timeout = Duration::from_secs(60);
+	let args: ContractInstantiatedEventArgs =
+		api.wait_for_event(&events_out, Some(timeout)).unwrap();
 
 	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
 

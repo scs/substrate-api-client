@@ -33,6 +33,7 @@ use sp_runtime::MultiSignature;
 use std::{
 	fmt::Debug,
 	sync::mpsc::{Receiver, SendError, Sender as ThreadOut},
+	time::Duration,
 };
 use ws::{CloseCode, Error as WsError, Handler, Handshake, Message, Result as WsResult, Sender};
 
@@ -116,8 +117,12 @@ where
 		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
-		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver)?;
+	pub fn wait_for_event<Ev: StaticEvent>(
+		&self,
+		receiver: &Receiver<String>,
+		timeout: Option<Duration>,
+	) -> ApiResult<Ev> {
+		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver, timeout)?;
 		maybe_event_details
 			.as_event()?
 			.ok_or(Error::Other("Could not find the specific event".into()))
@@ -126,9 +131,13 @@ where
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
 		receiver: &Receiver<String>,
+		timeout: Option<Duration>,
 	) -> ApiResult<EventDetails> {
 		loop {
-			let events_str = receiver.recv_timeout(self.timeout)?;
+			let events_str = match timeout {
+				Some(timeout) => receiver.recv_timeout(timeout)?,
+				None => receiver.recv()?,
+			};
 			let event_bytes = Vec::from_hex(events_str)?;
 			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
 
