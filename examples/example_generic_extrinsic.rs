@@ -18,6 +18,7 @@
 
 use clap::{load_yaml, App};
 use sp_keyring::AccountKeyring;
+use std::time::Duration;
 use substrate_api_client::{
 	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GenericAddress,
 	UncheckedExtrinsicV4, XtStatus,
@@ -29,7 +30,8 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new(&url);
+	let timeout = Duration::from_secs(1);
+	let client = WsRpcClient::new(&url).set_timeout(timeout);
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))
 		.unwrap();

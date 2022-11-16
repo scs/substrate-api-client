@@ -19,10 +19,8 @@
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
 use clap::{load_yaml, App};
-
 use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
-
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
 	UncheckedExtrinsicV4, XtStatus,
