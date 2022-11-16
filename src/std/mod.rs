@@ -18,7 +18,6 @@ pub use sp_runtime::{
 };
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
-use std::time::Duration;
 pub use transaction_payment::FeeDetails;
 pub mod error;
 pub mod rpc;
