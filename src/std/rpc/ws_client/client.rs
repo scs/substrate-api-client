@@ -35,17 +35,25 @@ use std::{
 	fmt::Debug,
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
+	time::Duration,
 };
 use ws::{connect, Result as WsResult};
 
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {
 	url: String,
+	timeout: Duration,
 }
 
 impl WsRpcClient {
-	pub fn new(url: &str) -> WsRpcClient {
-		WsRpcClient { url: url.to_string() }
+	pub fn new(url: &str) -> Self {
+		Self { url: url.to_string(), timeout: Duration::from_secs(300) }
+	}
+
+	/// Set the maximum amount of time the api client waits for an answer from the node.
+	pub fn set_timeout(mut self, timeout: Duration) -> Self {
+		self.timeout = timeout;
+		self
 	}
 }
 
@@ -203,6 +211,6 @@ impl WsRpcClient {
 			result: result_in.clone(),
 			message_handler: message_handler.clone(),
 		})?;
-		Ok(result_out.recv()?)
+		Ok(result_out.recv_timeout(self.timeout)?)
 	}
 }

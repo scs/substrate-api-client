@@ -128,7 +128,7 @@ where
 		receiver: &Receiver<String>,
 	) -> ApiResult<EventDetails> {
 		loop {
-			let events_str = receiver.recv()?;
+			let events_str = receiver.recv_timeout(self.timeout)?;
 			let event_bytes = Vec::from_hex(events_str)?;
 			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
 
