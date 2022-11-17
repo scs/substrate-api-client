@@ -17,7 +17,7 @@
 
 //! Extrinsics for `pallet-utility`.
 
-use super::common::{Batch, BatchPayout, PayoutStakers};
+use super::common::Batch;
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
