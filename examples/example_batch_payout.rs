@@ -1,15 +1,18 @@
-use clap::{load_yaml, App};
-use codec::{Decode, Encode};
-use serde_json::Value;
-use sp_core::{sr25519, Pair};
-use sp_keyring::AccountKeyring;
-use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-use substrate_api_client::{
-	rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
-};
-
 #[cfg(feature = "staking-xt")]
-use staking::{ActiveEraInfo, Exposure};
+mod imports {
+	use clap::{load_yaml, App};
+	use codec::{Decode, Encode};
+	use serde_json::Value;
+	use sp_core::{sr25519, Pair};
+	use sp_keyring::AccountKeyring;
+	use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
+	use substrate_api_client::{
+		rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
+	};
+	use staking::{ActiveEraInfo, Exposure};
+}
+#[cfg(feature = "staking-xt")]
+use imports::*;
 
 #[cfg(feature = "staking-xt")]
 fn main() {
