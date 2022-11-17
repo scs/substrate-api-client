@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,13 +21,13 @@ use codec::{Decode, Encode};
 use sp_runtime::AccountId32;
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
 pub struct PayoutStakers {
-    pub validator_stash: AccountId32,
-    pub era: u32,
+	pub validator_stash: AccountId32,
+	pub era: u32,
 }
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
 pub struct ForceEra {}
 
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
-pub struct Batch <Call>{
-    pub calls: Vec<Call>,
+pub struct Batch<Call> {
+	pub calls: Vec<Call>,
 }

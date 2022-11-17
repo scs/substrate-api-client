@@ -18,8 +18,8 @@
 //! Offers some predefined extrinsics for common runtime modules.
 
 pub mod balances;
-pub mod contract;
-pub mod utility;
 pub mod common;
+pub mod contract;
 #[cfg(feature = "staking-xt")]
 pub mod staking;
+pub mod utility;
