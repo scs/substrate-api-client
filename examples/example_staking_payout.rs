@@ -1,11 +1,13 @@
 #[cfg(feature = "staking-xt")]
 mod imports {
-    use clap::{load_yaml, App};
-    use sp_core::Pair;
-    use sp_keyring::AccountKeyring;
-    use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-    use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, XtStatus};
-    use staking::{ActiveEraInfo, Exposure};
+	use clap::{load_yaml, App};
+	use sp_core::Pair;
+	use sp_keyring::AccountKeyring;
+	use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
+	use staking::{ActiveEraInfo, Exposure};
+	use substrate_api_client::{
+		rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, XtStatus,
+	};
 }
 
 #[cfg(feature = "staking-xt")]
