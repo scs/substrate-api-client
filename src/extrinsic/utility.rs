@@ -21,19 +21,19 @@ use super::common::{Batch, BatchPayout, PayoutStakers};
 use crate::{Api, RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
-use node_template_runtime::RuntimeCall;
 use sp_core::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
+use codec::Encode;
 
 const UTILITY_MODULE: &str = "Utility";
 const UTILITY_BATCH: &str = "batch";
 const UTILITY_FORCE_BATCH: &str = "force_batch";
 
-pub type UtilityBatchFn = (CallIndex, Batch);
+pub type UtilityBatchFn<Call> = (CallIndex, Batch<Call>);
 pub type UtilityBatchPayoutFn = (CallIndex, BatchPayout);
 pub type UtilityBatchPayoutXt<SignedExtra> =
     UncheckedExtrinsicV4<UtilityBatchPayoutFn, SignedExtra>;
-pub type UtilityBatchXt<SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn, SignedExtra>;
+pub type UtilityBatchXt<Call,SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn<Call>, SignedExtra>;
 
 impl<P, Client, Params> Api<P, Client, Params>
 where
@@ -51,12 +51,12 @@ where
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
     }
 
-    pub fn batch(&self, calls: Vec<RuntimeCall>) -> UtilityBatchXt<Params::SignedExtra> {
+    pub fn batch<Call : Encode + Clone>(&self, calls: Vec<Call>) -> UtilityBatchXt<Call,Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
     }
 
-    pub fn force_batch(&self, calls: Vec<RuntimeCall>) -> UtilityBatchXt<Params::SignedExtra> {
+    pub fn force_batch<Call : Encode + Clone>(&self, calls: Vec<Call>) -> UtilityBatchXt<Call,Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
     }

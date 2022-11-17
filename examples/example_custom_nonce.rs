@@ -16,13 +16,11 @@
 //! This examples shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use clap::{load_yaml, App};
-
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
+use clap::{load_yaml, App};
 use kitchensink_runtime::{BalancesCall, Header, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
-
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
 	UncheckedExtrinsicV4, XtStatus,
@@ -57,19 +55,24 @@ fn main() {
 	// Define the recipient.
 	let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
-	// Compose the extrinsic.
+	// Create an extrinsic that should get included in the future pool due to a nonce that is too high.
 	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
 		updated_api.clone().signer.unwrap(),
 		RuntimeCall::Balances(BalancesCall::transfer { dest: to.clone(), value: 42 }),
-		updated_api.extrinsic_params(alice_nonce)
+		updated_api.extrinsic_params(alice_nonce + 1)
 	);
 
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
-	// Send and watch extrinsic until in block.
-	let block_hash = updated_api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
-	println!("[+] Transaction got included in block {:?}", block_hash);
+	// Send and watch extrinsic until InBlock.
+	match updated_api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock) {
+		Err(error) => {
+			println!("Retrieved error {:?}", error);
+			assert!(format!("{:?}", error).contains("Future"));
+		},
+		_ => panic!("Expected an error upon a future extrinsic"),
+	}
 }
 
 pub fn get_node_url_from_cli() -> String {

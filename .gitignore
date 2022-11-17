@@ -14,3 +14,7 @@
 # IntelliJ
 **/.idea/
 *.iml
+
+
+# VScode
+**/.vscode

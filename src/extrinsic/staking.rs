@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,12 +47,8 @@ const FORCE_NO_ERA: &str = "force_no_era";
 const STAKING_SET_PAYEE: &str = "set_payee";
 const SET_VALIDATOR_COUNT: &str = "set_validator_count";
 
-pub type StakingBondFn = (
-    CallIndex,
-    GenericAddress,
-    Compact<Balance>,
-    RewardDestination<GenericAddress>,
-);
+pub type StakingBondFn =
+	(CallIndex, GenericAddress, Compact<Balance>, RewardDestination<GenericAddress>);
 pub type StakingBondExtraFn = (CallIndex, Compact<Balance>);
 pub type StakingUnbondFn = (CallIndex, Compact<Balance>);
 pub type StakingRebondFn = (CallIndex, Compact<Balance>);
@@ -90,120 +86,60 @@ pub type StakingSetValidatorCountXt<SignedExtra> =UncheckedExtrinsicV4<StakingSe
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<P, Client, Params> Api<P, Client, Params>
 where
-    P: Pair,
-    MultiSignature: From<P::Signature>,
-    MultiSigner: From<P::Public>,
-    Client: RpcClient,
-    Params: ExtrinsicParams,
+	P: Pair,
+	MultiSignature: From<P::Signature>,
+	MultiSigner: From<P::Public>,
+	Client: RpcClient,
 {
-    /// Bond `value` amount to `controller`
-    pub fn staking_bond(
-        &self,
-        controller: GenericAddress,
-        value: Balance,
-        payee: RewardDestination<GenericAddress>,
-    ) -> StakingBondXt<Params::SignedExtra> {
-        compose_extrinsic!(
-            self,
-            STAKING_MODULE,
-            STAKING_BOND,
-            controller,
-            Compact(value),
-            payee
-        )
-    }
+	/// Bond `value` amount to `controller`
+	pub fn staking_bond(
+		&self,
+		controller: GenericAddress,
+		value: Balance,
+		payee: RewardDestination<GenericAddress>,
+	) -> StakingBondXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND, controller, Compact(value), payee)
+	}
 
-    /// Bonds extra funds from the stash's free balance to the balance for staking.
-    pub fn staking_bond_extra(&self, value: Balance) -> StakingBondExtraXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND_EXTRA, Compact(value))
-    }
+	/// Bonds extra funds from the stash's free balance to the balance for staking.
+	pub fn staking_bond_extra(&self, value: Balance) -> StakingBondExtraXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND_EXTRA, Compact(value))
+	}
 
-    /// Unbond `value` portion of the stash.
-    /// If `value` is less than the minimum required, then the entire amount is unbound.
-    /// Must be signed by the controller of the stash.
-    pub fn staking_unbond(&self, value: Balance) -> StakingUnbondXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_UNBOND, Compact(value))
-    }
+	/// Unbond `value` portion of the stash.
+	/// If `value` is less than the minimum required, then the entire amount is unbound.
+	/// Must be signed by the controller of the stash.
+	pub fn staking_unbond(&self, value: Balance) -> StakingUnbondXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_UNBOND, Compact(value))
+	}
 
-    /// Rebond `value` portion of the current amount that is in the process of unbonding.
-    pub fn staking_rebond(&self, value: Balance) -> StakingRebondXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_REBOND, Compact(value))
-    }
+	/// Rebond `value` portion of the current amount that is in the process of unbonding.
+	pub fn staking_rebond(&self, value: Balance) -> StakingRebondXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_REBOND, Compact(value))
+	}
 
-    /// Free the balance of the stash so the stash account can do whatever it wants.
-    /// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
-    /// For most users, `num_slashing_spans` should be 0.
-    pub fn staking_withdraw_unbonded(
-        &self,
-        num_slashing_spans: u32,
-    ) -> StakingWithdrawUnbondedXt<Params::SignedExtra> {
-        compose_extrinsic!(
-            self,
-            STAKING_MODULE,
-            STAKING_WITHDRAW_UNBONDED,
-            num_slashing_spans
-        )
-    }
+	/// Free the balance of the stash so the stash account can do whatever it wants.
+	/// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
+	/// For most users, `num_slashing_spans` should be 0.
+	pub fn staking_withdraw_unbonded(&self, num_slashing_spans: u32) -> StakingWithdrawUnbondedXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_WITHDRAW_UNBONDED, num_slashing_spans)
+	}
 
-    /// Nominate `targets` as validators.
-    /// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
-    pub fn staking_nominate(
-        &self,
-        targets: Vec<GenericAddress>,
-    ) -> StakingNominateXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_NOMINATE, targets)
-    }
+	/// Nominate `targets` as validators.
+	/// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
+	pub fn staking_nominate(&self, targets: Vec<GenericAddress>) -> StakingNominateXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_NOMINATE, targets)
+	}
 
-    /// Stop nominating por validating. Effects take place in the next era
-    pub fn staking_chill(&self) -> StakingChillXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_CHILL)
-    }
+	/// Stop nominating por validating. Effects take place in the next era
+	pub fn staking_chill(&self) -> StakingChillXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_CHILL)
+	}
 
-    /// (Re-)set the controller of the stash
-    /// Effects will be felt at the beginning of the next era.
-    /// Must be Signed by the stash, not the controller.
-    pub fn staking_set_controller(
-        &self,
-        controller: GenericAddress,
-    ) -> StakingSetControllerXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
-    }
-
-    /// Return the payout call for the given era
-    pub fn payout_stakers(
-        &self,
-        era: u32,
-        account: AccountId32,
-    ) -> StakingPayoutStakersXt<Params::SignedExtra> {
-        let value = PayoutStakers {
-            validator_stash: account,
-            era,
-        };
-        compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
-    }
-
-    /// For New Era at the end of Next Session.
-    pub fn force_new_era(&self) -> StakingForceNewEraXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA, ForceEra {})
-    }
-
-    /// Force there to be a new era at the end of sessions indefinitely.
-    pub fn force_new_era_always(&self) -> StakingForceNewEraAlwaysXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA_ALWAYS, ForceEra {})
-    }
-
-    /// Force there to be no new eras indefinitely.
-    pub fn force_no_era(&self) -> StakingForceNewEraAlwaysXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, FORCE_NO_ERA, ForceEra {})
-    }
-
-    /// Re-set the payment target for a controller.
-    pub fn set_payee(&self, payee: GenericAddress) -> StakingSetControllerXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_PAYEE, payee)
-    }
-
-    /// Sets the number of validators.
-    pub fn set_validator_count(&self, count :u32) -> StakingSetValidatorCountXt<Params::SignedExtra> {
-        compose_extrinsic!(self, STAKING_MODULE, SET_VALIDATOR_COUNT, count)
-    }
+	/// (Re-)set the controller of the stash
+	/// Effects will be felt at the beginning of the next era.
+	/// Must be Signed by the stash, not the controller.
+	pub fn staking_set_controller(&self, controller: GenericAddress) -> StakingSetControllerXt {
+		compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
+	}
 }
