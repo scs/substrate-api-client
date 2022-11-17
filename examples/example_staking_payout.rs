@@ -1,10 +1,13 @@
 use clap::{load_yaml, App};
-use sp_core::{sr25519, Pair};
+use sp_core::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-use staking::{ActiveEraInfo, Exposure};
 use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, XtStatus};
 
+#[cfg(feature = "staking-xt")]
+use staking::{ActiveEraInfo, Exposure};
+
+#[cfg(feature = "staking-xt")]
 fn main() {
 	env_logger::init();
 
@@ -44,6 +47,7 @@ fn main() {
 	}
 }
 
+#[cfg(feature = "staking-xt")]
 pub fn get_node_url_from_cli() -> String {
 	let yml = load_yaml!("cli.yml");
 	let matches = App::from_yaml(yml).get_matches();
@@ -54,3 +58,6 @@ pub fn get_node_url_from_cli() -> String {
 	println!("Interacting with node on {}\n", url);
 	url
 }
+
+#[cfg(not(feature = "staking-xt"))]
+fn main() {}

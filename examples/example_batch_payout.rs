@@ -4,11 +4,14 @@ use serde_json::Value;
 use sp_core::{sr25519, Pair};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-use staking::{ActiveEraInfo, Exposure};
 use substrate_api_client::{
 	rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
 };
 
+#[cfg(feature = "staking-xt")]
+use staking::{ActiveEraInfo, Exposure};
+
+#[cfg(feature = "staking-xt")]
 fn main() {
 	env_logger::init();
 
@@ -90,6 +93,7 @@ fn main() {
 	println!("{:?}", results);
 }
 
+#[cfg(feature = "staking-xt")]
 pub fn get_node_url_from_cli() -> String {
 	let yml = load_yaml!("cli.yml");
 	let matches = App::from_yaml(yml).get_matches();
@@ -101,6 +105,7 @@ pub fn get_node_url_from_cli() -> String {
 	url
 }
 
+#[cfg(feature = "staking-xt")]
 pub fn get_last_reward(
 	validator_address: &str,
 	api: &substrate_api_client::Api<
@@ -146,12 +151,12 @@ pub fn get_last_reward(
 	println!("{}", last_reward);
 	last_reward
 }
-
+#[cfg(feature = "staking-xt")]
 pub struct GracePeriod {
 	pub enabled: bool,
 	pub eras: u32,
 }
-
+#[cfg(feature = "staking-xt")]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
 pub struct StakingLedger {
 	pub stash: AccountId32,
@@ -162,3 +167,6 @@ pub struct StakingLedger {
 	pub unlocking: Vec<u32>,
 	pub claimed_rewards: Vec<u32>,
 }
+
+#[cfg(not(feature = "staking-xt"))]
+fn main() {}
