@@ -211,6 +211,7 @@ impl WsRpcClient {
 			result: result_in.clone(),
 			message_handler: message_handler.clone(),
 		})?;
+		log::error!("timout: {:?}", self.timeout);
 		Ok(result_out.recv_timeout(self.timeout)?)
 	}
 }
