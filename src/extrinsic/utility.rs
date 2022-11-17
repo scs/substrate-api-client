@@ -30,9 +30,6 @@ const UTILITY_BATCH: &str = "batch";
 const UTILITY_FORCE_BATCH: &str = "force_batch";
 
 pub type UtilityBatchFn<Call> = (CallIndex, Batch<Call>);
-pub type UtilityBatchPayoutFn = (CallIndex, BatchPayout);
-pub type UtilityBatchPayoutXt<SignedExtra> =
-    UncheckedExtrinsicV4<UtilityBatchPayoutFn, SignedExtra>;
 pub type UtilityBatchXt<Call,SignedExtra> = UncheckedExtrinsicV4<UtilityBatchFn<Call>, SignedExtra>;
 
 impl<P, Client, Params> Api<P, Client, Params>
@@ -43,14 +40,6 @@ where
     Client: RpcClient,
     Params: ExtrinsicParams,
 {
-    pub fn batch_payout_stakers(
-        &self,
-        calls: Vec<([u8; 2], PayoutStakers)>,
-    ) -> UtilityBatchPayoutXt<Params::SignedExtra> {
-        let calls = BatchPayout { calls };
-        compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
-    }
-
     pub fn batch<Call : Encode + Clone>(&self, calls: Vec<Call>) -> UtilityBatchXt<Call,Params::SignedExtra> {
         let calls = Batch { calls };
         compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
