@@ -15,8 +15,6 @@ use ac_node_api::Events;
    limitations under the License.
 
 */
-pub use ac_node_api::{events::EventDetails, StaticEvent};
-
 use crate::{
 	std::{
 		error::Error, json_req, rpc::RpcClientError, Api, ApiResult, FromHexString,
@@ -37,6 +35,7 @@ use std::{
 };
 use ws::{CloseCode, Error as WsError, Handler, Handshake, Message, Result as WsResult, Sender};
 
+pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 
 pub mod client;
