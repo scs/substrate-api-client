@@ -1,0 +1,22 @@
+name-template: 'v$RESOLVED_VERSION 🌈'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '⚡ Breaking changes'
+    labels:
+      - 'E1-breaksapi'
+  - title: '🚀 Features'
+    labels:
+      - 'F8-newfeature'
+      - 'F7-enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'F2-bug'
+  - title: '💨 Optimizations '
+    label:
+      - 'F6-optimization'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+template: |
+  ## Changes
+
+  $CHANGES
