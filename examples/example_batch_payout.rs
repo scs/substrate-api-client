@@ -1,35 +1,34 @@
 #[cfg(feature = "staking-xt")]
-mod imports {
-	use clap::{load_yaml, App};
-	use codec::{Decode, Encode};
-	use serde_json::Value;
-	use sp_core::{sr25519, Pair};
-	use sp_keyring::AccountKeyring;
-	use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-	use staking::{ActiveEraInfo, Exposure};
-	use substrate_api_client::{
-		rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
-	};
-}
+use clap::{load_yaml, App};
 #[cfg(feature = "staking-xt")]
-use imports::*;
+use codec::{Decode, Encode};
+#[cfg(feature = "staking-xt")]
+use serde_json::Value;
+#[cfg(feature = "staking-xt")]
+use sp_core::{sr25519, Pair};
+#[cfg(feature = "staking-xt")]
+use sp_keyring::AccountKeyring;
+#[cfg(feature = "staking-xt")]
+use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
+#[cfg(feature = "staking-xt")]
+use staking::{ActiveEraInfo, Exposure};
+#[cfg(feature = "staking-xt")]
+use substrate_api_client::{
+	rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
+};
 
 #[cfg(feature = "staking-xt")]
 fn main() {
 	env_logger::init();
 
 	let url = get_node_url_from_cli();
-
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new(&url);
 	let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))
 		.unwrap();
-
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
-
 	let mut results: Vec<Value> = Vec::new();
-
 	let account: AccountId32;
 	// Give a valid validator account address, given one is westend chain validator account
 	match AccountId32::from_ss58check("5DJcEbkNxsnNwHGrseg7cgbfUG8eiKzpuZqgSph5HqHrjgf6") {
@@ -56,10 +55,8 @@ fn main() {
 		let mut i = start;
 		while i <= tx_limit + start - 1 {
 			let idx = last_reward + i;
-
 			let is_grace_period_satisfied =
 				!grace_period.enabled || (current_active_era - idx > grace_period.eras);
-
 			let mut exposure: Exposure<AccountId32, u128> =
 				Exposure { total: 0, own: 0, others: vec![] };
 
@@ -118,7 +115,6 @@ pub fn get_last_reward(
 	>,
 ) -> u32 {
 	let api = api;
-
 	let mut account: AccountId32;
 	match AccountId32::from_ss58check(&validator_address) {
 		Ok(address) => account = address,
@@ -127,7 +123,6 @@ pub fn get_last_reward(
 
 	let active_era: ActiveEraInfo =
 		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
-
 	let storagekey = api.metadata.storage_map_key("Staking", "Ledger", &account).unwrap();
 	let mut res = StakingLedger {
 		stash: account.clone(),
@@ -137,9 +132,9 @@ pub fn get_last_reward(
 		claimed_rewards: Vec::new(),
 	};
 
-	match api.get_storage_by_key_hash(storagekey, None).unwrap() {
-		Some(ledger) => res = ledger,
-		None => (),
+	match api.get_storage_by_key_hash(storagekey, None) {
+		Ok(Some(ledger)) => res = ledger,
+		_ => (),
 	}
 
 	let mut last_reward = 0_u32;
