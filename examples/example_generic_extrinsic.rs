@@ -30,7 +30,7 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let timeout = Duration::from_secs(1);
+	let timeout = Duration::from_millis(1);
 	let client = WsRpcClient::new(&url).set_timeout(timeout);
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))

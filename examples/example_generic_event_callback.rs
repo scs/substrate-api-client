@@ -51,7 +51,7 @@ fn main() {
 	let api2 = api.clone();
 	let thread_output = thread::spawn(move || {
 		let (events_in, events_out) = channel();
-		let timeout = Duration::from_secs(1);
+		let timeout = Duration::from_millis(1);
 		api2.subscribe_events(events_in).unwrap();
 		let args: TransferEventArgs =
 			api2.wait_for_event::<TransferEventArgs>(&events_out, Some(timeout)).unwrap();
