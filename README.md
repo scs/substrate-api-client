@@ -65,6 +65,8 @@ The following examples can be found in the [examples](/examples) folder:
 * [example_print_metadata](/examples/example_print_metadata.rs): Print the metadata of the node in a readable way.
 * [example_sudo](/examples/example_sudo.rs): Create and send a sudo wrapped call.
 * [example_transfer_using_seed](/examples/example_transfer_using_seed.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
+* [example_staking_payout](/src/examples/example_staking_payout.rs): Westend staking reward payout for validator.
+* [example_batch_payout](/src/examples/example_staking_payout.rs): Batch reward payout for validator.
 
 ## Alternatives
 
