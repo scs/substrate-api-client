@@ -1,0 +1,23 @@
+# File is copy-pasted from Integritee worker:
+# https://github.com/integritee-network/worker/blob/1a58d6a625fa76935902f16c798efa453bcef9a4/.github/workflows/label-checker.yml
+
+name: Check labels
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize, ready_for_review]
+
+jobs:
+    check_for_matching_labels:
+      runs-on: ubuntu-latest
+      if: github.base_ref == 'master' && github.event.pull_request.draft == false
+      steps:
+        - name: E Label check
+          env:
+            enforced_labels: "E0-silent,E1-breaksnothing,E2-breaksapi"
+          run: |
+            MATCH=$(jq -cn '${{ toJSON(github.event.pull_request.labels.*.name) }} as $USER_LABELS |
+            ${{ toJSON(env.enforced_labels)  }} | split(",") as $LABELS |
+            $USER_LABELS - ($USER_LABELS - $LABELS)')
+            if [[  "$MATCH" == '[]' ]]; then
+                exit 1
+            fi
