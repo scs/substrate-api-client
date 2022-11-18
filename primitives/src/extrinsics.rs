@@ -159,7 +159,7 @@ mod tests {
 	fn encode_decode_roundtrip_works() {
 		let msg = &b"test-message"[..];
 		let (pair, _) = sr25519::Pair::generate();
-		let signature = pair.sign(&msg);
+		let signature = pair.sign(msg);
 		let multi_sig = MultiSignature::from(signature);
 		let account: AccountId = pair.public().into();
 		let tx_params =
