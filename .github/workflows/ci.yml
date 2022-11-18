@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload examples
         uses: actions/upload-artifact@v3
-        if: matrix.check == 'cargo build --release --examples'
+        if: matrix.check == 'cargo build --release --examples --features staking-xt'
         with:
           name: examples
           path:  |
