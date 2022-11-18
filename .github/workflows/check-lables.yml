@@ -13,7 +13,7 @@ jobs:
             enforced_labels: "E0-silent,E1-breaksnothing,E2-breaksapi"
           run: |
             MATCH=$(jq -cn '${{ toJSON(github.event.pull_request.labels.*.name) }} as $USER_LABELS |
-            ${{ toJSON($enforced_labels)  }} | split(",") as $LABELS |
+            ${{ toJSON(enforced_labels)  }} | split(",") as $LABELS |
             $USER_LABELS - ($USER_LABELS - $LABELS)')
             if [[  "$MATCH" == '[]' ]]; then
                 exit 1
