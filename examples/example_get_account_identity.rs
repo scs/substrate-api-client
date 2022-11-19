@@ -24,10 +24,10 @@ use substrate_api_client::{
 	XtStatus,
 };
 
-use support::traits::Currency;
+use frame_support::traits::Currency;
 
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
-	<T as system::Config>::AccountId,
+	<T as frame_system::Config>::AccountId,
 >>::Balance;
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;

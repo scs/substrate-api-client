@@ -44,14 +44,15 @@ fn main() {
 
 		let _unhex = Vec::from_hex(event_str).unwrap();
 		let mut _er_enc = _unhex.as_slice();
-		let events = Vec::<system::EventRecord<RuntimeEvent, Hash>>::decode(&mut _er_enc).unwrap();
+		let events =
+			Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(&mut _er_enc).unwrap();
 		for evr in &events {
 			println!("decoded: {:?} {:?}", evr.phase, evr.event);
 			match &evr.event {
 				RuntimeEvent::Balances(be) => {
 					println!(">>>>>>>>>> balances event: {:?}", be);
 					match &be {
-						balances::Event::Transfer { from, to, amount } => {
+						pallet_balances::Event::Transfer { from, to, amount } => {
 							println!("Transactor: {:?}", from);
 							println!("Destination: {:?}", to);
 							println!("Value: {:?}", amount);
