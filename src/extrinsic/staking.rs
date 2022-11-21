@@ -25,7 +25,7 @@ use codec::Compact;
 use sp_core::Pair;
 use sp_runtime::{AccountId32, MultiSignature, MultiSigner};
 
-pub use staking::RewardDestination;
+pub use pallet_staking::RewardDestination;
 
 const STAKING_MODULE: &str = "Staking";
 const STAKING_BOND: &str = "bond";
