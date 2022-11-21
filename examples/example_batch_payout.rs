@@ -3,13 +3,13 @@ use clap::{load_yaml, App};
 #[cfg(feature = "staking-xt")]
 use codec::{Decode, Encode};
 #[cfg(feature = "staking-xt")]
+use pallet_staking::{ActiveEraInfo, Exposure};
+#[cfg(feature = "staking-xt")]
 use serde_json::Value;
 #[cfg(feature = "staking-xt")]
 use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-#[cfg(feature = "staking-xt")]
-use staking::{ActiveEraInfo, Exposure};
 #[cfg(feature = "staking-xt")]
 use substrate_api_client::{
 	rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
