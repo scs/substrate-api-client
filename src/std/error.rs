@@ -15,7 +15,7 @@
 
 */
 
-use crate::{rpc::RpcClientError, std::rpc::XtStatus};
+use crate::{rpc::RpcClientError, std::XtStatus};
 use ac_node_api::{
 	metadata::{InvalidMetadataError, MetadataError},
 	DispatchError,

@@ -18,7 +18,7 @@
 pub use crate::{
 	std::{
 		error::{ApiResult, Error as ApiClientError},
-		rpc::XtStatus,
+		XtStatus,
 	},
 	utils::FromHexString,
 };
@@ -40,7 +40,7 @@ pub use sp_version::RuntimeVersion;
 
 use std::convert::{TryFrom, TryInto};
 
-use crate::{rpc::ReadProof, std::json_req, RpcClient};
+use crate::{std::json_req, ReadProof, RpcClient};
 use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};

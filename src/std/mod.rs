@@ -16,17 +16,14 @@
 */
 
 pub use crate::{
-	std::{
-		error::{ApiResult, Error as ApiClientError},
-		rpc::XtStatus,
-	},
+	std::error::{ApiResult, Error as ApiClientError},
 	utils::FromHexString,
 };
 pub use api::Api;
 pub use frame_metadata::RuntimeMetadataPrefixed;
 pub use pallet_transaction_payment::FeeDetails;
 pub use serde_json::Value;
-use sp_core::H256 as Hash;
+
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
 	generic::SignedBlock,
@@ -35,6 +32,9 @@ pub use sp_runtime::{
 };
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
+
+use serde::{Deserialize, Serialize};
+use sp_core::H256 as Hash;
 
 pub mod api;
 pub mod error;
@@ -48,4 +48,28 @@ pub trait RpcClient {
 
 	/// Send a RPC request that returns a SHA256 hash
 	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+pub enum XtStatus {
+	Unknown = 0,
+	/// uses `author_submit` without watching.
+	SubmitOnly = 1,
+	Ready = 2,
+	Broadcast = 3,
+	InBlock = 4,
+	Finalized = 5,
+	Future = 10,
+}
+
+// Exact structure from
+// https://github.com/paritytech/substrate/blob/master/client/rpc-api/src/state/helpers.rs
+// Adding manually so we don't need sc-rpc-api, which brings in async dependencies
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadProof<Hash> {
+	/// Block hash used to generate the proof
+	pub at: Hash,
+	/// A proof used to prove that storage entries are included in the storage trie
+	pub proof: Vec<sp_core::Bytes>,
 }
