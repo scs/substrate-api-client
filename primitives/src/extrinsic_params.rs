@@ -1,3 +1,21 @@
+/*
+   Copyright 2019 Supercomputing Systems AG
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+	   http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+use crate::Balance;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use sp_core::H256;
@@ -5,33 +23,33 @@ use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
 };
-use sp_std::prelude::*;
+use sp_std::{hash::Hash as HashTrait, prelude::*};
 
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateDefaultSignedExtra<Tip> {
+pub struct SubstrateDefaultSignedExtra<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
-	pub nonce: u32,
+	pub nonce: Index,
 	pub tip: Tip,
 }
 
-impl<Tip> SubstrateDefaultSignedExtra<Tip> {
-	pub fn new(era: Era, nonce: u32, tip: Tip) -> Self {
+impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
+	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		Self { era, nonce, tip }
 	}
 }
 
 /// Default AdditionalSigned fields of the respective SignedExtra fields.
 /// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-pub type SubstrateDefaultAdditionalSigned = ((), u32, u32, H256, H256, (), (), ());
+pub type SubstrateDefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in transactions.
 /// see [`BaseExtrinsicParams`] for an implementation that is compatible with
 /// a Polkadot node.
-pub trait ExtrinsicParams {
+pub trait ExtrinsicParams<Index, Hash> {
 	/// These parameters can be provided to the constructor along with
 	/// some default parameters in order to help construct your [`ExtrinsicParams`] object.
 	type OtherParams: Default + Clone;
@@ -46,8 +64,8 @@ pub trait ExtrinsicParams {
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
-		nonce: u32,
-		genesis_hash: H256,
+		nonce: Index,
+		genesis_hash: Hash,
 		other_params: Self::OtherParams,
 	) -> Self;
 
@@ -63,43 +81,43 @@ pub trait ExtrinsicParams {
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip>;
+pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip<Balance>, u32, H256>;
 /// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip>;
+pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip<Balance>, H256>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip>;
+pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip<Balance>, u32, H256>;
 /// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip>;
+pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip<Balance>, H256>;
 
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParams<Tip> {
+pub struct BaseExtrinsicParams<Tip, Index, Hash> {
 	era: Era,
-	nonce: u32,
+	nonce: Index,
 	tip: Tip,
 	spec_version: u32,
 	transaction_version: u32,
-	genesis_hash: H256,
-	mortality_checkpoint: H256,
+	genesis_hash: Hash,
+	mortality_checkpoint: Hash,
 	marker: PhantomData<()>,
 }
 
 /// This builder allows you to provide the parameters that can be configured in order to
 /// construct a [`BaseExtrinsicParams`] value.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParamsBuilder<Tip> {
+pub struct BaseExtrinsicParamsBuilder<Tip, Hash> {
 	era: Era,
-	mortality_checkpoint: Option<H256>,
+	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
 }
 
-impl<Tip: Default> BaseExtrinsicParamsBuilder<Tip> {
+impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
 	/// Instantiate the default set of [`BaseExtrinsicParamsBuilder`]
 	pub fn new() -> Self {
 		Self::default()
@@ -110,7 +128,7 @@ impl<Tip: Default> BaseExtrinsicParamsBuilder<Tip> {
 	/// of time). The second argument is the block hash after which the transaction
 	/// becomes valid, and must align with the era phase (see the [`Era::Mortal`] docs
 	/// for more detail on that).
-	pub fn era(mut self, era: Era, checkpoint: H256) -> Self {
+	pub fn era(mut self, era: Era, checkpoint: Hash) -> Self {
 		self.era = era;
 		self.mortality_checkpoint = Some(checkpoint);
 		self
@@ -124,26 +142,29 @@ impl<Tip: Default> BaseExtrinsicParamsBuilder<Tip> {
 	}
 }
 
-impl<Tip: Default> Default for BaseExtrinsicParamsBuilder<Tip> {
+impl<Tip: Default, Hash> Default for BaseExtrinsicParamsBuilder<Tip, Hash> {
 	fn default() -> Self {
 		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
 	}
 }
 
-impl<Tip: Encode> ExtrinsicParams for BaseExtrinsicParams<Tip>
+impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for BaseExtrinsicParams<Tip, Index, Hash>
 where
 	u128: From<Tip>,
-	Tip: Copy + Default,
+	Tip: Copy + Default + Encode,
+	Index: Copy + Default + Encode,
+	Hash: HashTrait + Encode + Copy,
+	SubstrateDefaultSignedExtra<Tip, Index>: Encode,
 {
-	type OtherParams = BaseExtrinsicParamsBuilder<Tip>;
-	type SignedExtra = SubstrateDefaultSignedExtra<Tip>;
-	type AdditionalSigned = SubstrateDefaultAdditionalSigned;
+	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
+	type SignedExtra = SubstrateDefaultSignedExtra<Tip, Index>;
+	type AdditionalSigned = SubstrateDefaultAdditionalSigned<Hash>;
 
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
-		nonce: u32,
-		genesis_hash: H256,
+		nonce: Index,
+		genesis_hash: Hash,
 		other_params: Self::OtherParams,
 	) -> Self {
 		BaseExtrinsicParams {
@@ -207,41 +228,41 @@ where
 
 /// A tip payment.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
-pub struct PlainTip {
+pub struct PlainTip<Balance> {
 	#[codec(compact)]
-	tip: u128,
+	tip: Balance,
 }
 
-impl PlainTip {
+impl<Balance> PlainTip<Balance> {
 	/// Create a new tip of the amount provided.
-	pub fn new(amount: u128) -> Self {
+	pub fn new(amount: Balance) -> Self {
 		PlainTip { tip: amount }
 	}
 }
 
-impl From<u128> for PlainTip {
-	fn from(n: u128) -> Self {
+impl<Balance> From<Balance> for PlainTip<Balance> {
+	fn from(n: Balance) -> Self {
 		PlainTip::new(n)
 	}
 }
 
-impl From<PlainTip> for u128 {
-	fn from(tip: PlainTip) -> Self {
+impl From<PlainTip<Balance>> for Balance {
+	fn from(tip: PlainTip<Balance>) -> Self {
 		tip.tip
 	}
 }
 
 /// A tip payment made in the form of a specific asset.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
-pub struct AssetTip {
+pub struct AssetTip<Balance> {
 	#[codec(compact)]
-	tip: u128,
+	tip: Balance,
 	asset: Option<u32>,
 }
 
-impl AssetTip {
+impl<Balance> AssetTip<Balance> {
 	/// Create a new tip of the amount provided.
-	pub fn new(amount: u128) -> Self {
+	pub fn new(amount: Balance) -> Self {
 		AssetTip { tip: amount, asset: None }
 	}
 
@@ -253,14 +274,14 @@ impl AssetTip {
 	}
 }
 
-impl From<u128> for AssetTip {
-	fn from(n: u128) -> Self {
+impl<Balance> From<Balance> for AssetTip<Balance> {
+	fn from(n: Balance) -> Self {
 		AssetTip::new(n)
 	}
 }
 
-impl From<AssetTip> for u128 {
-	fn from(tip: AssetTip) -> Self {
+impl From<AssetTip<Balance>> for Balance {
+	fn from(tip: AssetTip<Balance>) -> Self {
 		tip.tip
 	}
 }

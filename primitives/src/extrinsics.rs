@@ -165,7 +165,7 @@ mod tests {
 		let tx_params =
 			PlainTipExtrinsicParamsBuilder::new().era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
-		let default_extra = BaseExtrinsicParams::new(0, 0, 0, Hash::from([0u8; 32]), tx_params);
+		let default_extra = BaseExtrinsicParams::new(0, 0, 0u32, Hash::from([0u8; 32]), tx_params);
 		let xt = UncheckedExtrinsicV4::new_signed(
 			vec![1, 1, 1],
 			account.into(),

@@ -11,9 +11,7 @@ use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 #[cfg(feature = "staking-xt")]
-use substrate_api_client::{
-	rpc::WsRpcClient, Api, BaseExtrinsicParams, PlainTip, PlainTipExtrinsicParams, XtStatus,
-};
+use substrate_api_client::{rpc::WsRpcClient, Api, PlainTipExtrinsicParams, XtStatus};
 
 #[cfg(feature = "staking-xt")]
 fn main() {
@@ -104,11 +102,7 @@ pub fn get_node_url_from_cli() -> String {
 #[cfg(feature = "staking-xt")]
 pub fn get_last_reward(
 	validator_address: &str,
-	api: &substrate_api_client::Api<
-		sp_core::sr25519::Pair,
-		WsRpcClient,
-		BaseExtrinsicParams<PlainTip>,
-	>,
+	api: &substrate_api_client::Api<sp_core::sr25519::Pair, WsRpcClient, PlainTipExtrinsicParams>,
 ) -> u32 {
 	let api = api;
 	let account = match AccountId32::from_ss58check(validator_address) {
