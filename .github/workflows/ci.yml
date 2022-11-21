@@ -37,10 +37,10 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
-                 cargo build --release --examples,
+                 cargo build --release --examples --features staking-xt,
 
                  cargo clippy --all --exclude test-no-std -- -D warnings,
-                 cargo clippy --examples -- -D warnings,
+                 cargo clippy --features staking-xt --examples -- -D warnings,
 
                  cargo test --all --exclude test-no-std,
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload examples
         uses: actions/upload-artifact@v3
-        if: matrix.check == 'cargo build --release --examples'
+        if: matrix.check == 'cargo build --release --examples --features staking-xt'
         with:
           name: examples
           path:  |

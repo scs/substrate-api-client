@@ -1,15 +1,13 @@
 #[cfg(feature = "staking-xt")]
 use clap::{load_yaml, App};
 #[cfg(feature = "staking-xt")]
-use sp_core::{sr25519, Pair};
+use pallet_staking::{ActiveEraInfo, Exposure};
 #[cfg(feature = "staking-xt")]
 use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 #[cfg(feature = "staking-xt")]
-use staking::{ActiveEraInfo, Exposure};
-#[cfg(feature = "staking-xt")]
-use substrate_api_client::{rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, XtStatus};
+use substrate_api_client::{rpc::WsRpcClient, Api, PlainTipExtrinsicParams, XtStatus};
 
 #[cfg(feature = "staking-xt")]
 fn main() {
@@ -21,23 +19,21 @@ fn main() {
 		.map(|api| api.set_signer(from))
 		.unwrap();
 	let mut exposure: Exposure<AccountId32, u128> = Exposure { total: 0, own: 0, others: vec![] };
-	let account: AccountId;
-	match AccountId32::from_ss58check("5DJcEbkNxsnNwHGrseg7cgbfUG8eiKzpuZqgSph5HqHrjgf6") {
-		Ok(address) => account = address,
-		Err(e) => panic!("Invalid Account id : {:?}", e),
-	}
+	let account =
+		match AccountId32::from_ss58check("5DJcEbkNxsnNwHGrseg7cgbfUG8eiKzpuZqgSph5HqHrjgf6") {
+			Ok(address) => address,
+			Err(e) => panic!("Invalid Account id : {:?}", e),
+		};
 	let active_era: ActiveEraInfo =
 		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
 	println!("{:?}", active_era);
 	let idx = active_era.index - 1;
-	match api.get_storage_double_map("Staking", "ErasStakers", idx, &account, None) {
-		Ok(Some(exp)) => {
-			exposure = exp;
-		},
-		_ => (),
+	if let Ok(Some(exp)) = api.get_storage_double_map("Staking", "ErasStakers", idx, &account, None)
+	{
+		exposure = exp;
 	}
 	if exposure.total > 0_u128 {
-		let call = api.payout_stakers(idx, account.clone());
+		let call = api.payout_stakers(idx, account);
 		let result = api.send_extrinsic(call.hex_encode(), XtStatus::InBlock).unwrap();
 		println!("{:?}", result);
 	}
