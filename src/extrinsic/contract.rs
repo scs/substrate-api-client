@@ -18,7 +18,10 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use crate::std::{Api, RpcClient};
+use crate::{
+	std::{Api, RpcClient},
+	Index,
+};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
@@ -61,7 +64,7 @@ where
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn contract_put_code(
 		&self,

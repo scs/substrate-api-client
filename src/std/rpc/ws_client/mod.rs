@@ -22,7 +22,7 @@ use crate::{
 		error::Error, json_req, rpc::RpcClientError, Api, ApiResult, FromHexString,
 		RpcClient as RpcClientTrait, XtStatus,
 	},
-	utils,
+	utils, Hash, Index,
 };
 use ac_node_api::DispatchError;
 use ac_primitives::ExtrinsicParams;
@@ -88,7 +88,7 @@ pub trait Subscriber {
 
 impl<P, Params> Api<P, WsRpcClient, Params>
 where
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -101,7 +101,7 @@ where
 	P: Pair,
 	MultiSignature: From<P::Signature>,
 	Client: RpcClientTrait + Subscriber,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");

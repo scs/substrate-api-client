@@ -25,6 +25,7 @@ pub mod rpc;
 
 use std::convert::{TryFrom, TryInto};
 
+use crate::Index;
 use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
@@ -104,7 +105,7 @@ pub trait RpcClient {
 pub struct Api<P, Client, Params>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub signer: Option<P>,
 	pub genesis_hash: Hash,
@@ -120,7 +121,7 @@ where
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn signer_account(&self) -> Option<AccountId> {
 		let pair = self.signer.as_ref()?;
@@ -141,7 +142,7 @@ where
 impl<P, Client, Params> Api<P, Client, Params>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
 		let genesis_hash = Self::_get_genesis_hash(&client)?;
@@ -217,7 +218,7 @@ where
 
 	pub fn extrinsic_params(&self, nonce: u32) -> Params {
 		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
-		<Params as ExtrinsicParams>::new(
+		<Params as ExtrinsicParams<Index, Hash>>::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
