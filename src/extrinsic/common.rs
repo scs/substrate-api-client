@@ -15,10 +15,11 @@
 
 */
 
-// Common types.
+//! Common types.
 
 use codec::{Decode, Encode};
 use sp_runtime::AccountId32;
+
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
 pub struct PayoutStakers {
 	pub validator_stash: AccountId32,
