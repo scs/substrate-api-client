@@ -18,7 +18,7 @@
 use super::Subscriber;
 use crate::{
 	std::{error::Error, json_req, Api, ApiResult, FromHexString, RpcClient as RpcClientTrait},
-	utils,
+	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
@@ -32,7 +32,7 @@ pub use super::client::WsRpcClient;
 
 impl<P, Params> Api<P, WsRpcClient, Params>
 where
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -45,7 +45,7 @@ where
 	P: Pair,
 	MultiSignature: From<P::Signature>,
 	Client: RpcClientTrait + Subscriber,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");

@@ -21,14 +21,11 @@ pub use crate::{
 		XtStatus,
 	},
 	utils::FromHexString,
+	Hash, Index,
 };
-use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 pub use frame_metadata::RuntimeMetadataPrefixed;
-
 pub use pallet_transaction_payment::FeeDetails;
 pub use serde_json::Value;
-use sp_core::H256 as Hash;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
 	generic::SignedBlock,
@@ -38,14 +35,15 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
-use std::convert::{TryFrom, TryInto};
-
 use crate::{std::json_req, ReadProof, RpcClient};
+use ac_node_api::metadata::{Metadata, MetadataError};
+use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 use serde::de::DeserializeOwned;
 use sp_rpc::number::NumberOrHex;
+use std::convert::{TryFrom, TryInto};
 
 /// Api to talk with substrate-nodes
 ///
@@ -110,7 +108,7 @@ use sp_rpc::number::NumberOrHex;
 pub struct Api<P, Client, Params>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub signer: Option<P>,
 	pub genesis_hash: Hash,
@@ -126,7 +124,7 @@ where
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn signer_account(&self) -> Option<AccountId> {
 		let pair = self.signer.as_ref()?;
@@ -147,7 +145,7 @@ where
 impl<P, Client, Params> Api<P, Client, Params>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams,
+	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
 		let genesis_hash = Self::_get_genesis_hash(&client)?;
@@ -221,9 +219,9 @@ where
 		}
 	}
 
-	pub fn extrinsic_params(&self, nonce: u32) -> Params {
+	pub fn extrinsic_params(&self, nonce: Index) -> Params {
 		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
-		<Params as ExtrinsicParams>::new(
+		<Params as ExtrinsicParams<Index, Hash>>::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
