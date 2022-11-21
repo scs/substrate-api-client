@@ -15,31 +15,30 @@ members = [
 ]
 
 [dependencies]
-hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
-log = { version = "0.4.14", optional = true }
-#TODO get from parity when our changes are accepted
-metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", package = "frame-metadata", features = ["v14", "full_derive"] }
-#metadata = { version = "15.0.0", default-features = false, package = "frame-metadata", features = ["v14"] }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
+hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+log = { version = "0.4.14", default-features = false }
 primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
 serde = { version = "1.0.136", optional = true, features = ["derive"] }
 serde_json = { version = "1.0.79", optional = true }
 thiserror = { version = "1.0.30", optional = true }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
+#TODO get from parity when our changes are accepted
+frame-metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", features = ["v14", "full_derive"] }
+#frame-metadata = { version = "15.0.0", default-features = false, features = ["v14"] }
 
 # Substrate dependencies
-balances = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-balances", branch = "master" }
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-balances = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { version = "6.0.0", default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { version = "6.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "sp-version", branch = "master" }
-staking = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-staking", branch = "master" }
-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", package = "frame-support", branch = "master" }
-system = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "frame-system", branch = "master" }
-transaction-payment = { version = "4.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", package = "pallet-transaction-payment", branch = "master" }
-
 sp-runtime-interface = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-version = { version = "5.0.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
@@ -61,31 +60,33 @@ disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
 std = [
-    "sp-core/std",
+    #crate io
     "codec/std",
-    "metadata/std",
-    "sp-version",
-    "balances",
-    "system",
-    "sp-runtime/std",
-    "support/std",
-    "sp-std/std",
+    "hex/std",
+    "log/std",
+    "primitive-types",
     "serde/std",
     "serde_json",
-    "log",
-    "hex/std",
-    "primitive-types",
     "thiserror",
+    "frame-metadata/std",
+    # substrate
+    "frame-support/std",
+    "frame-system",
+    "pallet-balances",
+    "pallet-transaction-payment/std",
+    "sp-core/std",
     "sp-rpc",
+    "sp-runtime/std",
     "sp-runtime-interface/std",
-    "transaction-payment/std",
+    "sp-std/std",
+    "sp-version",
     # local deps
     "ac-compose-macros/std",
     "ac-node-api/std",
     "ac-primitives/std",
 ]
 ws-client = ["ws"]
-staking-xt = ["std", "staking"]
+staking-xt = ["std", "pallet-staking"]
 
 # Remove when fixed: https://github.com/scs/substrate-api-client/issues/286
 [patch.crates-io]

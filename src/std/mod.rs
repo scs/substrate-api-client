@@ -7,7 +7,8 @@ pub use crate::{
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
-pub use metadata::RuntimeMetadataPrefixed;
+pub use frame_metadata::RuntimeMetadataPrefixed;
+pub use pallet_transaction_payment::FeeDetails;
 pub use serde_json::Value;
 use sp_core::H256 as Hash;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
@@ -18,7 +19,6 @@ pub use sp_runtime::{
 };
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
-pub use transaction_payment::FeeDetails;
 
 pub mod error;
 pub mod rpc;
@@ -27,9 +27,9 @@ use std::convert::{TryFrom, TryInto};
 
 use codec::{Decode, Encode};
 use log::{debug, info};
+use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 use serde::de::DeserializeOwned;
 use sp_rpc::number::NumberOrHex;
-use transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 
 use crate::rpc::json_req;
 
