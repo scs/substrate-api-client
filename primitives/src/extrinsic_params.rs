@@ -15,6 +15,7 @@
 
 */
 
+use crate::Balance;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use sp_core::H256;
@@ -80,17 +81,17 @@ pub trait ExtrinsicParams<Index, Hash> {
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip, u32, H256>;
+pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip<Balance>, u32, H256>;
 /// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip, H256>;
+pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip<Balance>, H256>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip, u32, H256>;
+pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip<Balance>, u32, H256>;
 /// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip, H256>;
+pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip<Balance>, H256>;
 
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
@@ -227,41 +228,41 @@ where
 
 /// A tip payment.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
-pub struct PlainTip {
+pub struct PlainTip<Balance> {
 	#[codec(compact)]
-	tip: u128,
+	tip: Balance,
 }
 
-impl PlainTip {
+impl<Balance> PlainTip<Balance> {
 	/// Create a new tip of the amount provided.
-	pub fn new(amount: u128) -> Self {
+	pub fn new(amount: Balance) -> Self {
 		PlainTip { tip: amount }
 	}
 }
 
-impl From<u128> for PlainTip {
-	fn from(n: u128) -> Self {
+impl<Balance> From<Balance> for PlainTip<Balance> {
+	fn from(n: Balance) -> Self {
 		PlainTip::new(n)
 	}
 }
 
-impl From<PlainTip> for u128 {
-	fn from(tip: PlainTip) -> Self {
+impl From<PlainTip<Balance>> for Balance {
+	fn from(tip: PlainTip<Balance>) -> Self {
 		tip.tip
 	}
 }
 
 /// A tip payment made in the form of a specific asset.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
-pub struct AssetTip {
+pub struct AssetTip<Balance> {
 	#[codec(compact)]
-	tip: u128,
+	tip: Balance,
 	asset: Option<u32>,
 }
 
-impl AssetTip {
+impl<Balance> AssetTip<Balance> {
 	/// Create a new tip of the amount provided.
-	pub fn new(amount: u128) -> Self {
+	pub fn new(amount: Balance) -> Self {
 		AssetTip { tip: amount, asset: None }
 	}
 
@@ -273,14 +274,14 @@ impl AssetTip {
 	}
 }
 
-impl From<u128> for AssetTip {
-	fn from(n: u128) -> Self {
+impl<Balance> From<Balance> for AssetTip<Balance> {
+	fn from(n: Balance) -> Self {
 		AssetTip::new(n)
 	}
 }
 
-impl From<AssetTip> for u128 {
-	fn from(tip: AssetTip) -> Self {
+impl From<AssetTip<Balance>> for Balance {
+	fn from(tip: AssetTip<Balance>) -> Self {
 		tip.tip
 	}
 }
