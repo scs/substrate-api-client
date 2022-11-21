@@ -24,7 +24,7 @@ use std::{
 	fmt::Debug,
 	sync::mpsc::{SendError, Sender as ThreadOut},
 };
-use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
+use ws::{CloseCode, Error as WsError, Handler, Handshake, Message, Result as WsResult, Sender};
 
 pub use client::WsRpcClient;
 pub use subscription::*;
@@ -35,6 +35,15 @@ pub mod subscription;
 type RpcResult<T> = Result<T, RpcClientError>;
 
 pub type RpcMessage = RpcResult<Option<String>>;
+
+#[allow(clippy::result_large_err)]
+pub trait Subscriber {
+	fn start_subscriber(
+		&self,
+		json_req: String,
+		result_in: ThreadOut<String>,
+	) -> Result<(), WsError>;
+}
 
 #[allow(clippy::result_large_err)]
 pub trait HandleMessage {

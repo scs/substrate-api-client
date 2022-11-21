@@ -15,6 +15,7 @@
 
 */
 
+use super::Subscriber;
 use crate::{
 	std::{error::Error, json_req, Api, ApiResult, FromHexString, RpcClient as RpcClientTrait},
 	utils,
@@ -26,18 +27,8 @@ use log::*;
 use sp_core::Pair;
 use sp_runtime::MultiSignature;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
-use ws::Error as WsError;
 
 pub use super::client::WsRpcClient;
-
-#[allow(clippy::result_large_err)]
-pub trait Subscriber {
-	fn start_subscriber(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<String>,
-	) -> Result<(), WsError>;
-}
 
 impl<P, Params> Api<P, WsRpcClient, Params>
 where
