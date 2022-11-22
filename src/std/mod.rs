@@ -34,7 +34,6 @@ pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
 use serde::{Deserialize, Serialize};
-use sp_core::H256 as Hash;
 
 pub mod api;
 pub mod error;
@@ -46,14 +45,6 @@ pub mod subscription;
 pub use subscription::*;
 
 use crate::rpc::json_req;
-
-pub trait RpcClient {
-	/// Sends a RPC request that returns a String
-	fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<String>;
-
-	/// Send a RPC request that returns a SHA256 hash
-	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
-}
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {

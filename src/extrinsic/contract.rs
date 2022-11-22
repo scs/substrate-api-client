@@ -19,7 +19,7 @@
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
 use crate::{
-	std::{Api, RpcClient},
+	std::{rpc::RpcClient, Api},
 	Index,
 };
 use ac_compose_macros::compose_extrinsic;

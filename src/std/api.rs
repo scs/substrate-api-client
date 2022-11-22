@@ -35,7 +35,7 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
-use crate::{std::json_req, ReadProof, RpcClient};
+use crate::{rpc::RpcClient, std::json_req, ReadProof};
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 use codec::{Decode, Encode};
@@ -529,7 +529,9 @@ where
 		exit_on: XtStatus,
 	) -> ApiResult<Option<Hash>> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		self.client.send_extrinsic(xthex_prefixed, exit_on)
+		self.client
+			.send_extrinsic(xthex_prefixed, exit_on)
+			.map_err(ApiClientError::RpcClient)
 	}
 
 	#[cfg(not(feature = "ws-client"))]

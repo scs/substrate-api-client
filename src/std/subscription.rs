@@ -19,8 +19,8 @@ use crate::{
 	std::{
 		error::Error,
 		json_req,
-		rpc::ws_client::client::{Subscriber, WsRpcClient},
-		Api, ApiResult, FromHexString, RpcClient as RpcClientTrait,
+		rpc::{ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
+		Api, ApiResult, FromHexString,
 	},
 	utils, Hash, Index,
 };

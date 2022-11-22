@@ -18,7 +18,7 @@
 //! Extrinsics for `pallet-utility`.
 
 use super::common::Batch;
-use crate::{Api, Hash, Index, RpcClient};
+use crate::{rpc::RpcClient, Api, Hash, Index};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
 use codec::Encode;

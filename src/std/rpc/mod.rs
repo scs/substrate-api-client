@@ -20,18 +20,24 @@ pub use ws_client::WsRpcClient;
 #[cfg(feature = "ws-client")]
 pub mod ws_client;
 
+pub mod error;
 pub mod json_req;
 
-#[derive(Debug, thiserror::Error)]
-pub enum RpcClientError {
-	#[error("Serde json error: {0}")]
-	Serde(#[from] serde_json::error::Error),
-	#[error("Extrinsic Error: {0}")]
-	Extrinsic(String),
-	#[error("mpsc send Error: {0}")]
-	Send(String),
-	#[error("Expected some error information, but nothing was found: {0}")]
-	NoErrorInformationFound(String),
-	#[error(transparent)]
-	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+pub use error::*;
+
+use crate::{std::XtStatus, Hash};
+use std::sync::mpsc::Sender as ThreadOut;
+
+/// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
+pub trait RpcClient {
+	/// Sends a RPC request that returns a String
+	fn get_request(&self, jsonreq: serde_json::Value) -> Result<String>;
+
+	/// Send a RPC request that returns a SHA256 hash
+	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> Result<Option<Hash>>;
+}
+
+/// Trait to be implemented by the ws-client for subscribing to the substrate node..
+pub trait Subscriber {
+	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
 }
