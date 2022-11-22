@@ -28,6 +28,8 @@ pub mod utils;
 #[cfg(feature = "std")]
 pub use crate::api::*;
 #[cfg(feature = "std")]
+pub use crate::rpc::*;
+#[cfg(feature = "std")]
 pub use ac_compose_macros::compose_extrinsic;
 
 #[cfg(feature = "std")]
