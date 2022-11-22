@@ -85,7 +85,6 @@ impl Subscriber for WsRpcClient {
 	}
 }
 
-#[allow(clippy::result_large_err)]
 impl WsRpcClient {
 	pub fn get(
 		&self,
