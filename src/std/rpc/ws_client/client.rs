@@ -21,10 +21,7 @@ use crate::{
 		GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler, SubscriptionHandler,
 	},
 	std::{
-		rpc::{
-			json_req,
-			ws_client::{RpcClient, Subscriber},
-		},
+		rpc::{json_req, ws_client::RpcClient},
 		ApiResult, FromHexString, RpcClient as RpcClientTrait, XtStatus,
 	},
 };
@@ -36,7 +33,16 @@ use std::{
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 };
-use ws::{connect, Result as WsResult};
+use ws::{connect, Error as WsError, Result as WsResult};
+
+#[allow(clippy::result_large_err)]
+pub trait Subscriber {
+	fn start_subscriber(
+		&self,
+		json_req: String,
+		result_in: ThreadOut<String>,
+	) -> Result<(), WsError>;
+}
 
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {

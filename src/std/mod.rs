@@ -40,6 +40,11 @@ pub mod api;
 pub mod error;
 pub mod rpc;
 
+#[cfg(feature = "ws-client")]
+pub mod subscription;
+#[cfg(feature = "ws-client")]
+pub use subscription::*;
+
 use crate::rpc::json_req;
 
 pub trait RpcClient {

@@ -15,9 +15,13 @@
 
 */
 
-use super::Subscriber;
 use crate::{
-	std::{error::Error, json_req, Api, ApiResult, FromHexString, RpcClient as RpcClientTrait},
+	std::{
+		error::Error,
+		json_req,
+		rpc::ws_client::client::{Subscriber, WsRpcClient},
+		Api, ApiResult, FromHexString, RpcClient as RpcClientTrait,
+	},
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -27,8 +31,6 @@ use log::*;
 use sp_core::Pair;
 use sp_runtime::MultiSignature;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
-
-pub use super::client::WsRpcClient;
 
 impl<P, Params> Api<P, WsRpcClient, Params>
 where
