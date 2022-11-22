@@ -17,10 +17,8 @@ use frame_metadata::{
 	StorageEntryMetadata, META_RESERVED,
 };
 use scale_info::{form::PortableForm, PortableRegistry, Type};
-use sp_core::storage::StorageKey;
-
-#[cfg(feature = "std")]
 use serde::Serialize;
+use sp_core::storage::StorageKey;
 
 // We use `BTreeMap` because we can't use `HashMap` in `no_std`.
 use sp_std::collections::btree_map::BTreeMap;
