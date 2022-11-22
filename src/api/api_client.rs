@@ -84,9 +84,9 @@ use std::convert::{TryFrom, TryInto};
 /// }
 ///
 /// impl RpcClient for MyClient {
-///     fn get_request(&self, jsonreq: Value) -> RpcResult<String> {
+///     fn get_request(&self, jsonreq: Value) -> RpcResult<Option<String>> {
 ///         self.send_json::<Value>("".into(), jsonreq)
-///             .map(|v| v.to_string())
+///             .map(|v| Some(v.to_string()))
 ///     }
 ///
 ///     fn send_extrinsic(
