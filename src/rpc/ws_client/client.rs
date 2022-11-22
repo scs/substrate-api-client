@@ -17,12 +17,14 @@
 
 use super::HandleMessage;
 use crate::{
-	rpc::ws_client::{
-		GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler, SubscriptionHandler,
-	},
-	std::{
-		rpc::{json_req, ws_client::RpcClient, Result, RpcClient as RpcClientTrait, Subscriber},
-		FromHexString, XtStatus,
+	api::{FromHexString, XtStatus},
+	rpc::{
+		json_req,
+		ws_client::{
+			GetRequestHandler, RpcClient, SubmitAndWatchHandler, SubmitOnlyHandler,
+			SubscriptionHandler,
+		},
+		Result, RpcClient as RpcClientTrait, Subscriber,
 	},
 };
 use log::info;

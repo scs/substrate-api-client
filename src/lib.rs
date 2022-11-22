@@ -18,15 +18,18 @@
 #![feature(assert_matches)]
 
 #[cfg(feature = "std")]
-pub mod std;
+pub mod api;
 
 #[cfg(feature = "std")]
 pub mod extrinsic;
 
+#[cfg(feature = "std")]
+pub mod rpc;
+
 pub mod utils;
 
 #[cfg(feature = "std")]
-pub use crate::std::*;
+pub use crate::api::*;
 
 pub use ac_primitives::*;
 

@@ -15,7 +15,7 @@
 
 */
 
-use crate::std::{rpc::Error as RpcClientError, XtStatus};
+use crate::{api::XtStatus, rpc::Error as RpcClientError};
 use log::*;
 use serde_json::Value;
 use std::{

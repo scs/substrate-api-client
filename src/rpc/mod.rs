@@ -25,7 +25,7 @@ pub mod json_req;
 
 pub use error::*;
 
-use crate::{std::XtStatus, Hash};
+use crate::{api::XtStatus, Hash};
 use std::sync::mpsc::Sender as ThreadOut;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.

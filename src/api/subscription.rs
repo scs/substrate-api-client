@@ -16,12 +16,8 @@
 */
 
 use crate::{
-	std::{
-		error::Error,
-		json_req,
-		rpc::{ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
-		Api, ApiResult, FromHexString,
-	},
+	api::{error::Error, Api, ApiResult, FromHexString},
+	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
