@@ -30,14 +30,15 @@ use std::sync::mpsc::Sender as ThreadOut;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait RpcClient {
-	/// Sends a RPC request that returns a String
+	/// Sends a RPC request to the substrate node and returns the answer as string.
 	fn get_request(&self, jsonreq: serde_json::Value) -> Result<String>;
 
-	/// Send a RPC request that returns a SHA256 hash
+	/// Submits ans watches an extrinsic until requested XtStatus and returns the block hash
+	/// the extrinsic was included, if XtStatus is InBlock or Finalized.
 	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> Result<Option<Hash>>;
 }
 
-/// Trait to be implemented by the ws-client for subscribing to the substrate node..
+/// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscriber {
 	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
 }
