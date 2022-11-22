@@ -28,6 +28,7 @@ pub enum Error {
 	#[error("Could not convert hex value into a string: {0}")]
 	Hex(#[from] hex::FromHexError),
 	// Ws error generates clippy warnings without Box, see #303
+	#[cfg(feature = "ws-client")]
 	#[error("Websocket ws error: {0}")]
 	Ws(Box<ws::Error>),
 	#[error("Expected some error information, but nothing was found: {0}")]
