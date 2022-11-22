@@ -67,7 +67,7 @@ pub enum MetadataError {
 	IncompatibleMetadata,
 }
 
-#[derive(Clone, Debug, Encode, Decode)]
+#[derive(Clone, Debug, Encode, Decode, Serialize)]
 pub struct Metadata {
 	pub metadata: RuntimeMetadataLastVersion,
 	pub pallets: BTreeMap<String, PalletMetadata>,
@@ -161,7 +161,7 @@ impl Metadata {
 	}
 
 	#[cfg(feature = "std")]
-	pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
+	pub fn pretty_format<Metadata: Serialize>(metadata: &Metadata) -> Option<String> {
 		let buf = Vec::new();
 		let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
 		let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
@@ -171,7 +171,7 @@ impl Metadata {
 }
 
 /// Metadata for a specific pallet.
-#[derive(Clone, Debug, Encode, Decode)]
+#[derive(Clone, Debug, Encode, Decode, Serialize)]
 pub struct PalletMetadata {
 	pub index: u8,
 	pub name: String,
@@ -233,7 +233,7 @@ impl PalletMetadata {
 }
 
 /// Metadata for specific field.
-#[derive(Clone, Debug, Encode, Decode)]
+#[derive(Clone, Debug, Encode, Decode, Serialize)]
 pub struct EventFieldMetadata {
 	name: Option<String>,
 	type_name: Option<String>,
@@ -263,7 +263,7 @@ impl EventFieldMetadata {
 }
 
 /// Metadata for specific events.
-#[derive(Clone, Debug, Encode, Decode)]
+#[derive(Clone, Debug, Encode, Decode, Serialize)]
 pub struct EventMetadata {
 	pallet: String,
 	event: String,
@@ -293,7 +293,7 @@ impl EventMetadata {
 	}
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode, Serialize)]
 pub struct ErrorMetadata {
 	pallet: String,
 	error: String,
