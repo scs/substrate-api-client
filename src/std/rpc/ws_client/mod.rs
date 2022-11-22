@@ -1,4 +1,3 @@
-use ac_node_api::Events;
 /*
    Copyright 2019 Supercomputing Systems AG
 
@@ -15,27 +14,17 @@ use ac_node_api::Events;
    limitations under the License.
 
 */
-pub use ac_node_api::{events::EventDetails, StaticEvent};
 
-use crate::{
-	std::{
-		error::Error, json_req, rpc::RpcClientError, Api, ApiResult, FromHexString,
-		RpcClient as RpcClientTrait, XtStatus,
-	},
-	utils, Hash, Index,
-};
-use ac_node_api::DispatchError;
-use ac_primitives::ExtrinsicParams;
+use crate::std::{rpc::RpcClientError, XtStatus};
 use log::*;
 use serde_json::Value;
-use sp_core::Pair;
-use sp_runtime::MultiSignature;
 use std::{
 	fmt::Debug,
-	sync::mpsc::{Receiver, SendError, Sender as ThreadOut},
+	sync::mpsc::{SendError, Sender as ThreadOut},
 };
-use ws::{CloseCode, Error as WsError, Handler, Handshake, Message, Result as WsResult, Sender};
+use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
 
+pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 
 pub mod client;
@@ -77,95 +66,7 @@ impl<MessageHandler: HandleMessage> Handler
 	}
 }
 
-#[allow(clippy::result_large_err)]
-pub trait Subscriber {
-	fn start_subscriber(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<String>,
-	) -> Result<(), WsError>;
-}
-
-impl<P, Params> Api<P, WsRpcClient, Params>
-where
-	Params: ExtrinsicParams<Index, Hash>,
-{
-	pub fn default_with_url(url: &str) -> ApiResult<Self> {
-		let client = WsRpcClient::new(url);
-		Self::new(client)
-	}
-}
-
-impl<P, Client, Params> Api<P, Client, Params>
-where
-	P: Pair,
-	MultiSignature: From<P::Signature>,
-	Client: RpcClientTrait + Subscriber,
-	Params: ExtrinsicParams<Index, Hash>,
-{
-	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
-		debug!("subscribing to events");
-		let key = utils::storage_key("System", "Events");
-		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
-	}
-
-	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
-		debug!("subscribing to finalized heads");
-		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
-	}
-
-	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
-		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver)?;
-		maybe_event_details
-			.as_event()?
-			.ok_or(Error::Other("Could not find the specific event".into()))
-	}
-
-	pub fn wait_for_event_details<Ev: StaticEvent>(
-		&self,
-		receiver: &Receiver<String>,
-	) -> ApiResult<EventDetails> {
-		loop {
-			let events_str = receiver.recv()?;
-			let event_bytes = Vec::from_hex(events_str)?;
-			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
-
-			for maybe_event_details in events.iter() {
-				let event_details = maybe_event_details?;
-
-				// Check for failed xt and return as Dispatch Error in case we find one.
-				// Careful - this reports the first one encountered. This event may belong to another extrinsic
-				// than the one that is being waited for.
-				if extrinsic_has_failed(&event_details) {
-					let dispatch_error =
-						DispatchError::decode_from(event_details.field_bytes(), &self.metadata);
-					return Err(Error::Dispatch(dispatch_error))
-				}
-
-				let event_metadata = event_details.event_metadata();
-				trace!(
-					"Found extrinsic: {:?}, {:?}",
-					event_metadata.pallet(),
-					event_metadata.event()
-				);
-				if event_metadata.pallet() == Ev::PALLET && event_metadata.event() == Ev::EVENT {
-					return Ok(event_details)
-				} else {
-					trace!("Not the event we are looking for, skipping.")
-				}
-			}
-		}
-	}
-}
-
-fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
-	event_details.pallet_name() == "System" && event_details.variant_name() == "ExtrinsicFailed"
-}
-
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-
 pub struct GetRequestHandler;
 
 impl HandleMessage for GetRequestHandler {
