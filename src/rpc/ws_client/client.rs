@@ -49,10 +49,8 @@ impl WsRpcClient {
 }
 
 impl RpcClientTrait for WsRpcClient {
-	fn get_request(&self, jsonreq: Value) -> Result<String> {
-		Ok(self
-			.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())??
-			.unwrap_or_default())
+	fn get_request(&self, jsonreq: Value) -> Result<Option<String>> {
+		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())?
 	}
 
 	fn send_extrinsic(

@@ -149,7 +149,7 @@ where
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
-		let genesis_hash = Self::_get_genesis_hash(&client)?;
+		let genesis_hash = Self::get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
 		let metadata = Self::_get_metadata(&client).map(Metadata::try_from)??;
@@ -179,9 +179,9 @@ where
 		self
 	}
 
-	fn _get_genesis_hash(client: &Client) -> ApiResult<Hash> {
+	pub fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = Self::_get_request(client, jsonreq)?;
+		let genesis = client.get_request(jsonreq)?;
 
 		match genesis {
 			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
@@ -191,7 +191,7 @@ where
 
 	fn _get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
 		let jsonreq = json_req::state_get_runtime_version();
-		let version = Self::_get_request(client, jsonreq)?;
+		let version = client.get_request(jsonreq)?;
 
 		match version {
 			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
@@ -201,23 +201,13 @@ where
 
 	fn _get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
 		let jsonreq = json_req::state_get_metadata();
-		let meta = Self::_get_request(client, jsonreq)?;
+		let meta = client.get_request(jsonreq)?;
 
 		if meta.is_none() {
 			return Err(ApiClientError::MetadataFetch)
 		}
 		let metadata = Vec::from_hex(meta.unwrap())?;
 		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
-	}
-
-	// low level access
-	fn _get_request(client: &Client, jsonreq: Value) -> ApiResult<Option<String>> {
-		let str = client.get_request(jsonreq)?;
-
-		match &str[..] {
-			"null" => Ok(None),
-			_ => Ok(Some(str)),
-		}
 	}
 
 	pub fn extrinsic_params(&self, nonce: Index) -> Params {
@@ -236,10 +226,6 @@ where
 
 	pub fn get_spec_version(&self) -> ApiResult<u32> {
 		Self::_get_runtime_version(&self.client).map(|v| v.spec_version)
-	}
-
-	pub fn get_genesis_hash(&self) -> ApiResult<Hash> {
-		Self::_get_genesis_hash(&self.client)
 	}
 
 	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
@@ -322,7 +308,7 @@ where
 	}
 
 	pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
-		Self::_get_request(&self.client, jsonreq)
+		self.client.get_request(jsonreq).map_err(ApiClientError::RpcClient)
 	}
 
 	pub fn get_storage_value<V: Decode>(
