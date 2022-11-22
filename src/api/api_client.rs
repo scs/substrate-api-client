@@ -239,6 +239,10 @@ where
 		&self.metadata
 	}
 
+	pub fn get_genesis_hash(&self) -> Hash {
+		self.genesis_hash
+	}
+
 	pub fn get_spec_version(&self) -> u32 {
 		self.runtime_version.spec_version
 	}
