@@ -193,7 +193,7 @@ where
 
 	/// Gets genesis hash directly from the node. Not a public method, because once the Api is created,
 	/// the genesis hash can be retrieved directly from the Api.
-	fn get_genesis_hash_from_node(client: &Client) -> ApiResult<Hash> {
+	pub fn get_genesis_hash_from_node(client: &Client) -> ApiResult<Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
 		let genesis = client.get_request(jsonreq)?;
 
@@ -203,7 +203,7 @@ where
 		}
 	}
 
-	fn get_runtime_version_from_node(client: &Client) -> ApiResult<RuntimeVersion> {
+	pub fn get_runtime_version_from_node(client: &Client) -> ApiResult<RuntimeVersion> {
 		let jsonreq = json_req::state_get_runtime_version();
 		let version = client.get_request(jsonreq)?;
 
@@ -213,7 +213,7 @@ where
 		}
 	}
 
-	fn get_metadata_from_node(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
+	pub fn get_metadata_from_node(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
 		let jsonreq = json_req::state_get_metadata();
 		let meta = client.get_request(jsonreq)?;
 
