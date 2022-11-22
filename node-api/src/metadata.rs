@@ -17,8 +17,10 @@ use frame_metadata::{
 	StorageEntryMetadata, META_RESERVED,
 };
 use scale_info::{form::PortableForm, PortableRegistry, Type};
-use serde::Serialize;
 use sp_core::storage::StorageKey;
+
+#[cfg(feature = "std")]
+use serde::Serialize;
 
 // We use `BTreeMap` because we can't use `HashMap` in `no_std`.
 use sp_std::collections::btree_map::BTreeMap;
@@ -65,7 +67,7 @@ pub enum MetadataError {
 	IncompatibleMetadata,
 }
 
-#[derive(Clone, Debug, Encode, Decode, Serialize)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct Metadata {
 	pub metadata: RuntimeMetadataLastVersion,
 	pub pallets: BTreeMap<String, PalletMetadata>,
@@ -169,7 +171,7 @@ impl Metadata {
 }
 
 /// Metadata for a specific pallet.
-#[derive(Clone, Debug, Encode, Decode, Serialize)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct PalletMetadata {
 	pub index: u8,
 	pub name: String,
@@ -231,7 +233,7 @@ impl PalletMetadata {
 }
 
 /// Metadata for specific field.
-#[derive(Clone, Debug, Encode, Decode, Serialize)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct EventFieldMetadata {
 	name: Option<String>,
 	type_name: Option<String>,
@@ -261,7 +263,7 @@ impl EventFieldMetadata {
 }
 
 /// Metadata for specific events.
-#[derive(Clone, Debug, Encode, Decode, Serialize)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct EventMetadata {
 	pallet: String,
 	event: String,
@@ -291,7 +293,7 @@ impl EventMetadata {
 	}
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
 pub struct ErrorMetadata {
 	pallet: String,
 	error: String,

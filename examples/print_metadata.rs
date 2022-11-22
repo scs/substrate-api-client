@@ -35,5 +35,5 @@ fn main() {
 	meta.print_pallets_with_constants();
 
 	// Print full substrate metadata json formatted.
-	println!("{}", Metadata::pretty_format(&api.get_metadata()).unwrap())
+	println!("{}", Metadata::pretty_format(&api.get_metadata().metadata).unwrap())
 }
