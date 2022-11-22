@@ -18,11 +18,13 @@
 //! Extrinsics for `pallet-staking`.
 
 use super::common::*;
-use crate::{rpc::RpcClient, Api, Hash, Index};
+use crate::{rpc::RpcClient, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
+use core::str::FromStr;
 use sp_core::Pair;
+use sp_rpc::number::NumberOrHex;
 use sp_runtime::{AccountId32, MultiSignature, MultiSigner};
 
 pub use pallet_staking::RewardDestination;
@@ -81,13 +83,16 @@ pub type StakingSetValidatorCountXt<SignedExtra> =
 	UncheckedExtrinsicV4<StakingSetValidatorCountFn, SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
-impl<P, Client, Params> Api<P, Client, Params>
+impl<P, Client, Params, Runtime> Api<P, Client, Params, Runtime>
 where
 	P: Pair,
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Bond `value` amount to `controller`
 	pub fn staking_bond(

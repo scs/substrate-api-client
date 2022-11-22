@@ -18,19 +18,24 @@
 use crate::{
 	api::{error::Error, Api, ApiResult, FromHexString},
 	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
-	utils, Hash, Index,
+	utils,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
+use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
-use sp_runtime::MultiSigner;
+use sp_rpc::number::NumberOrHex;
+use sp_runtime::{MultiSignature, MultiSigner};
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
-impl<P, Params> Api<P, WsRpcClient, Params>
+impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
 where
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -38,12 +43,15 @@ where
 	}
 }
 
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClientTrait + Subscriber,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex>,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");

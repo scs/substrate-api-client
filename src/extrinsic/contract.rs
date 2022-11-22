@@ -18,11 +18,13 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use crate::{api::Api, rpc::RpcClient, Hash, Index};
+use crate::{api::Api, rpc::RpcClient, FromHexString, Hash};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
+use core::str::FromStr;
 use sp_core::crypto::Pair;
+use sp_rpc::number::NumberOrHex;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
@@ -55,13 +57,16 @@ pub type ContractInstantiateWithCodeXt<SignedExtra> =
 pub type ContractCallXt<SignedExtra> = UncheckedExtrinsicV4<ContractCallFn, SignedExtra>;
 
 #[cfg(feature = "std")]
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSignature: From<P::Signature>,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn contract_put_code(
 		&self,

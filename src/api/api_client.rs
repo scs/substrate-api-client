@@ -30,23 +30,27 @@ pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
 	generic::SignedBlock,
 	traits::{Block, Header, IdentifyAccount},
-	AccountId32 as AccountId, MultiSignature, MultiSigner,
+	AccountId32, MultiSignature, MultiSigner,
 };
 pub use sp_std::prelude::*;
-pub use sp_version::RuntimeVersion;
 
 use crate::{
 	rpc::{json_req, RpcClient},
 	ReadProof,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
+use ac_primitives::ExtrinsicParams;
 use codec::{Decode, Encode};
+use core::{
+	convert::{TryFrom, TryInto},
+	str::FromStr,
+};
+use frame_system::AccountInfo;
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 use serde::de::DeserializeOwned;
 use sp_rpc::number::NumberOrHex;
-use std::convert::{TryFrom, TryInto};
+use sp_version::RuntimeVersion;
 
 /// Api to talk with substrate-nodes
 ///
@@ -60,6 +64,8 @@ use std::convert::{TryFrom, TryInto};
 ///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde_json::Value;
+/// use kitchensink_runtime::Runtime;
+///
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
 ///     _inner: (),
@@ -102,30 +108,37 @@ use std::convert::{TryFrom, TryInto};
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<(), _, PlainTipExtrinsicParams>::new(client);
+/// let _api = Api::<(), _, PlainTipExtrinsicParams, Runtime>::new(client);
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<P, Client, Params>
+pub struct Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex>,
 {
-	signer: Option<P>,
-	genesis_hash: Hash,
+	signer: Option<Signer>,
+	genesis_hash: Runtime::Hash,
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
 	extrinsic_params_builder: Option<Params::OtherParams>,
 }
 
-/// Setter and getter calls to the local cache, no substrate node calls involved.
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Index: From<u32>,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Set the api signer account.
 	pub fn set_signer(&mut self, signer: P) {
@@ -133,7 +146,7 @@ where
 	}
 
 	/// Get the public part of the api signer account.
-	pub fn signer_account(&self) -> Option<AccountId> {
+	pub fn signer_account(&self) -> Option<AccountId32> {
 		let pair = self.signer.as_ref()?;
 		let multi_signer = MultiSigner::from(pair.public());
 		Some(multi_signer.into_account())
@@ -187,38 +200,44 @@ where
 	}
 }
 
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Index: From<u32>,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Get nonce of signer account.
-	pub fn get_nonce(&self) -> ApiResult<u32> {
+	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
 		if self.signer.is_none() {
 			return Err(ApiClientError::NoSigner)
 		}
 
-		self.get_account_info(&self.signer_account().unwrap())
-			.map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
+		self.get_account_info(&self.signer_account().ok_or(ApiClientError::NoSigner)?)
+			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
 }
 
 /// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
 /// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
-	/// Get genesis hash from node via websocket query.
-	fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
+	fn get_genesis_hash(client: &Client) -> ApiResult<Runtime::Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
 		let genesis = client.get_request(jsonreq)?;
 
 		match genesis {
-			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
+			Some(g) => Runtime::Hash::from_hex(g).map_err(|e| e.into()),
 			None => Err(ApiClientError::Genesis),
 		}
 	}
@@ -248,19 +267,23 @@ where
 }
 
 /// Substrate node calls via websocket.
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
+	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime::Hash: FromHexString,
+	Runtime::Index: From<u32>,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
-		let genesis_hash = Self::get_genesis_hash(&client)?;
+		let genesis_hash = Self::_get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
-		let metadata = Self::get_metadata(&client).map(Metadata::try_from)??;
+		let metadata = Self::_get_metadata(&client).map(Metadata::try_from)??;
 		debug!("Metadata: {:?}", metadata);
 
-		let runtime_version = Self::get_runtime_version(&client)?;
+		let runtime_version = Self::_get_runtime_version(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
 
 		Ok(Self {
@@ -287,7 +310,10 @@ where
 		Ok(())
 	}
 
-	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
+	pub fn get_account_info<AccountId: Clone + Encode>(
+		&self,
+		address: &AccountId,
+	) -> ApiResult<Option<AccountInfo<Runtime::Index, Runtime::AccountData>>> {
 		let storagekey: sp_core::storage::StorageKey =
 			self.metadata
 				.storage_map_key::<AccountId>("System", "Account", address.clone())?;
@@ -296,14 +322,17 @@ where
 		self.get_storage_by_key_hash(storagekey, None)
 	}
 
-	pub fn get_account_data(&self, address: &AccountId) -> ApiResult<Option<AccountData>> {
+	pub fn get_account_data(
+		&self,
+		address: &Runtime::AccountId,
+	) -> ApiResult<Option<Runtime::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 
-	pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
+	pub fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
 		let h = self.get_request(json_req::chain_get_finalized_head())?;
 		match h {
-			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
+			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
 			None => Ok(None),
 		}
 	}
@@ -519,8 +548,8 @@ where
 	pub fn get_fee_details(
 		&self,
 		xthex_prefixed: &str,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<FeeDetails<Balance>>> {
+		at_block: Option<Runtime::Hash>,
+	) -> ApiResult<Option<FeeDetails<Runtime::Balance>>> {
 		let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
 		let res = self.get_request(jsonreq)?;
 		match res {
@@ -536,13 +565,13 @@ where
 	pub fn get_payment_info(
 		&self,
 		xthex_prefixed: &str,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<RuntimeDispatchInfo<Balance>>> {
+		at_block: Option<Runtime::Hash>,
+	) -> ApiResult<Option<RuntimeDispatchInfo<Runtime::Balance>>> {
 		let jsonreq = json_req::payment_query_info(xthex_prefixed, at_block);
 		let res = self.get_request(jsonreq)?;
 		match res {
 			Some(info) => {
-				let info: RuntimeDispatchInfo<Balance> = serde_json::from_str(&info)?;
+				let info: RuntimeDispatchInfo<Runtime::Balance> = serde_json::from_str(&info)?;
 				Ok(Some(info))
 			},
 			None => Ok(None),
@@ -564,7 +593,7 @@ where
 		Ok(Decode::decode(&mut c.value.as_slice())?)
 	}
 
-	pub fn get_existential_deposit(&self) -> ApiResult<Balance> {
+	pub fn get_existential_deposit(&self) -> ApiResult<Runtime::Balance> {
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 
@@ -581,14 +610,16 @@ where
 	}
 
 	#[cfg(not(feature = "ws-client"))]
-	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Hash>> {
+	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Runtime::Hash>> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		// XtStatus should never be used used but we need to put something
 		self.client.send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
 	}
 }
 
-fn convert_fee_details(details: FeeDetails<NumberOrHex>) -> ApiResult<FeeDetails<u128>> {
+fn convert_fee_details<Balance: TryFrom<NumberOrHex>>(
+	details: FeeDetails<NumberOrHex>,
+) -> ApiResult<FeeDetails<Balance>> {
 	let inclusion_fee = if let Some(inclusion_fee) = details.inclusion_fee {
 		Some(inclusion_fee_with_balance(inclusion_fee)?)
 	} else {
@@ -598,7 +629,7 @@ fn convert_fee_details(details: FeeDetails<NumberOrHex>) -> ApiResult<FeeDetails
 	Ok(FeeDetails { inclusion_fee, tip })
 }
 
-fn inclusion_fee_with_balance(
+fn inclusion_fee_with_balance<Balance: TryFrom<NumberOrHex>>(
 	inclusion_fee: InclusionFee<NumberOrHex>,
 ) -> ApiResult<InclusionFee<Balance>> {
 	Ok(InclusionFee {
