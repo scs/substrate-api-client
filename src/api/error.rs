@@ -15,7 +15,7 @@
 
 */
 
-use crate::{rpc::RpcClientError, std::XtStatus};
+use crate::{api::XtStatus, rpc::Error as RpcClientError};
 use ac_node_api::{
 	metadata::{InvalidMetadataError, MetadataError},
 	DispatchError,
@@ -33,9 +33,6 @@ pub enum Error {
 	MetadataFetch,
 	#[error("Operation needs a signer to be set in the api")]
 	NoSigner,
-	#[cfg(feature = "ws-client")]
-	#[error("WebSocket Error: {0}")]
-	WebSocket(#[from] ws::Error),
 	#[error("RpcClient error: {0:?}")]
 	RpcClient(#[from] RpcClientError),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]

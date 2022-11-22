@@ -16,14 +16,13 @@
 */
 
 pub use crate::{
-	std::error::{ApiResult, Error as ApiClientError},
+	api::error::{ApiResult, Error as ApiClientError},
 	utils::FromHexString,
 };
-pub use api::Api;
+pub use api_client::Api;
 pub use frame_metadata::RuntimeMetadataPrefixed;
 pub use pallet_transaction_payment::FeeDetails;
 pub use serde_json::Value;
-
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
 	generic::SignedBlock,
@@ -34,26 +33,14 @@ pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
 use serde::{Deserialize, Serialize};
-use sp_core::H256 as Hash;
 
-pub mod api;
+pub mod api_client;
 pub mod error;
-pub mod rpc;
 
 #[cfg(feature = "ws-client")]
 pub mod subscription;
 #[cfg(feature = "ws-client")]
 pub use subscription::*;
-
-use crate::rpc::json_req;
-
-pub trait RpcClient {
-	/// Sends a RPC request that returns a String
-	fn get_request(&self, jsonreq: serde_json::Value) -> ApiResult<String>;
-
-	/// Send a RPC request that returns a SHA256 hash
-	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> ApiResult<Option<Hash>>;
-}
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {

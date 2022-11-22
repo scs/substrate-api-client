@@ -18,14 +18,11 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use crate::{
-	std::{Api, RpcClient},
-	Index,
-};
+use crate::{api::Api, rpc::RpcClient, Hash, Index};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
-use sp_core::{crypto::Pair, H256 as Hash};
+use sp_core::crypto::Pair;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 

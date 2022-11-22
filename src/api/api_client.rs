@@ -16,7 +16,7 @@
 */
 
 pub use crate::{
-	std::{
+	api::{
 		error::{ApiResult, Error as ApiClientError},
 		XtStatus,
 	},
@@ -35,7 +35,10 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
-use crate::{std::json_req, ReadProof, RpcClient};
+use crate::{
+	rpc::{json_req, RpcClient},
+	ReadProof,
+};
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 use codec::{Decode, Encode};
@@ -54,7 +57,7 @@ use std::convert::{TryFrom, TryInto};
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::RpcClientError,  XtStatus, PlainTipExtrinsicParams
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde_json::Value;
 /// struct MyClient {
@@ -81,21 +84,19 @@ use std::convert::{TryFrom, TryInto};
 /// }
 ///
 /// impl RpcClient for MyClient {
-///     fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
+///     fn get_request(&self, jsonreq: Value) -> RpcResult<String> {
 ///         self.send_json::<Value>("".into(), jsonreq)
 ///             .map(|v| v.to_string())
-///             .map_err(|err| ApiClientError::RpcClient(err))
 ///     }
 ///
 ///     fn send_extrinsic(
 ///         &self,
 ///         xthex_prefixed: String,
 ///         _exit_on: XtStatus,
-///     ) -> ApiResult<Option<Hash>> {
+///     ) -> RpcResult<Option<Hash>> {
 ///         let jsonreq = author_submit_extrinsic(&xthex_prefixed);
 ///         let res: String = self
-///             .send_json("".into(), jsonreq)
-///             .map_err(|err| ApiClientError::RpcClient(err))?;
+///             .send_json("".into(), jsonreq)?;
 ///         Ok(Some(Hash::from_hex(res)?))
 ///     }
 /// }
@@ -529,7 +530,9 @@ where
 		exit_on: XtStatus,
 	) -> ApiResult<Option<Hash>> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		self.client.send_extrinsic(xthex_prefixed, exit_on)
+		self.client
+			.send_extrinsic(xthex_prefixed, exit_on)
+			.map_err(ApiClientError::RpcClient)
 	}
 
 	#[cfg(not(feature = "ws-client"))]

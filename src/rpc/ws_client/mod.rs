@@ -15,7 +15,7 @@
 
 */
 
-use crate::std::{rpc::RpcClientError, XtStatus};
+use crate::{api::XtStatus, rpc::Error as RpcClientError};
 use log::*;
 use serde_json::Value;
 use std::{
@@ -273,7 +273,7 @@ fn result_from_json_response(resp: &str) -> RpcResult<String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::rpc::RpcClientError;
+	use crate::rpc::Error as RpcClientError;
 	use std::{assert_matches::assert_matches, fmt::Debug};
 
 	fn assert_extrinsic_err<T: Debug>(result: Result<T, RpcClientError>, msg: &str) {

@@ -18,7 +18,7 @@
 //! Extrinsics for `pallet-staking`.
 
 use super::common::*;
-use crate::{Api, Hash, Index, RpcClient};
+use crate::{rpc::RpcClient, Api, Hash, Index};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;

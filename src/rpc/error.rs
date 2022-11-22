@@ -14,24 +14,35 @@
    limitations under the License.
 
 */
-#[cfg(feature = "ws-client")]
-pub use ws_client::WsRpcClient;
 
-#[cfg(feature = "ws-client")]
-pub mod ws_client;
-
-pub mod json_req;
+pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
-pub enum RpcClientError {
+pub enum Error {
 	#[error("Serde json error: {0}")]
 	Serde(#[from] serde_json::error::Error),
 	#[error("Extrinsic Error: {0}")]
 	Extrinsic(String),
 	#[error("mpsc send Error: {0}")]
 	Send(String),
+	#[error("Could not convert hex value into a string: {0}")]
+	Hex(#[from] hex::FromHexError),
+	// Ws error generates clippy warnings without Box, see #303
+	#[cfg(feature = "ws-client")]
+	#[error("Websocket ws error: {0}")]
+	Ws(Box<ws::Error>),
 	#[error("Expected some error information, but nothing was found: {0}")]
 	NoErrorInformationFound(String),
+	#[error("ChannelReceiveError, sender is disconnected: {0}")]
+	Disconnected(#[from] sp_std::sync::mpsc::RecvError),
+	#[error("Failure during thread creation: {0}")]
+	Io(#[from] std::io::Error),
 	#[error(transparent)]
 	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+}
+
+impl From<ws::Error> for Error {
+	fn from(error: ws::Error) -> Self {
+		Self::Ws(Box::new(error))
+	}
 }

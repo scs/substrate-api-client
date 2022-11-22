@@ -17,12 +17,14 @@
 
 use super::HandleMessage;
 use crate::{
-	rpc::ws_client::{
-		GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler, SubscriptionHandler,
-	},
-	std::{
-		rpc::{json_req, ws_client::RpcClient},
-		ApiResult, FromHexString, RpcClient as RpcClientTrait, XtStatus,
+	api::{FromHexString, XtStatus},
+	rpc::{
+		json_req,
+		ws_client::{
+			GetRequestHandler, RpcClient, SubmitAndWatchHandler, SubmitOnlyHandler,
+			SubscriptionHandler,
+		},
+		Result, RpcClient as RpcClientTrait, Subscriber,
 	},
 };
 use log::info;
@@ -33,16 +35,7 @@ use std::{
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 };
-use ws::{connect, Error as WsError, Result as WsResult};
-
-#[allow(clippy::result_large_err)]
-pub trait Subscriber {
-	fn start_subscriber(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<String>,
-	) -> Result<(), WsError>;
-}
+use ws::{connect, Result as WsResult};
 
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {
@@ -56,7 +49,7 @@ impl WsRpcClient {
 }
 
 impl RpcClientTrait for WsRpcClient {
-	fn get_request(&self, jsonreq: Value) -> ApiResult<String> {
+	fn get_request(&self, jsonreq: Value) -> Result<String> {
 		Ok(self
 			.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())??
 			.unwrap_or_default())
@@ -66,7 +59,7 @@ impl RpcClientTrait for WsRpcClient {
 		&self,
 		xthex_prefixed: String,
 		exit_on: XtStatus,
-	) -> ApiResult<Option<sp_core::H256>> {
+	) -> Result<Option<sp_core::H256>> {
 		// Todo: Make all variants return a H256: #175.
 
 		let jsonreq = match exit_on {
@@ -89,18 +82,17 @@ impl Subscriber for WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<(), ws::Error> {
+	) -> Result<()> {
 		self.start_subscriber(json_req, result_in)
 	}
 }
 
-#[allow(clippy::result_large_err)]
 impl WsRpcClient {
 	pub fn get(
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<GetRequestHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(json_req, result_in, GetRequestHandler::default())
 	}
 
@@ -108,7 +100,7 @@ impl WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubmitOnlyHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(json_req, result_in, SubmitOnlyHandler::default())
 	}
 
@@ -116,7 +108,7 @@ impl WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(
 			json_req,
 			result_in,
@@ -128,7 +120,7 @@ impl WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(
 			json_req,
 			result_in,
@@ -140,7 +132,7 @@ impl WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(
 			json_req,
 			result_in,
@@ -152,7 +144,7 @@ impl WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(
 			json_req,
 			result_in,
@@ -164,7 +156,7 @@ impl WsRpcClient {
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
-	) -> WsResult<()> {
+	) -> Result<()> {
 		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())
 	}
 
@@ -173,7 +165,7 @@ impl WsRpcClient {
 		jsonreq: String,
 		result_in: ThreadOut<MessageHandler::ThreadMessage>,
 		message_handler: MessageHandler,
-	) -> WsResult<()>
+	) -> Result<()>
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
@@ -197,7 +189,7 @@ impl WsRpcClient {
 		&self,
 		jsonreq: String,
 		message_handler: MessageHandler,
-	) -> ApiResult<MessageHandler::ThreadMessage>
+	) -> Result<MessageHandler::ThreadMessage>
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
