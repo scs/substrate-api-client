@@ -149,13 +149,13 @@ where
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
-		let genesis_hash = Self::get_genesis_hash(&client)?;
+		let genesis_hash = Self::get_genesis_hash_from_node(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
-		let metadata = Self::_get_metadata(&client).map(Metadata::try_from)??;
+		let metadata = Self::get_metadata_from_node(&client).map(Metadata::try_from)??;
 		debug!("Metadata: {:?}", metadata);
 
-		let runtime_version = Self::_get_runtime_version(&client)?;
+		let runtime_version = Self::get_runtime_version_from_node(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
 
 		Ok(Self {
@@ -166,6 +166,18 @@ where
 			client,
 			extrinsic_params_builder: None,
 		})
+	}
+
+	pub fn update_runtime(mut self) -> ApiResult<Self> {
+		let metadata = Self::get_metadata_from_node(&self.client).map(Metadata::try_from)??;
+		debug!("Metadata: {:?}", metadata);
+
+		let runtime_version = Self::get_runtime_version_from_node(&self.client)?;
+		info!("Runtime Version: {:?}", runtime_version);
+
+		self.metadata = metadata;
+		self.runtime_version = runtime_version;
+		Ok(self)
 	}
 
 	#[must_use]
@@ -179,7 +191,9 @@ where
 		self
 	}
 
-	pub fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
+	/// Gets genesis hash directly from the node. Not a public method, because once the Api is created,
+	/// the genesis hash can be retrieved directly from the Api.
+	fn get_genesis_hash_from_node(client: &Client) -> ApiResult<Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
 		let genesis = client.get_request(jsonreq)?;
 
@@ -189,7 +203,7 @@ where
 		}
 	}
 
-	fn _get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
+	fn get_runtime_version_from_node(client: &Client) -> ApiResult<RuntimeVersion> {
 		let jsonreq = json_req::state_get_runtime_version();
 		let version = client.get_request(jsonreq)?;
 
@@ -199,7 +213,7 @@ where
 		}
 	}
 
-	fn _get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
+	fn get_metadata_from_node(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
 		let jsonreq = json_req::state_get_metadata();
 		let meta = client.get_request(jsonreq)?;
 
@@ -220,12 +234,13 @@ where
 			extrinsic_params_builder,
 		)
 	}
-	pub fn get_metadata(&self) -> ApiResult<RuntimeMetadataPrefixed> {
-		Self::_get_metadata(&self.client)
+
+	pub fn get_metadata(&self) -> &Metadata {
+		&self.metadata
 	}
 
-	pub fn get_spec_version(&self) -> ApiResult<u32> {
-		Self::_get_runtime_version(&self.client).map(|v| v.spec_version)
+	pub fn get_spec_version(&self) -> u32 {
+		self.runtime_version.spec_version
 	}
 
 	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {
