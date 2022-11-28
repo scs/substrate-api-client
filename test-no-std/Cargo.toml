@@ -14,7 +14,7 @@ ac-node-api = { path = "../node-api", default-features = false, optional = true,
 substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 
 # substrate dependencies
-sp-io = { version = "6.0.0", default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 # It is better to test the no-std crates standalone (don't enable both features at the same time) because dependency
