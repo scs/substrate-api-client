@@ -82,7 +82,7 @@ where
 				// than the one that is being waited for.
 				if extrinsic_has_failed(&event_details) {
 					let dispatch_error =
-						DispatchError::decode_from(event_details.field_bytes(), &self.metadata());
+						DispatchError::decode_from(event_details.field_bytes(), self.metadata());
 					return Err(Error::Dispatch(dispatch_error))
 				}
 
