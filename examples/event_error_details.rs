@@ -16,7 +16,7 @@ limitations under the License.
 use codec::Decode;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
-use sp_runtime::{app_crypto::sp_core::sr25519, AccountId32 as AccountId, MultiAddress};
+use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::sync::mpsc::channel;
 use substrate_api_client::{
 	rpc::WsRpcClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
