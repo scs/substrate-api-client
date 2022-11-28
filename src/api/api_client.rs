@@ -111,117 +111,64 @@ where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
 {
-	pub signer: Option<P>,
-	pub genesis_hash: Hash,
-	pub metadata: Metadata,
-	pub runtime_version: RuntimeVersion,
-	pub client: Client,
-	pub extrinsic_params_builder: Option<Params::OtherParams>,
+	signer: Option<P>,
+	genesis_hash: Hash,
+	metadata: Metadata,
+	runtime_version: RuntimeVersion,
+	client: Client,
+	extrinsic_params_builder: Option<Params::OtherParams>,
 }
 
+/// Setter and getter calls to the local cache, no substrate node calls involved.
 impl<P, Client, Params> Api<P, Client, Params>
 where
 	P: Pair,
-	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
 {
-	pub fn signer_account(&self) -> Option<AccountId> {
-		let pair = self.signer.as_ref()?;
-		let multi_signer = MultiSigner::from(pair.public());
-		Some(multi_signer.into_account())
-	}
-
-	pub fn get_nonce(&self) -> ApiResult<u32> {
-		if self.signer.is_none() {
-			return Err(ApiClientError::NoSigner)
-		}
-
-		self.get_account_info(&self.signer_account().unwrap())
-			.map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
-	}
-}
-
-impl<P, Client, Params> Api<P, Client, Params>
-where
-	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
-{
-	pub fn new(client: Client) -> ApiResult<Self> {
-		let genesis_hash = Self::get_genesis_hash_from_node(&client)?;
-		info!("Got genesis hash: {:?}", genesis_hash);
-
-		let metadata = Self::get_metadata_from_node(&client).map(Metadata::try_from)??;
-		debug!("Metadata: {:?}", metadata);
-
-		let runtime_version = Self::get_runtime_version_from_node(&client)?;
-		info!("Runtime Version: {:?}", runtime_version);
-
-		Ok(Self {
-			signer: None,
-			genesis_hash,
-			metadata,
-			runtime_version,
-			client,
-			extrinsic_params_builder: None,
-		})
-	}
-
-	pub fn update_runtime(mut self) -> ApiResult<Self> {
-		let metadata = Self::get_metadata_from_node(&self.client).map(Metadata::try_from)??;
-		debug!("Metadata: {:?}", metadata);
-
-		let runtime_version = Self::get_runtime_version_from_node(&self.client)?;
-		info!("Runtime Version: {:?}", runtime_version);
-
-		self.metadata = metadata;
-		self.runtime_version = runtime_version;
-		Ok(self)
-	}
-
 	#[must_use]
 	pub fn set_signer(mut self, signer: P) -> Self {
 		self.signer = Some(signer);
 		self
 	}
 
+	pub fn signer_account(&self) -> Option<AccountId> {
+		let pair = self.signer.as_ref()?;
+		let multi_signer = MultiSigner::from(pair.public());
+		Some(multi_signer.into_account())
+	}
+
+	pub fn signer(&self) -> Option<&P> {
+		match &self.signer {
+			Some(signer) => Some(signer),
+			None => None,
+		}
+	}
+
+	pub fn genesis_hash(&self) -> Hash {
+		self.genesis_hash
+	}
+
+	pub fn metadata(&self) -> &Metadata {
+		&self.metadata
+	}
+
+	pub fn runtime_version(&self) -> &RuntimeVersion {
+		&self.runtime_version
+	}
+
+	pub fn spec_version(&self) -> u32 {
+		self.runtime_version.spec_version
+	}
+
+	pub fn client(&self) -> &Client {
+		&self.client
+	}
+
 	pub fn set_extrinsic_params_builder(mut self, extrinsic_params: Params::OtherParams) -> Self {
 		self.extrinsic_params_builder = Some(extrinsic_params);
 		self
-	}
-
-	/// Gets genesis hash directly from the node. Not a public method, because once the Api is created,
-	/// the genesis hash can be retrieved directly from the Api.
-	pub fn get_genesis_hash_from_node(client: &Client) -> ApiResult<Hash> {
-		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = client.get_request(jsonreq)?;
-
-		match genesis {
-			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
-			None => Err(ApiClientError::Genesis),
-		}
-	}
-
-	pub fn get_runtime_version_from_node(client: &Client) -> ApiResult<RuntimeVersion> {
-		let jsonreq = json_req::state_get_runtime_version();
-		let version = client.get_request(jsonreq)?;
-
-		match version {
-			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-			None => Err(ApiClientError::RuntimeVersion),
-		}
-	}
-
-	pub fn get_metadata_from_node(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
-		let jsonreq = json_req::state_get_metadata();
-		let meta = client.get_request(jsonreq)?;
-
-		if meta.is_none() {
-			return Err(ApiClientError::MetadataFetch)
-		}
-		let metadata = Vec::from_hex(meta.unwrap())?;
-		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
 	}
 
 	pub fn extrinsic_params(&self, nonce: Index) -> Params {
@@ -234,17 +181,106 @@ where
 			extrinsic_params_builder,
 		)
 	}
+}
 
-	pub fn get_metadata(&self) -> &Metadata {
-		&self.metadata
+impl<P, Client, Params> Api<P, Client, Params>
+where
+	P: Pair,
+	MultiSigner: From<P::Public>,
+	Client: RpcClient,
+	Params: ExtrinsicParams<Index, Hash>,
+{
+	/// Get nonce of signer account.
+	pub fn get_nonce(&self) -> ApiResult<u32> {
+		if self.signer.is_none() {
+			return Err(ApiClientError::NoSigner)
+		}
+
+		self.get_account_info(&self.signer_account().unwrap())
+			.map(|acc_opt| acc_opt.map_or_else(|| 0, |acc| acc.nonce))
+	}
+}
+
+/// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
+/// If an up-to-date query is necessary, cache should be updated beforehand.
+impl<P, Client, Params> Api<P, Client, Params>
+where
+	Client: RpcClient,
+	Params: ExtrinsicParams<Index, Hash>,
+{
+	/// Get genesis hash from node via websocket query.
+	fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
+		let jsonreq = json_req::chain_get_genesis_hash();
+		let genesis = client.get_request(jsonreq)?;
+
+		match genesis {
+			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
+			None => Err(ApiClientError::Genesis),
+		}
 	}
 
-	pub fn get_genesis_hash(&self) -> Hash {
-		self.genesis_hash
+	/// Get runtime version from node via websocket query.
+	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
+		let jsonreq = json_req::state_get_runtime_version();
+		let version = client.get_request(jsonreq)?;
+
+		match version {
+			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
+			None => Err(ApiClientError::RuntimeVersion),
+		}
 	}
 
-	pub fn get_spec_version(&self) -> u32 {
-		self.runtime_version.spec_version
+	/// Get metadata from node via websocket query.
+	fn get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
+		let jsonreq = json_req::state_get_metadata();
+		let meta = client.get_request(jsonreq)?;
+
+		if meta.is_none() {
+			return Err(ApiClientError::MetadataFetch)
+		}
+		let metadata = Vec::from_hex(meta.unwrap())?;
+		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
+	}
+}
+
+/// Substrate node calls via websocket.
+impl<P, Client, Params> Api<P, Client, Params>
+where
+	Client: RpcClient,
+	Params: ExtrinsicParams<Index, Hash>,
+{
+	pub fn new(client: Client) -> ApiResult<Self> {
+		let genesis_hash = Self::get_genesis_hash(&client)?;
+		info!("Got genesis hash: {:?}", genesis_hash);
+
+		let metadata = Self::get_metadata(&client).map(Metadata::try_from)??;
+		debug!("Metadata: {:?}", metadata);
+
+		let runtime_version = Self::get_runtime_version(&client)?;
+		info!("Runtime Version: {:?}", runtime_version);
+
+		Ok(Self {
+			signer: None,
+			genesis_hash,
+			metadata,
+			runtime_version,
+			client,
+			extrinsic_params_builder: None,
+		})
+	}
+
+	/// Updates the runtime and metadata of the api via node query.
+	// Ideally, this function is called if a substrate update runtime event is encountered.
+	pub fn update_runtime(mut self) -> ApiResult<Self> {
+		let metadata = Self::get_metadata(&self.client).map(Metadata::try_from)??;
+		debug!("Metadata: {:?}", metadata);
+
+		let runtime_version = Self::get_runtime_version(&self.client)?;
+		info!("Runtime Version: {:?}", runtime_version);
+
+		self.metadata = metadata;
+		self.runtime_version = runtime_version;
+		Ok(self)
 	}
 
 	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {

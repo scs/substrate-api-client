@@ -45,6 +45,6 @@ fn main() {
 
 	// get Alice's AccountNonce with api.get_nonce()
 	let signer = AccountKeyring::Alice.pair();
-	api.signer = Some(signer);
+	api.set_signer(signer);
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 }

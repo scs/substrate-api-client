@@ -56,7 +56,7 @@ fn main() {
 	// Compose the extrinsic.
 	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-		updated_api.clone().signer.unwrap(),
+		updated_api.signer().unwrap().clone(),
 		RuntimeCall::Balances(BalancesCall::transfer { dest: to.clone(), value: 42 }),
 		updated_api.extrinsic_params(alice_nonce)
 	);

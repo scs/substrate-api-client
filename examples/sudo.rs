@@ -39,7 +39,7 @@ fn main() {
 	// this call can only be called by sudo
 	#[allow(clippy::redundant_clone)]
 	let call = compose_call!(
-		api.metadata.clone(),
+		api.metadata().clone(),
 		"Balances",
 		"set_balance",
 		GenericAddress::Id(to),

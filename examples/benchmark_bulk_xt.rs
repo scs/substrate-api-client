@@ -46,7 +46,7 @@ fn main() {
 		// compose the extrinsic with all the element
 		#[allow(clippy::redundant_clone)]
 		let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-			api.clone().signer.unwrap(),
+			api.signer().unwrap().clone(),
 			RuntimeCall::Balances(BalancesCall::transfer {
 				dest: GenericAddress::Id(to.clone()),
 				value: 1_000_000
