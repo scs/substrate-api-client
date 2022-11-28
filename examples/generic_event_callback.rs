@@ -41,9 +41,8 @@ fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(alice.clone()))
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(alice);
 
 	println!("Subscribe to events");
 

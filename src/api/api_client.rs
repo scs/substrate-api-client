@@ -127,18 +127,19 @@ where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
 {
-	#[must_use]
-	pub fn set_signer(mut self, signer: P) -> Self {
+	/// Set the api signer account.
+	pub fn set_signer(&mut self, signer: P) {
 		self.signer = Some(signer);
-		self
 	}
 
+	/// Get the public part of the api signer account.
 	pub fn signer_account(&self) -> Option<AccountId> {
 		let pair = self.signer.as_ref()?;
 		let multi_signer = MultiSigner::from(pair.public());
 		Some(multi_signer.into_account())
 	}
 
+	/// Get the private key pair of the api signer.
 	pub fn signer(&self) -> Option<&P> {
 		match &self.signer {
 			Some(signer) => Some(signer),
@@ -146,31 +147,37 @@ where
 		}
 	}
 
+	/// Get the cached genesis hash of the substrate node.
 	pub fn genesis_hash(&self) -> Hash {
 		self.genesis_hash
 	}
 
+	/// Get the cached metadata of the substrate node.
 	pub fn metadata(&self) -> &Metadata {
 		&self.metadata
 	}
 
+	/// Get the cached runtime version of the substrate node.
 	pub fn runtime_version(&self) -> &RuntimeVersion {
 		&self.runtime_version
 	}
 
+	/// Get the cached spec version of the substrate node.
 	pub fn spec_version(&self) -> u32 {
 		self.runtime_version.spec_version
 	}
 
+	/// Get the rpc client.
 	pub fn client(&self) -> &Client {
 		&self.client
 	}
 
-	pub fn set_extrinsic_params_builder(mut self, extrinsic_params: Params::OtherParams) -> Self {
+	/// Set the extrinscs param builder.
+	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::OtherParams) {
 		self.extrinsic_params_builder = Some(extrinsic_params);
-		self
 	}
 
+	/// Get the extrinsic params, built with the set or if none, the default Params Builder.
 	pub fn extrinsic_params(&self, nonce: Index) -> Params {
 		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
 		<Params as ExtrinsicParams<Index, Hash>>::new(
@@ -271,7 +278,7 @@ where
 
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
-	pub fn update_runtime(mut self) -> ApiResult<Self> {
+	pub fn update_runtime(&mut self) -> ApiResult<()> {
 		let metadata = Self::get_metadata(&self.client).map(Metadata::try_from)??;
 		debug!("Metadata: {:?}", metadata);
 
@@ -280,7 +287,7 @@ where
 
 		self.metadata = metadata;
 		self.runtime_version = runtime_version;
-		Ok(self)
+		Ok(())
 	}
 
 	pub fn get_account_info(&self, address: &AccountId) -> ApiResult<Option<AccountInfo>> {

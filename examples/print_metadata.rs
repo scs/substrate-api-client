@@ -23,7 +23,7 @@ fn main() {
 	env_logger::init();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 
@@ -34,7 +34,8 @@ fn main() {
 	meta.print_pallets_with_errors();
 	meta.print_pallets_with_constants();
 
-	let api = api.update_runtime().unwrap();
+	// Update the runtime and metadata.
+	api.update_runtime().unwrap();
 
 	// Print full substrate metadata json formatted.
 	println!("{}", Metadata::pretty_format(&api.metadata().metadata).unwrap())

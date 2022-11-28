@@ -34,9 +34,8 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(alice.clone()))
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(alice.clone());
 
 	// Bob
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

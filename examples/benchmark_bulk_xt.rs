@@ -30,10 +30,9 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(from))
-		.unwrap();
+let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(from);
 
 	println!("[+] Alice's Account Nonce is {}\n", api.get_nonce().unwrap());
 
