@@ -20,12 +20,12 @@
 use super::common::*;
 use crate::{rpc::RpcClient, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
-use codec::Compact;
+use ac_primitives::{CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
+use codec::{Compact, Encode};
 use core::str::FromStr;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::{AccountId32, MultiSignature, MultiSigner};
+use sp_runtime::{AccountId32, MultiSigner, MultiSignature};
 
 pub use pallet_staking::RewardDestination;
 
@@ -45,11 +45,11 @@ const FORCE_NO_ERA: &str = "force_no_era";
 const STAKING_SET_PAYEE: &str = "set_payee";
 const SET_VALIDATOR_COUNT: &str = "set_validator_count";
 
-pub type StakingBondFn =
+pub type StakingBondFn<Balance> =
 	(CallIndex, GenericAddress, Compact<Balance>, RewardDestination<GenericAddress>);
-pub type StakingBondExtraFn = (CallIndex, Compact<Balance>);
-pub type StakingUnbondFn = (CallIndex, Compact<Balance>);
-pub type StakingRebondFn = (CallIndex, Compact<Balance>);
+pub type StakingBondExtraFn<Balance> = (CallIndex, Compact<Balance>);
+pub type StakingUnbondFn<Balance> = (CallIndex, Compact<Balance>);
+pub type StakingRebondFn<Balance> = (CallIndex, Compact<Balance>);
 pub type StakingWithdrawUnbondedFn = (CallIndex, u32);
 pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
 pub type StakingChillFn = CallIndex;
@@ -61,10 +61,14 @@ pub type StakingForceNoEraFn = (CallIndex, ForceEra);
 pub type StakingSetPayeeFn = (CallIndex, GenericAddress);
 pub type StakingSetValidatorCountFn = (CallIndex, u32);
 
-pub type StakingBondXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondFn, SignedExtra>;
-pub type StakingBondExtraXt<SignedExtra> = UncheckedExtrinsicV4<StakingBondExtraFn, SignedExtra>;
-pub type StakingUnbondXt<SignedExtra> = UncheckedExtrinsicV4<StakingUnbondFn, SignedExtra>;
-pub type StakingRebondXt<SignedExtra> = UncheckedExtrinsicV4<StakingRebondFn, SignedExtra>;
+pub type StakingBondXt<SignedExtra, Balance> =
+	UncheckedExtrinsicV4<StakingBondFn<Balance>, SignedExtra>;
+pub type StakingBondExtraXt<SignedExtra, Balance> =
+	UncheckedExtrinsicV4<StakingBondExtraFn<Balance>, SignedExtra>;
+pub type StakingUnbondXt<SignedExtra, Balance> =
+	UncheckedExtrinsicV4<StakingUnbondFn<Balance>, SignedExtra>;
+pub type StakingRebondXt<SignedExtra, Balance> =
+	UncheckedExtrinsicV4<StakingRebondFn<Balance>, SignedExtra>;
 pub type StakingWithdrawUnbondedXt<SignedExtra> =
 	UncheckedExtrinsicV4<StakingWithdrawUnbondedFn, SignedExtra>;
 pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn, SignedExtra>;
@@ -83,41 +87,51 @@ pub type StakingSetValidatorCountXt<SignedExtra> =
 	UncheckedExtrinsicV4<StakingSetValidatorCountFn, SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
-impl<P, Client, Params, Runtime> Api<P, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSignature: From<P::Signature>,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSigner: From<Signer::Public>,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: frame_system::Config + pallet_balances::Config + pallet_staking::Config,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Compact<Runtime::CurrencyBalance>: Encode,
 {
 	/// Bond `value` amount to `controller`
 	pub fn staking_bond(
 		&self,
 		controller: GenericAddress,
-		value: Balance,
+		value: Runtime::CurrencyBalance,
 		payee: RewardDestination<GenericAddress>,
-	) -> StakingBondXt<Params::SignedExtra> {
+	) -> StakingBondXt<Params::SignedExtra, Runtime::CurrencyBalance> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND, controller, Compact(value), payee)
 	}
 
 	/// Bonds extra funds from the stash's free balance to the balance for staking.
-	pub fn staking_bond_extra(&self, value: Balance) -> StakingBondExtraXt<Params::SignedExtra> {
+	pub fn staking_bond_extra(
+		&self,
+		value: Runtime::CurrencyBalance,
+	) -> StakingBondExtraXt<Params::SignedExtra, Runtime::CurrencyBalance> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND_EXTRA, Compact(value))
 	}
 
 	/// Unbond `value` portion of the stash.
 	/// If `value` is less than the minimum required, then the entire amount is unbound.
 	/// Must be signed by the controller of the stash.
-	pub fn staking_unbond(&self, value: Balance) -> StakingUnbondXt<Params::SignedExtra> {
+	pub fn staking_unbond(
+		&self,
+		value: Runtime::CurrencyBalance,
+	) -> StakingUnbondXt<Params::SignedExtra, Runtime::CurrencyBalance> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_UNBOND, Compact(value))
 	}
 
 	/// Rebond `value` portion of the current amount that is in the process of unbonding.
-	pub fn staking_rebond(&self, value: Balance) -> StakingRebondXt<Params::SignedExtra> {
+	pub fn staking_rebond(
+		&self,
+		value: Runtime::CurrencyBalance,
+	) -> StakingRebondXt<Params::SignedExtra, Runtime::CurrencyBalance> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_REBOND, Compact(value))
 	}
 
