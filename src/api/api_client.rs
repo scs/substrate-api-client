@@ -84,7 +84,7 @@ use std::convert::{TryFrom, TryInto};
 /// }
 ///
 /// impl RpcClient for MyClient {
-///     fn get_request(&self, jsonreq: Value) -> RpcResult<Option<String>> {
+///     fn request(&self, jsonreq: Value) -> RpcResult<Option<String>> {
 ///         self.send_json::<Value>("".into(), jsonreq)
 ///             .map(|v| Some(v.to_string()))
 ///     }
@@ -215,7 +215,7 @@ where
 	/// Get genesis hash from node via websocket query.
 	fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = client.get_request(jsonreq)?;
+		let genesis = client.request(jsonreq)?;
 
 		match genesis {
 			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
@@ -226,7 +226,7 @@ where
 	/// Get runtime version from node via websocket query.
 	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
 		let jsonreq = json_req::state_get_runtime_version();
-		let version = client.get_request(jsonreq)?;
+		let version = client.request(jsonreq)?;
 
 		match version {
 			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
@@ -237,7 +237,7 @@ where
 	/// Get metadata from node via websocket query.
 	fn get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
 		let jsonreq = json_req::state_get_metadata();
-		let meta = client.get_request(jsonreq)?;
+		let meta = client.request(jsonreq)?;
 
 		if meta.is_none() {
 			return Err(ApiClientError::MetadataFetch)
@@ -301,7 +301,7 @@ where
 	}
 
 	pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
-		let h = self.get_request(json_req::chain_get_finalized_head())?;
+		let h = self.request(json_req::chain_get_finalized_head())?;
 		match h {
 			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
 			None => Ok(None),
@@ -312,7 +312,7 @@ where
 	where
 		H: Header + DeserializeOwned,
 	{
-		let h = self.get_request(json_req::chain_get_header(hash))?;
+		let h = self.request(json_req::chain_get_header(hash))?;
 		match h {
 			Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
 			None => Ok(None),
@@ -320,7 +320,7 @@ where
 	}
 
 	pub fn get_block_hash(&self, number: Option<u32>) -> ApiResult<Option<Hash>> {
-		let h = self.get_request(json_req::chain_get_block_hash(number))?;
+		let h = self.request(json_req::chain_get_block_hash(number))?;
 		match h {
 			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
 			None => Ok(None),
@@ -349,7 +349,7 @@ where
 	where
 		B: Block + DeserializeOwned,
 	{
-		let b = self.get_request(json_req::chain_get_block(hash))?;
+		let b = self.request(json_req::chain_get_block(hash))?;
 		match b {
 			Some(block) => Ok(Some(serde_json::from_str(&block)?)),
 			None => Ok(None),
@@ -366,8 +366,8 @@ where
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 
-	pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
-		self.client.get_request(jsonreq).map_err(ApiClientError::RpcClient)
+	pub fn request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
+		self.client.request(jsonreq).map_err(ApiClientError::RpcClient)
 	}
 
 	pub fn get_storage_value<V: Decode>(
@@ -440,7 +440,7 @@ where
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
 		let jsonreq = json_req::state_get_storage(key, at_block);
-		let s = self.get_request(jsonreq)?;
+		let s = self.request(jsonreq)?;
 
 		match s {
 			Some(storage) => Ok(Some(Vec::from_hex(storage)?)),
@@ -496,7 +496,7 @@ where
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<ReadProof<Hash>>> {
 		let jsonreq = json_req::state_get_read_proof(keys, at_block);
-		let p = self.get_request(jsonreq)?;
+		let p = self.request(jsonreq)?;
 		match p {
 			Some(proof) => Ok(Some(serde_json::from_str(&proof)?)),
 			None => Ok(None),
@@ -509,7 +509,7 @@ where
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<Vec<String>>> {
 		let jsonreq = json_req::state_get_keys(key, at_block);
-		let k = self.get_request(jsonreq)?;
+		let k = self.request(jsonreq)?;
 		match k {
 			Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
 			None => Ok(None),
@@ -522,7 +522,7 @@ where
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<FeeDetails<Balance>>> {
 		let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
-		let res = self.get_request(jsonreq)?;
+		let res = self.request(jsonreq)?;
 		match res {
 			Some(details) => {
 				let details: FeeDetails<NumberOrHex> = serde_json::from_str(&details)?;
@@ -539,7 +539,7 @@ where
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<RuntimeDispatchInfo<Balance>>> {
 		let jsonreq = json_req::payment_query_info(xthex_prefixed, at_block);
-		let res = self.get_request(jsonreq)?;
+		let res = self.request(jsonreq)?;
 		match res {
 			Some(info) => {
 				let info: RuntimeDispatchInfo<Balance> = serde_json::from_str(&info)?;

@@ -49,7 +49,7 @@ impl WsRpcClient {
 }
 
 impl RpcClientTrait for WsRpcClient {
-	fn get_request(&self, jsonreq: Value) -> Result<Option<String>> {
+	fn request(&self, jsonreq: Value) -> Result<Option<String>> {
 		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())?
 	}
 
