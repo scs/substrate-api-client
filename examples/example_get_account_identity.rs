@@ -13,8 +13,9 @@
 	limitations under the License.
 */
 
-///! Example to show how to get the account identity display name from the identity pallet.
-use clap::{load_yaml, App};
+//! Example to show how to get the account identity display name from the identity pallet.
+
+use frame_support::traits::Currency;
 use kitchensink_runtime::Runtime as KitchensinkRuntime;
 use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
@@ -24,8 +25,6 @@ use substrate_api_client::{
 	XtStatus,
 };
 
-use frame_support::traits::Currency;
-
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::Balance;
@@ -34,10 +33,9 @@ type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFie
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
 	// Create the node-api client and set the signer.
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let alice = AccountKeyring::Alice.pair();
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(alice.clone()))
@@ -78,15 +76,4 @@ fn main() {
 		.unwrap();
 	println!("[+] Retrieved {:?}", registration);
 	assert_eq!(registration.info, info);
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }
