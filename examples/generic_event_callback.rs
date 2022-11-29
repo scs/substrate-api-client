@@ -13,9 +13,9 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to subscribe to events generically
-/// implying no runtime needs to be imported
-use clap::{load_yaml, App};
+//! Very simple example that shows how to subscribe to events generically
+//! implying no runtime needs to be imported
+
 use codec::Decode;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
@@ -37,7 +37,6 @@ impl StaticEvent for TransferEventArgs {
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
@@ -73,15 +72,4 @@ fn main() {
 	println!("Transactor: {:?}", args.from);
 	println!("Destination: {:?}", args.to);
 	println!("Value: {:?}", args.value);
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://localhost");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}", url);
-	url
 }

@@ -16,13 +16,10 @@
 //! This examples shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use clap::{load_yaml, App};
-
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
 use kitchensink_runtime::{BalancesCall, Header, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
-
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
 	UncheckedExtrinsicV4, XtStatus,
@@ -30,11 +27,10 @@ use substrate_api_client::{
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))

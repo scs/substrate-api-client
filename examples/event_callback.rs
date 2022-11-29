@@ -16,7 +16,6 @@
 ///! Very simple example that shows how to subscribe to events.
 use std::sync::mpsc::channel;
 
-use clap::{load_yaml, App};
 use codec::Decode;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
@@ -30,9 +29,8 @@ use substrate_api_client::{rpc::WsRpcClient, utils::FromHexString, Api, AssetTip
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	println!("Subscribe to events");
@@ -67,15 +65,4 @@ fn main() {
 			}
 		}
 	}
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://localhost");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}", url);
-	url
 }

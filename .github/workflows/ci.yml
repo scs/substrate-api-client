@@ -86,20 +86,20 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         example: [
-          example_benchmark_bulk_xt,
-          example_compose_extrinsic_offline,
-          example_custom_nonce,
-          example_event_callback,
-          example_event_error_details,
-          example_generic_event_callback,
-          example_generic_extrinsic,
-          example_get_account_identity,
-          example_get_blocks,
-          example_get_existential_deposit,
-          example_get_storage,
-          example_print_metadata,
-          example_sudo,
-          example_transfer_using_seed,
+          benchmark_bulk_xt,
+          compose_extrinsic_offline,
+          custom_nonce,
+          event_callback,
+          event_error_details,
+          generic_event_callback,
+          generic_extrinsic,
+          get_account_identity,
+          get_blocks,
+          get_existential_deposit,
+          get_storage,
+          print_metadata,
+          sudo,
+          transfer_using_seed,
         ]
     steps:
       - uses: actions/checkout@v3

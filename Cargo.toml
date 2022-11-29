@@ -49,7 +49,6 @@ ac-primitives = { path = "primitives", default-features = false }
 env_logger = "0.9.0"
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-clap = { version = "2.33", features = ["yaml"] }
 wabt = "0.10.0"
 pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 

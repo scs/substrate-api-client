@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-use clap::{load_yaml, App};
 use codec::Decode;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
@@ -38,12 +37,11 @@ impl StaticEvent for TransferEventArgs {
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
 
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from.clone()))
 		.unwrap();
@@ -108,15 +106,4 @@ fn main() {
 	let alice = api.get_account_data(&from_account_id).unwrap().unwrap();
 	println!("[+] Alice's Free Balance is now {}\n", alice.free);
 	assert!(amount > alice.free);
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }

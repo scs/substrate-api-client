@@ -14,29 +14,16 @@ limitations under the License.
 */
 
 ///! Very simple example that shows how to get some simple storage values.
-use clap::{load_yaml, App};
 use sp_runtime::app_crypto::sp_core::sr25519;
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	// get existential deposit
 	let min_balance = api.get_existential_deposit().unwrap();
 	println!("[+] Existential Deposit is {}", min_balance);
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }
