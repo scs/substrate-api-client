@@ -14,11 +14,13 @@
    limitations under the License.
 
 */
-#[cfg(feature = "ws-client")]
-pub use ws_client::WsRpcClient;
+// #[cfg(feature = "ws-client")]
+// pub use ws_client::WsRpcClient;
 
-#[cfg(feature = "ws-client")]
-pub mod ws_client;
+// #[cfg(feature = "ws-client")]
+// pub mod ws_client;
+
+pub mod jsonrpsee_client;
 
 pub mod error;
 pub mod json_req;
@@ -26,6 +28,7 @@ pub mod json_req;
 pub use error::*;
 
 use crate::{api::XtStatus, Hash};
+use serde_json::value::Value;
 use std::sync::mpsc::Sender as ThreadOut;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.

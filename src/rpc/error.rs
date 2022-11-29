@@ -38,7 +38,7 @@ pub enum Error {
 	#[error("Failure during thread creation: {0}")]
 	Io(#[from] std::io::Error),
 	#[error(transparent)]
-	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 impl From<ws::Error> for Error {
