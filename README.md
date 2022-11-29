@@ -54,8 +54,6 @@ The following examples can be found in the [examples](/examples) folder:
 * [benchmark_bulk_xt](/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
 * [compose_extrinsic_offline](/examples/compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
 * [contract_instantiate_with_code](/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
-* [contract](/examples/contract.rs): Handle ink! contracts (put, create, and call). **DEPRECATED!**
-* [custom_storage_struct](/examples/ustom_storage_struct.rs): Fetch and decode custom structs from the runtime. **DEPRECATED!**
 * [event_callback](/examples/event_callback.rs): Subscribe and react on events.
 * [event_error_details](/examples/event_error_details.rs): Listen to error events from the node to determine if an extrinsic was successful or not.
 * [generic_event_callback](/examples/generic_event_callback.rs): Listen to an example event from the node.
