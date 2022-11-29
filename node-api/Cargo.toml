@@ -15,14 +15,11 @@ scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], def
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
-#TODO get from parity when our changes are accepted https://github.com/scs/substrate-api-client/issues/304
-frame-metadata = { version = "15.0.0", default-features = false, git = "https://github.com/integritee-network/frame-metadata", features = ["v14", "full_derive"] }
-#frame-metadata = { version = "15.0.0", features = ["v14"], default-features = false }
-
 # local
 ac-primitives = { path = "../primitives", default-features = false }
 
 # substrate
+frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -48,10 +45,10 @@ std = [
     "scale-info/std",
     "serde/std",
     "serde_json/std",
-    "frame-metadata/std",
     # local
     "ac-primitives/std",
     # substrate
+    "frame-metadata/std",
     "frame-support/std",
     "frame-system/std",
     "sp-core/std",
