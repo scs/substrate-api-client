@@ -31,6 +31,7 @@ frame-metadata = { version = "15.0.0", default-features = false, git = "https://
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-transaction-payment = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -72,6 +73,7 @@ std = [
     "frame-support/std",
     "frame-system",
     "pallet-balances",
+    "pallet-contracts",
     "pallet-transaction-payment/std",
     "sp-core/std",
     "sp-rpc",

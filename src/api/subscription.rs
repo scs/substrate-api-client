@@ -27,7 +27,7 @@ use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
 impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
@@ -51,7 +51,7 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: frame_system::Config + pallet_balances::Config,
 	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex>,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");

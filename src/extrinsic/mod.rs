@@ -19,7 +19,7 @@
 
 pub mod balances;
 pub mod common;
-pub mod contract;
+pub mod contracts;
 #[cfg(feature = "staking-xt")]
 pub mod staking;
 pub mod utility;

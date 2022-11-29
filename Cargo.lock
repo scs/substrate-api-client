@@ -4637,6 +4637,7 @@ dependencies = [
  "kitchensink-runtime",
  "log",
  "pallet-balances",
+ "pallet-contracts",
  "pallet-identity",
  "pallet-staking",
  "pallet-transaction-payment",

@@ -131,7 +131,6 @@ where
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
@@ -141,7 +140,7 @@ where
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Set the api signer account.
-	pub fn set_signer(&mut self, signer: P) {
+	pub fn set_signer(&mut self, signer: Signer) {
 		self.signer = Some(signer);
 	}
 
@@ -153,12 +152,12 @@ where
 	}
 
 	/// Get the private key pair of the api signer.
-	pub fn signer(&self) -> Option<&P> {
+	pub fn signer(&self) -> Option<&Signer> {
 		self.signer.as_ref()
 	}
 
 	/// Get the cached genesis hash of the substrate node.
-	pub fn genesis_hash(&self) -> Hash {
+	pub fn genesis_hash(&self) -> Runtime::Hash {
 		self.genesis_hash
 	}
 
@@ -188,9 +187,9 @@ where
 	}
 
 	/// Get the extrinsic params, built with the set or if none, the default Params Builder.
-	pub fn extrinsic_params(&self, nonce: Index) -> Params {
+	pub fn extrinsic_params(&self, nonce: Runtime::Index) -> Params {
 		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
-		<Params as ExtrinsicParams<Index, Hash>>::new(
+		<Params as ExtrinsicParams<Runtime::Index, Runtime::Hash>>::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
@@ -205,7 +204,7 @@ where
 	Signer: Pair,
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: frame_system::Config + pallet_balances::Config,
 	Runtime::Hash: FromHexString,
 	Runtime::Index: From<u32>,
@@ -270,20 +269,20 @@ where
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: frame_system::Config + pallet_balances::Config,
 	Runtime::Hash: FromHexString,
 	Runtime::Index: From<u32>,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
-		let genesis_hash = Self::_get_genesis_hash(&client)?;
+		let genesis_hash = Self::get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
-		let metadata = Self::_get_metadata(&client).map(Metadata::try_from)??;
+		let metadata = Self::get_metadata(&client).map(Metadata::try_from)??;
 		debug!("Metadata: {:?}", metadata);
 
-		let runtime_version = Self::_get_runtime_version(&client)?;
+		let runtime_version = Self::get_runtime_version(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
 
 		Ok(Self {

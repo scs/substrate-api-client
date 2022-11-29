@@ -18,7 +18,6 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-use std::convert::TryFrom;
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, Metadata};
 
 fn main() {
