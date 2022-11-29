@@ -28,7 +28,6 @@ use substrate_api_client::rpc::TungsteniteRpcClient;
 
 use substrate_api_client::{Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus};
 
-// Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
 struct TransferEventArgs {
 	_from: AccountId,
@@ -48,7 +47,7 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
 	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
@@ -88,13 +87,12 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until Ready.
-	let _tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
+	let _tx_hash = api.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::Ready).unwrap();
 	println!("[+] Transaction got included into the TxPool.");
 
 	// Transfer should fail as Alice wants to transfer all her balance. She does not have enough money to pay the fees.
-	let (events_in, events_out) = channel();
-	api.subscribe_events(events_in).unwrap();
-	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
+	let mut subscription = api.subscribe_events().unwrap();
+	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&mut subscription);
 	match args {
 		Ok(_transfer) => {
 			panic!("Exptected the call to fail.");

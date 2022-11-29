@@ -26,19 +26,18 @@ pub use frame_metadata::RuntimeMetadataPrefixed;
 pub use serde_json::Value;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
-	generic::SignedBlock,
-	traits::{Block, Header, IdentifyAccount},
+	generic::{Block, SignedBlock},
+	traits::{GetRuntimeBlockType, Header, IdentifyAccount},
 	AccountId32, MultiSignature, MultiSigner,
 };
 pub use sp_std::prelude::*;
 
-use crate::{
-	rpc::{json_req, RpcClient},
-	ReadProof,
-};
+use crate::{rpc::Request, ReadProof};
+use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{
-	AccountInfo, BalancesConfig, ExtrinsicParams, FeeDetails, InclusionFee, RuntimeDispatchInfo,
+	AccountInfo, BalancesConfig, ExtrinsicParams, FeeDetails, InclusionFee, RpcParams,
+	RuntimeDispatchInfo,
 };
 use codec::{Decode, Encode};
 use core::{
@@ -47,9 +46,9 @@ use core::{
 };
 use log::{debug, info};
 use serde::de::DeserializeOwned;
+use sp_core::{storage::StorageData, Bytes};
 use sp_rpc::number::NumberOrHex;
 use sp_version::RuntimeVersion;
-
 /// Api to talk with substrate-nodes
 ///
 /// It is generic over the `RpcClient` trait, so you can use any rpc-backend you like.
@@ -57,13 +56,13 @@ use sp_version::RuntimeVersion;
 /// # Custom Client Example
 ///
 /// ```no_run
-/// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString,  RpcClient, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, ApiClientError, ApiResult, FromHexString, Request, rpc::Error as RpcClientError, XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
-/// use serde_json::Value;
+/// use serde::de::DeserializeOwned;
+/// use ac_primitives::RpcParams;
 /// use kitchensink_runtime::Runtime;
-///
+/// use serde_json::{Value, json};
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
 ///     _inner: (),
@@ -82,26 +81,22 @@ use sp_version::RuntimeVersion;
 ///         _path: String,
 ///         _json: Value,
 ///     ) -> Result<R, RpcClientError> {
-///         // you can figure this out...self.inner...send_json...
+///         // Send json to node via web socket connection.
 ///         todo!()
 ///     }
 /// }
 ///
-/// impl RpcClient for MyClient {
-///     fn get_request(&self, jsonreq: Value) -> RpcResult<Option<String>> {
-///         self.send_json::<Value>("".into(), jsonreq)
-///             .map(|v| Some(v.to_string()))
-///     }
-///
-///     fn send_extrinsic<Hash: FromHexString>(
-///         &self,
-///         xthex_prefixed: String,
-///         _exit_on: XtStatus,
-///     ) -> RpcResult<Option<Hash>> {
-///         let jsonreq = author_submit_extrinsic(&xthex_prefixed);
-///         let res: String = self
-///             .send_json("".into(), jsonreq)?;
-///         Ok(Some(Hash::from_hex(res)?))
+/// impl Request for MyClient {
+///     fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R, RpcClientError> {
+///         let jsonreq = json!({
+///         "method": method,
+///         "params": params.to_json_value()?,
+///         "jsonrpc": "2.0",
+///         "id": "1",
+///         });
+///         let json_value = self.send_json::<Value>("".into(), jsonreq)?;
+///         let value = serde_json::from_value(json_value)?;
+///         Ok(value)
 ///     }
 /// }
 ///
@@ -112,7 +107,6 @@ use sp_version::RuntimeVersion;
 #[derive(Clone)]
 pub struct Api<Signer, Client, Params, Runtime>
 where
-	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
@@ -130,7 +124,7 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
 	MultiSigner: From<Signer::Public>,
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
@@ -201,12 +195,14 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
 	MultiSigner: From<Signer::Public>,
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: GetRuntimeBlockType + BalancesConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32> + Decode,
+	Runtime::Index: From<u32>,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Header: DeserializeOwned,
+	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	/// Get nonce of signer account.
 	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
@@ -223,62 +219,51 @@ where
 /// If an up-to-date query is necessary, cache should be updated beforehand.
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Header: DeserializeOwned,
 {
 	fn get_genesis_hash(client: &Client) -> ApiResult<Runtime::Hash> {
-		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = client.get_request(jsonreq)?;
-
-		match genesis {
-			Some(g) => Runtime::Hash::from_hex(g).map_err(|e| e.into()),
-			None => Err(ApiClientError::Genesis),
-		}
+		let genesis: Option<Runtime::Hash> =
+			client.request("chain_getBlockHash", rpc_params![Some(0)])?;
+		genesis.ok_or(ApiClientError::Genesis)
 	}
 
 	/// Get runtime version from node via websocket query.
 	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
-		let jsonreq = json_req::state_get_runtime_version();
-		let version = client.get_request(jsonreq)?;
-
-		match version {
-			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-			None => Err(ApiClientError::RuntimeVersion),
-		}
+		let version: RuntimeVersion = client.request("state_getRuntimeVersion", rpc_params![])?;
+		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
-	fn get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
-		let jsonreq = json_req::state_get_metadata();
-		let meta = client.get_request(jsonreq)?;
+	fn get_metadata(client: &Client) -> ApiResult<Metadata> {
+		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![])?;
 
-		if meta.is_none() {
-			return Err(ApiClientError::MetadataFetch)
-		}
-		let metadata = Vec::from_hex(meta.unwrap())?;
-		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
+		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;
+		Metadata::try_from(metadata).map_err(|e| e.into())
 	}
 }
 
 /// Substrate node calls via websocket.
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: GetRuntimeBlockType + BalancesConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32> + Decode,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr + DeserializeOwned,
-	Runtime::AccountData: Decode,
+	Runtime::Index: From<u32>,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Header: DeserializeOwned,
+	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
 		let genesis_hash = Self::get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
-		let metadata = Self::get_metadata(&client).map(Metadata::try_from)??;
+		let metadata = Self::get_metadata(&client)?;
 		debug!("Metadata: {:?}", metadata);
 
 		let runtime_version = Self::get_runtime_version(&client)?;
@@ -297,7 +282,7 @@ where
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
 	pub fn update_runtime(&mut self) -> ApiResult<()> {
-		let metadata = Self::get_metadata(&self.client).map(Metadata::try_from)??;
+		let metadata = Self::get_metadata(&self.client)?;
 		debug!("Metadata: {:?}", metadata);
 
 		let runtime_version = Self::get_runtime_version(&self.client)?;
@@ -328,46 +313,34 @@ where
 	}
 
 	pub fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
-		let h = self.get_request(json_req::chain_get_finalized_head())?;
-		match h {
-			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
-			None => Ok(None),
-		}
+		let finalized_block_hash = self.request("chain_getFinalizedHead", rpc_params![])?;
+		Ok(finalized_block_hash)
 	}
 
-	pub fn get_header<H>(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<H>>
-	where
-		H: Header + DeserializeOwned,
-	{
-		let h = self.get_request(json_req::chain_get_header(hash))?;
-		match h {
-			Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
-			None => Ok(None),
-		}
+	pub fn get_header(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Runtime::Header>> {
+		let block_hash = self.request("chain_getHeader", rpc_params![hash])?;
+		Ok(block_hash)
 	}
 
 	pub fn get_block_hash(
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> ApiResult<Option<Runtime::Hash>> {
-		let h = self.get_request(json_req::chain_get_block_hash(number))?;
-		match h {
-			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
-			None => Ok(None),
-		}
+		let block_hash = self.request("chain_getBlockHash", rpc_params![number])?;
+		Ok(block_hash)
 	}
 
-	pub fn get_block<B>(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<B>>
-	where
-		B: Block + DeserializeOwned,
-	{
+	pub fn get_block(
+		&self,
+		hash: Option<Runtime::Hash>,
+	) -> ApiResult<Option<Runtime::RuntimeBlock>> {
 		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	pub fn get_block_by_num<B>(&self, number: Option<Runtime::BlockNumber>) -> ApiResult<Option<B>>
-	where
-		B: Block + DeserializeOwned,
-	{
+	pub fn get_block_by_num(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<Runtime::RuntimeBlock>> {
 		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
@@ -375,32 +348,23 @@ where
 	/// The interval at which finality proofs are provided is set via the
 	/// the `GrandpaConfig.justification_period` in a node's service.rs.
 	/// The Justification may be none.
-	pub fn get_signed_block<B>(
+	pub fn get_signed_block(
 		&self,
 		hash: Option<Runtime::Hash>,
-	) -> ApiResult<Option<SignedBlock<B>>>
-	where
-		B: Block + DeserializeOwned,
-	{
-		let b = self.get_request(json_req::chain_get_block(hash))?;
-		match b {
-			Some(block) => Ok(Some(serde_json::from_str(&block)?)),
-			None => Ok(None),
-		}
+	) -> ApiResult<Option<SignedBlock<Runtime::RuntimeBlock>>> {
+		let block = self.request("chain_getBlock", rpc_params![hash])?;
+		Ok(block)
 	}
 
-	pub fn get_signed_block_by_num<B>(
+	pub fn get_signed_block_by_num(
 		&self,
 		number: Option<Runtime::BlockNumber>,
-	) -> ApiResult<Option<SignedBlock<B>>>
-	where
-		B: Block + DeserializeOwned,
-	{
+	) -> ApiResult<Option<SignedBlock<Runtime::RuntimeBlock>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 
-	pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
-		self.client.get_request(jsonreq).map_err(ApiClientError::RpcClient)
+	pub fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> ApiResult<R> {
+		self.client.request(method, params).map_err(ApiClientError::RpcClient)
 	}
 
 	pub fn get_storage_value<V: Decode>(
@@ -472,13 +436,9 @@ where
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
-		let jsonreq = json_req::state_get_storage(key, at_block);
-		let s = self.get_request(jsonreq)?;
-
-		match s {
-			Some(storage) => Ok(Some(Vec::from_hex(storage)?)),
-			None => Ok(None),
-		}
+		let storage: Option<StorageData> =
+			self.request("state_getStorage", rpc_params![key, at_block])?;
+		Ok(storage.map(|storage_data| storage_data.0))
 	}
 
 	pub fn get_storage_value_proof(
@@ -528,12 +488,8 @@ where
 		keys: Vec<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
-		let jsonreq = json_req::state_get_read_proof(keys, at_block);
-		let p = self.get_request(jsonreq)?;
-		match p {
-			Some(proof) => Ok(Some(serde_json::from_str(&proof)?)),
-			None => Ok(None),
-		}
+		let proof = self.request("state_getReadProof", rpc_params![keys, at_block])?;
+		Ok(proof)
 	}
 
 	pub fn get_keys(
@@ -541,12 +497,8 @@ where
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<Vec<String>>> {
-		let jsonreq = json_req::state_get_keys(key, at_block);
-		let k = self.get_request(jsonreq)?;
-		match k {
-			Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
-			None => Ok(None),
-		}
+		let keys = self.request("state_getKeys", rpc_params![key, at_block])?;
+		Ok(keys)
 	}
 
 	pub fn get_fee_details(
@@ -554,16 +506,14 @@ where
 		xthex_prefixed: &str,
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<FeeDetails<Runtime::Balance>>> {
-		let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
-		let res = self.get_request(jsonreq)?;
-		match res {
-			Some(details) => {
-				let details: FeeDetails<NumberOrHex> = serde_json::from_str(&details)?;
-				let details = convert_fee_details(details)?;
-				Ok(Some(details))
-			},
-			None => Ok(None),
-		}
+		let details: Option<FeeDetails<NumberOrHex>> =
+			self.request("payment_queryFeeDetails", rpc_params![xthex_prefixed, at_block])?;
+
+		let details = match details {
+			Some(details) => Some(convert_fee_details(details)?),
+			None => None,
+		};
+		Ok(details)
 	}
 
 	pub fn get_payment_info(
@@ -571,15 +521,8 @@ where
 		xthex_prefixed: &str,
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<RuntimeDispatchInfo<Runtime::Balance>>> {
-		let jsonreq = json_req::payment_query_info(xthex_prefixed, at_block);
-		let res = self.get_request(jsonreq)?;
-		match res {
-			Some(info) => {
-				let info: RuntimeDispatchInfo<Runtime::Balance> = serde_json::from_str(&info)?;
-				Ok(Some(info))
-			},
-			None => Ok(None),
-		}
+		let res = self.request("payment_queryInfo", rpc_params![xthex_prefixed, at_block])?;
+		Ok(res)
 	}
 
 	pub fn get_constant<C: Decode>(
@@ -601,23 +544,11 @@ where
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 
-	#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
-	pub fn send_extrinsic(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> ApiResult<Option<Runtime::Hash>> {
+	/// Submit an extrsinic to the substrate node, without watching.
+	pub fn submit_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Runtime::Hash> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		self.client
-			.send_extrinsic(xthex_prefixed, exit_on)
-			.map_err(ApiClientError::RpcClient)
-	}
-
-	#[cfg(all(not(feature = "ws-client"), not(feature = "tungstenite-client")))]
-	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Runtime::Hash>> {
-		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		// XtStatus should never be used used but we need to put something
-		self.client.send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
+		let xt_hash = self.client.request("author_submitExtrinsic", rpc_params![xthex_prefixed])?;
+		Ok(xt_hash)
 	}
 }
 

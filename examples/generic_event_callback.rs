@@ -20,7 +20,6 @@ use codec::Decode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-use std::{sync::mpsc::channel, thread};
 
 #[cfg(feature = "ws-client")]
 use substrate_api_client::rpc::WsRpcClient;
@@ -50,7 +49,7 @@ fn main() {
 	let alice = AccountKeyring::Alice.pair();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
 	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
@@ -62,10 +61,9 @@ fn main() {
 
 	let api2 = api.clone();
 	let thread_output = thread::spawn(move || {
-		let (events_in, events_out) = channel();
-		api2.subscribe_events(events_in).unwrap();
+		let mut subscription = api2.subscribe_events().unwrap();
 		let args: TransferEventArgs =
-			api2.wait_for_event::<TransferEventArgs>(&events_out).unwrap();
+			api2.wait_for_event::<TransferEventArgs>(&mut subscription).unwrap();
 		args
 	});
 
@@ -77,7 +75,10 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send extrinsic.
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap().unwrap();
+	let tx_hash = api
+		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
 	let args = thread_output.join().unwrap();

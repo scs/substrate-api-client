@@ -43,16 +43,74 @@ pub mod subscription;
 #[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
 pub use subscription::*;
 
+/// Simplified TransactionStatus to allow the user to choose until when to watch
+/// an extrinsic.
+// Indexes must match the TransactionStatus::as_u8 from below.
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
-	Unknown = 0,
-	/// uses `author_submit` without watching.
-	SubmitOnly = 1,
-	Ready = 2,
-	Broadcast = 3,
+	Ready = 1,
+	Broadcast = 2,
 	InBlock = 4,
-	Finalized = 5,
-	Future = 10,
+	Finalized = 7,
+}
+
+/// Possible transaction status events.
+// Copied from `sc-transaction-pool`
+// (https://github.com/paritytech/substrate/blob/dddfed3d9260cf03244f15ba3db4edf9af7467e9/client/transaction-pool/api/src/lib.rs)
+// as the library is not no-std compatible
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TransactionStatus<Hash, BlockHash> {
+	/// Transaction is part of the future queue.
+	Future,
+	/// Transaction is part of the ready queue.
+	Ready,
+	/// The transaction has been broadcast to the given peers.
+	Broadcast(Vec<String>),
+	/// Transaction has been included in block with given hash.
+	InBlock(BlockHash),
+	/// The block this transaction was included in has been retracted.
+	Retracted(BlockHash),
+	/// Maximum number of finality watchers has been reached,
+	/// old watchers are being removed.
+	FinalityTimeout(BlockHash),
+	/// Transaction has been finalized by a finality-gadget, e.g GRANDPA
+	Finalized(BlockHash),
+	/// Transaction has been replaced in the pool, by another transaction
+	/// that provides the same tags. (e.g. same (sender, nonce)).
+	Usurped(Hash),
+	/// Transaction has been dropped from the pool because of the limit.
+	Dropped,
+	/// Transaction is no longer valid in the current state.
+	Invalid,
+}
+
+impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
+	pub fn as_u8(&self) -> u8 {
+		match self {
+			TransactionStatus::Future => 0,
+			TransactionStatus::Ready => 1,
+			TransactionStatus::Broadcast(_) => 2,
+			TransactionStatus::InBlock(_) => 3,
+			TransactionStatus::Retracted(_) => 4,
+			TransactionStatus::FinalityTimeout(_) => 5,
+			TransactionStatus::Finalized(_) => 6,
+			TransactionStatus::Usurped(_) => 7,
+			TransactionStatus::Dropped => 8,
+			TransactionStatus::Invalid => 9,
+		}
+	}
+
+	pub fn is_supported(&self) -> bool {
+		matches!(
+			self,
+			TransactionStatus::Ready
+				| TransactionStatus::Broadcast(_)
+				| TransactionStatus::InBlock(_)
+				| TransactionStatus::FinalityTimeout(_)
+				| TransactionStatus::Finalized(_)
+		)
+	}
 }
 
 // Exact structure from

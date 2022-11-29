@@ -17,12 +17,16 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 pub use extrinsic_params::*;
 pub use extrinsics::*;
 pub use pallet_traits::*;
+pub use rpc_params::RpcParams;
 pub use types::*;
 
 pub mod extrinsic_params;
 pub mod extrinsics;
 pub mod pallet_traits;
+pub mod rpc_params;
 pub mod types;

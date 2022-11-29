@@ -37,7 +37,7 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
 	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
@@ -61,9 +61,9 @@ fn main() {
 			}),
 			api.extrinsic_params(nonce)
 		);
-		// send and watch extrinsic until finalized
+
 		println!("sending extrinsic with nonce {}", nonce);
-		let _blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
+		let _tx_hash = api.submit_extrinsic(xt.hex_encode()).unwrap();
 
 		nonce += 1;
 	}

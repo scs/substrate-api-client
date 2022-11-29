@@ -25,8 +25,11 @@ pub use ac_primitives as primitives;
 pub use codec;
 #[cfg(feature = "std")]
 pub use log;
+pub use rpc::*;
 pub use sp_core;
 pub use sp_runtime;
+
+mod rpc;
 
 /// Generates the extrinsic's call field for a given module and call passed as &str
 /// # Arguments

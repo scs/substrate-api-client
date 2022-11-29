@@ -18,14 +18,15 @@
 //! Extrinsics for `pallet-utility`.
 
 use super::common::Batch;
-use crate::{rpc::RpcClient, Api, FromHexString};
+use crate::{rpc::Request, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{BalancesConfig, CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
-use codec::{Decode, Encode};
+use codec::Encode;
 use core::str::FromStr;
+use serde::de::DeserializeOwned;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
 
 const UTILITY_MODULE: &str = "Utility";
 const UTILITY_BATCH: &str = "batch";
@@ -40,12 +41,13 @@ where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
 	MultiSigner: From<Signer::Public>,
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Index: Decode,
+	Runtime: GetRuntimeBlockType + BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Header: DeserializeOwned,
+	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	pub fn batch<Call: Encode + Clone>(
 		&self,

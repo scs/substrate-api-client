@@ -18,18 +18,18 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use crate::{api::Api, rpc::RpcClient, FromHexString};
+use crate::{api::Api, rpc::Request, FromHexString};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, GenericAddress,
 	UncheckedExtrinsicV4,
 };
-use codec::{Compact, Decode, Encode};
+use codec::{Compact, Encode};
 use core::str::FromStr;
-use frame_support::traits::Currency as CurrencyTrait;
+use serde::de::DeserializeOwned;
 use sp_core::crypto::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
@@ -64,7 +64,7 @@ pub type ContractCallXt<SignedExtra, Currency> =
 	UncheckedExtrinsicV4<ContractCallFn<Currency>, SignedExtra>;
 
 #[cfg(feature = "std")]
-type BalanceOf<T> = <<T as ContractsConfig>::Currency as CurrencyTrait<
+type BalanceOf<T> = <<T as ContractsConfig>::Currency as frame_support::traits::Currency<
 	<T as FrameSystemConfig>::AccountId,
 >>::Balance;
 
@@ -74,14 +74,15 @@ where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
 	MultiSigner: From<Signer::Public>,
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: ContractsConfig + BalancesConfig,
+	Runtime: GetRuntimeBlockType + ContractsConfig + BalancesConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: Decode,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,
 	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
+	Runtime::Header: DeserializeOwned,
+	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	pub fn contract_put_code(
 		&self,

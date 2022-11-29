@@ -14,9 +14,9 @@
    limitations under the License.
 
 */
+
 #[cfg(feature = "ws-client")]
 pub use ws_client::WsRpcClient;
-
 #[cfg(feature = "ws-client")]
 pub mod ws_client;
 
@@ -27,32 +27,46 @@ pub use tungstenite_client::client::TungsteniteRpcClient;
 pub mod tungstenite_client;
 
 pub mod error;
-pub mod json_req;
 
 pub use error::*;
 
-use crate::api::{FromHexString, XtStatus};
-use log::info;
-use serde_json::Value;
-use std::sync::mpsc::Sender as ThreadOut;
+use ac_primitives::RpcParams;
+use serde::de::DeserializeOwned;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
-pub trait RpcClient {
-	/// Sends a RPC request to the substrate node and returns the optional answer as string.
-	fn get_request(&self, jsonreq: serde_json::Value) -> Result<Option<String>>;
-
-	/// Submits ans watches an extrinsic until requested XtStatus and returns the block hash
-	/// the extrinsic was included, if XtStatus is InBlock or Finalized.
-	fn send_extrinsic<Hash: FromHexString>(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> Result<Option<Hash>>;
+pub trait Request {
+	/// Sends a RPC request to the substrate node and returns the answer as string.
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
-pub trait Subscriber {
-	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
+pub trait Subscribe {
+	type Subscription<Notification>: HandleSubscription<Notification>
+	where
+		Notification: DeserializeOwned;
+
+	fn subscribe<Notification: DeserializeOwned>(
+		&self,
+		sub: &str,
+		params: RpcParams,
+		unsub: &str,
+	) -> Result<Self::Subscription<Notification>>;
+}
+
+/// Trait to use the full functionality of jsonrpseee Subscription type
+/// without actually enforcing it.
+pub trait HandleSubscription<Notification: DeserializeOwned> {
+	/// Returns the next notification from the stream.
+	/// This may return `None` if the subscription has been terminated,
+	/// which may happen if the channel becomes full or is dropped.
+	///
+	/// **Note:** This has an identical signature to the [`StreamExt::next`]
+	/// method (and delegates to that). Import [`StreamExt`] if you'd like
+	/// access to other stream combinator methods.
+	fn next(&mut self) -> Option<Result<Notification>>;
+
+	/// Unsubscribe and consume the subscription.
+	fn unsubscribe(self) -> Result<()>;
 }
 
 #[allow(clippy::result_large_err)]
