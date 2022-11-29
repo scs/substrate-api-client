@@ -161,7 +161,7 @@ impl Metadata {
 	}
 
 	#[cfg(feature = "std")]
-	pub fn pretty_format(metadata: &RuntimeMetadataPrefixed) -> Option<String> {
+	pub fn pretty_format<Metadata: Serialize>(metadata: &Metadata) -> Option<String> {
 		let buf = Vec::new();
 		let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
 		let mut ser = serde_json::Serializer::with_formatter(buf, formatter);

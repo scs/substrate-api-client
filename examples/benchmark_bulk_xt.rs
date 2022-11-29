@@ -31,9 +31,8 @@ fn main() {
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(from))
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(from);
 
 	println!("[+] Alice's Account Nonce is {}\n", api.get_nonce().unwrap());
 
@@ -46,7 +45,7 @@ fn main() {
 		// compose the extrinsic with all the element
 		#[allow(clippy::redundant_clone)]
 		let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-			api.clone().signer.unwrap(),
+			api.signer().unwrap().clone(),
 			RuntimeCall::Balances(BalancesCall::transfer {
 				dest: GenericAddress::Id(to.clone()),
 				value: 1_000_000

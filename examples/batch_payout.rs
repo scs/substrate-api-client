@@ -17,9 +17,8 @@ fn main() {
 
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(from))
-		.unwrap();
+	let mut api = Api::<_, _, PlainTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(from);
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
 	let mut results: Vec<Value> = Vec::new();
 
@@ -95,7 +94,7 @@ pub fn get_last_reward(
 	};
 	let active_era: ActiveEraInfo =
 		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
-	let storagekey = api.metadata.storage_map_key("Staking", "Ledger", &account).unwrap();
+	let storagekey = api.metadata().storage_map_key("Staking", "Ledger", &account).unwrap();
 	let mut res = StakingLedger {
 		stash: account,
 		total: 0,

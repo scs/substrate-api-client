@@ -16,7 +16,7 @@ limitations under the License.
 use codec::Decode;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
-use sp_runtime::{app_crypto::sp_core::sr25519, AccountId32 as AccountId, MultiAddress};
+use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::sync::mpsc::channel;
 use substrate_api_client::{
 	rpc::WsRpcClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
@@ -42,9 +42,8 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(from.clone()))
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(from.clone());
 
 	let from_account_id = AccountKeyring::Alice.to_account_id();
 

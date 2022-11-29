@@ -17,16 +17,15 @@
 ///! debugging tool.
 use sp_core::sr25519;
 
-use std::convert::TryFrom;
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, Metadata};
 
 fn main() {
 	env_logger::init();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
-	let meta = Metadata::try_from(api.get_metadata().unwrap()).unwrap();
+	let meta = api.metadata().clone();
 
 	meta.print_overview();
 	meta.print_pallets();
@@ -35,6 +34,9 @@ fn main() {
 	meta.print_pallets_with_errors();
 	meta.print_pallets_with_constants();
 
+	// Update the runtime and metadata.
+	api.update_runtime().unwrap();
+
 	// Print full substrate metadata json formatted.
-	println!("{}", Metadata::pretty_format(&api.get_metadata().unwrap()).unwrap())
+	println!("{}", Metadata::pretty_format(&api.metadata().metadata).unwrap())
 }

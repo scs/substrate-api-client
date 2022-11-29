@@ -25,7 +25,7 @@ use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
 use log::*;
 use sp_core::Pair;
-use sp_runtime::MultiSignature;
+use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
 impl<P, Params> Api<P, WsRpcClient, Params>
@@ -41,7 +41,7 @@ where
 impl<P, Client, Params> Api<P, Client, Params>
 where
 	P: Pair,
-	MultiSignature: From<P::Signature>,
+	MultiSigner: From<P::Public>,
 	Client: RpcClientTrait + Subscriber,
 	Params: ExtrinsicParams<Index, Hash>,
 {
@@ -49,13 +49,13 @@ where
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
+		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
 	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to finalized heads");
 		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-		self.client.start_subscriber(jsonreq, sender).map_err(|e| e.into())
+		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
 	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
@@ -72,7 +72,7 @@ where
 		loop {
 			let events_str = receiver.recv()?;
 			let event_bytes = Vec::from_hex(events_str)?;
-			let events = Events::new(self.metadata.clone(), Default::default(), event_bytes);
+			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
 
 			for maybe_event_details in events.iter() {
 				let event_details = maybe_event_details?;
@@ -82,7 +82,7 @@ where
 				// than the one that is being waited for.
 				if extrinsic_has_failed(&event_details) {
 					let dispatch_error =
-						DispatchError::decode_from(event_details.field_bytes(), &self.metadata);
+						DispatchError::decode_from(event_details.field_bytes(), self.metadata());
 					return Err(Error::Dispatch(dispatch_error))
 				}
 

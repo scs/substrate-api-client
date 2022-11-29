@@ -32,9 +32,8 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 
-	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(from))
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(from);
 
 	// Information for Era for mortal transactions.
 	let head = api.get_finalized_head().unwrap().unwrap();
@@ -44,10 +43,11 @@ fn main() {
 		.era(Era::mortal(period, h.number.into()), head)
 		.tip(0);
 
-	let updated_api = api.set_extrinsic_params_builder(tx_params);
+	// Set the custom params builder:
+	api.set_extrinsic_params_builder(tx_params);
 
 	// Get the nonce of Alice.
-	let alice_nonce = updated_api.get_nonce().unwrap();
+	let alice_nonce = api.get_nonce().unwrap();
 	println!("[+] Alice's Account Nonce is {}\n", alice_nonce);
 
 	// Define the recipient.
@@ -56,14 +56,14 @@ fn main() {
 	// Compose the extrinsic.
 	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-		updated_api.clone().signer.unwrap(),
+		api.signer().unwrap().clone(),
 		RuntimeCall::Balances(BalancesCall::transfer { dest: to.clone(), value: 42 }),
-		updated_api.extrinsic_params(alice_nonce)
+		api.extrinsic_params(alice_nonce)
 	);
 
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
-	let block_hash = updated_api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let block_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
 	println!("[+] Transaction got included in block {:?}", block_hash);
 }

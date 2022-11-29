@@ -29,9 +29,8 @@ fn main() {
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
-		.map(|api| api.set_signer(sudoer))
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	api.set_signer(sudoer);
 
 	// set the recipient of newly issued funds
 	let to = AccountKeyring::Bob.to_account_id();
@@ -39,7 +38,7 @@ fn main() {
 	// this call can only be called by sudo
 	#[allow(clippy::redundant_clone)]
 	let call = compose_call!(
-		api.metadata.clone(),
+		api.metadata().clone(),
 		"Balances",
 		"set_balance",
 		GenericAddress::Id(to),
