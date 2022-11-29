@@ -25,7 +25,7 @@ pub mod json_req;
 
 pub use error::*;
 
-use crate::{api::XtStatus, Hash};
+use crate::api::{FromHexString, XtStatus};
 use std::sync::mpsc::Sender as ThreadOut;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
@@ -35,7 +35,11 @@ pub trait RpcClient {
 
 	/// Submits ans watches an extrinsic until requested XtStatus and returns the block hash
 	/// the extrinsic was included, if XtStatus is InBlock or Finalized.
-	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> Result<Option<Hash>>;
+	fn send_extrinsic<Hash: FromHexString>(
+		&self,
+		xthex_prefixed: String,
+		exit_on: XtStatus,
+	) -> Result<Option<Hash>>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.

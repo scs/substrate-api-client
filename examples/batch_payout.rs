@@ -19,7 +19,7 @@ fn main() {
 
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<_, _, PlainTipExtrinsicParams, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
 	let mut results: Vec<Value> = Vec::new();
@@ -91,7 +91,7 @@ pub fn get_last_reward(
 	api: &substrate_api_client::Api<
 		sp_core::sr25519::Pair,
 		WsRpcClient,
-		PlainTipExtrinsicParams,
+		PlainTipExtrinsicParams<Runtime>,
 		Runtime,
 	>,
 ) -> u32 {

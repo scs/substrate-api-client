@@ -32,7 +32,8 @@ fn main() {
 	env_logger::init();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams, Runtime>::new(client).unwrap();
+	let api =
+		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
 	let (events_in, events_out) = channel();

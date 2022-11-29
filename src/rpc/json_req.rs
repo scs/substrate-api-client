@@ -25,7 +25,7 @@ pub fn chain_get_header<Hash: Serialize>(hash: Option<Hash>) -> Value {
 	json_req("chain_getHeader", vec![hash], 1)
 }
 
-pub fn chain_get_block_hash(number: Option<u32>) -> Value {
+pub fn chain_get_block_hash<BlockNumber: Serialize>(number: Option<BlockNumber>) -> Value {
 	chain_get_block_hash_with_id(number, 1)
 }
 
@@ -33,7 +33,10 @@ pub fn chain_get_genesis_hash() -> Value {
 	chain_get_block_hash(Some(0))
 }
 
-pub fn chain_get_block_hash_with_id(number: Option<u32>, id: u32) -> Value {
+pub fn chain_get_block_hash_with_id<BlockNumber: Serialize>(
+	number: Option<BlockNumber>,
+	id: u32,
+) -> Value {
 	json_req("chain_getBlockHash", vec![number], id)
 }
 

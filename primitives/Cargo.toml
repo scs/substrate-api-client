@@ -11,10 +11,14 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 
 # substrate
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-assets = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+[dev-dependencies]
+node-template = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
@@ -22,6 +26,7 @@ std = [
     "codec/std",
     "hex/std",
     # substrate
+    "pallet-assets/std",
     "frame-system/std",
     "pallet-balances/std",
     "sp-core/std",

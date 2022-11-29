@@ -29,7 +29,6 @@ use crate::{
 };
 use log::info;
 use serde_json::Value;
-use sp_core::H256 as Hash;
 use std::{
 	fmt::Debug,
 	sync::mpsc::{channel, Sender as ThreadOut},
@@ -53,11 +52,11 @@ impl RpcClientTrait for WsRpcClient {
 		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())?
 	}
 
-	fn send_extrinsic(
+	fn send_extrinsic<Hash: FromHexString>(
 		&self,
 		xthex_prefixed: String,
 		exit_on: XtStatus,
-	) -> Result<Option<sp_core::H256>> {
+	) -> Result<Option<Hash>> {
 		// Todo: Make all variants return a H256: #175.
 
 		let jsonreq = match exit_on {

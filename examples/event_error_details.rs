@@ -43,7 +43,7 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<_, _, AssetTipExtrinsicParams, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from.clone());
 
 	let from_account_id = AccountKeyring::Alice.to_account_id();

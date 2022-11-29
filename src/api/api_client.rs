@@ -21,7 +21,6 @@ pub use crate::{
 		XtStatus,
 	},
 	utils::FromHexString,
-	Hash, Index,
 };
 pub use frame_metadata::RuntimeMetadataPrefixed;
 pub use pallet_transaction_payment::FeeDetails;
@@ -336,7 +335,7 @@ where
 		}
 	}
 
-	pub fn get_header<H>(&self, hash: Option<Hash>) -> ApiResult<Option<H>>
+	pub fn get_header<H>(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<H>>
 	where
 		H: Header + DeserializeOwned,
 	{
@@ -347,22 +346,22 @@ where
 		}
 	}
 
-	pub fn get_block_hash(&self, number: Option<u32>) -> ApiResult<Option<Hash>> {
+	pub fn get_block_hash(&self, number: Option<Runtime::BlockNumber>) -> ApiResult<Option<Runtime::Hash>> {
 		let h = self.get_request(json_req::chain_get_block_hash(number))?;
 		match h {
-			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
+			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
 			None => Ok(None),
 		}
 	}
 
-	pub fn get_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<B>>
+	pub fn get_block<B>(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<B>>
 	where
 		B: Block + DeserializeOwned,
 	{
 		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	pub fn get_block_by_num<B>(&self, number: Option<u32>) -> ApiResult<Option<B>>
+	pub fn get_block_by_num<B>(&self, number: Option<Runtime::BlockNumber>) -> ApiResult<Option<B>>
 	where
 		B: Block + DeserializeOwned,
 	{
@@ -373,7 +372,7 @@ where
 	/// The interval at which finality proofs are provided is set via the
 	/// the `GrandpaConfig.justification_period` in a node's service.rs.
 	/// The Justification may be none.
-	pub fn get_signed_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<SignedBlock<B>>>
+	pub fn get_signed_block<B>(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<SignedBlock<B>>>
 	where
 		B: Block + DeserializeOwned,
 	{
@@ -386,7 +385,7 @@ where
 
 	pub fn get_signed_block_by_num<B>(
 		&self,
-		number: Option<u32>,
+		number: Option<Runtime::BlockNumber>,
 	) -> ApiResult<Option<SignedBlock<B>>>
 	where
 		B: Block + DeserializeOwned,
@@ -402,7 +401,7 @@ where
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
-		at_block: Option<Hash>,
+		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<V>> {
 		let storagekey = self.metadata.storage_value_key(storage_prefix, storage_key_name)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
@@ -414,7 +413,7 @@ where
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
 		map_key: K,
-		at_block: Option<Hash>,
+		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<V>> {
 		let storagekey =
 			self.metadata.storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
@@ -438,7 +437,7 @@ where
 		storage_key_name: &'static str,
 		first: K,
 		second: Q,
-		at_block: Option<Hash>,
+		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<V>> {
 		let storagekey = self.metadata.storage_double_map_key::<K, Q>(
 			storage_prefix,
@@ -453,7 +452,7 @@ where
 	pub fn get_storage_by_key_hash<V: Decode>(
 		&self,
 		key: StorageKey,
-		at_block: Option<Hash>,
+		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<V>> {
 		let s = self.get_opaque_storage_by_key_hash(key, at_block)?;
 		match s {
@@ -465,7 +464,7 @@ where
 	pub fn get_opaque_storage_by_key_hash(
 		&self,
 		key: StorageKey,
-		at_block: Option<Hash>,
+		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
 		let jsonreq = json_req::state_get_storage(key, at_block);
 		let s = self.get_request(jsonreq)?;
@@ -480,8 +479,8 @@ where
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>> {
+		at_block: Option<Runtime::Hash>,
+	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey = self.metadata.storage_value_key(storage_prefix, storage_key_name)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
@@ -492,8 +491,8 @@ where
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
 		map_key: K,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>> {
+		at_block: Option<Runtime::Hash>,
+	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey =
 			self.metadata.storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
@@ -506,8 +505,8 @@ where
 		storage_key_name: &'static str,
 		first: K,
 		second: Q,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>> {
+		at_block: Option<Runtime::Hash>,
+	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey = self.metadata.storage_double_map_key::<K, Q>(
 			storage_prefix,
 			storage_key_name,
@@ -521,8 +520,8 @@ where
 	pub fn get_storage_proof_by_keys(
 		&self,
 		keys: Vec<StorageKey>,
-		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>> {
+		at_block: Option<Runtime::Hash>,
+	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
 		let jsonreq = json_req::state_get_read_proof(keys, at_block);
 		let p = self.get_request(jsonreq)?;
 		match p {
@@ -534,7 +533,7 @@ where
 	pub fn get_keys(
 		&self,
 		key: StorageKey,
-		at_block: Option<Hash>,
+		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<Vec<String>>> {
 		let jsonreq = json_req::state_get_keys(key, at_block);
 		let k = self.get_request(jsonreq)?;
@@ -601,7 +600,7 @@ where
 		&self,
 		xthex_prefixed: String,
 		exit_on: XtStatus,
-	) -> ApiResult<Option<Hash>> {
+	) -> ApiResult<Option<Runtime::Hash>> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		self.client
 			.send_extrinsic(xthex_prefixed, exit_on)

@@ -80,7 +80,11 @@ where
 		loop {
 			let events_str = receiver.recv()?;
 			let event_bytes = Vec::from_hex(events_str)?;
-			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
+			let events = Events::<Runtime::Hash>::new(
+				self.metadata().clone(),
+				Default::default(),
+				event_bytes,
+			);
 
 			for maybe_event_details in events.iter() {
 				let event_details = maybe_event_details?;

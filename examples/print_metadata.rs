@@ -24,7 +24,8 @@ fn main() {
 	env_logger::init();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams, Runtime>::new(client).unwrap();
+	let mut api =
+		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 
