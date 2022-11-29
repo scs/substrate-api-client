@@ -141,10 +141,7 @@ where
 
 	/// Get the private key pair of the api signer.
 	pub fn signer(&self) -> Option<&P> {
-		match &self.signer {
-			Some(signer) => Some(signer),
-			None => None,
-		}
+		self.signer.as_ref()
 	}
 
 	/// Get the cached genesis hash of the substrate node.
