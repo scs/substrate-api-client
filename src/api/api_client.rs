@@ -346,7 +346,10 @@ where
 		}
 	}
 
-	pub fn get_block_hash(&self, number: Option<Runtime::BlockNumber>) -> ApiResult<Option<Runtime::Hash>> {
+	pub fn get_block_hash(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<Runtime::Hash>> {
 		let h = self.get_request(json_req::chain_get_block_hash(number))?;
 		match h {
 			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
@@ -372,7 +375,10 @@ where
 	/// The interval at which finality proofs are provided is set via the
 	/// the `GrandpaConfig.justification_period` in a node's service.rs.
 	/// The Justification may be none.
-	pub fn get_signed_block<B>(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<SignedBlock<B>>>
+	pub fn get_signed_block<B>(
+		&self,
+		hash: Option<Runtime::Hash>,
+	) -> ApiResult<Option<SignedBlock<B>>>
 	where
 		B: Block + DeserializeOwned,
 	{
