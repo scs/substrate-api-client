@@ -14,16 +14,13 @@
 */
 
 ///! Very simple example that shows how to get some simple storage values.
-use clap::{load_yaml, App};
-
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{rpc::WsRpcClient, AccountInfo, Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	// get some plain storage value
@@ -50,15 +47,4 @@ fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	api.signer = Some(signer);
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }

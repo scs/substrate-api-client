@@ -13,13 +13,8 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
-///! debugging tool.
-
-#[macro_use]
-extern crate clap;
-
-use clap::App;
+//! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
+//! debugging tool.
 
 use kitchensink_runtime::{Block, Header};
 use sp_core::sr25519;
@@ -31,9 +26,8 @@ type SignedBlock = SignedBlockG<Block>;
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	let head = api.get_finalized_head().unwrap().unwrap();
@@ -61,15 +55,4 @@ fn main() {
 			receiver.recv().map(|header| serde_json::from_str(&header).unwrap()).unwrap();
 		println!("Got new Block {:?}", head);
 	}
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }

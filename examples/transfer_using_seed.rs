@@ -13,21 +13,17 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to use a predefined extrinsic from the extrinsic module
-use clap::{load_yaml, App};
+//! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
+
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
 	sr25519,
 };
-
 use sp_runtime::MultiAddress;
-
 use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
-
 	// Alice's seed: subkey inspect //Alice.
 	let alice: sr25519::Pair = Pair::from_string(
 		"0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
@@ -37,7 +33,7 @@ fn main() {
 	println!("signer account: {}", alice.public().to_ss58check());
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(alice.clone()))
 		.unwrap();
@@ -68,15 +64,4 @@ fn main() {
 	// Verify that Bob's free Balance increased.
 	let bob_account_data = api.get_account_data(&bob.into()).unwrap().unwrap();
 	println!("[+] Bob's Free Balance is now {}\n", bob_account_data.free);
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }

@@ -1,6 +1,4 @@
 #[cfg(feature = "staking-xt")]
-use clap::{load_yaml, App};
-#[cfg(feature = "staking-xt")]
 use codec::{Decode, Encode};
 #[cfg(feature = "staking-xt")]
 use pallet_staking::{ActiveEraInfo, Exposure};
@@ -17,9 +15,8 @@ use substrate_api_client::{rpc::WsRpcClient, Api, PlainTipExtrinsicParams, XtSta
 fn main() {
 	env_logger::init();
 
-	let url = get_node_url_from_cli();
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<_, _, PlainTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))
 		.unwrap();
@@ -88,23 +85,10 @@ fn main() {
 }
 
 #[cfg(feature = "staking-xt")]
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
-}
-
-#[cfg(feature = "staking-xt")]
 pub fn get_last_reward(
 	validator_address: &str,
 	api: &substrate_api_client::Api<sp_core::sr25519::Pair, WsRpcClient, PlainTipExtrinsicParams>,
 ) -> u32 {
-	let api = api;
 	let account = match AccountId32::from_ss58check(validator_address) {
 		Ok(address) => address,
 		Err(e) => panic!("Invalid Account id : {:?}", e),

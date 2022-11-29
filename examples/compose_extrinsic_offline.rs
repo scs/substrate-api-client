@@ -16,13 +16,10 @@
 //! This examples shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use clap::{load_yaml, App};
-
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
 use kitchensink_runtime::{BalancesCall, Header, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
-
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
 	UncheckedExtrinsicV4, XtStatus,
@@ -30,11 +27,10 @@ use substrate_api_client::{
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))
@@ -70,15 +66,4 @@ fn main() {
 	// Send and watch extrinsic until in block.
 	let block_hash = updated_api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
 	println!("[+] Transaction got included in block {:?}", block_hash);
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }

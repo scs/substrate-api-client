@@ -18,11 +18,8 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
-use clap::{load_yaml, App};
-
 use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
-
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
 	UncheckedExtrinsicV4, XtStatus,
@@ -30,11 +27,10 @@ use substrate_api_client::{
 
 fn main() {
 	env_logger::init();
-	let url = get_node_url_from_cli();
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new(&url);
+	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let api = Api::<_, _, AssetTipExtrinsicParams>::new(client)
 		.map(|api| api.set_signer(from))
 		.unwrap();
@@ -63,15 +59,4 @@ fn main() {
 
 		nonce += 1;
 	}
-}
-
-pub fn get_node_url_from_cli() -> String {
-	let yml = load_yaml!("cli.yml");
-	let matches = App::from_yaml(yml).get_matches();
-
-	let node_ip = matches.value_of("node-server").unwrap_or("ws://127.0.0.1");
-	let node_port = matches.value_of("node-port").unwrap_or("9944");
-	let url = format!("{}:{}", node_ip, node_port);
-	println!("Interacting with node on {}\n", url);
-	url
 }
