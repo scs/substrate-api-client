@@ -76,12 +76,12 @@ impl RpcClientTrait for WsRpcClient {
 }
 
 impl Subscriber for WsRpcClient {
-	fn start_subscriber(
+	fn subscribe(
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
 	) -> Result<()> {
-		self.start_subscriber(json_req, result_in)
+		self.subscribe(json_req, result_in)
 	}
 }
 
@@ -150,7 +150,7 @@ impl WsRpcClient {
 		)
 	}
 
-	pub fn start_subscriber(
+	pub fn subscribe(
 		&self,
 		json_req: String,
 		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,

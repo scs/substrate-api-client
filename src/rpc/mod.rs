@@ -40,5 +40,5 @@ pub trait RpcClient {
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscriber {
-	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
+	fn subscribe(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
 }

@@ -49,13 +49,13 @@ where
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
+		self.client().subscribe(jsonreq, sender).map_err(|e| e.into())
 	}
 
 	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to finalized heads");
 		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
+		self.client().subscribe(jsonreq, sender).map_err(|e| e.into())
 	}
 
 	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
