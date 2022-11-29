@@ -25,7 +25,7 @@ use codec::{Compact, Encode};
 use core::str::FromStr;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::{AccountId32, MultiSigner, MultiSignature};
+use sp_runtime::{AccountId32, MultiSignature, MultiSigner};
 
 pub use pallet_staking::RewardDestination;
 
