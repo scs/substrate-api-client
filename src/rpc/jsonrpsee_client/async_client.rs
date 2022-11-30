@@ -15,18 +15,23 @@
 
 */
 
+use crate::rpc::{Error, Result};
 use async_trait::async_trait;
 use jsonrpsee::{
-	core::client::{Client, ClientT, SubscriptionClientT},
+	core::client::{Client, ClientT, Subscription, SubscriptionClientT},
 	rpc_params,
 };
 use serde_json::value::{RawValue, Value};
 
-use crate::rpc::{Error, Result, RpcClient};
-
 #[async_trait]
 pub trait AsyncClientTrait {
 	async fn request(&self, method: &str, params: Value) -> Result<String>;
+	async fn subscribe<Notif>(
+		&self,
+		sub: &str,
+		params: Value,
+		unsub: &str,
+	) -> Result<Subscription<Notif>>;
 }
 
 #[async_trait]
@@ -34,6 +39,18 @@ impl AsyncClientTrait for Client {
 	async fn request(&self, method: &str, params: Value) -> Result<String> {
 		let params = rpc_params![params];
 		ClientT::request(self, method, params)
+			.await
+			.map_err(|e| Error::Client(Box::new(e)))
+	}
+
+	async fn subscribe<Notif>(
+		&self,
+		sub: &str,
+		params: Value,
+		unsub: &str,
+	) -> Result<Subscription<Notif>> {
+		let params = rpc_params![params];
+		SubscriptionClientT::subscribe::<Box<RawValue>, _>(self, sub, params, unsub)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))
 	}

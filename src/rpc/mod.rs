@@ -27,21 +27,33 @@ pub mod json_req;
 
 pub use error::*;
 
-use crate::{api::XtStatus, Hash};
 use serde_json::value::Value;
-use std::sync::mpsc::Sender as ThreadOut;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
-pub trait RpcClient {
+pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the optional answer as string.
 	fn request(&self, jsonreq: serde_json::Value) -> Result<Option<String>>;
-
-	/// Submits ans watches an extrinsic until requested XtStatus and returns the block hash
-	/// the extrinsic was included, if XtStatus is InBlock or Finalized.
-	fn send_extrinsic(&self, xthex_prefixed: String, exit_on: XtStatus) -> Result<Option<Hash>>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
-pub trait Subscriber {
-	fn subscribe(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
+pub trait Subscribe {
+	type Subscription: Drop + HandleSubscription;
+
+	fn subscribe(&self, method: &str, params: Value) -> Result<Self::Subscription>;
+}
+
+/// Trait to use the full functionality of jsonrpseee Subscription type
+/// without actually enforcing it.
+pub trait HandleSubscription<Notification> {
+	/// Returns the next notification from the stream.
+	/// This may return `None` if the subscription has been terminated,
+	/// which may happen if the channel becomes full or is dropped.
+	///
+	/// **Note:** This has an identical signature to the [`StreamExt::next`]
+	/// method (and delegates to that). Import [`StreamExt`] if you'd like
+	/// access to other stream combinator methods.
+	fn next(&mut self) -> Option<Result<Notification>>;
+
+	/// Unsubscribe and consume the subscription.
+	fn unsubscribe(self) -> Result<()>;
 }

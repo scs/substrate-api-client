@@ -15,28 +15,21 @@
 
 */
 
-use crate::rpc::{Request, Result, Subscribe};
-use async_client::AsyncClientTrait;
+use crate::rpc::{HandleSubscription, Result};
 use futures::executor::block_on;
-use jsonrpsee::core::client::{ClientT, SubscriptionClientT};
-use serde_json::value::Value;
-use std::sync::Arc;
+use jsonrpsee::core::client::Subscription;
 
-mod async_client;
-mod subscription;
-
-#[derive(Clone)]
-pub struct SyncClient(Arc<dyn AsyncClientTrait>);
-
-impl Request for SyncClient {
-	fn request(&self, method: &str, params: Value) -> Result<String> {
-		// Support async: #278
-		block_on(self.0.request(method, params))
-	}
+pub struct SubscriptionWrapper<Notification> {
+	inner: Subscription<Notification>,
 }
 
-impl Subscribe for SyncClient {
-	fn subscribe(&self, sub: &str, params: Value, unsub: &str) -> Result<Self::Subscription> {
-		block_on(self.0.subscribe(sub, params, unsub))
+// Support async: #278 (careful with no_std compatibility).
+impl<Notification> HandleSubscription<Notification> for SubscriptionWrapper<Notification> {
+	fn next(&mut self) -> Option<Result<Notification>> {
+		block_on(self.inner.next())
+	}
+
+	fn unsubscribe(mut self) -> Result<()> {
+		block_on(self.inner.unsubscribe())
 	}
 }
