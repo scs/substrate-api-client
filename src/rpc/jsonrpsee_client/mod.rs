@@ -19,7 +19,7 @@ use crate::rpc::{Request, Result, Subscribe};
 use async_client::AsyncClientTrait;
 use futures::executor::block_on;
 use jsonrpsee::core::client::{ClientT, SubscriptionClientT};
-use serde_json::value::Value;
+use sp_runtime::Serialize;
 use std::sync::Arc;
 
 mod async_client;
@@ -29,14 +29,19 @@ mod subscription;
 pub struct SyncClient(Arc<dyn AsyncClientTrait>);
 
 impl Request for SyncClient {
-	fn request(&self, method: &str, params: Value) -> Result<String> {
+	fn request<Params: Serialize>(&self, method: &str, params: Params) -> Result<String> {
 		// Support async: #278
 		block_on(self.0.request(method, params))
 	}
 }
 
 impl Subscribe for SyncClient {
-	fn subscribe(&self, sub: &str, params: Value, unsub: &str) -> Result<Self::Subscription> {
+	fn subscribe<Params: Serialize>(
+		&self,
+		sub: &str,
+		params: Params,
+		unsub: &str,
+	) -> Result<Self::Subscription> {
 		block_on(self.0.subscribe(sub, params, unsub))
 	}
 }

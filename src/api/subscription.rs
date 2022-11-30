@@ -45,6 +45,13 @@ where
 	Client: RpcClientTrait + Subscriber,
 	Params: ExtrinsicParams<Index, Hash>,
 {
+	pub fn watch_extrinsic(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+		debug!("subscribing to events");
+		let key = utils::storage_key("System", "Events");
+		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
+		self.client.subscribe(jsonreq, sender).map_err(|e| e.into())
+	}
+
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
