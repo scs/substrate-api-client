@@ -336,7 +336,7 @@ pub(crate) mod test_utils {
 	pub struct EventRecord<E: Encode> {
 		phase: Phase,
 		event: AllEvents<E>,
-		topics: Vec<Hash>,
+		topics: Vec<H256>,
 	}
 
 	/// Build an EventRecord, which encoded events in the format expected
@@ -372,7 +372,7 @@ pub(crate) mod test_utils {
 	pub fn events<E: Decode + Encode>(
 		metadata: Metadata,
 		event_records: Vec<EventRecord<E>>,
-	) -> Events {
+	) -> Events<H256> {
 		let num_events = event_records.len() as u32;
 		let mut event_bytes = Vec::new();
 		for ev in event_records {
@@ -383,11 +383,11 @@ pub(crate) mod test_utils {
 
 	/// Much like [`events`], but takes pre-encoded events and event count, so that we can
 	/// mess with the bytes in tests if we need to.
-	pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> Events {
+	pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> Events<H256> {
 		// Prepend compact encoded length to event bytes:
 		let mut all_event_bytes = Compact(num_events).encode();
 		all_event_bytes.extend(event_bytes);
-		Events::new(metadata, Hash::default(), all_event_bytes)
+		Events::new(metadata, H256::default(), all_event_bytes)
 	}
 }
 

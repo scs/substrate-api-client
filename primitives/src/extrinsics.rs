@@ -152,7 +152,7 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 mod tests {
 	use super::*;
 	use crate::{BaseExtrinsicParams, ExtrinsicParams, PlainTipExtrinsicParamsBuilder};
-	use node_template::Runtime;
+	use node_template_runtime::Runtime;
 	use sp_core::{Pair, H256 as Hash};
 	use sp_runtime::{generic::Era, testing::sr25519, MultiSignature};
 

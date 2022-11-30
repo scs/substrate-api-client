@@ -60,7 +60,7 @@ use sp_version::RuntimeVersion;
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, ApiClientError, ApiResult, FromHexString,  RpcClient, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde_json::Value;
 /// use kitchensink_runtime::Runtime;
@@ -94,7 +94,7 @@ use sp_version::RuntimeVersion;
 ///             .map(|v| Some(v.to_string()))
 ///     }
 ///
-///     fn send_extrinsic(
+///     fn send_extrinsic<Hash: FromHexString>(
 ///         &self,
 ///         xthex_prefixed: String,
 ///         _exit_on: XtStatus,
@@ -107,7 +107,7 @@ use sp_version::RuntimeVersion;
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<(), _, PlainTipExtrinsicParams, Runtime>::new(client);
+/// let _api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client);
 ///
 /// ```
 #[derive(Clone)]

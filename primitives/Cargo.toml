@@ -18,7 +18,7 @@ sp-runtime = { default-features = false, git = "https://github.com/paritytech/su
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [dev-dependencies]
-node-template = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
