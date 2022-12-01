@@ -27,8 +27,9 @@ pub mod json_req;
 
 pub use error::*;
 
-use serde::Serialize;
-use sp_runtime::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
+
+pub struct SubscriptionHandler<Notification>(Box<dyn HandleSubscription<Notification>>);
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
@@ -47,7 +48,7 @@ pub trait Subscribe {
 		sub: &str,
 		params: Option<Params>,
 		unsub: &str,
-	) -> Result<dyn HandleSubscription<Notification>>;
+	) -> Result<SubscriptionHandler<Notification>>;
 }
 
 /// Trait to use the full functionality of jsonrpseee Subscription type

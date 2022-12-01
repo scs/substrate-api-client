@@ -15,7 +15,7 @@
 
 */
 
-use crate::rpc::{Error, Request, Result, Subscribe};
+use crate::rpc::{Error, Request, Result, Subscribe, SubscriptionHandler};
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
@@ -74,7 +74,7 @@ impl Subscribe for JsonrpseeClient {
 		sub: &str,
 		params: Option<Params>,
 		unsub: &str,
-	) -> Result<SubscriptionWrapper<Notification>> {
+	) -> Result<SubscriptionHandler<Notification>> {
 		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
 		block_on(self.inner.subscribe(sub, params, unsub))
 			.map(|sub| sub.into())

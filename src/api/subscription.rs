@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
-	rpc::{HandleSubscription, Subscribe},
+	rpc::{HandleSubscription, Subscribe, SubscriptionHandler},
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -25,7 +25,7 @@ use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
 use log::*;
 use sp_core::Pair;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::{DeserializeOwned, MultiSignature, MultiSigner};
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
 impl<P, Client, Params> Api<P, Client, Params>
@@ -38,7 +38,7 @@ where
 	pub fn watch_extrinsic<Hash, BlockHash>(
 		&self,
 		xthex_prefixed: &str,
-	) -> ApiResult<dyn HandleSubscription<TransactionStatus<Hash, BlockHash>>> {
+	) -> ApiResult<SubscriptionHandler<TransactionStatus<Hash, BlockHash>>> {
 		self.client
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -48,7 +48,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_events(&self) -> ApiResult<dyn HandleSubscription<Vec<u8>>> {
+	pub fn subscribe_events(&self) -> ApiResult<SubscriptionHandler<Vec<u8>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
@@ -56,7 +56,9 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads<Header>(&self) -> ApiResult<dyn HandleSubscription<Header>> {
+	pub fn subscribe_finalized_heads<Header: DeserializeOwned>(
+		&self,
+	) -> ApiResult<SubscriptionHandler<Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe("chain_subscribeFinalizedHeads", None, "chain_unsubscribeFinalizedHeads")
@@ -65,7 +67,7 @@ where
 
 	pub fn wait_for_event<Ev: StaticEvent>(
 		&self,
-		subscription: &dyn HandleSubscription<Vec<u8>>,
+		subscription: &SubscriptionHandler<Vec<u8>>,
 	) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
@@ -75,7 +77,7 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		subscription: &dyn HandleSubscription<Vec<u8>>,
+		subscription: &SubscriptionHandler<Vec<u8>>,
 	) -> ApiResult<EventDetails> {
 		while let Some(event_bytes) = subscription.next() {
 			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);

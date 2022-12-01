@@ -15,7 +15,7 @@
 
 */
 
-use crate::rpc::{Error, HandleSubscription, Result};
+use crate::rpc::{Error, HandleSubscription, Result, SubscriptionHandler};
 use futures::executor::block_on;
 use jsonrpsee::core::client::Subscription;
 use serde::de::DeserializeOwned;
@@ -39,9 +39,9 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 }
 
 impl<Notification: DeserializeOwned> From<Subscription<Notification>>
-	for SubscriptionWrapper<Notification>
+	for SubscriptionHandler<Notification>
 {
 	fn from(inner: Subscription<Notification>) -> Self {
-		Self { inner }
+		Self(Box::new(SubscriptionWrapper { inner }))
 	}
 }
