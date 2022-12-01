@@ -19,14 +19,13 @@ use crate::rpc::{Request, Result, Subscribe};
 use async_client::AsyncClientTrait;
 use futures::executor::block_on;
 use jsonrpsee::{
-	client_transport::ws::{InvalidUri, Receiver, Sender, Uri, WsTransportClientBuilder},
-	core::{
-		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
-		Error,
-	},
+	client_transport::ws::{Uri, WsTransportClientBuilder},
+	core::client::{ClientBuilder, ClientT, SubscriptionClientT},
 };
+use serde::{de::DeserializeOwned, Serialize};
 
-use sp_runtime::Serialize;
+pub use subscription::SubscriptionWrapper;
+
 use std::sync::Arc;
 
 mod async_client;
@@ -56,19 +55,25 @@ impl Default for JsonrpseeClient {
 }
 
 impl Request for JsonrpseeClient {
-	fn request<Params: Serialize>(&self, method: &str, params: Option<Params>) -> Result<String> {
+	fn request<Params: Serialize, R: DeserializeOwned>(
+		&self,
+		method: &str,
+		params: Option<Params>,
+	) -> Result<R> {
 		// Support async: #278
 		block_on(self.0.request(method, params))
 	}
 }
 
-impl Subscribe for JsonrpseeClient {
-	fn subscribe<Params: Serialize>(
+impl<Notification> Subscribe for JsonrpseeClient {
+	type Subscription = SubscriptionWrapper<Notification>;
+
+	fn subscribe<Params: Serialize, Notif: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: Option<Params>,
 		unsub: &str,
-	) -> Result<Self::Subscription> {
+	) -> Result<Self::Subscription<Notification>> {
 		block_on(self.0.subscribe(sub, params, unsub))
 	}
 }

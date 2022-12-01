@@ -21,18 +21,18 @@ use jsonrpsee::{
 	core::client::{Client, ClientT, Subscription, SubscriptionClientT},
 	rpc_params,
 };
-use serde::Serialize;
+use serde::{de::DeserializeOwned, Serialize};
 use serde_json::value::RawValue;
 
 #[async_trait]
 pub trait AsyncClientTrait {
-	async fn request<Params: Serialize>(
+	async fn request<Params: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
 		params: Option<Params>,
-	) -> Result<String>;
+	) -> Result<R>;
 
-	async fn subscribe<Notif, Params: Serialize>(
+	async fn subscribe<Params: Serialize, Notif: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: Option<Params>,
@@ -42,18 +42,18 @@ pub trait AsyncClientTrait {
 
 #[async_trait]
 impl AsyncClientTrait for Client {
-	async fn request<Params: Serialize>(
+	async fn request<Params: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
 		params: Option<Params>,
-	) -> Result<String> {
+	) -> Result<R> {
 		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
 		ClientT::request(self, method, params)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))
 	}
 
-	async fn subscribe<Notif, Params: Serialize>(
+	async fn subscribe<Params: Serialize, Notif: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: Option<Params>,

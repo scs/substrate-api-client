@@ -36,8 +36,8 @@ pub trait Request {
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
-pub trait Subscribe {
-	type Subscription: Drop + HandleSubscription;
+pub trait Subscribe<Notification> {
+	type Subscription: Drop + HandleSubscription<Notification>;
 
 	fn subscribe<Params: Serialize>(
 		&self,
