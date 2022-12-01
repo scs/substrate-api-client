@@ -83,4 +83,5 @@ We also thank the teams at
 
 _In alphabetical order_
 
+- [Encointer](https://github.com/encointer)
 - [Integritee Network](https://github.com/integritee-network)
