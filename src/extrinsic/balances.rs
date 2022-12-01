@@ -17,7 +17,7 @@
 
 //! Extrinsics for `pallet-balances`.
 
-use crate::{api::Api, rpc::RpcClient, Hash, Index};
+use crate::{api::Api, Hash, Index};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
@@ -40,7 +40,6 @@ where
 	P: Pair,
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
-	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn balance_transfer(

@@ -18,7 +18,7 @@
 //! Extrinsics for `pallet-staking`.
 
 use super::common::*;
-use crate::{rpc::RpcClient, Api, Hash, Index};
+use crate::{Api, Hash, Index};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
 use codec::Compact;
@@ -86,7 +86,6 @@ where
 	P: Pair,
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
-	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	/// Bond `value` amount to `controller`
