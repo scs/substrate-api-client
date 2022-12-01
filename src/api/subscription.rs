@@ -25,8 +25,7 @@ use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
 use log::*;
 use sp_core::Pair;
-use sp_runtime::{DeserializeOwned, MultiSignature, MultiSigner};
-use std::sync::mpsc::{Receiver, Sender as ThreadOut};
+use sp_runtime::{DeserializeOwned, MultiSigner};
 
 impl<P, Client, Params> Api<P, Client, Params>
 where

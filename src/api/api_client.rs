@@ -123,7 +123,6 @@ impl<P, Client, Params> Api<P, Client, Params>
 where
 	P: Pair,
 	MultiSigner: From<P::Public>,
-	Client: Request,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	/// Set the api signer account.
@@ -190,8 +189,8 @@ impl<P, Client, Params> Api<P, Client, Params>
 where
 	P: Pair,
 	MultiSigner: From<P::Public>,
-	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
+	Client: Request,
 {
 	/// Get nonce of signer account.
 	pub fn get_nonce(&self) -> ApiResult<u32> {
@@ -213,24 +212,14 @@ where
 {
 	/// Get genesis hash from node via websocket query.
 	fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
-		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = client.request(jsonreq)?;
-
-		match genesis {
-			Some(g) => Hash::from_hex(g).map_err(|e| e.into()),
-			None => Err(ApiClientError::Genesis),
-		}
+		let genesis: Option<Hash> = client.request("chain_getBlockHash", Some(Some(0)))?;
+		genesis.ok_or(ApiClientError::Genesis)
 	}
 
 	/// Get runtime version from node via websocket query.
 	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
-		let jsonreq = json_req::state_get_runtime_version();
-		let version = client.request(jsonreq)?;
-
-		match version {
-			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-			None => Err(ApiClientError::RuntimeVersion),
-		}
+		let version: RuntimeVersion = client.request("state_getRuntimeVersion", None)?;
+		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
@@ -249,7 +238,7 @@ where
 /// Substrate node calls via websocket.
 impl<P, Client, Params> Api<P, Client, Params>
 where
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
