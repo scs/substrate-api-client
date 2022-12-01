@@ -38,8 +38,10 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 	}
 }
 
-impl<Notification> Drop for SubscriptionWrapper<Notification> {
-	fn drop(&mut self) {
-		drop(self.inner)
+impl<Notification: DeserializeOwned> From<Subscription<Notification>>
+	for SubscriptionWrapper<Notification>
+{
+	fn from(inner: Subscription<Notification>) -> Self {
+		Self { inner }
 	}
 }

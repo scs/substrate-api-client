@@ -76,7 +76,9 @@ impl Subscribe for JsonrpseeClient {
 		unsub: &str,
 	) -> Result<SubscriptionWrapper<Notification>> {
 		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
-		block_on(self.inner.subscribe(sub, params, unsub)).map_err(|e| Error::Client(Box::new(e)))
+		block_on(self.inner.subscribe(sub, params, unsub))
+			.map(|sub| sub.into())
+			.map_err(|e| Error::Client(Box::new(e)))
 
 		// 		SubscriptionClientT::subscribe::<Box<RawValue>, _>(self, sub, params, unsub)
 		// 			.await

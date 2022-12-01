@@ -38,7 +38,7 @@ where
 	pub fn watch_extrinsic<Hash, BlockHash>(
 		&self,
 		xthex_prefixed: &str,
-	) -> ApiResult<Client::Subscription<TransactionStatus<Hash, BlockHash>>> {
+	) -> ApiResult<dyn HandleSubscription<TransactionStatus<Hash, BlockHash>>> {
 		self.client
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -48,7 +48,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_events(&self) -> ApiResult<Client::Subscription<Vec<u8>>> {
+	pub fn subscribe_events(&self) -> ApiResult<dyn HandleSubscription<Vec<u8>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
@@ -56,7 +56,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads<Header>(&self) -> ApiResult<Client::Subscription<Header>> {
+	pub fn subscribe_finalized_heads<Header>(&self) -> ApiResult<dyn HandleSubscription<Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe("chain_subscribeFinalizedHeads", None, "chain_unsubscribeFinalizedHeads")
@@ -65,7 +65,7 @@ where
 
 	pub fn wait_for_event<Ev: StaticEvent>(
 		&self,
-		subscription: &Client::Subscription<Vec<u8>>,
+		subscription: &dyn HandleSubscription<Vec<u8>>,
 	) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
@@ -75,7 +75,7 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		subscription: &Client::Subscription<Vec<u8>>,
+		subscription: &dyn HandleSubscription<Vec<u8>>,
 	) -> ApiResult<EventDetails> {
 		while let Some(event_bytes) = subscription.next() {
 			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
