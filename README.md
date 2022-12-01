@@ -79,7 +79,7 @@ We also thank the teams at
 * [Parity Technologies](https://www.parity.io/) for building [substrate](https://github.com/paritytech/substrate) and supporting us during development.
 
 ## Projects using substrate-api-client
-- [If you intend or are using substrate-api-client, please add your project here](https://github.com/scs/substrate-api-client/edit/master/README.md)
+- [If you intend to or are using substrate-api-client, please add your project here](https://github.com/scs/substrate-api-client/edit/master/README.md)
 
 _In alphabetical order_
 
