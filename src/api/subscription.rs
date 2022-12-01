@@ -37,24 +37,19 @@ where
 {
 	pub fn watch_extrinsic(&self) -> Result<()> {}
 
-	// pub fn state_subscribe_storage_with_id(key: Vec<StorageKey>, id: u32) -> Value {
-	// 	// don't know why we need an additional vec here...
-	// 	json_req("state_subscribeStorage", vec![key], id)
-	// }
-
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
-		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
 		self.client()
-			.subscribe("state_subscribeStorage", vec![vec![key]], "state_unSubscribeStorage")
+			.subscribe("state_subscribeStorage", Some(vec![vec![key]]), "state_unSubscribeStorage")
 			.map_err(|e| e.into())
 	}
 
 	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to finalized heads");
-		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-		self.client().subscribe(jsonreq, sender).map_err(|e| e.into())
+		self.client()
+			.subscribe("chain_subscribeFinalizedHeads", None, "chain_unsubscribeFinalizedHeads")
+			.map_err(|e| e.into())
 	}
 
 	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
