@@ -29,7 +29,7 @@ mod subscription;
 pub struct SyncClient(Arc<dyn AsyncClientTrait>);
 
 impl Request for SyncClient {
-	fn request<Params: Serialize>(&self, method: &str, params: Params) -> Result<String> {
+	fn request<Params: Serialize>(&self, method: &str, params: Option<Params>) -> Result<String> {
 		// Support async: #278
 		block_on(self.0.request(method, params))
 	}
@@ -39,7 +39,7 @@ impl Subscribe for SyncClient {
 	fn subscribe<Params: Serialize>(
 		&self,
 		sub: &str,
-		params: Params,
+		params: Option<Params>,
 		unsub: &str,
 	) -> Result<Self::Subscription> {
 		block_on(self.0.subscribe(sub, params, unsub))

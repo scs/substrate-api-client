@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, FromHexString},
-	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
+	rpc::{json_req, Subscribe},
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -28,35 +28,27 @@ use sp_core::Pair;
 use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
-impl<P, Params> Api<P, WsRpcClient, Params>
-where
-	Params: ExtrinsicParams<Index, Hash>,
-{
-	pub fn default_with_url(url: &str) -> ApiResult<Self> {
-		let client = WsRpcClient::new(url);
-		Self::new(client)
-	}
-}
-
 impl<P, Client, Params> Api<P, Client, Params>
 where
 	P: Pair,
 	MultiSigner: From<P::Public>,
-	Client: RpcClientTrait + Subscriber,
+	Client: Subscribe,
 	Params: ExtrinsicParams<Index, Hash>,
 {
-	pub fn watch_extrinsic(&self, sender: ThreadOut<String>) -> ApiResult<()> {
-		debug!("subscribing to events");
-		let key = utils::storage_key("System", "Events");
-		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-		self.client.subscribe(jsonreq, sender).map_err(|e| e.into())
-	}
+	pub fn watch_extrinsic(&self) -> Result<()> {}
+
+	// pub fn state_subscribe_storage_with_id(key: Vec<StorageKey>, id: u32) -> Value {
+	// 	// don't know why we need an additional vec here...
+	// 	json_req("state_subscribeStorage", vec![key], id)
+	// }
 
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-		self.client().subscribe(jsonreq, sender).map_err(|e| e.into())
+		self.client()
+			.subscribe("state_subscribeStorage", vec![vec![key]], "state_unSubscribeStorage")
+			.map_err(|e| e.into())
 	}
 
 	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {

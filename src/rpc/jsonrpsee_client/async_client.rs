@@ -26,19 +26,28 @@ use serde_json::value::RawValue;
 
 #[async_trait]
 pub trait AsyncClientTrait {
-	async fn request<Params: Serialize>(&self, method: &str, params: Params) -> Result<String>;
+	async fn request<Params: Serialize>(
+		&self,
+		method: &str,
+		params: Option<Params>,
+	) -> Result<String>;
+
 	async fn subscribe<Notif, Params: Serialize>(
 		&self,
 		sub: &str,
-		params: Params,
+		params: Option<Params>,
 		unsub: &str,
 	) -> Result<Subscription<Notif>>;
 }
 
 #[async_trait]
 impl AsyncClientTrait for Client {
-	async fn request<Params: Serialize>(&self, method: &str, params: Params) -> Result<String> {
-		let params = rpc_params![params];
+	async fn request<Params: Serialize>(
+		&self,
+		method: &str,
+		params: Option<Params>,
+	) -> Result<String> {
+		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
 		ClientT::request(self, method, params)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))
@@ -47,10 +56,10 @@ impl AsyncClientTrait for Client {
 	async fn subscribe<Notif, Params: Serialize>(
 		&self,
 		sub: &str,
-		params: Params,
+		params: Option<Params>,
 		unsub: &str,
 	) -> Result<Subscription<Notif>> {
-		let params = rpc_params![params];
+		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
 		SubscriptionClientT::subscribe::<Box<RawValue>, _>(self, sub, params, unsub)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))

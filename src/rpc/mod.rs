@@ -27,19 +27,24 @@ pub mod json_req;
 
 pub use error::*;
 
-use serde_json::value::Value;
+use serde::Serialize;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
-	/// Sends a RPC request to the substrate node and returns the optional answer as string.
-	fn request(&self, jsonreq: serde_json::Value) -> Result<Option<String>>;
+	/// Sends a RPC request to the substrate node and returns the answer as string.
+	fn request<Params: Serialize>(&self, method: &str, params: Params) -> Result<Option<String>>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscribe {
 	type Subscription: Drop + HandleSubscription;
 
-	fn subscribe(&self, method: &str, params: Value) -> Result<Self::Subscription>;
+	fn subscribe<Params: Serialize>(
+		&self,
+		sub: &str,
+		params: Params,
+		unsub: &str,
+	) -> Result<Self::Subscription>;
 }
 
 /// Trait to use the full functionality of jsonrpseee Subscription type
