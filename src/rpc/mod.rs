@@ -29,8 +29,6 @@ pub use error::*;
 
 use serde::{de::DeserializeOwned, Serialize};
 
-pub struct SubscriptionHandler<Notification>(Box<dyn HandleSubscription<Notification>>);
-
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
@@ -49,6 +47,19 @@ pub trait Subscribe {
 		params: Option<Params>,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>>;
+}
+
+pub struct SubscriptionHandler<Notification>(Box<dyn HandleSubscription<Notification>>);
+
+impl<Notification> HandleSubscription<Notification> for SubscriptionHandler<Notification> {
+	fn next(&mut self) -> Option<Result<Notification>> {
+		self.0.next()
+	}
+
+	/// Unsubscribe and consume the subscription.
+	fn unsubscribe(self) -> Result<()> {
+		self.0.unsubscribe()
+	}
 }
 
 /// Trait to use the full functionality of jsonrpseee Subscription type
