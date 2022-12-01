@@ -15,42 +15,44 @@
 
 */
 
-use crate::rpc::{Request, Result, Subscribe};
-use async_client::AsyncClientTrait;
+use crate::rpc::{Error, Request, Result, Subscribe};
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
-	core::client::{ClientBuilder, ClientT, SubscriptionClientT},
+	core::client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+	rpc_params,
 };
 use serde::{de::DeserializeOwned, Serialize};
+use serde_json::value::RawValue;
 
 pub use subscription::SubscriptionWrapper;
 
-use std::sync::Arc;
-
-mod async_client;
 mod subscription;
 
-#[derive(Clone)]
-pub struct JsonrpseeClient(Arc<dyn AsyncClientTrait>);
+pub struct JsonrpseeClient {
+	inner: Client,
+}
 
 impl JsonrpseeClient {
 	pub fn new(url: &str) -> Result<Self> {
 		block_on(Self::async_new(url))
 	}
 
-	async fn async_new(url: &str) -> Result<Self> {
-		let uri: Uri = url.parse()?;
-		let (tx, rx) = WsTransportClientBuilder::default().build(uri).await?;
-		Ok(ClientBuilder::default()
-			.max_notifs_per_subscription(4096)
-			.build_with_tokio(tx, rx))
-	}
-}
-
-impl Default for JsonrpseeClient {
-	fn default() -> Self {
+	fn with_default_url() -> Result<Self> {
 		Self::new("ws://127.0.0.1:9944")
+	}
+
+	async fn async_new(url: &str) -> Result<Self> {
+		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
+		let (tx, rx) = WsTransportClientBuilder::default()
+			.build(uri)
+			.await
+			.map_err(|e| Error::Client(Box::new(e)))?;
+		Ok(Self {
+			inner: ClientBuilder::default()
+				.max_notifs_per_subscription(4096)
+				.build_with_tokio(tx, rx),
+		})
 	}
 }
 
@@ -60,8 +62,9 @@ impl Request for JsonrpseeClient {
 		method: &str,
 		params: Option<Params>,
 	) -> Result<R> {
+		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
 		// Support async: #278
-		block_on(self.0.request(method, params))
+		block_on(self.inner.request(method, params)).map_err(|e| Error::Client(Box::new(e)))
 	}
 }
 
@@ -71,7 +74,12 @@ impl Subscribe for JsonrpseeClient {
 		sub: &str,
 		params: Option<Params>,
 		unsub: &str,
-	) -> Result<Self::Subscription<Notification>> {
-		block_on(self.0.subscribe(sub, params, unsub))
+	) -> Result<SubscriptionWrapper<Notification>> {
+		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
+		block_on(self.inner.subscribe(sub, params, unsub)).map_err(|e| Error::Client(Box::new(e)))
+
+		// 		SubscriptionClientT::subscribe::<Box<RawValue>, _>(self, sub, params, unsub)
+		// 			.await
+		// 			.map_err(|e| Error::Client(Box::new(e)))
 	}
 }

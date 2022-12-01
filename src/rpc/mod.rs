@@ -36,20 +36,18 @@ pub trait Request {
 	fn request<Params: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
-		params: Params,
+		params: Option<Params>,
 	) -> Result<R>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscribe {
-	type Subscription<Notification>: Drop + HandleSubscription<Notification>;
-
 	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: Option<Params>,
 		unsub: &str,
-	) -> Result<Self::Subscription<Notification>>;
+	) -> Result<dyn HandleSubscription<Notification>>;
 }
 
 /// Trait to use the full functionality of jsonrpseee Subscription type

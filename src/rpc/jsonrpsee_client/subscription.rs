@@ -15,21 +15,31 @@
 
 */
 
-use crate::rpc::{HandleSubscription, Result};
+use crate::rpc::{Error, HandleSubscription, Result};
 use futures::executor::block_on;
 use jsonrpsee::core::client::Subscription;
+use serde::de::DeserializeOwned;
 
+#[derive(Debug)]
 pub struct SubscriptionWrapper<Notification> {
 	inner: Subscription<Notification>,
 }
 
 // Support async: #278 (careful with no_std compatibility).
-impl<Notification> HandleSubscription<Notification> for SubscriptionWrapper<Notification> {
+impl<Notification: DeserializeOwned> HandleSubscription<Notification>
+	for SubscriptionWrapper<Notification>
+{
 	fn next(&mut self) -> Option<Result<Notification>> {
-		block_on(self.inner.next())
+		block_on(self.inner.next()).map(|result| result.map_err(|e| Error::Client(Box::new(e))))
 	}
 
 	fn unsubscribe(mut self) -> Result<()> {
-		block_on(self.inner.unsubscribe())
+		block_on(self.inner.unsubscribe()).map_err(|e| Error::Client(Box::new(e)))
+	}
+}
+
+impl<Notification> Drop for SubscriptionWrapper<Notification> {
+	fn drop(&mut self) {
+		drop(self.inner)
 	}
 }

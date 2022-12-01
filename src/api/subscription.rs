@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
-	rpc::Subscribe,
+	rpc::{HandleSubscription, Subscribe},
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
