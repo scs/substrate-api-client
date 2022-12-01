@@ -42,7 +42,7 @@ pub trait Subscribe {
 	fn subscribe<Params: Serialize>(
 		&self,
 		sub: &str,
-		params: Params,
+		params: Option<Params>,
 		unsub: &str,
 	) -> Result<Self::Subscription>;
 }
