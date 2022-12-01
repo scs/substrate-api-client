@@ -28,23 +28,28 @@ pub mod json_req;
 pub use error::*;
 
 use serde::Serialize;
+use sp_runtime::DeserializeOwned;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
-	fn request<Params: Serialize>(&self, method: &str, params: Params) -> Result<Option<String>>;
+	fn request<Params: Serialize, R: DeserializeOwned>(
+		&self,
+		method: &str,
+		params: Params,
+	) -> Result<R>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
-pub trait Subscribe<Notification> {
-	type Subscription: Drop + HandleSubscription<Notification>;
+pub trait Subscribe {
+	type Subscription<Notification>: Drop + HandleSubscription<Notification>;
 
-	fn subscribe<Params: Serialize>(
+	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: Option<Params>,
 		unsub: &str,
-	) -> Result<Self::Subscription>;
+	) -> Result<Self::Subscription<Notification>>;
 }
 
 /// Trait to use the full functionality of jsonrpseee Subscription type

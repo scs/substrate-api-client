@@ -54,6 +54,36 @@ pub enum XtStatus {
 	Future = 10,
 }
 
+/// Possible transaction status events.
+// Copied from `sc-transaction-pool`
+// (https://github.com/paritytech/substrate/blob/dddfed3d9260cf03244f15ba3db4edf9af7467e9/client/transaction-pool/api/src/lib.rs)
+// as the library is not no-std compatible
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TransactionStatus<Hash, BlockHash> {
+	/// Transaction is part of the future queue.
+	Future,
+	/// Transaction is part of the ready queue.
+	Ready,
+	/// The transaction has been broadcast to the given peers.
+	Broadcast(Vec<String>),
+	/// Transaction has been included in block with given hash.
+	InBlock(BlockHash),
+	/// The block this transaction was included in has been retracted.
+	Retracted(BlockHash),
+	/// Maximum number of finality watchers has been reached,
+	/// old watchers are being removed.
+	FinalityTimeout(BlockHash),
+	/// Transaction has been finalized by a finality-gadget, e.g GRANDPA
+	Finalized(BlockHash),
+	/// Transaction has been replaced in the pool, by another transaction
+	/// that provides the same tags. (e.g. same (sender, nonce)).
+	Usurped(Hash),
+	/// Transaction has been dropped from the pool because of the limit.
+	Dropped,
+	/// Transaction is no longer valid in the current state.
+	Invalid,
+}
 // Exact structure from
 // https://github.com/paritytech/substrate/blob/master/client/rpc-api/src/state/helpers.rs
 // Adding manually so we don't need sc-rpc-api, which brings in async dependencies

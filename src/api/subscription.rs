@@ -16,8 +16,8 @@
 */
 
 use crate::{
-	api::{error::Error, Api, ApiResult, FromHexString},
-	rpc::{json_req, Subscribe},
+	api::{error::Error, Api, ApiResult, TransactionStatus},
+	rpc::Subscribe,
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -25,7 +25,7 @@ use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
 use log::*;
 use sp_core::Pair;
-use sp_runtime::MultiSigner;
+use sp_runtime::{MultiSignature, MultiSigner};
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
 impl<P, Client, Params> Api<P, Client, Params>
@@ -35,25 +35,39 @@ where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Index, Hash>,
 {
-	pub fn watch_extrinsic(&self) -> Result<()> {}
-
-	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
-		debug!("subscribing to events");
-		let key = utils::storage_key("System", "Events");
-		self.client()
-			.subscribe("state_subscribeStorage", Some(vec![vec![key]]), "state_unSubscribeStorage")
+	pub fn watch_extrinsic<Hash, BlockHash>(
+		&self,
+		xthex_prefixed: &str,
+	) -> ApiResult<Client::Subscription<TransactionStatus<Hash, BlockHash>>> {
+		self.client
+			.subscribe(
+				"author_submitAndWatchExtrinsic",
+				Some(xthex_prefixed),
+				"author_unsubmitAndWatchExtrinsic",
+			)
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+	pub fn subscribe_events(&self) -> ApiResult<Client::Subscription<Vec<u8>>> {
+		debug!("subscribing to events");
+		let key = utils::storage_key("System", "Events");
+		self.client()
+			.subscribe("state_subscribeStorage", Some(vec![key]), "state_unsubscribeStorage")
+			.map_err(|e| e.into())
+	}
+
+	pub fn subscribe_finalized_heads<Header>(&self) -> ApiResult<Client::Subscription<Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe("chain_subscribeFinalizedHeads", None, "chain_unsubscribeFinalizedHeads")
 			.map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
-		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver)?;
+	pub fn wait_for_event<Ev: StaticEvent>(
+		&self,
+		subscription: &Client::Subscription<Vec<u8>>,
+	) -> ApiResult<Ev> {
+		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
 			.as_event()?
 			.ok_or(Error::Other("Could not find the specific event".into()))
@@ -61,11 +75,9 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		receiver: &Receiver<String>,
+		subscription: &Client::Subscription<Vec<u8>>,
 	) -> ApiResult<EventDetails> {
-		loop {
-			let events_str = receiver.recv()?;
-			let event_bytes = Vec::from_hex(events_str)?;
+		while let Some(event_bytes) = subscription.next() {
 			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
 
 			for maybe_event_details in events.iter() {

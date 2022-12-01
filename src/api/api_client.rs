@@ -36,7 +36,7 @@ pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
 use crate::{
-	rpc::{json_req, RpcClient},
+	rpc::{json_req, Request},
 	ReadProof,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
@@ -108,7 +108,6 @@ use std::convert::{TryFrom, TryInto};
 #[derive(Clone)]
 pub struct Api<P, Client, Params>
 where
-	Client: RpcClient,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	signer: Option<P>,
@@ -124,7 +123,7 @@ impl<P, Client, Params> Api<P, Client, Params>
 where
 	P: Pair,
 	MultiSigner: From<P::Public>,
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	/// Set the api signer account.
@@ -209,7 +208,7 @@ where
 /// If an up-to-date query is necessary, cache should be updated beforehand.
 impl<P, Client, Params> Api<P, Client, Params>
 where
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	/// Get genesis hash from node via websocket query.

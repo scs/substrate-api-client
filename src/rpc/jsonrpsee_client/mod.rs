@@ -65,10 +65,8 @@ impl Request for JsonrpseeClient {
 	}
 }
 
-impl<Notification> Subscribe for JsonrpseeClient {
-	type Subscription = SubscriptionWrapper<Notification>;
-
-	fn subscribe<Params: Serialize, Notif: DeserializeOwned>(
+impl Subscribe for JsonrpseeClient {
+	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: Option<Params>,
