@@ -18,7 +18,14 @@
 use crate::rpc::{Request, Result, Subscribe};
 use async_client::AsyncClientTrait;
 use futures::executor::block_on;
-use jsonrpsee::core::client::{ClientT, SubscriptionClientT};
+use jsonrpsee::{
+	client_transport::ws::{InvalidUri, Receiver, Sender, Uri, WsTransportClientBuilder},
+	core::{
+		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+		Error,
+	},
+};
+
 use sp_runtime::Serialize;
 use std::sync::Arc;
 
@@ -26,16 +33,36 @@ mod async_client;
 mod subscription;
 
 #[derive(Clone)]
-pub struct SyncClient(Arc<dyn AsyncClientTrait>);
+pub struct JsonrpseeClient(Arc<dyn AsyncClientTrait>);
 
-impl Request for SyncClient {
+impl JsonrpseeClient {
+	pub fn new(url: &str) -> Result<Self> {
+		block_on(Self::async_new(url))
+	}
+
+	async fn async_new(url: &str) -> Result<Self> {
+		let uri: Uri = url.parse()?;
+		let (tx, rx) = WsTransportClientBuilder::default().build(uri).await?;
+		Ok(ClientBuilder::default()
+			.max_notifs_per_subscription(4096)
+			.build_with_tokio(tx, rx))
+	}
+}
+
+impl Default for JsonrpseeClient {
+	fn default() -> Self {
+		Self::new("ws://127.0.0.1:9944")
+	}
+}
+
+impl Request for JsonrpseeClient {
 	fn request<Params: Serialize>(&self, method: &str, params: Option<Params>) -> Result<String> {
 		// Support async: #278
 		block_on(self.0.request(method, params))
 	}
 }
 
-impl Subscribe for SyncClient {
+impl Subscribe for JsonrpseeClient {
 	fn subscribe<Params: Serialize>(
 		&self,
 		sub: &str,
