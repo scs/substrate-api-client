@@ -20,6 +20,7 @@
 // #[cfg(feature = "ws-client")]
 // pub mod ws_client;
 
+#[cfg(feature = "jsonrpsee-client")]
 pub mod jsonrpsee_client;
 
 pub mod error;
@@ -27,24 +28,21 @@ pub mod json_req;
 
 pub use error::*;
 
-use serde::{de::DeserializeOwned, Serialize};
+use ac_primitives::RpcParams;
+use serde::de::DeserializeOwned;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
-	fn request<Param: Serialize, R: DeserializeOwned>(
-		&self,
-		method: &str,
-		params: Vec<Param>,
-	) -> Result<R>;
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscribe {
-	fn subscribe<Param: Serialize, Notification: DeserializeOwned>(
+	fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
-		params: Vec<Param>,
+		params: RpcParams,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>>;
 }

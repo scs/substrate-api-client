@@ -57,6 +57,8 @@ dependencies = [
  "hex",
  "pallet-balances",
  "parity-scale-codec",
+ "serde",
+ "serde_json",
  "sp-core",
  "sp-runtime",
  "sp-std",

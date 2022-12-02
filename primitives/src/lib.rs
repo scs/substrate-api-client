@@ -19,9 +19,11 @@
 
 pub use extrinsic_params::*;
 pub use extrinsics::*;
+pub use rpc_params::RpcParams;
 
 pub mod extrinsic_params;
 pub mod extrinsics;
+pub mod rpc_params;
 
 /// The block number type used in this runtime.
 pub type BlockNumber = u64;

@@ -36,8 +36,8 @@ pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
 use crate::{
-	rpc::{json_req, Request},
-	ReadProof,
+	rpc::{json_req, rpc_params, Request, RpcParams},
+	rpc_params, ReadProof,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
@@ -213,19 +213,19 @@ where
 {
 	/// Get genesis hash from node via websocket query.
 	fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
-		let genesis: Option<Hash> = client.request("chain_getBlockHash", vec![Some(0)])?;
+		let genesis: Option<Hash> = client.request("chain_getBlockHash", rpc_params![Some(0)])?;
 		genesis.ok_or(ApiClientError::Genesis)
 	}
 
 	/// Get runtime version from node via websocket query.
 	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
-		let version: RuntimeVersion = client.request("state_getRuntimeVersion", vec![])?;
+		let version: RuntimeVersion = client.request("state_getRuntimeVersion", rpc_params![])?;
 		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
 	fn get_metadata(client: &Client) -> ApiResult<Metadata> {
-		let metadata_bytes: Bytes = client.request("state_getMetadata", vec![])?;
+		let metadata_bytes: Bytes = client.request("state_getMetadata", Vec::<u8>::new())?;
 
 		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;
 		Metadata::try_from(metadata).map_err(|e| e.into())
@@ -242,7 +242,7 @@ where
 		let genesis_hash = Self::get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
-		let metadata = Self::get_metadata(&client).map(Metadata::try_from)??;
+		let metadata = Self::get_metadata(&client)?;
 		debug!("Metadata: {:?}", metadata);
 
 		let runtime_version = Self::get_runtime_version(&client)?;
@@ -286,7 +286,7 @@ where
 	}
 
 	pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
-		let finalized_block_hash = self.request("chain_getFinalizedHead", vec![])?;
+		let finalized_block_hash = self.request("chain_getFinalizedHead", Vec::<u8>::new())?;
 		Ok(finalized_block_hash)
 	}
 
@@ -342,7 +342,7 @@ where
 	pub fn request<Param: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
-		params: Vec<Param>,
+		params: RpcParams,
 	) -> ApiResult<R> {
 		self.client.request(method, params).map_err(ApiClientError::RpcClient)
 	}

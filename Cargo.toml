@@ -85,5 +85,6 @@ std = [
     "ac-node-api/std",
     "ac-primitives/std",
 ]
-ws-client = ["ws", "jsonrpsee", "futures", "async-trait"]
+ws-client = ["ws", "jsonrpsee-client"]
+jsonrpsee-client = ["jsonrpsee", "futures", "async-trait"]
 staking-xt = ["std", "pallet-staking"]
