@@ -39,30 +39,21 @@ pub trait Request {
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscribe {
+	type Subscription<Notification>: HandleSubscription<Notification>
+	where
+		Notification: DeserializeOwned;
+
 	fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: RpcParams,
 		unsub: &str,
-	) -> Result<SubscriptionHandler<Notification>>;
-}
-
-pub struct SubscriptionHandler<Notification>(Box<dyn HandleSubscription<Notification>>);
-
-impl<Notification> HandleSubscription<Notification> for SubscriptionHandler<Notification> {
-	fn next(&mut self) -> Option<Result<Notification>> {
-		self.0.next()
-	}
-
-	/// Unsubscribe and consume the subscription.
-	fn unsubscribe(self) -> Result<()> {
-		self.0.unsubscribe()
-	}
+	) -> Result<Self::Subscription<Notification>>;
 }
 
 /// Trait to use the full functionality of jsonrpseee Subscription type
 /// without actually enforcing it.
-pub trait HandleSubscription<Notification> {
+pub trait HandleSubscription<Notification: DeserializeOwned> {
 	/// Returns the next notification from the stream.
 	/// This may return `None` if the subscription has been terminated,
 	/// which may happen if the channel becomes full or is dropped.

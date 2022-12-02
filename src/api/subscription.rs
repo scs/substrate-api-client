@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
-	rpc::{Error as RpcClientError, HandleSubscription, Subscribe, SubscriptionHandler},
+	rpc::{Error as RpcClientError, HandleSubscription, Subscribe},
 	utils, Hash, Index,
 };
 use ac_compose_macros::rpc_params;
@@ -38,7 +38,7 @@ where
 	pub fn watch_extrinsic<Hash: DeserializeOwned, BlockHash: DeserializeOwned>(
 		&self,
 		xthex_prefixed: &str,
-	) -> ApiResult<SubscriptionHandler<TransactionStatus<Hash, BlockHash>>> {
+	) -> ApiResult<Client::Subscription<TransactionStatus<Hash, BlockHash>>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -48,7 +48,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_events(&self) -> ApiResult<SubscriptionHandler<Vec<u8>>> {
+	pub fn subscribe_events(&self) -> ApiResult<Client::Subscription<Vec<u8>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
@@ -58,7 +58,7 @@ where
 
 	pub fn subscribe_finalized_heads<Header: DeserializeOwned>(
 		&self,
-	) -> ApiResult<SubscriptionHandler<Header>> {
+	) -> ApiResult<Client::Subscription<Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe(
@@ -71,7 +71,7 @@ where
 
 	pub fn wait_for_event<Ev: StaticEvent>(
 		&self,
-		subscription: &mut SubscriptionHandler<Vec<u8>>,
+		subscription: &mut Client::Subscription<Vec<u8>>,
 	) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
@@ -81,7 +81,7 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		subscription: &mut SubscriptionHandler<Vec<u8>>,
+		subscription: &mut Client::Subscription<Vec<u8>>,
 	) -> ApiResult<EventDetails> {
 		while let Some(event_bytes) = subscription.next() {
 			let event_bytes = event_bytes?;

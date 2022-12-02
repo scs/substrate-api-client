@@ -15,7 +15,7 @@
 
 */
 
-use crate::rpc::{Error, Request, Result, RpcParams, Subscribe, SubscriptionHandler};
+use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
@@ -40,7 +40,7 @@ impl JsonrpseeClient {
 		block_on(Self::async_new(url))
 	}
 
-	fn with_default_url() -> Result<Self> {
+	pub fn with_default_url() -> Result<Self> {
 		Self::new("ws://127.0.0.1:9944")
 	}
 
@@ -67,12 +67,14 @@ impl Request for JsonrpseeClient {
 }
 
 impl Subscribe for JsonrpseeClient {
+	type Subscription<Notification> = SubscriptionWrapper<Notification> where Notification: DeserializeOwned;
+
 	fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: RpcParams,
 		unsub: &str,
-	) -> Result<SubscriptionHandler<Notification>> {
+	) -> Result<Self::Subscription<Notification>> {
 		block_on(self.inner.subscribe(sub, RpcParamsWrapper(params), unsub))
 			.map(|sub| sub.into())
 			.map_err(|e| Error::Client(Box::new(e)))
