@@ -23,7 +23,6 @@ use jsonrpsee::{
 		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
 		params::ArrayParams,
 	},
-	rpc_params,
 };
 use serde::{de::DeserializeOwned, Serialize};
 
