@@ -44,7 +44,8 @@ use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
 use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
+use sp_core::Bytes;
 use sp_rpc::number::NumberOrHex;
 use std::convert::{TryFrom, TryInto};
 
@@ -212,26 +213,22 @@ where
 {
 	/// Get genesis hash from node via websocket query.
 	fn get_genesis_hash(client: &Client) -> ApiResult<Hash> {
-		let genesis: Option<Hash> = client.request("chain_getBlockHash", Some(Some(0)))?;
+		let genesis: Option<Hash> = client.request("chain_getBlockHash", vec![Some(0)])?;
 		genesis.ok_or(ApiClientError::Genesis)
 	}
 
 	/// Get runtime version from node via websocket query.
 	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
-		let version: RuntimeVersion = client.request("state_getRuntimeVersion", None)?;
+		let version: RuntimeVersion = client.request("state_getRuntimeVersion", vec![])?;
 		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
-	fn get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
-		let jsonreq = json_req::state_get_metadata();
-		let meta = client.request(jsonreq)?;
+	fn get_metadata(client: &Client) -> ApiResult<Metadata> {
+		let metadata_bytes: Bytes = client.request("state_getMetadata", vec![])?;
 
-		if meta.is_none() {
-			return Err(ApiClientError::MetadataFetch)
-		}
-		let metadata = Vec::from_hex(meta.unwrap())?;
-		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
+		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;
+		Metadata::try_from(metadata).map_err(|e| e.into())
 	}
 }
 
@@ -264,7 +261,7 @@ where
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
 	pub fn update_runtime(&mut self) -> ApiResult<()> {
-		let metadata = Self::get_metadata(&self.client).map(Metadata::try_from)??;
+		let metadata = Self::get_metadata(&self.client)?;
 		debug!("Metadata: {:?}", metadata);
 
 		let runtime_version = Self::get_runtime_version(&self.client)?;
@@ -289,30 +286,21 @@ where
 	}
 
 	pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
-		let h = self.request(json_req::chain_get_finalized_head())?;
-		match h {
-			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
-			None => Ok(None),
-		}
+		let finalized_block_hash = self.request("chain_getFinalizedHead", vec![])?;
+		Ok(finalized_block_hash)
 	}
 
 	pub fn get_header<H>(&self, hash: Option<Hash>) -> ApiResult<Option<H>>
 	where
 		H: Header + DeserializeOwned,
 	{
-		let h = self.request(json_req::chain_get_header(hash))?;
-		match h {
-			Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
-			None => Ok(None),
-		}
+		let block_hash = self.request("chain_getHeader", vec![hash])?;
+		Ok(block_hash)
 	}
 
 	pub fn get_block_hash(&self, number: Option<u32>) -> ApiResult<Option<Hash>> {
-		let h = self.request(json_req::chain_get_block_hash(number))?;
-		match h {
-			Some(hash) => Ok(Some(Hash::from_hex(hash)?)),
-			None => Ok(None),
-		}
+		let block_hash = self.request("chain_getBlockHash", vec![number])?;
+		Ok(block_hash)
 	}
 
 	pub fn get_block<B>(&self, hash: Option<Hash>) -> ApiResult<Option<B>>
@@ -337,11 +325,8 @@ where
 	where
 		B: Block + DeserializeOwned,
 	{
-		let b = self.request(json_req::chain_get_block(hash))?;
-		match b {
-			Some(block) => Ok(Some(serde_json::from_str(&block)?)),
-			None => Ok(None),
-		}
+		let block = self.request("chain_getBlock", vec![hash])?;
+		Ok(block)
 	}
 
 	pub fn get_signed_block_by_num<B>(
@@ -354,8 +339,12 @@ where
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 
-	pub fn request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
-		self.client.request(jsonreq).map_err(ApiClientError::RpcClient)
+	pub fn request<Param: Serialize, R: DeserializeOwned>(
+		&self,
+		method: &str,
+		params: Vec<Param>,
+	) -> ApiResult<R> {
+		self.client.request(method, params).map_err(ApiClientError::RpcClient)
 	}
 
 	pub fn get_storage_value<V: Decode>(
@@ -427,13 +416,8 @@ where
 		key: StorageKey,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
-		let jsonreq = json_req::state_get_storage(key, at_block);
-		let s = self.request(jsonreq)?;
-
-		match s {
-			Some(storage) => Ok(Some(Vec::from_hex(storage)?)),
-			None => Ok(None),
-		}
+		let storage = self.request("state_getStorage", vec![key, at_block])?;
+		Ok(storage)
 	}
 
 	pub fn get_storage_value_proof(

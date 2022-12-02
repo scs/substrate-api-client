@@ -32,19 +32,19 @@ use serde::{de::DeserializeOwned, Serialize};
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
-	fn request<Params: Serialize, R: DeserializeOwned>(
+	fn request<Param: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
-		params: Vec<Params>,
+		params: Vec<Param>,
 	) -> Result<R>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
 pub trait Subscribe {
-	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
+	fn subscribe<Param: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
-		params: Vec<Params>,
+		params: Vec<Param>,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>>;
 }

@@ -26,7 +26,6 @@ use jsonrpsee::{
 	rpc_params,
 };
 use serde::{de::DeserializeOwned, Serialize};
-use serde_json::value::RawValue;
 
 pub use subscription::SubscriptionWrapper;
 
@@ -60,10 +59,10 @@ impl JsonrpseeClient {
 }
 
 impl Request for JsonrpseeClient {
-	fn request<Params: Serialize, R: DeserializeOwned>(
+	fn request<Param: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
-		params: Vec<Params>,
+		params: Vec<Param>,
 	) -> Result<R> {
 		let params = to_array_params(params)?;
 		// Support async: #278
@@ -72,10 +71,10 @@ impl Request for JsonrpseeClient {
 }
 
 impl Subscribe for JsonrpseeClient {
-	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
+	fn subscribe<Param: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
-		params: Vec<Params>,
+		params: Vec<Param>,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>> {
 		let params = to_array_params(params)?;
@@ -89,7 +88,7 @@ impl Subscribe for JsonrpseeClient {
 	}
 }
 
-fn to_array_params<Params: Serialize>(params: Vec<Params>) -> Result<ArrayParams> {
+fn to_array_params<Param: Serialize>(params: Vec<Param>) -> Result<ArrayParams> {
 	let mut array_params = ArrayParams::new();
 	for param in params {
 		array_params.insert(param)?;
