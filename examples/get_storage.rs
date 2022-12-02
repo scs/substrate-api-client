@@ -20,7 +20,7 @@ use substrate_api_client::{rpc::JsonrpseeClient, AccountInfo, Api, AssetTipExtri
 fn main() {
 	env_logger::init();
 
-	let client = JsonrpseeClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	// get some plain storage value

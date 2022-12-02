@@ -22,7 +22,7 @@ use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, M
 fn main() {
 	env_logger::init();
 
-	let client = JsonrpseeClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	let meta = api.metadata().clone();

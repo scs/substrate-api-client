@@ -39,7 +39,7 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = JsonrpseeClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(from);
 

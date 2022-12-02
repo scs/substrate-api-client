@@ -16,7 +16,7 @@ fn main() {
 	env_logger::init();
 
 	let from = AccountKeyring::Alice.pair();
-	let client = JsonrpseeClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(from);
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };

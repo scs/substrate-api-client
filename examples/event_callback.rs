@@ -32,7 +32,7 @@ use substrate_api_client::{
 fn main() {
 	env_logger::init();
 
-	let client = JsonrpseeClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	println!("Subscribe to events");

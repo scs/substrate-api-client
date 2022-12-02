@@ -35,7 +35,7 @@ fn main() {
 	env_logger::init();
 
 	// Create the node-api client and set the signer.
-	let client = JsonrpseeClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice = AccountKeyring::Alice.pair();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice.clone());
