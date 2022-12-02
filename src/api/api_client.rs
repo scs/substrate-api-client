@@ -517,7 +517,7 @@ where
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 
-	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Hash> {
+	pub fn submit_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Hash> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		let xt_hash = self.client.request("author_submitExtrinsic", rpc_params![xthex_prefixed])?;
 		Ok(xt_hash)
