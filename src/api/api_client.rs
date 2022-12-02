@@ -36,11 +36,12 @@ pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
 use crate::{
-	rpc::{json_req, rpc_params, Request, RpcParams},
-	rpc_params, ReadProof,
+	rpc::{json_req, Request},
+	ReadProof,
 };
+use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams};
+use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams, RpcParams};
 use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};

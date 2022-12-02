@@ -19,10 +19,13 @@ use crate::rpc::{Error, Request, Result, RpcParams, Subscribe, SubscriptionHandl
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
-	core::client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
-	rpc_params,
+	core::{
+		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+		traits::ToRpcParams,
+	},
 };
 use serde::de::DeserializeOwned;
+use serde_json::value::RawValue;
 
 pub use subscription::SubscriptionWrapper;
 
@@ -58,7 +61,8 @@ impl JsonrpseeClient {
 impl Request for JsonrpseeClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
 		// Support async: #278
-		block_on(self.inner.request(method, params)).map_err(|e| Error::Client(Box::new(e)))
+		block_on(self.inner.request(method, RpcParamsWrapper(params)))
+			.map_err(|e| Error::Client(Box::new(e)))
 	}
 }
 
@@ -69,8 +73,22 @@ impl Subscribe for JsonrpseeClient {
 		params: RpcParams,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>> {
-		block_on(self.inner.subscribe(sub, params, unsub))
+		block_on(self.inner.subscribe(sub, RpcParamsWrapper(params), unsub))
 			.map(|sub| sub.into())
 			.map_err(|e| Error::Client(Box::new(e)))
+	}
+}
+
+pub struct RpcParamsWrapper(RpcParams);
+
+impl ToRpcParams for RpcParamsWrapper {
+	fn to_rpc_params(self) -> core::result::Result<Option<Box<RawValue>>, jsonrpsee::core::Error> {
+		if let Some(json) = self.0.build() {
+			RawValue::from_string(json)
+				.map(Some)
+				.map_err(jsonrpsee::core::Error::ParseError)
+		} else {
+			Ok(None)
+		}
 	}
 }

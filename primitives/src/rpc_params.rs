@@ -29,7 +29,6 @@
 //! It is copied & pasted here to avoid std dependencies.
 
 use serde::Serialize;
-use serde_json::value::RawValue;
 
 #[derive(Debug)]
 pub struct RpcParams(ParamsBuilder);
@@ -44,6 +43,11 @@ impl RpcParams {
 	pub fn insert<P: Serialize>(&mut self, value: P) -> Result<(), serde_json::Error> {
 		self.0.insert(value)
 	}
+
+	/// Finish the building process and return a JSON compatible string.
+	pub fn build(self) -> Option<String> {
+		self.0.build()
+	}
 }
 
 impl Default for RpcParams {
@@ -51,23 +55,6 @@ impl Default for RpcParams {
 		Self(ParamsBuilder::positional())
 	}
 }
-
-#[cfg(feature = "jsonrpsee-client")]
-use jsonrpsee::core::traits::ToRpcParams;
-
-#[cfg(feature = "jsonrpsee-client")]
-impl ToRpcParams for RpcParams {
-	fn to_rpc_params(self) -> Result<Option<Box<RawValue>>, jsonrpsee::core::Error> {
-		if let Some(json) = self.0.build() {
-			RawValue::from_string(json)
-				.map(Some)
-				.map_err(jsonrpsee::core::Error::ParseError)
-		} else {
-			Ok(None)
-		}
-	}
-}
-
 /// Initial number of bytes for a parameter length.
 const PARAM_BYTES_CAPACITY: usize = 128;
 
@@ -98,6 +85,7 @@ impl ParamsBuilder {
 		Self::new('[', ']')
 	}
 
+	#[allow(unused)]
 	/// Construct a new [`ParamsBuilder`] for named parameters equivalent to a JSON map object.
 	pub(crate) fn named() -> Self {
 		Self::new('{', '}')
@@ -117,6 +105,7 @@ impl ParamsBuilder {
 		}
 	}
 
+	#[allow(unused)]
 	/// Insert a named value (key, value) pair into the builder.
 	/// The _name_ and _value_ are delimited by the `:` token.
 	pub(crate) fn insert_named<P: Serialize>(
