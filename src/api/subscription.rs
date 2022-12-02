@@ -20,6 +20,7 @@ use crate::{
 	rpc::{HandleSubscription, Subscribe, SubscriptionHandler},
 	utils, Hash, Index,
 };
+use ac_compose_macros::rpc_params;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
@@ -34,11 +35,11 @@ where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Index, Hash>,
 {
-	pub fn watch_extrinsic<Hash, BlockHash>(
+	pub fn watch_extrinsic<Hash: DeserializeOwned, BlockHash: DeserializeOwned>(
 		&self,
 		xthex_prefixed: &str,
 	) -> ApiResult<SubscriptionHandler<TransactionStatus<Hash, BlockHash>>> {
-		self.client
+		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
 				rpc_params![xthex_prefixed],

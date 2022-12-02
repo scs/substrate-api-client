@@ -35,17 +35,14 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 pub use sp_version::RuntimeVersion;
 
-use crate::{
-	rpc::{json_req, Request},
-	ReadProof,
-};
+use crate::{rpc::Request, ReadProof};
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{AccountData, AccountInfo, Balance, ExtrinsicParams, RpcParams};
 use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
-use serde::{de::DeserializeOwned, Serialize};
+use serde::de::DeserializeOwned;
 use sp_core::Bytes;
 use sp_rpc::number::NumberOrHex;
 use std::convert::{TryFrom, TryInto};
@@ -326,7 +323,7 @@ where
 	where
 		B: Block + DeserializeOwned,
 	{
-		let block = self.request("chain_getBlock", vec![hash])?;
+		let block = self.request("chain_getBlock", rpc_params![hash])?;
 		Ok(block)
 	}
 
@@ -413,7 +410,7 @@ where
 		key: StorageKey,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
-		let storage = self.request("state_getStorage", vec![key, at_block])?;
+		let storage = self.request("state_getStorage", rpc_params![key, at_block])?;
 		Ok(storage)
 	}
 
@@ -484,7 +481,11 @@ where
 	) -> ApiResult<Option<FeeDetails<Balance>>> {
 		let details: Option<FeeDetails<NumberOrHex>> =
 			self.request("payment_queryFeeDetails", rpc_params![xthex_prefixed, at_block])?;
-		let details = details.map(|details| convert_fee_details(details)?);
+
+		let details = match details {
+			Some(details) => Some(convert_fee_details(details)?),
+			None => None,
+		};
 		Ok(details)
 	}
 
@@ -516,23 +517,10 @@ where
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 
-	#[cfg(feature = "ws-client")]
-	pub fn send_extrinsic(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> ApiResult<Option<Hash>> {
+	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Hash> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		self.client
-			.send_extrinsic(xthex_prefixed, exit_on)
-			.map_err(ApiClientError::RpcClient)
-	}
-
-	#[cfg(not(feature = "ws-client"))]
-	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Hash>> {
-		debug!("sending extrinsic: {:?}", xthex_prefixed);
-		// XtStatus should never be used used but we need to put something
-		self.client.send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
+		let xt_hash = self.client.request("author_submitExtrinsic", rpc_params![xthex_prefixed])?;
+		Ok(xt_hash)
 	}
 }
 
