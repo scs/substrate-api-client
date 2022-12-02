@@ -71,7 +71,7 @@ where
 
 	pub fn wait_for_event<Ev: StaticEvent>(
 		&self,
-		subscription: &SubscriptionHandler<Vec<u8>>,
+		subscription: &mut SubscriptionHandler<Vec<u8>>,
 	) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
@@ -81,7 +81,7 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		subscription: &SubscriptionHandler<Vec<u8>>,
+		subscription: &mut SubscriptionHandler<Vec<u8>>,
 	) -> ApiResult<EventDetails> {
 		while let Some(event_bytes) = subscription.next() {
 			let event_bytes = event_bytes?;
