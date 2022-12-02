@@ -97,14 +97,14 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 	}
 
 	pub fn is_supported(&self) -> bool {
-		match self {
+		matches!(
+			self,
 			TransactionStatus::Ready
-			| TransactionStatus::Broadcast(_)
-			| TransactionStatus::InBlock(_)
-			| TransactionStatus::FinalityTimeout(_)
-			| TransactionStatus::Finalized(_) => true,
-			_ => false,
-		}
+				| TransactionStatus::Broadcast(_)
+				| TransactionStatus::InBlock(_)
+				| TransactionStatus::FinalityTimeout(_)
+				| TransactionStatus::Finalized(_)
+		)
 	}
 }
 
