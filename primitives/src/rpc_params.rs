@@ -28,8 +28,8 @@
 //! https://github.com/paritytech/jsonrpsee
 //! It is copied & pasted here to avoid std dependencies.
 
+use alloc::{string::String, vec::Vec};
 use serde::Serialize;
-
 #[derive(Debug)]
 pub struct RpcParams(ParamsBuilder);
 
@@ -85,12 +85,6 @@ impl ParamsBuilder {
 		Self::new('[', ']')
 	}
 
-	#[allow(unused)]
-	/// Construct a new [`ParamsBuilder`] for named parameters equivalent to a JSON map object.
-	pub(crate) fn named() -> Self {
-		Self::new('{', '}')
-	}
-
 	/// Initialize the internal vector if it is empty:
 	///  - allocate [`PARAM_BYTES_CAPACITY`] to avoid resizing
 	///  - add the `start` character.
@@ -103,34 +97,6 @@ impl ParamsBuilder {
 			self.bytes.reserve(PARAM_BYTES_CAPACITY);
 			self.bytes.push(self.start as u8);
 		}
-	}
-
-	#[allow(unused)]
-	/// Insert a named value (key, value) pair into the builder.
-	/// The _name_ and _value_ are delimited by the `:` token.
-	pub(crate) fn insert_named<P: Serialize>(
-		&mut self,
-		name: &str,
-		value: P,
-	) -> Result<(), serde_json::Error> {
-		self.maybe_initialize();
-
-		serde_json::to_writer(&mut self.bytes, name)?;
-		self.bytes.push(b':');
-		serde_json::to_writer(&mut self.bytes, &value)?;
-		self.bytes.push(b',');
-
-		Ok(())
-	}
-
-	/// Insert a plain value into the builder.
-	pub(crate) fn insert<P: Serialize>(&mut self, value: P) -> Result<(), serde_json::Error> {
-		self.maybe_initialize();
-
-		serde_json::to_writer(&mut self.bytes, &value)?;
-		self.bytes.push(b',');
-
-		Ok(())
 	}
 
 	/// Finish the building process and return a JSON compatible string.
@@ -148,5 +114,29 @@ impl ParamsBuilder {
 
 		// Safety: This is safe because JSON does not emit invalid UTF-8.
 		Some(unsafe { String::from_utf8_unchecked(self.bytes) })
+	}
+
+	#[cfg(feature = "std")]
+	/// Insert a plain value into the builder without heap allocation.
+	pub(crate) fn insert<P: Serialize>(&mut self, value: P) -> Result<(), serde_json::Error> {
+		self.maybe_initialize();
+
+		serde_json::to_writer(&mut self.bytes, &value)?;
+		self.bytes.push(b',');
+
+		Ok(())
+	}
+
+	#[cfg(not(feature = "std"))]
+	/// Insert a plain value into the builder with heap allocation. For better performance,
+	/// use the std version, if possible.
+	pub(crate) fn insert<P: Serialize>(&mut self, value: P) -> Result<(), serde_json::Error> {
+		self.maybe_initialize();
+
+		let mut serialized_vec = serde_json::to_vec(&value)?;
+		self.bytes.append(&mut serialized_vec);
+		self.bytes.push(b',');
+
+		Ok(())
 	}
 }

@@ -17,6 +17,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 pub use extrinsic_params::*;
 pub use extrinsics::*;
 pub use rpc_params::RpcParams;
