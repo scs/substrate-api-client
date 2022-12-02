@@ -22,7 +22,7 @@ use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	UncheckedExtrinsicV4, XtStatus,
+	UncheckedExtrinsicV4,
 };
 
 fn main() {
