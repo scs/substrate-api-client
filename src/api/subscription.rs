@@ -18,12 +18,13 @@
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
 	rpc::{Error as RpcClientError, HandleSubscription, Subscribe},
-	utils, Hash, Index,
+	utils, Hash, Index, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
+use core::fmt::Debug;
 use log::*;
 use sp_core::Pair;
 use sp_runtime::{DeserializeOwned, MultiSigner};
@@ -46,6 +47,33 @@ where
 				"author_unsubmitAndWatchExtrinsic",
 			)
 			.map_err(|e| e.into())
+	}
+
+	pub fn watch_extrinsic_until<
+		Hash: DeserializeOwned + Debug,
+		BlockHash: DeserializeOwned + Debug,
+	>(
+		&self,
+		xthex_prefixed: &str,
+		watch_until: XtStatus,
+	) -> ApiResult<Option<BlockHash>> {
+		let mut subscription: Client::Subscription<TransactionStatus<Hash, BlockHash>> =
+			self.watch_extrinsic(xthex_prefixed)?;
+		while let Some(transaction_status) = subscription.next() {
+			let transaction_status = transaction_status?;
+			if transaction_status.is_supported() {
+				if transaction_status.as_u8() >= watch_until as u8 {
+					return Ok(return_block_hash_if_available(transaction_status))
+				}
+			} else {
+				let error = RpcClientError::Extrinsic(format!(
+					"Unsupported transaction status: {:?}, stopping watch process.",
+					transaction_status
+				));
+				return Err(error.into())
+			}
+		}
+		Err(Error::RpcClient(RpcClientError::NoStream))
 	}
 
 	pub fn subscribe_events(&self) -> ApiResult<Client::Subscription<Vec<u8>>> {
@@ -118,4 +146,16 @@ where
 
 fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
 	event_details.pallet_name() == "System" && event_details.variant_name() == "ExtrinsicFailed"
+}
+
+fn return_block_hash_if_available<Hash, BlockHash>(
+	transcation_status: TransactionStatus<Hash, BlockHash>,
+) -> Option<BlockHash> {
+	match transcation_status {
+		TransactionStatus::InBlock(block_hash) => Some(block_hash),
+		TransactionStatus::Retracted(block_hash) => Some(block_hash),
+		TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
+		TransactionStatus::Finalized(block_hash) => Some(block_hash),
+		_ => None,
+	}
 }

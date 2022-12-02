@@ -44,14 +44,10 @@ pub use subscription::*;
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
-	Unknown = 0,
-	/// uses `author_submit` without watching.
-	SubmitOnly = 1,
-	Ready = 2,
-	Broadcast = 3,
+	Ready = 1,
+	Broadcast = 2,
 	InBlock = 4,
-	Finalized = 5,
-	Future = 10,
+	Finalized = 7,
 }
 
 /// Possible transaction status events.
@@ -59,7 +55,6 @@ pub enum XtStatus {
 // (https://github.com/paritytech/substrate/blob/dddfed3d9260cf03244f15ba3db4edf9af7467e9/client/transaction-pool/api/src/lib.rs)
 // as the library is not no-std compatible
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum TransactionStatus<Hash, BlockHash> {
 	/// Transaction is part of the future queue.
 	Future,
@@ -84,6 +79,35 @@ pub enum TransactionStatus<Hash, BlockHash> {
 	/// Transaction is no longer valid in the current state.
 	Invalid,
 }
+
+impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
+	pub fn as_u8(&self) -> u8 {
+		match self {
+			TransactionStatus::Future => 0,
+			TransactionStatus::Ready => 1,
+			TransactionStatus::Broadcast(_) => 2,
+			TransactionStatus::InBlock(_) => 3,
+			TransactionStatus::Retracted(_) => 4,
+			TransactionStatus::FinalityTimeout(_) => 5,
+			TransactionStatus::Finalized(_) => 6,
+			TransactionStatus::Usurped(_) => 7,
+			TransactionStatus::Dropped => 8,
+			TransactionStatus::Invalid => 9,
+		}
+	}
+
+	pub fn is_supported(&self) -> bool {
+		match self {
+			TransactionStatus::Ready
+			| TransactionStatus::Broadcast(_)
+			| TransactionStatus::InBlock(_)
+			| TransactionStatus::FinalityTimeout(_)
+			| TransactionStatus::Finalized(_) => true,
+			_ => false,
+		}
+	}
+}
+
 // Exact structure from
 // https://github.com/paritytech/substrate/blob/master/client/rpc-api/src/state/helpers.rs
 // Adding manually so we don't need sc-rpc-api, which brings in async dependencies

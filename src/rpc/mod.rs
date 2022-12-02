@@ -21,6 +21,8 @@
 // pub mod ws_client;
 
 #[cfg(feature = "jsonrpsee-client")]
+pub use jsonrpsee_client::JsonrpseeClient;
+#[cfg(feature = "jsonrpsee-client")]
 pub mod jsonrpsee_client;
 
 pub mod error;
