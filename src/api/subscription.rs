@@ -41,7 +41,7 @@ where
 		self.client
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
-				vec![xthex_prefixed],
+				rpc_params![xthex_prefixed],
 				"author_unsubmitAndWatchExtrinsic",
 			)
 			.map_err(|e| e.into())
@@ -51,7 +51,7 @@ where
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
-			.subscribe("state_subscribeStorage", vec![vec![key]], "state_unsubscribeStorage")
+			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
 			.map_err(|e| e.into())
 	}
 

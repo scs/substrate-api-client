@@ -226,7 +226,7 @@ where
 
 	/// Get metadata from node via websocket query.
 	fn get_metadata(client: &Client) -> ApiResult<Metadata> {
-		let metadata_bytes: Bytes = client.request("state_getMetadata", Vec::<u8>::new())?;
+		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![])?;
 
 		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;
 		Metadata::try_from(metadata).map_err(|e| e.into())
@@ -287,7 +287,7 @@ where
 	}
 
 	pub fn get_finalized_head(&self) -> ApiResult<Option<Hash>> {
-		let finalized_block_hash = self.request("chain_getFinalizedHead", Vec::<u8>::new())?;
+		let finalized_block_hash = self.request("chain_getFinalizedHead", rpc_params![])?;
 		Ok(finalized_block_hash)
 	}
 
@@ -295,12 +295,12 @@ where
 	where
 		H: Header + DeserializeOwned,
 	{
-		let block_hash = self.request("chain_getHeader", vec![hash])?;
+		let block_hash = self.request("chain_getHeader", rpc_params![hash])?;
 		Ok(block_hash)
 	}
 
 	pub fn get_block_hash(&self, number: Option<u32>) -> ApiResult<Option<Hash>> {
-		let block_hash = self.request("chain_getBlockHash", vec![number])?;
+		let block_hash = self.request("chain_getBlockHash", rpc_params![number])?;
 		Ok(block_hash)
 	}
 
@@ -340,11 +340,7 @@ where
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 
-	pub fn request<Param: Serialize, R: DeserializeOwned>(
-		&self,
-		method: &str,
-		params: RpcParams,
-	) -> ApiResult<R> {
+	pub fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> ApiResult<R> {
 		self.client.request(method, params).map_err(ApiClientError::RpcClient)
 	}
 
@@ -468,12 +464,8 @@ where
 		keys: Vec<StorageKey>,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<ReadProof<Hash>>> {
-		let jsonreq = json_req::state_get_read_proof(keys, at_block);
-		let p = self.request(jsonreq)?;
-		match p {
-			Some(proof) => Ok(Some(serde_json::from_str(&proof)?)),
-			None => Ok(None),
-		}
+		let proof = self.request("state_getReadProof", rpc_params![keys, at_block])?;
+		Ok(proof)
 	}
 
 	pub fn get_keys(
@@ -481,12 +473,8 @@ where
 		key: StorageKey,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<Vec<String>>> {
-		let jsonreq = json_req::state_get_keys(key, at_block);
-		let k = self.request(jsonreq)?;
-		match k {
-			Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
-			None => Ok(None),
-		}
+		let keys = self.request("state_getKeys", rpc_params![key, at_block])?;
+		Ok(keys)
 	}
 
 	pub fn get_fee_details(
@@ -494,16 +482,10 @@ where
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<FeeDetails<Balance>>> {
-		let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
-		let res = self.request(jsonreq)?;
-		match res {
-			Some(details) => {
-				let details: FeeDetails<NumberOrHex> = serde_json::from_str(&details)?;
-				let details = convert_fee_details(details)?;
-				Ok(Some(details))
-			},
-			None => Ok(None),
-		}
+		let details: Option<FeeDetails<NumberOrHex>> =
+			self.request("payment_queryFeeDetails", rpc_params![xthex_prefixed, at_block])?;
+		let details = details.map(|details| convert_fee_details(details)?);
+		Ok(details)
 	}
 
 	pub fn get_payment_info(
@@ -511,15 +493,8 @@ where
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<RuntimeDispatchInfo<Balance>>> {
-		let jsonreq = json_req::payment_query_info(xthex_prefixed, at_block);
-		let res = self.request(jsonreq)?;
-		match res {
-			Some(info) => {
-				let info: RuntimeDispatchInfo<Balance> = serde_json::from_str(&info)?;
-				Ok(Some(info))
-			},
-			None => Ok(None),
-		}
+		let res = self.request("payment_queryInfo", rpc_params![xthex_prefixed, at_block])?;
+		Ok(res)
 	}
 
 	pub fn get_constant<C: Decode>(
