@@ -18,7 +18,7 @@
 //! Extrinsics for `pallet-utility`.
 
 use super::common::Batch;
-use crate::{Api, Hash, Index};
+use crate::{rpc::Request, Api, Hash, Index};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
 use codec::Encode;
@@ -39,6 +39,7 @@ where
 	MultiSignature: From<P::Signature>,
 	MultiSigner: From<P::Public>,
 	Params: ExtrinsicParams<Index, Hash>,
+	Client: Request,
 {
 	pub fn batch<Call: Encode + Clone>(
 		&self,

@@ -33,7 +33,7 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 		block_on(self.inner.next()).map(|result| result.map_err(|e| Error::Client(Box::new(e))))
 	}
 
-	fn unsubscribe(mut self) -> Result<()> {
+	fn unsubscribe(self) -> Result<()> {
 		block_on(self.inner.unsubscribe()).map_err(|e| Error::Client(Box::new(e)))
 	}
 }
