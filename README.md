@@ -85,3 +85,4 @@ _In alphabetical order_
 
 - [Encointer](https://github.com/encointer)
 - [Integritee Network](https://github.com/integritee-network)
+- [Litentry](https://github.com/litentry)
