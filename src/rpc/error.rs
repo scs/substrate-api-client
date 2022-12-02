@@ -37,6 +37,8 @@ pub enum Error {
 	Disconnected(#[from] sp_std::sync::mpsc::RecvError),
 	#[error("Failure during thread creation: {0}")]
 	Io(#[from] std::io::Error),
+	#[error("Stream ended unexpectedly")]
+	NoStream,
 	#[error(transparent)]
 	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }

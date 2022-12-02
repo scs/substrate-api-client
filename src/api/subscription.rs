@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
-	rpc::{HandleSubscription, Subscribe, SubscriptionHandler},
+	rpc::{Error as RpcClientError, HandleSubscription, Subscribe, SubscriptionHandler},
 	utils, Hash, Index,
 };
 use ac_compose_macros::rpc_params;
@@ -61,7 +61,11 @@ where
 	) -> ApiResult<SubscriptionHandler<Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
-			.subscribe("chain_subscribeFinalizedHeads", vec![], "chain_unsubscribeFinalizedHeads")
+			.subscribe(
+				"chain_subscribeFinalizedHeads",
+				rpc_params![],
+				"chain_unsubscribeFinalizedHeads",
+			)
 			.map_err(|e| e.into())
 	}
 
@@ -80,6 +84,7 @@ where
 		subscription: &SubscriptionHandler<Vec<u8>>,
 	) -> ApiResult<EventDetails> {
 		while let Some(event_bytes) = subscription.next() {
+			let event_bytes = event_bytes?;
 			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
 
 			for maybe_event_details in events.iter() {
@@ -107,6 +112,7 @@ where
 				}
 			}
 		}
+		Err(Error::RpcClient(RpcClientError::NoStream))
 	}
 }
 
