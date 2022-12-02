@@ -16,8 +16,8 @@
 //! This example is community maintained and not CI tested, therefore it may not work as is.
 
 use codec::Decode;
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
-use std::sync::mpsc::channel;
 use substrate_api_client::{
 	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
 };
@@ -54,8 +54,7 @@ fn main() {
 "#;
 	let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
-	let (events_in, events_out) = channel();
-	let subscription = api.subscribe_events().expect("cannot subscribe to events");
+	let mut subscription = api.subscribe_events().expect("cannot subscribe to events");
 
 	let xt = api.contract_instantiate_with_code(
 		1_000_000_000_000_000,
@@ -66,18 +65,22 @@ fn main() {
 	);
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
-	let tx_hash = api.watch_extrinsic_until(xt.hex_encode(), XtStatus::InBlock).unwrap();
-	println!("[+] Transaction is in Block. Hash: {:?}\n", tx_hash);
+	let block_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
+	println!("[+] Transaction is in Block. Hash: {:?}\n", block_hash);
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs = api.wait_for_event(&subscription).unwrap();
+	let args: ContractInstantiatedEventArgs = api.wait_for_event(&mut subscription).unwrap();
 
 	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
 
 	let xt = api.contract_call(args.contract.into(), 500_000, 500_000, vec![0u8]);
 
 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
-	println!("[+] Transaction got finalized. Hash: {:?}", tx_hash);
+	let block_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::Finalized)
+		.unwrap();
+	println!("[+] Transaction got finalized. Hash: {:?}", block_hash);
 }

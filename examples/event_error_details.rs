@@ -14,10 +14,9 @@ limitations under the License.
 */
 
 use codec::Decode;
-use sp_core::crypto::Pair;
+use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-use std::sync::mpsc::channel;
 use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
 };
@@ -41,7 +40,7 @@ fn main() {
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
 
-	let client = JsonrpseeClient::with_default_url().unwrap().unwrap();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(from.clone());
 
@@ -77,13 +76,14 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until Ready.
-	let _tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
+	let _tx_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::Ready)
+		.unwrap();
 	println!("[+] Transaction got included into the TxPool.");
 
 	// Transfer should fail as Alice wants to transfer all her balance. She does not have enough money to pay the fees.
-	let (events_in, events_out) = channel();
-	api.subscribe_events(events_in).unwrap();
-	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&events_out);
+	let mut subscription = api.subscribe_events().unwrap();
+	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&mut subscription);
 	match args {
 		Ok(_transfer) => {
 			panic!("Exptected the call to fail.");

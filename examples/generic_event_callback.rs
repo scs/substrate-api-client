@@ -17,9 +17,10 @@
 //! implying no runtime needs to be imported
 
 use codec::Decode;
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-use std::{sync::mpsc::channel, thread};
+use std::{sync::Arc, thread};
 use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus,
 };
@@ -45,15 +46,15 @@ fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice);
+	let api = Arc::new(api);
 
 	println!("Subscribe to events");
 
 	let api2 = api.clone();
 	let thread_output = thread::spawn(move || {
-		let (events_in, events_out) = channel();
-		api2.subscribe_events(events_in).unwrap();
+		let mut subscription = api2.subscribe_events().unwrap();
 		let args: TransferEventArgs =
-			api2.wait_for_event::<TransferEventArgs>(&events_out).unwrap();
+			api2.wait_for_event::<TransferEventArgs>(&mut subscription).unwrap();
 		args
 	});
 
@@ -65,7 +66,10 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send extrinsic.
-	let tx_hash = api.watch_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap().unwrap();
+	let tx_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
 	let args = thread_output.join().unwrap();

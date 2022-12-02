@@ -13,21 +13,18 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to subscribe to events.
-use std::sync::mpsc::channel;
-
+//! Very simple example that shows how to subscribe to events.
 use codec::Decode;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
+use substrate_api_client::HandleSubscription;
 
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use kitchensink_runtime::RuntimeEvent;
 
-use substrate_api_client::{
-	rpc::JsonrpseeClient, utils::FromHexString, Api, AssetTipExtrinsicParams,
-};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
@@ -36,16 +33,14 @@ fn main() {
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	println!("Subscribe to events");
-	let (events_in, events_out) = channel();
-	let subscription = api.subscribe_events().unwrap();
+	let mut subscription = api.subscribe_events().unwrap();
 
 	for _ in 0..5 {
-		let event_str = events_out.recv().unwrap();
-
-		let _unhex = Vec::from_hex(event_str).unwrap();
-		let mut _er_enc = _unhex.as_slice();
-		let events =
-			Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(&mut _er_enc).unwrap();
+		let event_bytes = subscription.next().unwrap().unwrap();
+		let events = Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(
+			&mut event_bytes.as_slice(),
+		)
+		.unwrap();
 		for evr in &events {
 			println!("decoded: {:?} {:?}", evr.phase, evr.event);
 			match &evr.event {

@@ -18,10 +18,11 @@
 
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
 use kitchensink_runtime::{BalancesCall, Header, RuntimeCall};
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	compose_extrinsic_offline, rpc::^JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
 	UncheckedExtrinsicV4, XtStatus,
 };
 
@@ -64,6 +65,9 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
-	let block_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let block_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.unwrap();
 	println!("[+] Transaction got included in block {:?}", block_hash);
 }

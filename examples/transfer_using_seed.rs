@@ -17,7 +17,7 @@
 
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
-	sr25519,
+	sr25519, H256,
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, XtStatus};
@@ -57,8 +57,10 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
-	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
+	let block_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
+	println!("[+] Transaction got included. Hash: {:?}\n", block_hash);
 
 	// Verify that Bob's free Balance increased.
 	let bob_account_data = api.get_account_data(&bob.into()).unwrap().unwrap();

@@ -18,6 +18,7 @@
 
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
 use kitchensink_runtime::{BalancesCall, Header, RuntimeCall};
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
@@ -64,7 +65,7 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	match api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock) {
+	match api.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock) {
 		Err(error) => {
 			println!("Retrieved error {:?}", error);
 			assert!(format!("{:?}", error).contains("Future"));

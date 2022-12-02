@@ -16,7 +16,9 @@
 //! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
 //! module, whereas the desired module and call are supplied as a string.
 
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
+use std::sync::Arc;
 use substrate_api_client::{
 	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAddress,
 	UncheckedExtrinsicV4, XtStatus,
@@ -32,6 +34,7 @@ fn main() {
 	api.set_signer(from);
 	// set the recipient
 	let to = AccountKeyring::Bob.to_account_id();
+	let api = Arc::new(api);
 
 	// call Balances::transfer
 	// the names are given as strings
@@ -47,6 +50,8 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// send and watch extrinsic until InBlock
-	let tx_hash = api.watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let tx_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
 	println!("[+] Transaction got included. Hash: {:?}", tx_hash);
 }

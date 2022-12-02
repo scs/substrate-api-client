@@ -17,6 +17,7 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use codec::Compact;
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	compose_call, compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
@@ -45,10 +46,12 @@ fn main() {
 		Compact(42_u128),
 		Compact(42_u128)
 	);
-	#[allow(clippy::redundant_clone)]
-	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(api.clone(), "Sudo", "sudo", call);
 
-	// send and watch extrinsic until finalized
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
-	println!("[+] Transaction got included. Hash: {:?}", tx_hash);
+	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
+
+	// send and watch extrinsic until in block
+	let block_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
+	println!("[+] Transaction got included. Hash: {:?}", block_hash);
 }

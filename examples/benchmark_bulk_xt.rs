@@ -54,7 +54,7 @@ fn main() {
 		);
 		// send and watch extrinsic until finalized
 		println!("sending extrinsic with nonce {}", nonce);
-		let _blockh = api.send_extrinsic(xt.hex_encode(), XtStatus::Ready).unwrap();
+		let _tx_hash = api.submit_extrinsic(xt.hex_encode()).unwrap();
 
 		nonce += 1;
 	}

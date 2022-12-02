@@ -53,13 +53,14 @@ fn main() {
 		twitter: Data::None,
 	};
 
-	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> =
-		compose_extrinsic!(api.clone(), "Identity", "set_identity", Box::new(info.clone()));
+		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone()));
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	let _block_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let _block_hash = api
+		.watch_extrinsic_until::<H256, H256>(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
 
 	// Get the storage value from the pallet. Check out the pallet itself to know it's type:
 	// see https://github.com/paritytech/substrate/blob/e6768a3bd553ddbed12fe1a0e4a2ef8d4f8fdf52/frame/identity/src/lib.rs#L167

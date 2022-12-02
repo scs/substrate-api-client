@@ -19,8 +19,9 @@
 use kitchensink_runtime::{Block, Header};
 use sp_core::sr25519;
 use sp_runtime::generic::SignedBlock as SignedBlockG;
-use std::sync::mpsc::channel;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, HandleSubscription,
+};
 
 type SignedBlock = SignedBlockG<Block>;
 
@@ -47,12 +48,10 @@ fn main() {
 	println!("Latest block: \n {:?} \n", api.get_block::<Block>(None).unwrap());
 
 	println!("Subscribing to finalized heads");
-	let (sender, receiver) = channel();
-	api.subscribe_finalized_heads(sender).unwrap();
+	let mut subscription = api.subscribe_finalized_heads::<Header>().unwrap();
 
 	for _ in 0..5 {
-		let head: Header =
-			receiver.recv().map(|header| serde_json::from_str(&header).unwrap()).unwrap();
+		let head: Header = subscription.next().unwrap().unwrap();
 		println!("Got new Block {:?}", head);
 	}
 }
