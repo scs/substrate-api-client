@@ -21,7 +21,7 @@ use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4,
+	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4,
 	XtStatus,
 };
 
@@ -35,7 +35,7 @@ fn main() {
 	env_logger::init();
 
 	// Create the node-api client and set the signer.
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let alice = AccountKeyring::Alice.pair();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice.clone());

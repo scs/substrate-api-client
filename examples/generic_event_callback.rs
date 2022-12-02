@@ -20,7 +20,9 @@ use codec::Decode;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::{sync::mpsc::channel, thread};
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus};
+use substrate_api_client::{
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus,
+};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -40,7 +42,7 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice);
 
@@ -63,7 +65,7 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send extrinsic.
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap().unwrap();
+	let tx_hash = api.watch_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap().unwrap();
 	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
 
 	let args = thread_output.join().unwrap();

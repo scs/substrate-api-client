@@ -15,12 +15,12 @@
 
 ///! Very simple example that shows how to get some simple storage values.
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, AccountInfo, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::JsonrpseeClient, AccountInfo, Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
 
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	// get some plain storage value

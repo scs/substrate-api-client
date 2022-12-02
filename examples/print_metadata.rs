@@ -17,12 +17,12 @@
 ///! debugging tool.
 use sp_core::sr25519;
 
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, Metadata};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Metadata};
 
 fn main() {
 	env_logger::init();
 
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let mut api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	let meta = api.metadata().clone();

@@ -19,7 +19,7 @@ use codec::Decode;
 use sp_keyring::AccountKeyring;
 use std::sync::mpsc::channel;
 use substrate_api_client::{
-	rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
 };
 
 #[allow(unused)]
@@ -39,7 +39,7 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(from);
 
@@ -55,7 +55,7 @@ fn main() {
 	let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
 	let (events_in, events_out) = channel();
-	api.subscribe_events(events_in).expect("cannot subscribe to events");
+	let subscription = api.subscribe_events().expect("cannot subscribe to events");
 
 	let xt = api.contract_instantiate_with_code(
 		1_000_000_000_000_000,
@@ -66,12 +66,12 @@ fn main() {
 	);
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
-	println!("[+] Transaction got finalized. Hash: {:?}\n", tx_hash);
+	let tx_hash = api.watch_extrinsic_until(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	println!("[+] Transaction is in Block. Hash: {:?}\n", tx_hash);
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs = api.wait_for_event(&events_out).unwrap();
+	let args: ContractInstantiatedEventArgs = api.wait_for_event(&subscription).unwrap();
 
 	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
 

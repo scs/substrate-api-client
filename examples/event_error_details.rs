@@ -19,7 +19,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::sync::mpsc::channel;
 use substrate_api_client::{
-	rpc::WsRpcClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::JsonrpseeClient, Api, ApiResult, AssetTipExtrinsicParams, StaticEvent, XtStatus,
 };
 
 // Look at the how the transfer event looks like in in the metadata
@@ -41,7 +41,7 @@ fn main() {
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
 
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(from.clone());
 

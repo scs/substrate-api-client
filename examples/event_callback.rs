@@ -25,17 +25,19 @@ use sp_core::{sr25519, H256 as Hash};
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use kitchensink_runtime::RuntimeEvent;
 
-use substrate_api_client::{rpc::WsRpcClient, utils::FromHexString, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{
+	rpc::JsonrpseeClient, utils::FromHexString, Api, AssetTipExtrinsicParams,
+};
 
 fn main() {
 	env_logger::init();
 
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	println!("Subscribe to events");
 	let (events_in, events_out) = channel();
-	api.subscribe_events(events_in).unwrap();
+	let subscription = api.subscribe_events().unwrap();
 
 	for _ in 0..5 {
 		let event_str = events_out.recv().unwrap();

@@ -18,7 +18,7 @@
 
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GenericAddress,
+	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAddress,
 	UncheckedExtrinsicV4, XtStatus,
 };
 
@@ -27,7 +27,7 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(from);
 	// set the recipient
@@ -47,6 +47,6 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// send and watch extrinsic until InBlock
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let tx_hash = api.watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}", tx_hash);
 }

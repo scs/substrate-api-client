@@ -20,14 +20,14 @@ use kitchensink_runtime::{Block, Header};
 use sp_core::sr25519;
 use sp_runtime::generic::SignedBlock as SignedBlockG;
 use std::sync::mpsc::channel;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
 
 type SignedBlock = SignedBlockG<Block>;
 
 fn main() {
 	env_logger::init();
 
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = JsonrpseeClient::with_default_url();
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	let head = api.get_finalized_head().unwrap().unwrap();
