@@ -1,6 +1,8 @@
 #[cfg(feature = "staking-xt")]
 use pallet_staking::{ActiveEraInfo, Exposure};
 #[cfg(feature = "staking-xt")]
+use sp_core::H256;
+#[cfg(feature = "staking-xt")]
 use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
@@ -30,7 +32,9 @@ fn main() {
 	}
 	if exposure.total > 0_u128 {
 		let call = api.payout_stakers(idx, account);
-		let result = api.watch_extrinsic_until(&call.hex_encode(), XtStatus::InBlock).unwrap();
+		let result = api
+			.watch_extrinsic_until::<H256, H256>(&call.hex_encode(), XtStatus::InBlock)
+			.unwrap();
 		println!("{:?}", result);
 	}
 }

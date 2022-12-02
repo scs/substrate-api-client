@@ -5,6 +5,8 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 #[cfg(feature = "staking-xt")]
 use serde_json::Value;
 #[cfg(feature = "staking-xt")]
+use sp_core::H256;
+#[cfg(feature = "staking-xt")]
 use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
@@ -69,8 +71,9 @@ fn main() {
 		let payout_calls_len = payout_calls.len();
 		if payout_calls_len > 0 {
 			let batching = api.batch(payout_calls);
-			let results_hash =
-				api.send_extrinsic(batching.hex_encode(), XtStatus::InBlock).unwrap();
+			let results_hash = api
+				.watch_extrinsic_until::<H256, H256>(&batching.hex_encode(), XtStatus::InBlock)
+				.unwrap();
 			num_of_claimed_payouts += payout_calls_len;
 
 			let result = serde_json::to_value(results_hash).unwrap();
@@ -86,7 +89,11 @@ fn main() {
 #[cfg(feature = "staking-xt")]
 pub fn get_last_reward(
 	validator_address: &str,
-	api: &substrate_api_client::Api<sp_core::sr25519::Pair, WsRpcClient, PlainTipExtrinsicParams>,
+	api: &substrate_api_client::Api<
+		sp_core::sr25519::Pair,
+		JsonrpseeClient,
+		PlainTipExtrinsicParams,
+	>,
 ) -> u32 {
 	let account = match AccountId32::from_ss58check(validator_address) {
 		Ok(address) => address,
