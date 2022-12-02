@@ -4945,7 +4945,6 @@ dependencies = [
  "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
- "async-trait",
  "env_logger",
  "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
  "frame-support",
