@@ -19,7 +19,10 @@ use crate::rpc::{Error, Request, Result, Subscribe, SubscriptionHandler};
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
-	core::client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+	core::{
+		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+		params::ArrayParams,
+	},
 	rpc_params,
 };
 use serde::{de::DeserializeOwned, Serialize};
@@ -60,9 +63,9 @@ impl Request for JsonrpseeClient {
 	fn request<Params: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
-		params: Option<Params>,
+		params: Vec<Params>,
 	) -> Result<R> {
-		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
+		let params = to_array_params(params)?;
 		// Support async: #278
 		block_on(self.inner.request(method, params)).map_err(|e| Error::Client(Box::new(e)))
 	}
@@ -72,10 +75,10 @@ impl Subscribe for JsonrpseeClient {
 	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
-		params: Option<Params>,
+		params: Vec<Params>,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>> {
-		let params = params.map_or(rpc_params![], |p| rpc_params![params]);
+		let params = to_array_params(params)?;
 		block_on(self.inner.subscribe(sub, params, unsub))
 			.map(|sub| sub.into())
 			.map_err(|e| Error::Client(Box::new(e)))
@@ -84,4 +87,12 @@ impl Subscribe for JsonrpseeClient {
 		// 			.await
 		// 			.map_err(|e| Error::Client(Box::new(e)))
 	}
+}
+
+fn to_array_params<Params: Serialize>(params: Vec<Params>) -> Result<ArrayParams> {
+	let mut array_params = ArrayParams::new();
+	for param in params {
+		array_params.insert(param)?;
+	}
+	Ok(array_params)
 }

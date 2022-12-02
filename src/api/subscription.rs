@@ -41,7 +41,7 @@ where
 		self.client
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
-				Some(xthex_prefixed),
+				vec![xthex_prefixed],
 				"author_unsubmitAndWatchExtrinsic",
 			)
 			.map_err(|e| e.into())
@@ -51,7 +51,7 @@ where
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
-			.subscribe("state_subscribeStorage", Some(vec![key]), "state_unsubscribeStorage")
+			.subscribe("state_subscribeStorage", vec![vec![key]], "state_unsubscribeStorage")
 			.map_err(|e| e.into())
 	}
 
@@ -60,7 +60,7 @@ where
 	) -> ApiResult<SubscriptionHandler<Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
-			.subscribe("chain_subscribeFinalizedHeads", None, "chain_unsubscribeFinalizedHeads")
+			.subscribe("chain_subscribeFinalizedHeads", vec![], "chain_unsubscribeFinalizedHeads")
 			.map_err(|e| e.into())
 	}
 

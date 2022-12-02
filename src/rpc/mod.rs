@@ -35,7 +35,7 @@ pub trait Request {
 	fn request<Params: Serialize, R: DeserializeOwned>(
 		&self,
 		method: &str,
-		params: Option<Params>,
+		params: Vec<Params>,
 	) -> Result<R>;
 }
 
@@ -44,7 +44,7 @@ pub trait Subscribe {
 	fn subscribe<Params: Serialize, Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
-		params: Option<Params>,
+		params: Vec<Params>,
 		unsub: &str,
 	) -> Result<SubscriptionHandler<Notification>>;
 }
