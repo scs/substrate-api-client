@@ -56,9 +56,11 @@ use std::convert::{TryFrom, TryInto};
 /// ```no_run
 /// use substrate_api_client::rpc::json_req::author_submit_extrinsic;
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString, Hash, RpcClient, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, ApiClientError, ApiResult, FromHexString, Hash, Request, rpc::Error as RpcClientError, XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
-/// use serde_json::Value;
+/// use serde::de::DeserializeOwned;
+/// use ac_primitives::RpcParams;
+/// use serde_json::{Value, json};
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
 ///     _inner: (),
@@ -77,26 +79,22 @@ use std::convert::{TryFrom, TryInto};
 ///         _path: String,
 ///         _json: Value,
 ///     ) -> Result<R, RpcClientError> {
-///         // you can figure this out...self.inner...send_json...
+///         // Send json to node via web socket connection.
 ///         todo!()
 ///     }
 /// }
 ///
-/// impl RpcClient for MyClient {
-///     fn request(&self, jsonreq: Value) -> RpcResult<Option<String>> {
-///         self.send_json::<Value>("".into(), jsonreq)
-///             .map(|v| Some(v.to_string()))
-///     }
-///
-///     fn send_extrinsic(
-///         &self,
-///         xthex_prefixed: String,
-///         _exit_on: XtStatus,
-///     ) -> RpcResult<Option<Hash>> {
-///         let jsonreq = author_submit_extrinsic(&xthex_prefixed);
-///         let res: String = self
-///             .send_json("".into(), jsonreq)?;
-///         Ok(Some(Hash::from_hex(res)?))
+/// impl Request for MyClient {
+///     fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R, RpcClientError> {
+///         let jsonreq = json!({
+///         "method": method,
+///         "params": params.build(),
+///         "jsonrpc": "2.0",
+///         "id": "1",
+///         });
+///         let json_value = self.send_json::<Value>("".into(), jsonreq)?;
+///         let value = serde_json::from_value(json_value)?;
+///         Ok(value)
 ///     }
 /// }
 ///
