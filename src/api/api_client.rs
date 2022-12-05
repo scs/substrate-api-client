@@ -43,7 +43,7 @@ use codec::{Decode, Encode};
 use log::{debug, info};
 use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 use serde::de::DeserializeOwned;
-use sp_core::Bytes;
+use sp_core::{storage::StorageData, Bytes};
 use sp_rpc::number::NumberOrHex;
 use std::convert::{TryFrom, TryInto};
 
@@ -408,8 +408,9 @@ where
 		key: StorageKey,
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
-		let storage = self.request("state_getStorage", rpc_params![key, at_block])?;
-		Ok(storage)
+		let storage: Option<StorageData> =
+			self.request("state_getStorage", rpc_params![key, at_block])?;
+		Ok(storage.map(|storage_data| storage_data.0))
 	}
 
 	pub fn get_storage_value_proof(
