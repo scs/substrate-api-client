@@ -22,7 +22,7 @@ use sp_core::{
 use sp_runtime::MultiAddress;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, XtStatus};
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
 	env_logger::init();
 	// Alice's seed: subkey inspect //Alice.
@@ -35,6 +35,7 @@ async fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = JsonrpseeClient::with_default_url().unwrap();
+	println!("test");
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice.clone());
 

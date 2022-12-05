@@ -24,6 +24,7 @@ use jsonrpsee::{
 		traits::ToRpcParams,
 	},
 };
+use log::*;
 use serde::de::DeserializeOwned;
 use serde_json::value::RawValue;
 use std::sync::Arc;
@@ -48,10 +49,12 @@ impl JsonrpseeClient {
 
 	async fn async_new(url: &str) -> Result<Self> {
 		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
+		error!("Building wstransport");
 		let (tx, rx) = WsTransportClientBuilder::default()
 			.build(uri)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))?;
+		error!("Building client builder");
 		let client = ClientBuilder::default()
 			.max_notifs_per_subscription(4096)
 			.build_with_tokio(tx, rx);
