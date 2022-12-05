@@ -37,7 +37,7 @@ async fn main() {
 	let mut subscription = api.subscribe_events().unwrap();
 
 	for _ in 0..5 {
-		let event_bytes = subscription.next().unwrap().unwrap();
+		let event_bytes = subscription.next().unwrap().unwrap().changes[0].1.clone().unwrap().0;
 		let events = Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(
 			&mut event_bytes.as_slice(),
 		)

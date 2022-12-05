@@ -26,7 +26,7 @@ use ac_node_api::{DispatchError, Events};
 use ac_primitives::ExtrinsicParams;
 use core::fmt::Debug;
 use log::*;
-use sp_core::Pair;
+use sp_core::{storage::StorageChangeSet, Pair, H256};
 use sp_runtime::{DeserializeOwned, MultiSigner};
 
 impl<P, Client, Params> Api<P, Client, Params>
@@ -76,7 +76,7 @@ where
 		Err(Error::RpcClient(RpcClientError::NoStream))
 	}
 
-	pub fn subscribe_events(&self) -> ApiResult<Client::Subscription<Vec<u8>>> {
+	pub fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<H256>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
@@ -99,7 +99,7 @@ where
 
 	pub fn wait_for_event<Ev: StaticEvent>(
 		&self,
-		subscription: &mut Client::Subscription<Vec<u8>>,
+		subscription: &mut Client::Subscription<StorageChangeSet<H256>>,
 	) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
@@ -109,12 +109,11 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		subscription: &mut Client::Subscription<Vec<u8>>,
+		subscription: &mut Client::Subscription<StorageChangeSet<H256>>,
 	) -> ApiResult<EventDetails> {
-		while let Some(event_bytes) = subscription.next() {
-			let event_bytes = event_bytes?;
+		while let Some(change_set) = subscription.next() {
+			let event_bytes = change_set?.changes[0].1.as_ref().unwrap().0.clone();
 			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
-
 			for maybe_event_details in events.iter() {
 				let event_details = maybe_event_details?;
 
