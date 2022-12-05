@@ -33,8 +33,6 @@ dependencies = [
  "derive_more",
  "either",
  "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
- "frame-support",
- "frame-system",
  "hex",
  "log",
  "parity-scale-codec",
