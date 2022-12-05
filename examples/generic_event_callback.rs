@@ -20,7 +20,7 @@ use codec::Decode;
 use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-use std::{sync::Arc, thread};
+use std::thread;
 use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus,
 };
@@ -46,7 +46,6 @@ fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice);
-	let api = Arc::new(api);
 
 	println!("Subscribe to events");
 

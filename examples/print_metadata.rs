@@ -13,10 +13,10 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
-///! debugging tool.
-use sp_core::sr25519;
+//! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
+//! debugging tool.
 
+use sp_core::sr25519;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Metadata};
 
 fn main() {

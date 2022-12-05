@@ -18,7 +18,6 @@
 
 use sp_core::H256;
 use sp_keyring::AccountKeyring;
-use std::sync::Arc;
 use substrate_api_client::{
 	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAddress,
 	UncheckedExtrinsicV4, XtStatus,
@@ -34,7 +33,6 @@ fn main() {
 	api.set_signer(from);
 	// set the recipient
 	let to = AccountKeyring::Bob.to_account_id();
-	let api = Arc::new(api);
 
 	// call Balances::transfer
 	// the names are given as strings

@@ -26,13 +26,15 @@ use jsonrpsee::{
 };
 use serde::de::DeserializeOwned;
 use serde_json::value::RawValue;
+use std::sync::Arc;
 
 pub use subscription::SubscriptionWrapper;
 
 mod subscription;
 
+#[derive(Clone)]
 pub struct JsonrpseeClient {
-	inner: Client,
+	inner: Arc<Client>,
 }
 
 impl JsonrpseeClient {
@@ -50,11 +52,10 @@ impl JsonrpseeClient {
 			.build(uri)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))?;
-		Ok(Self {
-			inner: ClientBuilder::default()
-				.max_notifs_per_subscription(4096)
-				.build_with_tokio(tx, rx),
-		})
+		let client = ClientBuilder::default()
+			.max_notifs_per_subscription(4096)
+			.build_with_tokio(tx, rx);
+		Ok(Self { inner: Arc::new(client) })
 	}
 }
 
