@@ -31,7 +31,7 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main()  {
 	env_logger::init();
 

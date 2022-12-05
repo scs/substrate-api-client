@@ -34,7 +34,7 @@ impl StaticEvent for TransferEventArgs {
 	const EVENT: &'static str = "Transfer";
 }
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main()  {
 	env_logger::init();
 

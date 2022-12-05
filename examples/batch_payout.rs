@@ -14,7 +14,7 @@ use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{rpc::JsonrpseeClient, Api, PlainTipExtrinsicParams, XtStatus};
 
 #[cfg(feature = "staking-xt")]
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
 	env_logger::init();
 

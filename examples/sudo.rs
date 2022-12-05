@@ -24,7 +24,7 @@ use substrate_api_client::{
 	GenericAddress, UncheckedExtrinsicV4, XtStatus,
 };
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main()  {
 	env_logger::init();
 

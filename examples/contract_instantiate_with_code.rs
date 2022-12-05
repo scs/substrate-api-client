@@ -34,7 +34,7 @@ impl StaticEvent for ContractInstantiatedEventArgs {
 	const EVENT: &'static str = "Instantiated";
 }
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
 	env_logger::init();
 

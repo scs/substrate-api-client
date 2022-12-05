@@ -17,7 +17,7 @@
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{rpc::JsonrpseeClient, AccountInfo, Api, AssetTipExtrinsicParams};
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
 	env_logger::init();
 

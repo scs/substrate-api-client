@@ -17,7 +17,7 @@ limitations under the License.
 use sp_runtime::app_crypto::sp_core::sr25519;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main()  {
 	env_logger::init();
 

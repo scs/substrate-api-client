@@ -25,7 +25,7 @@ use substrate_api_client::{
 
 type SignedBlock = SignedBlockG<Block>;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
 	env_logger::init();
 
