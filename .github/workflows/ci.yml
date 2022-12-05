@@ -100,6 +100,7 @@ jobs:
           print_metadata,
           sudo,
           transfer_using_seed,
+          without_tokio,
         ]
     steps:
       - uses: actions/checkout@v3

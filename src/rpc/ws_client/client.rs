@@ -38,8 +38,12 @@ pub struct WsRpcClient {
 }
 
 impl WsRpcClient {
-	pub fn new(url: &str) -> WsRpcClient {
-		WsRpcClient { url: url.to_string() }
+	pub fn new(url: &str) -> Self {
+		Self { url: url.to_string() }
+	}
+
+	pub fn with_default_url() -> Self {
+		Self::new("ws://127.0.0.1:9944")
 	}
 }
 
