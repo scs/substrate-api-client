@@ -18,7 +18,7 @@ use sp_runtime::app_crypto::sp_core::sr25519;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
 
 #[tokio::main]
-async fn main()  {
+async fn main() {
 	env_logger::init();
 
 	let client = JsonrpseeClient::with_default_url().unwrap();
