@@ -24,7 +24,7 @@ use crate::{
 	RpcParams,
 };
 use serde::de::DeserializeOwned;
-use serde_json::json;
+use serde_json::{json, Value};
 use std::{
 	fmt::Debug,
 	sync::mpsc::{channel, Sender as ThreadOut},
@@ -49,14 +49,8 @@ impl WsRpcClient {
 
 impl Request for WsRpcClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		let json_req = json!({
-			"method": method,
-			"params": params.build(),
-			"jsonrpc": "2.0",
-			"id": "1",
-		});
-		let response =
-			self.direct_rpc_request(json_req.to_string(), RequestHandler::default())??;
+		let json_req = to_json_req(method, params)?;
+		let response = self.direct_rpc_request(json_req, RequestHandler::default())??;
 		let deserialized_value: R = serde_json::from_str(&response)?;
 		Ok(deserialized_value)
 	}
@@ -71,19 +65,10 @@ impl Subscribe for WsRpcClient {
 		params: RpcParams,
 		_unsub: &str,
 	) -> Result<Self::Subscription<Notification>> {
-		let json_req = json!({
-			"method": sub,
-			"params": params.build(),
-			"jsonrpc": "2.0",
-			"id": "1",
-		});
+		let json_req = to_json_req(sub, params)?;
 		let (result_in, receiver) = channel();
 		let subscription = WsSubscriptionWrapper::new(receiver);
-		self.start_rpc_client_thread(
-			json_req.to_string(),
-			result_in,
-			SubscriptionHandler::default(),
-		)?;
+		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())?;
 		Ok(subscription)
 	}
 }
@@ -132,4 +117,18 @@ impl WsRpcClient {
 		})?;
 		Ok(result_out.recv()?)
 	}
+}
+
+fn to_json_req(method: &str, params: RpcParams) -> Result<String> {
+	let params = match params.build() {
+		Some(string) => serde_json::from_str(&string)?,
+		None => json!(vec![Value::Null]),
+	};
+	Ok(json!({
+		"method": method,
+		"params": params,
+		"jsonrpc": "2.0",
+		"id": "1",
+	})
+	.to_string())
 }
