@@ -31,7 +31,7 @@ pub mod client;
 
 type RpcResult<T> = Result<T, RpcClientError>;
 
-pub type RpcMessage = RpcResult<Option<String>>;
+pub type RpcMessage = RpcResult<String>;
 
 #[allow(clippy::result_large_err)]
 pub trait HandleMessage {
@@ -67,9 +67,9 @@ impl<MessageHandler: HandleMessage> Handler
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct GetRequestHandler;
+pub struct RequestHandler;
 
-impl HandleMessage for GetRequestHandler {
+impl HandleMessage for RequestHandler {
 	type ThreadMessage = RpcMessage;
 
 	fn handle_message(
@@ -83,7 +83,7 @@ impl HandleMessage for GetRequestHandler {
 
 		info!("Got get_request_msg {}", msg);
 		let result_str = serde_json::from_str(msg.as_text()?)
-			.map(|v: serde_json::Value| Some(v["result"].to_string()))
+			.map(|v: serde_json::Value| v["result"].to_string())
 			.map_err(RpcClientError::Serde);
 
 		result

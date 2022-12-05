@@ -19,16 +19,17 @@ use super::HandleMessage;
 use crate::{
 	api::{FromHexString, XtStatus},
 	rpc::{
-		json_req,
 		ws_client::{
-			GetRequestHandler, RpcClient, SubmitAndWatchHandler, SubmitOnlyHandler,
+			RequestHandler, RpcClient, SubmitAndWatchHandler, SubmitOnlyHandler,
 			SubscriptionHandler,
 		},
-		Result, RpcClient as RpcClientTrait, Subscriber,
+		Request, Result, Subscribe,
 	},
+	Error, RpcParams,
 };
 use log::info;
-use serde_json::Value;
+use serde::de::DeserializeOwned;
+use serde_json::{json, Value};
 use sp_core::H256 as Hash;
 use std::{
 	fmt::Debug,
@@ -48,50 +49,65 @@ impl WsRpcClient {
 	}
 }
 
-impl RpcClientTrait for WsRpcClient {
-	fn request(&self, jsonreq: Value) -> Result<Option<String>> {
-		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())?
-	}
-
-	fn send_extrinsic(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> Result<Option<sp_core::H256>> {
-		// Todo: Make all variants return a H256: #175.
-
-		let jsonreq = match exit_on {
-			XtStatus::SubmitOnly => json_req::author_submit_extrinsic(&xthex_prefixed).to_string(),
-			_ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
-		};
-
-		let maybe_response =
-			self.direct_rpc_request(jsonreq, SubmitAndWatchHandler::new(exit_on))??;
-		info!("Got response {:?} while waiting for {:?}", maybe_response, exit_on);
-		match maybe_response {
-			Some(response) => Ok(Some(Hash::from_hex(response)?)),
-			None => Ok(None),
-		}
+impl Request for WsRpcClient {
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+		let jsonreq = json!({
+			"method": method,
+			"params": params.build(),
+			"jsonrpc": "2.0",
+			"id": "1",
+		});
+		let response =
+			self.direct_rpc_request(jsonreq.to_string(), RequestHandler::default())??;
+		let deserialized_value: R = serde_json::from_str(&response)?;
+		Ok(deserialized_value)
 	}
 }
 
-impl Subscriber for WsRpcClient {
-	fn subscribe(
+// fn send_extrinsic(
+// 	&self,
+// 	xthex_prefixed: String,
+// 	exit_on: XtStatus,
+// ) -> Result<Option<sp_core::H256>> {
+// 	// Todo: Make all variants return a H256: #175.
+//
+// 	let jsonreq = match exit_on {
+// 		XtStatus::SubmitOnly => json_req::author_submit_extrinsic(&xthex_prefixed).to_string(),
+// 		_ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
+// 	};
+//
+// 	let maybe_response =
+// 		self.direct_rpc_request(jsonreq, SubmitAndWatchHandler::new(exit_on))??;
+// 	info!("Got response {:?} while waiting for {:?}", maybe_response, exit_on);
+// 	match maybe_response {
+// 		Some(response) => Ok(Some(Hash::from_hex(response)?)),
+// 		None => Ok(None),
+// 	}
+// }
+
+impl Subscribe for WsRpcClient {
+	fn subscribe<Notification: DeserializeOwned>(
 		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.subscribe(json_req, result_in)
-	}
+		sub: &str,
+		params: RpcParams,
+		unsub: &str,
+	) -> Result<Self::Subscription<Notification>>;
+	// fn subscribe(
+	// 	&self,
+	// 	json_req: String,
+	// 	result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
+	// ) -> Result<()> {
+	// 	self.subscribe(json_req, result_in)
+	// }
 }
 
 impl WsRpcClient {
 	pub fn get(
 		&self,
 		json_req: String,
-		result_in: ThreadOut<<GetRequestHandler as HandleMessage>::ThreadMessage>,
+		result_in: ThreadOut<<RequestHandler as HandleMessage>::ThreadMessage>,
 	) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, GetRequestHandler::default())
+		self.start_rpc_client_thread(json_req, result_in, RequestHandler::default())
 	}
 
 	pub fn send_extrinsic(

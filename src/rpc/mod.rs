@@ -14,11 +14,11 @@
    limitations under the License.
 
 */
-// #[cfg(feature = "ws-client")]
-// pub use ws_client::WsRpcClient;
 
-// #[cfg(feature = "ws-client")]
-// pub mod ws_client;
+#[cfg(feature = "ws-client")]
+pub use ws_client::WsRpcClient;
+#[cfg(feature = "ws-client")]
+pub mod ws_client;
 
 #[cfg(feature = "jsonrpsee-client")]
 pub use jsonrpsee_client::JsonrpseeClient;
