@@ -23,10 +23,10 @@ use sp_runtime::{
 };
 use sp_std::{hash::Hash as HashTrait, prelude::*};
 
-pub type BalanceFor<Runtime> = <Runtime as pallet_balances::Config>::Balance;
-pub type AssetBalanceFor<Runtime> = <Runtime as pallet_assets::Config>::Balance;
-pub type HashFor<Runtime> = <Runtime as frame_system::Config>::Hash;
-pub type IndexFor<Runtime> = <Runtime as frame_system::Config>::Index;
+pub type BalanceFor<Runtime> = <Runtime as crate::BalancesConfig>::Balance;
+pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;
+pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
+pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
