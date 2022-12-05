@@ -63,9 +63,11 @@ where
 			let transaction_status = transaction_status?;
 			if transaction_status.is_supported() {
 				if transaction_status.as_u8() >= watch_until as u8 {
+					subscription.unsubscribe()?;
 					return Ok(return_block_hash_if_available(transaction_status))
 				}
 			} else {
+				subscription.unsubscribe()?;
 				let error = RpcClientError::Extrinsic(format!(
 					"Unsupported transaction status: {:?}, stopping watch process.",
 					transaction_status
