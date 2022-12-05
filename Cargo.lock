@@ -53,12 +53,14 @@ dependencies = [
 name = "ac-primitives"
 version = "0.2.1"
 dependencies = [
+ "frame-support",
  "frame-system",
  "hex",
  "node-template-runtime",
  "pallet-assets",
  "pallet-balances",
  "parity-scale-codec",
+ "scale-info",
  "sp-core",
  "sp-runtime",
  "sp-std",

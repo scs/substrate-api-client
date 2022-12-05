@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 
 # substrate
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-assets = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -25,9 +27,11 @@ default = ["std"]
 std = [
     "codec/std",
     "hex/std",
+    "scale-info/std",
     # substrate
-    "pallet-assets/std",
+    "frame-support/std",
     "frame-system/std",
+    "pallet-assets/std",
     "pallet-balances/std",
     "sp-core/std",
     "sp-runtime/std",
