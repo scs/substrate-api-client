@@ -24,7 +24,6 @@ use jsonrpsee::{
 		traits::ToRpcParams,
 	},
 };
-use log::*;
 use serde::de::DeserializeOwned;
 use serde_json::value::RawValue;
 use std::sync::Arc;
