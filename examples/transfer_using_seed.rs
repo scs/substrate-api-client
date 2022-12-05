@@ -35,7 +35,6 @@ async fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	println!("test");
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 	api.set_signer(alice.clone());
 
