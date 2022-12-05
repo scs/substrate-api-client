@@ -15,7 +15,10 @@
 
 */
 
-use crate::{api::XtStatus, rpc::Error as RpcClientError};
+use crate::{
+	api::XtStatus,
+	rpc::{ws_client::subscription::WsSubscriptionWrapper, Error as RpcClientError},
+};
 use log::*;
 use serde_json::Value;
 use std::{
@@ -28,6 +31,7 @@ pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 
 pub mod client;
+pub mod subscription;
 
 type RpcResult<T> = Result<T, RpcClientError>;
 
@@ -118,7 +122,8 @@ impl HandleMessage for SubscriptionHandler {
 						match changes[0][1].as_str() {
 							Some(change_set) => {
 								if let Err(SendError(e)) = result.send(change_set.to_owned()) {
-									debug!("SendError: {:?}. will close ws", e);
+									// This may happen if the receiver has unsubscribed.
+									trace!("SendError: {:?}. will close ws", e);
 									out.close(CloseCode::Normal)?;
 								}
 							},
@@ -130,7 +135,8 @@ impl HandleMessage for SubscriptionHandler {
 							.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
 
 						if let Err(e) = result.send(head) {
-							debug!("SendError: {}. will close ws", e);
+							// This may happen if the receiver has unsubscribed.
+							trace!("SendError: {}. will close ws", e);
 							out.close(CloseCode::Normal)?;
 						}
 					},
@@ -139,66 +145,6 @@ impl HandleMessage for SubscriptionHandler {
 			},
 		};
 		Ok(())
-	}
-}
-
-#[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct SubmitOnlyHandler;
-
-impl HandleMessage for SubmitOnlyHandler {
-	type ThreadMessage = RpcMessage;
-
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()> {
-		let retstr = msg.as_text()?;
-		debug!("got msg {}", retstr);
-		match result_from_json_response(retstr) {
-			Ok(val) => end_process(out, result, Ok(Some(val))),
-			Err(e) => end_process(out, result, Err(e)),
-		}
-	}
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct SubmitAndWatchHandler {
-	exit_on: XtStatus,
-}
-impl SubmitAndWatchHandler {
-	pub fn new(exit_on: XtStatus) -> Self {
-		Self { exit_on }
-	}
-}
-
-impl HandleMessage for SubmitAndWatchHandler {
-	type ThreadMessage = RpcMessage;
-
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()> {
-		let return_string = msg.as_text()?;
-		debug!("got msg {}", return_string);
-		match parse_status(return_string) {
-			Ok((xt_status, val)) => {
-				if xt_status as u32 >= 10 {
-					let error = RpcClientError::Extrinsic(format!(
-						"Unexpected extrinsic status: {:?}, stopped watch process prematurely.",
-						xt_status
-					));
-					end_process(out, result, Err(error))?;
-				} else if xt_status as u32 >= self.exit_on as u32 {
-					end_process(out, result, Ok(val))?;
-				}
-				Ok(())
-			},
-			Err(e) => end_process(out, result, Err(e)),
-		}
 	}
 }
 
@@ -217,34 +163,6 @@ fn end_process<ThreadMessage: Send + Sync + Debug>(
 	result
 		.send(value)
 		.map_err(|e| Box::new(RpcClientError::Send(format!("{:?}", e))).into())
-}
-
-fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
-	let value: serde_json::Value = serde_json::from_str(msg)?;
-
-	if value["error"].as_object().is_some() {
-		return Err(into_extrinsic_err(&value))
-	}
-
-	if let Some(obj) = value["params"]["result"].as_object() {
-		if let Some(hash) = obj.get("finalized") {
-			info!("finalized: {:?}", hash);
-			return Ok((XtStatus::Finalized, Some(hash.to_string())))
-		} else if let Some(hash) = obj.get("inBlock") {
-			info!("inBlock: {:?}", hash);
-			return Ok((XtStatus::InBlock, Some(hash.to_string())))
-		} else if let Some(array) = obj.get("broadcast") {
-			info!("broadcast: {:?}", array);
-			return Ok((XtStatus::Broadcast, Some(array.to_string())))
-		}
-	};
-
-	match value["params"]["result"].as_str() {
-		Some("ready") => Ok((XtStatus::Ready, None)),
-		Some("future") => Ok((XtStatus::Future, None)),
-		Some(&_) => Ok((XtStatus::Unknown, None)),
-		None => Ok((XtStatus::Unknown, None)),
-	}
 }
 
 /// Todo: this is the code that was used in `parse_status` Don't we want to just print the
@@ -307,72 +225,72 @@ mod tests {
 		assert_extrinsic_err(result_from_json_response(msg), &err_msg)
 	}
 
-	#[test]
-	fn extrinsic_status_parsed_correctly() {
-		let msg = "{\"jsonrpc\":\"2.0\",\"result\":7185,\"id\":\"3\"}";
-		assert_eq!(parse_status(msg).unwrap(), (XtStatus::Unknown, None));
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"ready\",\"subscription\":7185}}";
-		assert_eq!(parse_status(msg).unwrap(), (XtStatus::Ready, None));
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"broadcast\":[\"QmfSF4VYWNqNf5KYHpDEdY8Rt1nPUgSkMweDkYzhSWirGY\",\"Qmchhx9SRFeNvqjUK4ZVQ9jH4zhARFkutf9KhbbAmZWBLx\",\"QmQJAqr98EF1X3YfjVKNwQUG9RryqX4Hv33RqGChbz3Ncg\"]},\"subscription\":232}}";
-		assert_eq!(
-            parse_status(msg).unwrap(),
-            (
-                XtStatus::Broadcast,
-                Some(
-                    "[\"QmfSF4VYWNqNf5KYHpDEdY8Rt1nPUgSkMweDkYzhSWirGY\",\"Qmchhx9SRFeNvqjUK4ZVQ9jH4zhARFkutf9KhbbAmZWBLx\",\"QmQJAqr98EF1X3YfjVKNwQUG9RryqX4Hv33RqGChbz3Ncg\"]"
-                        .to_string()
-                )
-            )
-        );
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"inBlock\":\"0x3104d362365ff5ddb61845e1de441b56c6722e94c1aee362f8aa8ba75bd7a3aa\"},\"subscription\":232}}";
-		assert_eq!(
-			parse_status(msg).unwrap(),
-			(
-				XtStatus::InBlock,
-				Some(
-					"\"0x3104d362365ff5ddb61845e1de441b56c6722e94c1aee362f8aa8ba75bd7a3aa\""
-						.to_string()
-				)
-			)
-		);
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"finalized\":\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"},\"subscription\":7185}}";
-		assert_eq!(
-			parse_status(msg).unwrap(),
-			(
-				XtStatus::Finalized,
-				Some(
-					"\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\""
-						.to_string()
-				)
-			)
-		);
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"future\",\"subscription\":2}}";
-		assert_eq!(parse_status(msg).unwrap(), (XtStatus::Future, None));
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
-		assert_extrinsic_err(parse_status(msg), "extrinsic error code -32700: Parse error: ");
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
-		assert_extrinsic_err(
-			parse_status(msg),
-			"extrinsic error code 1010: Invalid Transaction: Bad Signature",
-		);
-
-		let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
-		assert_extrinsic_err(
-			parse_status(msg),
-			"extrinsic error code 1001: Extrinsic has invalid format.: ",
-		);
-
-		let msg = r#"{"jsonrpc":"2.0","error":{"code":1002,"message":"Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))","data":"RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"},"id":"3"}"#;
-		assert_extrinsic_err(
-            parse_status(msg),
-            "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"
-        );
-	}
+	// 	#[test]
+	// 	fn extrinsic_status_parsed_correctly() {
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"result\":7185,\"id\":\"3\"}";
+	// 		assert_eq!(parse_status(msg).unwrap(), (XtStatus::Unknown, None));
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"ready\",\"subscription\":7185}}";
+	// 		assert_eq!(parse_status(msg).unwrap(), (XtStatus::Ready, None));
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"broadcast\":[\"QmfSF4VYWNqNf5KYHpDEdY8Rt1nPUgSkMweDkYzhSWirGY\",\"Qmchhx9SRFeNvqjUK4ZVQ9jH4zhARFkutf9KhbbAmZWBLx\",\"QmQJAqr98EF1X3YfjVKNwQUG9RryqX4Hv33RqGChbz3Ncg\"]},\"subscription\":232}}";
+	// 		assert_eq!(
+	//             parse_status(msg).unwrap(),
+	//             (
+	//                 XtStatus::Broadcast,
+	//                 Some(
+	//                     "[\"QmfSF4VYWNqNf5KYHpDEdY8Rt1nPUgSkMweDkYzhSWirGY\",\"Qmchhx9SRFeNvqjUK4ZVQ9jH4zhARFkutf9KhbbAmZWBLx\",\"QmQJAqr98EF1X3YfjVKNwQUG9RryqX4Hv33RqGChbz3Ncg\"]"
+	//                         .to_string()
+	//                 )
+	//             )
+	//         );
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"inBlock\":\"0x3104d362365ff5ddb61845e1de441b56c6722e94c1aee362f8aa8ba75bd7a3aa\"},\"subscription\":232}}";
+	// 		assert_eq!(
+	// 			parse_status(msg).unwrap(),
+	// 			(
+	// 				XtStatus::InBlock,
+	// 				Some(
+	// 					"\"0x3104d362365ff5ddb61845e1de441b56c6722e94c1aee362f8aa8ba75bd7a3aa\""
+	// 						.to_string()
+	// 				)
+	// 			)
+	// 		);
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":{\"finalized\":\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\"},\"subscription\":7185}}";
+	// 		assert_eq!(
+	// 			parse_status(msg).unwrap(),
+	// 			(
+	// 				XtStatus::Finalized,
+	// 				Some(
+	// 					"\"0x934385b11c483498e2b5bca64c2e8ef76ad6c74d3372a05595d3a50caf758d52\""
+	// 						.to_string()
+	// 				)
+	// 			)
+	// 		);
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"method\":\"author_extrinsicUpdate\",\"params\":{\"result\":\"future\",\"subscription\":2}}";
+	// 		assert_eq!(parse_status(msg).unwrap(), (XtStatus::Future, None));
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Parse error\"},\"id\":null}";
+	// 		assert_extrinsic_err(parse_status(msg), "extrinsic error code -32700: Parse error: ");
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1010,\"message\":\"Invalid Transaction\",\"data\":\"Bad Signature\"},\"id\":\"4\"}";
+	// 		assert_extrinsic_err(
+	// 			parse_status(msg),
+	// 			"extrinsic error code 1010: Invalid Transaction: Bad Signature",
+	// 		);
+	//
+	// 		let msg = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":1001,\"message\":\"Extrinsic has invalid format.\"},\"id\":\"0\"}";
+	// 		assert_extrinsic_err(
+	// 			parse_status(msg),
+	// 			"extrinsic error code 1001: Extrinsic has invalid format.: ",
+	// 		);
+	//
+	// 		let msg = r#"{"jsonrpc":"2.0","error":{"code":1002,"message":"Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable })))","data":"RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"},"id":"3"}"#;
+	// 		assert_extrinsic_err(
+	//             parse_status(msg),
+	//             "extrinsic error code 1002: Verification Error: Execution(Wasmi(Trap(Trap { kind: Unreachable }))): RuntimeApi(\"Execution(Wasmi(Trap(Trap { kind: Unreachable })))\")"
+	//         );
+	// 	}
 }
