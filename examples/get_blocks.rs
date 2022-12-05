@@ -25,7 +25,8 @@ use substrate_api_client::{
 
 type SignedBlock = SignedBlockG<Block>;
 
-fn main() {
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
 	env_logger::init();
 
 	let client = JsonrpseeClient::with_default_url().unwrap();

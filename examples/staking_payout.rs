@@ -10,7 +10,8 @@ use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{rpc::JsonrpseeClient, Api, PlainTipExtrinsicParams, XtStatus};
 
 #[cfg(feature = "staking-xt")]
-fn main() {
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
 	env_logger::init();
 	let from = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();

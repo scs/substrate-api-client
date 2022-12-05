@@ -31,7 +31,8 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
-fn main() {
+#[tokio::main(flavor = "current_thread")]
+async fn main()  {
 	env_logger::init();
 
 	// Create the node-api client and set the signer.

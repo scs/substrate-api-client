@@ -22,7 +22,8 @@ use sp_core::{
 use sp_runtime::MultiAddress;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, XtStatus};
 
-fn main() {
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
 	env_logger::init();
 	// Alice's seed: subkey inspect //Alice.
 	let alice: sr25519::Pair = Pair::from_string(
