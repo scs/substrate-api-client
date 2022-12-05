@@ -5009,6 +5009,7 @@ dependencies = [
  "sp-version",
  "thiserror",
  "tokio",
+ "url",
  "wabt",
  "ws",
 ]

@@ -29,8 +29,8 @@ pub enum Error {
 	Hex(#[from] hex::FromHexError),
 	// Ws error generates clippy warnings without Box, see #303
 	#[cfg(feature = "ws-client")]
-	#[error("Websocket ws error: {0}")]
-	Ws(Box<ws::Error>),
+	#[error("Could not convert to valid Url: {0}")]
+	Url(#[from] url::ParseError),
 	#[error("Expected some error information, but nothing was found: {0}")]
 	NoErrorInformationFound(String),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]
@@ -45,6 +45,6 @@ pub enum Error {
 
 impl From<ws::Error> for Error {
 	fn from(error: ws::Error) -> Self {
-		Self::Ws(Box::new(error))
+		Self::Client(Box::new(error))
 	}
 }

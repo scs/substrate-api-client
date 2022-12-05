@@ -109,8 +109,6 @@ impl HandleMessage for SubscriptionHandler {
 		match value["id"].as_str() {
 			Some(_idstr) => {},
 			_ => {
-				// subscriptions
-				debug!("no id field found in response. must be subscription");
 				debug!("method: {:?}", value["method"].as_str());
 				match value["method"].as_str() {
 					Some("state_storage") => {
@@ -126,11 +124,11 @@ impl HandleMessage for SubscriptionHandler {
 							None => println!("No events happened"),
 						};
 					},
-					Some("chain_finalizedHead") => {
-						let head = serde_json::to_string(&value["params"]["result"])
+					Some("chain_finalizedHead") | Some("author_extrinsicUpdate") => {
+						let answer = serde_json::to_string(&value["params"]["result"])
 							.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
 
-						if let Err(e) = result.send(head) {
+						if let Err(e) = result.send(answer) {
 							// This may happen if the receiver has unsubscribed.
 							trace!("SendError: {}. will close ws", e);
 							out.close(CloseCode::Normal)?;

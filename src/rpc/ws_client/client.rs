@@ -30,7 +30,7 @@ use std::{
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 };
-use ws::{connect, Result as WsResult};
+use ws::{connect, Result as WsResult, Sender as WsSender};
 
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {
@@ -67,8 +67,9 @@ impl Subscribe for WsRpcClient {
 	) -> Result<Self::Subscription<Notification>> {
 		let json_req = to_json_req(sub, params)?;
 		let (result_in, receiver) = channel();
-		let subscription = WsSubscriptionWrapper::new(receiver);
-		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())?;
+		let sender =
+			self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())?;
+		let subscription = WsSubscriptionWrapper::new(sender, receiver);
 		Ok(subscription)
 	}
 }
@@ -79,24 +80,30 @@ impl WsRpcClient {
 		jsonreq: String,
 		result_in: ThreadOut<MessageHandler::ThreadMessage>,
 		message_handler: MessageHandler,
-	) -> Result<()>
+	) -> Result<WsSender>
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
 	{
-		let url = self.url.clone();
+		let url = url::Url::parse(&self.url)?;
+		let mut socket = ws::Builder::new().build(move |out| RpcClient {
+			out,
+			request: jsonreq.clone(),
+			result: result_in.clone(),
+			message_handler: message_handler.clone(),
+		})?;
+		socket.connect(url)?;
+		let handle = socket.broadcaster();
+
 		let _client =
 			thread::Builder::new()
 				.name("client".to_owned())
 				.spawn(move || -> WsResult<()> {
-					connect(url, |out| RpcClient {
-						out,
-						request: jsonreq.clone(),
-						result: result_in.clone(),
-						message_handler: message_handler.clone(),
-					})
+					socket.run()?;
+					Ok(())
 				})?;
-		Ok(())
+
+		Ok(handle)
 	}
 
 	fn direct_rpc_request<MessageHandler>(

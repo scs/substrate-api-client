@@ -19,16 +19,18 @@ use crate::rpc::{HandleSubscription, Result};
 use core::marker::PhantomData;
 use serde::de::DeserializeOwned;
 use std::sync::mpsc::Receiver;
+use ws::Sender as WsSender;
 
 #[derive(Debug)]
 pub struct WsSubscriptionWrapper<Notification> {
+	ws_sender: WsSender,
 	receiver: Receiver<String>,
 	_phantom: PhantomData<Notification>,
 }
 
 impl<Notification> WsSubscriptionWrapper<Notification> {
-	pub fn new(receiver: Receiver<String>) -> Self {
-		Self { receiver, _phantom: Default::default() }
+	pub fn new(ws_sender: WsSender, receiver: Receiver<String>) -> Self {
+		Self { ws_sender, receiver, _phantom: Default::default() }
 	}
 }
 
@@ -48,7 +50,15 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 	}
 
 	fn unsubscribe(self) -> Result<()> {
-		core::mem::drop(self.receiver);
+		self.ws_sender.clone().shutdown()?;
 		Ok(())
+	}
+}
+
+impl<Notification> Drop for WsSubscriptionWrapper<Notification> {
+	fn drop(&mut self) {
+		if let Err(e) = self.ws_sender.shutdown() {
+			log::error!("Could not properly shutdown websocket connection due to {:?}", e);
+		}
 	}
 }
