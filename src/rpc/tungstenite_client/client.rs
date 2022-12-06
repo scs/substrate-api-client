@@ -68,7 +68,7 @@ impl TungsteniteRpcClient {
 		let mut socket: MySocket;
 
 		while current_attempt <= self.max_attempts {
-			match connect_with_config(url.clone(), None, 2) {
+			match connect_with_config(url.clone(), None, u8::MAX) {
 				Ok(res) => {
 					socket = res.0;
 					let response = res.1;
@@ -254,7 +254,7 @@ impl TungsteniteRpcClient {
 			let mut socket: MySocket;
 
 			while current_attempt <= max_attempts {
-				match connect_with_config(url.clone(), None, max_attempts) {
+				match connect_with_config(url.clone(), None, u8::MAX) {
 					Ok(res) => {
 						socket = res.0;
 						let response = res.1;
