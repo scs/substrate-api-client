@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "ac-compose-macros"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "ac-primitives",
  "log",
@@ -26,7 +26,7 @@ dependencies = [
 
 [[package]]
 name = "ac-node-api"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "ac-primitives",
  "bitvec",
@@ -48,7 +48,7 @@ dependencies = [
 
 [[package]]
 name = "ac-primitives"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "frame-system",
  "hex",
@@ -4747,7 +4747,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-api-client"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
