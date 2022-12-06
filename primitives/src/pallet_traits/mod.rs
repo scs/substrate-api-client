@@ -18,7 +18,9 @@
 pub use frame_system_config::FrameSystemConfig;
 pub use pallet_assets_config::AssetsConfig;
 pub use pallet_balances_config::BalancesConfig;
+pub use pallet_contracts_config::ContractsConfig;
 
 pub mod frame_system_config;
 pub mod pallet_assets_config;
 pub mod pallet_balances_config;
+pub mod pallet_contracts_config;
