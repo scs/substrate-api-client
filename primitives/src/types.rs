@@ -27,6 +27,7 @@ use sp_runtime::traits::{AtLeast32BitUnsigned, Zero};
 /// Type used to encode the number of references an account has.
 pub type RefCount = u32;
 /// Information of an account.
+// https://github.com/paritytech/substrate/blob/416a331399452521f3e9cf7e1394d020373a95c5/frame/system/src/lib.rs#L735-L753
 #[derive(Clone, Eq, PartialEq, Default, Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub struct AccountInfo<Index, AccountData> {
 	/// The number of transactions this account has sent.
@@ -46,6 +47,7 @@ pub struct AccountInfo<Index, AccountData> {
 }
 
 /// The base fee and adjusted weight and length fees constitute the _inclusion fee_.
+// https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L29-L60
 #[derive(Encode, Decode, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
@@ -82,6 +84,7 @@ impl<Balance: AtLeast32BitUnsigned + Copy> InclusionFee<Balance> {
 ///   - (Optional) `inclusion_fee`: Only the `Pays::Yes` transaction can have the inclusion fee.
 ///   - `tip`: If included in the transaction, the tip will be added on top. Only signed
 ///     transactions can have a tip.
+// https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L62-L90
 #[derive(Encode, Decode, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
@@ -108,6 +111,7 @@ impl<Balance: AtLeast32BitUnsigned + Copy> FeeDetails<Balance> {
 
 /// Information related to a dispatchable's class, weight, and fee that can be queried from the
 /// runtime.
+// https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L92-L116
 #[derive(Eq, PartialEq, Encode, Decode, Default, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
@@ -127,6 +131,7 @@ pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::Weight> {
 ///
 /// NOTE whenever upgrading the enum make sure to also update
 /// [DispatchClass::all] and [DispatchClass::non_mandatory] helper functions.
+// https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/support/src/dispatch.rs#L133-L177
 #[derive(PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
