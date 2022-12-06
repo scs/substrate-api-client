@@ -36,6 +36,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod api_client;
 pub mod error;
+pub mod interfaces;
 
 #[cfg(feature = "ws-client")]
 pub mod subscription;
