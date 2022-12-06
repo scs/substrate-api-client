@@ -22,20 +22,22 @@ use crate::{
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
-use ac_primitives::ExtrinsicParams;
+use ac_primitives::{ExtrinsicParams, BalancesConfig};
 use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
 use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
+use codec::Decode;
 
 impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
 where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Index: Decode,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -49,7 +51,7 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClientTrait + Subscriber,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {

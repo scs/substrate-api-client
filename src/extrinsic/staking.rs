@@ -20,14 +20,15 @@
 use super::common::*;
 use crate::{rpc::RpcClient, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
-use codec::{Compact, Encode};
+use ac_primitives::{
+	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, RewardDestination, StakingConfig,
+	UncheckedExtrinsicV4,
+};
+use codec::{Compact, Decode, Encode};
 use core::str::FromStr;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
 use sp_runtime::{AccountId32, MultiSignature, MultiSigner};
-
-pub use pallet_staking::RewardDestination;
 
 const STAKING_MODULE: &str = "Staking";
 const STAKING_BOND: &str = "bond";
@@ -94,9 +95,10 @@ where
 	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSysmsteConfig + BalancesConfig + StakingConfig,
+	Runtime: BalancesConfig + StakingConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Index: Decode,
 	Compact<Runtime::CurrencyBalance>: Encode,
 {
 	/// Bond `value` amount to `controller`

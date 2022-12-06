@@ -22,7 +22,7 @@ use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
 };
-use codec::{Compact, Encode};
+use codec::{Compact, Decode, Encode};
 use core::str::FromStr;
 use sp_core::crypto::Pair;
 use sp_rpc::number::NumberOrHex;
@@ -51,6 +51,7 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
+	Runtime::Index: Decode,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<Runtime::Balance>: Encode,
 {

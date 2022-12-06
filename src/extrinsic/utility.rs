@@ -20,8 +20,8 @@
 use super::common::Batch;
 use crate::{rpc::RpcClient, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
-use codec::Encode;
+use ac_primitives::{BalancesConfig, CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
+use codec::{Decode, Encode};
 use core::str::FromStr;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
@@ -42,7 +42,8 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
+	Runtime::Index: Decode,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {

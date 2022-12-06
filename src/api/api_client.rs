@@ -23,7 +23,6 @@ pub use crate::{
 	utils::FromHexString,
 };
 pub use frame_metadata::RuntimeMetadataPrefixed;
-pub use pallet_transaction_payment::FeeDetails;
 pub use serde_json::Value;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
@@ -38,15 +37,15 @@ use crate::{
 	ReadProof,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::ExtrinsicParams;
+use ac_primitives::{
+	AccountInfo, BalancesConfig, ExtrinsicParams, FeeDetails, InclusionFee, RuntimeDispatchInfo,
+};
 use codec::{Decode, Encode};
 use core::{
 	convert::{TryFrom, TryInto},
 	str::FromStr,
 };
-use frame_system::AccountInfo;
 use log::{debug, info};
-use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
 use serde::de::DeserializeOwned;
 use sp_rpc::number::NumberOrHex;
 use sp_version::RuntimeVersion;
@@ -115,7 +114,7 @@ pub struct Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex>,
 {
@@ -133,7 +132,7 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Index: From<u32>,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
@@ -204,9 +203,9 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32>,
+	Runtime::Index: From<u32> + Decode,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Get nonce of signer account.
@@ -226,7 +225,7 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
@@ -269,10 +268,11 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32>,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Index: From<u32> + Decode,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr + DeserializeOwned,
+	Runtime::AccountData: Decode,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
 		let genesis_hash = Self::get_genesis_hash(&client)?;

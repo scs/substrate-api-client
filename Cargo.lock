@@ -59,10 +59,12 @@ dependencies = [
  "pallet-staking",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-core",
  "sp-runtime",
  "sp-staking",
  "sp-std",
+ "sp-weights",
 ]
 
 [[package]]
@@ -4758,10 +4760,8 @@ dependencies = [
  "kitchensink-runtime",
  "log",
  "pallet-balances",
- "pallet-contracts",
  "pallet-identity",
  "pallet-staking",
- "pallet-transaction-payment",
  "parity-scale-codec",
  "primitive-types",
  "serde",
