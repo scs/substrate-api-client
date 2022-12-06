@@ -70,3 +70,33 @@ pub trait FrameSystemConfig {
 	type OnSetCode;
 	type MaxConsumers;
 }
+
+#[cfg(feature = "std")]
+impl<T> FrameSystemConfig for T
+where
+	T: frame_system::Config,
+{
+	type BaseCallFilter = T::BaseCallFilter;
+	type BlockWeights = T::BlockWeights;
+	type BlockLength = T::BlockLength;
+	type RuntimeOrigin = T::RuntimeOrigin;
+	type RuntimeCall = T::RuntimeCall;
+	type Index = T::Index;
+	type BlockNumber = T::BlockNumber;
+	type Hash = T::Hash;
+	type Hashing = T::Hashing;
+	type AccountId = T::AccountId;
+	type Lookup = T::Lookup;
+	type Header = T::Header;
+	type RuntimeEvent = T::RuntimeEvent;
+	type BlockHashCount = T::BlockHashCount;
+	type DbWeight = T::DbWeight;
+	type Version = T::Version;
+	type AccountData = T::AccountData;
+	type OnNewAccount = T::OnNewAccount;
+	type OnKilledAccount = T::OnKilledAccount;
+	type SystemWeightInfo = T::SystemWeightInfo;
+	type SS58Prefix = T::SS58Prefix;
+	type OnSetCode = T::OnSetCode;
+	type MaxConsumers = T::MaxConsumers;
+}

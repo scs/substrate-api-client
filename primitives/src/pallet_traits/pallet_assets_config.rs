@@ -44,3 +44,27 @@ pub trait AssetsConfig: crate::FrameSystemConfig {
 	type Extra: Member + Default + MaxEncodedLen;
 	type WeightInfo;
 }
+
+#[cfg(feature = "std")]
+impl<T> AssetsConfig for T
+where
+	T: pallet_assets::Config,
+{
+	type RuntimeEvent = <T as pallet_assets::Config>::RuntimeEvent;
+	type Balance = T::Balance;
+	type RemoveItemsLimit = T::RemoveItemsLimit;
+	type AssetId = T::AssetId;
+	type AssetIdParameter = T::AssetIdParameter;
+	type Currency = T::Currency;
+	type CreateOrigin = T::CreateOrigin;
+	type ForceOrigin = T::ForceOrigin;
+	type AssetDeposit = T::AssetDeposit;
+	type AssetAccountDeposit = T::AssetAccountDeposit;
+	type MetadataDepositBase = T::MetadataDepositBase;
+	type MetadataDepositPerByte = T::MetadataDepositPerByte;
+	type ApprovalDeposit = T::ApprovalDeposit;
+	type StringLimit = T::StringLimit;
+	type Freezer = T::Freezer;
+	type Extra = T::Extra;
+	type WeightInfo = T::WeightInfo;
+}

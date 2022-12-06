@@ -20,7 +20,10 @@
 
 use crate::{api::Api, rpc::RpcClient, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
+use ac_primitives::{
+	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, GenericAddress,
+	UncheckedExtrinsicV4,
+};
 use codec::{Compact, Encode};
 use core::str::FromStr;
 use frame_support::traits::Currency as CurrencyTrait;
@@ -29,10 +32,6 @@ use sp_core::crypto::Pair;
 use sp_rpc::number::NumberOrHex;
 use sp_runtime::{MultiSignature, MultiSigner};
 use sp_std::prelude::*;
-
-type BalanceOf<T> = <<T as pallet_contracts::Config>::Currency as CurrencyTrait<
-	<T as frame_system::Config>::AccountId,
->>::Balance;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";
@@ -66,6 +65,11 @@ pub type ContractCallXt<SignedExtra, Currency> =
 	UncheckedExtrinsicV4<ContractCallFn<Currency>, SignedExtra>;
 
 #[cfg(feature = "std")]
+type BalanceOf<T> = <<T as pallet_contracts::Config>::Currency as CurrencyTrait<
+	<T as frame_system::Config>::AccountId,
+>>::Balance;
+
+#[cfg(feature = "std")]
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
@@ -73,7 +77,7 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_contracts::Config + pallet_balances::Config,
+	Runtime: ContractsConfig + BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,

@@ -38,5 +38,29 @@ pub trait ContractsConfig: FrameSystemConfig {
 	type AddressGenerator;
 	type MaxCodeLen: Get<u32>;
 	type MaxStorageKeyLen: Get<u32>;
-	type UnsafeUnstableInterface: Get<bool>;
+}
+
+#[cfg(feature = "std")]
+impl<T> ContractsConfig for T
+where
+	T: pallet_contracts::Config,
+{
+	type Time = T::Time;
+	type Randomness = T::Randomness;
+	type Currency = T::Currency;
+	type RuntimeEvent = <T as pallet_contracts::Config>::RuntimeEvent;
+	type RuntimeCall = <T as pallet_contracts::Config>::RuntimeCall;
+	type CallFilter = T::CallFilter;
+	type WeightPrice = T::WeightPrice;
+	type WeightInfo = T::WeightInfo;
+	type ChainExtension = T::ChainExtension;
+	type Schedule = T::Schedule;
+	type CallStack = T::CallStack;
+	type DeletionQueueDepth = T::DeletionQueueDepth;
+	type DeletionWeightLimit = T::DeletionWeightLimit;
+	type DepositPerByte = T::DepositPerByte;
+	type DepositPerItem = T::DepositPerItem;
+	type AddressGenerator = T::AddressGenerator;
+	type MaxCodeLen = T::MaxCodeLen;
+	type MaxStorageKeyLen = T::MaxStorageKeyLen;
 }

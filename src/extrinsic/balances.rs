@@ -19,7 +19,9 @@
 
 use crate::{api::Api, rpc::RpcClient, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
+use ac_primitives::{
+	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
+};
 use codec::{Compact, Encode};
 use core::str::FromStr;
 use sp_core::crypto::Pair;
@@ -47,7 +49,7 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config,
+	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<Runtime::Balance>: Encode,

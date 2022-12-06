@@ -55,10 +55,13 @@ dependencies = [
  "node-template-runtime",
  "pallet-assets",
  "pallet-balances",
+ "pallet-contracts",
+ "pallet-staking",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
  "sp-runtime",
+ "sp-staking",
  "sp-std",
 ]
 

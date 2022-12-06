@@ -19,22 +19,10 @@
 
 pub use extrinsic_params::*;
 pub use extrinsics::*;
-#[cfg(not(feature = "std"))]
 pub use pallet_traits::*;
-
-#[cfg(feature = "std")]
-pub use std_traits::*;
-// Configs only need to be reimplemented in no_std mode. No need to do so in std mode.
-#[cfg(feature = "std")]
-mod std_traits {
-	pub use frame_system::Config as FrameSystemConfig;
-	pub use pallet_assets::Config as AssetsConfig;
-	pub use pallet_balances::Config as BalancesConfig;
-}
 
 pub mod extrinsic_params;
 pub mod extrinsics;
-#[cfg(not(feature = "std"))]
 pub mod pallet_traits;
 
 use codec::{Decode, Encode};

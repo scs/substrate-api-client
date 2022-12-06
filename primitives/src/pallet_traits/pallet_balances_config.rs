@@ -42,3 +42,19 @@ pub trait BalancesConfig: crate::FrameSystemConfig {
 	type MaxReserves: Get<u32>;
 	type ReserveIdentifier: MaxEncodedLen + Ord + Copy;
 }
+
+#[cfg(feature = "std")]
+impl<T> BalancesConfig for T
+where
+	T: pallet_balances::Config,
+{
+	type Balance = T::Balance;
+	type DustRemoval = T::DustRemoval;
+	type RuntimeEvent = <T as pallet_balances::Config>::RuntimeEvent;
+	type ExistentialDeposit = T::ExistentialDeposit;
+	type AccountStore = T::AccountStore;
+	type WeightInfo = T::WeightInfo;
+	type MaxLocks = T::MaxLocks;
+	type MaxReserves = T::MaxReserves;
+	type ReserveIdentifier = T::ReserveIdentifier;
+}

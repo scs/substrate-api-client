@@ -94,7 +94,7 @@ where
 	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: frame_system::Config + pallet_balances::Config + pallet_staking::Config,
+	Runtime: FrameSysmsteConfig + BalancesConfig + StakingConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<Runtime::CurrencyBalance>: Encode,

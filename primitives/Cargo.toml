@@ -13,11 +13,14 @@ scale-info = { version = "2.1.1", default-features = false, features = ["derive"
 # substrate no_std
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 # substrate std
 frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [dev-dependencies]
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -31,9 +34,12 @@ std = [
     # substrate no_std
     "sp-core/std",
     "sp-runtime/std",
+    "sp-staking/std",
     "sp-std/std",
     # substrate std
     "frame-system",
     "pallet-assets",
     "pallet-balances",
+    "pallet-contracts",
+    "pallet-staking",
 ]
