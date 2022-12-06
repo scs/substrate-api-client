@@ -15,12 +15,24 @@
 
 ///! Very simple example that shows how to get some simple storage values.
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, AccountInfo, Api, AssetTipExtrinsicParams};
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
+use substrate_api_client::{AccountInfo, Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
 
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new("ws://127.0.0.1:9944", 100);
+
 	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	// get some plain storage value

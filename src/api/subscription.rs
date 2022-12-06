@@ -15,9 +15,15 @@
 
 */
 
+#[cfg(feature = "ws-client")]
+use crate::ws_client::client::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use crate::tungstenite_client::client::TungsteniteRpcClient;
+
 use crate::{
 	api::{error::Error, Api, ApiResult, FromHexString},
-	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
+	rpc::{json_req, RpcClient as RpcClientTrait, Subscriber},
 	utils, Hash, Index,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -28,12 +34,24 @@ use sp_core::Pair;
 use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
+#[cfg(feature = "ws-client")]
 impl<P, Params> Api<P, WsRpcClient, Params>
 where
 	Params: ExtrinsicParams<Index, Hash>,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
+		Self::new(client)
+	}
+}
+
+#[cfg(feature = "tungstenite-client")]
+impl<P, Params> Api<P, TungsteniteRpcClient, Params>
+where
+	Params: ExtrinsicParams<Index, Hash>,
+{
+	pub fn default_with_url(url: &str) -> ApiResult<Self> {
+		let client = TungsteniteRpcClient::new(url, 10);
 		Self::new(client)
 	}
 }

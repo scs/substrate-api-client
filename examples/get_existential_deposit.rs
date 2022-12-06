@@ -15,12 +15,23 @@ limitations under the License.
 
 ///! Very simple example that shows how to get some simple storage values.
 use sp_runtime::app_crypto::sp_core::sr25519;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+use substrate_api_client::{Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
 
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new("ws://127.0.0.1:9944", 100);
+
 	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
 
 	// get existential deposit

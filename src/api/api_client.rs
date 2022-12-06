@@ -568,7 +568,7 @@ where
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 
-	#[cfg(feature = "ws-client")]
+	#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
 	pub fn send_extrinsic(
 		&self,
 		xthex_prefixed: String,
@@ -580,7 +580,7 @@ where
 			.map_err(ApiClientError::RpcClient)
 	}
 
-	#[cfg(not(feature = "ws-client"))]
+	#[cfg(all(not(feature = "ws-client"), not(feature = "tungstenite-client")))]
 	pub fn send_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Option<Hash>> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		// XtStatus should never be used used but we need to put something
