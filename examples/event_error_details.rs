@@ -14,6 +14,7 @@ limitations under the License.
 */
 
 use codec::Decode;
+use kitchensink_runtime::Runtime;
 use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
@@ -42,7 +43,7 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from.clone());
 
 	let from_account_id = AccountKeyring::Alice.to_account_id();

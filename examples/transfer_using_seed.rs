@@ -15,6 +15,7 @@
 
 //! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
 
+use kitchensink_runtime::Runtime;
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
 	sr25519,
@@ -34,7 +35,7 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice.clone());
 
 	// Bob

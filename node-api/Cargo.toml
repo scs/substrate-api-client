@@ -20,8 +20,6 @@ ac-primitives = { path = "../primitives", default-features = false }
 
 # substrate
 frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -49,8 +47,6 @@ std = [
     "ac-primitives/std",
     # substrate
     "frame-metadata/std",
-    "frame-support/std",
-    "frame-system/std",
     "sp-core/std",
     "sp-runtime/std",
     "sp-std/std",

@@ -13,12 +13,13 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to subscribe to events.
-use std::sync::mpsc::channel;
+//! Very simple example that shows how to subscribe to events.
 
 use codec::Decode;
+use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
+use std::sync::mpsc::channel;
 
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
@@ -31,7 +32,8 @@ fn main() {
 	env_logger::init();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let api =
+		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
 	let (events_in, events_out) = channel();

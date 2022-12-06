@@ -8,23 +8,43 @@ edition = "2021"
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 
-# substrate
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+# substrate no_std
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-weights = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# substrate std
+frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+[dev-dependencies]
+node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
 std = [
     "codec/std",
     "hex/std",
-    # substrate
-    "frame-system/std",
-    "pallet-balances/std",
+    "scale-info/std",
+    "serde/std",
+    # substrate no_std
     "sp-core/std",
     "sp-runtime/std",
+    "sp-staking/std",
     "sp-std/std",
+    "sp-weights/std",
+    # substrate std
+    "frame-system",
+    "pallet-assets",
+    "pallet-balances",
+    "pallet-contracts",
+    "pallet-staking",
 ]

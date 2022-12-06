@@ -19,18 +19,14 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
-serde = { version = "1.0.136", optional = true, features = ["derive"] }
-serde_json = { version = "1.0.79", optional = true }
+serde = { version = "1.0.136", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.79", default-features = false }
 thiserror = { version = "1.0.30", optional = true }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate dependencies
 frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-transaction-payment = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -45,10 +41,13 @@ ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
 env_logger = "0.9.0"
+frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 wabt = "0.10.0"
-pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std", "ws-client"]
@@ -63,14 +62,11 @@ std = [
     "log/std",
     "primitive-types",
     "serde/std",
-    "serde_json",
+    "serde_json/std",
     "thiserror",
     # substrate
     "frame-metadata/std",
-    "frame-support/std",
-    "frame-system",
-    "pallet-balances",
-    "pallet-transaction-payment/std",
+    "frame-support",
     "sp-core/std",
     "sp-rpc",
     "sp-runtime/std",
@@ -83,4 +79,4 @@ std = [
     "ac-primitives/std",
 ]
 ws-client = ["ws"]
-staking-xt = ["std", "pallet-staking"]
+staking-xt = ["std"]

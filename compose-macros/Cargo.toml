@@ -12,7 +12,6 @@ log = { version = "0.4.14", default-features = false }
 # substrate
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # need to add this for the app_crypto macro
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
@@ -28,7 +27,6 @@ std = [
     # substrate
     "sp-core/std",
     "sp-runtime/std",
-    "sp-std/std",
     "sp-application-crypto/std",
     # local
     "ac-primitives/std",

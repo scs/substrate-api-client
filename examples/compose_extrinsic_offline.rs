@@ -17,7 +17,7 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
-use kitchensink_runtime::{BalancesCall, Header, RuntimeCall};
+use kitchensink_runtime::{BalancesCall, Header, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
@@ -32,14 +32,14 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 
 	// Information for Era for mortal transactions.
 	let head = api.get_finalized_head().unwrap().unwrap();
 	let h: Header = api.get_header(Some(head)).unwrap().unwrap();
 	let period = 5;
-	let tx_params = AssetTipExtrinsicParamsBuilder::new()
+	let tx_params = AssetTipExtrinsicParamsBuilder::<Runtime>::new()
 		.era(Era::mortal(period, h.number.into()), head)
 		.tip(0);
 
