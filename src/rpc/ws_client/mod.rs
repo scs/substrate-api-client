@@ -15,15 +15,15 @@
 
 */
 
-use crate::{api::XtStatus, rpc::Error as RpcClientError};
+use crate::{api::XtStatus, rpc::Error as RpcClientError, HandleMessage};
 use log::*;
-use serde_json::Value;
 use std::{
 	fmt::Debug,
 	sync::mpsc::{SendError, Sender as ThreadOut},
 };
-use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
+use ws::{CloseCode, Handler, Handshake, Message, Sender};
 
+use crate::rpc::{parse_status, result_from_json_response};
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 
@@ -33,18 +33,15 @@ type RpcResult<T> = Result<T, RpcClientError>;
 
 pub type RpcMessage = RpcResult<Option<String>>;
 
-#[allow(clippy::result_large_err)]
-pub trait HandleMessage {
-	type ThreadMessage;
-
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()>;
+#[derive(Debug, Clone)]
+pub struct MessageContext<ThreadMessage> {
+	pub out: Sender,
+	pub request: String,
+	pub result: ThreadOut<ThreadMessage>,
+	pub msg: Message,
 }
 
+#[derive(Debug, Clone)]
 pub struct RpcClient<MessageHandler, ThreadMessage> {
 	pub out: Sender,
 	pub request: String,
@@ -54,15 +51,28 @@ pub struct RpcClient<MessageHandler, ThreadMessage> {
 
 impl<MessageHandler: HandleMessage> Handler
 	for RpcClient<MessageHandler, MessageHandler::ThreadMessage>
+where
+	MessageHandler::Error: Into<ws::Error>,
+	MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 {
-	fn on_open(&mut self, _: Handshake) -> WsResult<()> {
+	fn on_open(&mut self, _: Handshake) -> Result<(), ws::Error> {
 		info!("sending request: {}", self.request);
 		self.out.send(self.request.clone())?;
 		Ok(())
 	}
 
-	fn on_message(&mut self, msg: Message) -> WsResult<()> {
-		self.message_handler.handle_message(msg, self.out.clone(), self.result.clone())
+	fn on_message(&mut self, msg: Message) -> Result<(), ws::Error> {
+		let mut context: MessageHandler::Context = MessageContext {
+			out: self.out.clone(),
+			request: self.request.clone(),
+			result: self.result.clone(),
+			msg,
+		}
+		.into();
+		self.message_handler
+			.handle_message(&mut context)
+			.map_err(|e| e.into())
+			.map(|_| ())
 	}
 }
 
@@ -71,13 +81,15 @@ pub struct GetRequestHandler;
 
 impl HandleMessage for GetRequestHandler {
 	type ThreadMessage = RpcMessage;
+	type Error = ws::Error;
+	type Context = MessageContext<Self::ThreadMessage>;
+	type Result = ();
 
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()> {
+	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
+		let result = &context.result;
+		let out = &context.out;
+		let msg = &context.msg;
+
 		out.close(CloseCode::Normal)
 			.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
 
@@ -91,17 +103,21 @@ impl HandleMessage for GetRequestHandler {
 			.map_err(|e| Box::new(RpcClientError::Send(format!("{:?}", e))).into())
 	}
 }
+
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
 pub struct SubscriptionHandler {}
+
 impl HandleMessage for SubscriptionHandler {
 	type ThreadMessage = String;
+	type Error = ws::Error;
+	type Context = MessageContext<Self::ThreadMessage>;
+	type Result = ();
 
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()> {
+	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
+		let result = &context.result;
+		let out = &context.out;
+		let msg = &context.msg;
+
 		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value =
 			serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(RpcClientError::Serde(e)))?;
@@ -147,13 +163,15 @@ pub struct SubmitOnlyHandler;
 
 impl HandleMessage for SubmitOnlyHandler {
 	type ThreadMessage = RpcMessage;
+	type Error = ws::Error;
+	type Context = MessageContext<Self::ThreadMessage>;
+	type Result = ();
 
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()> {
+	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
+		let result = context.result.clone();
+		let out = context.out.clone();
+		let msg = context.msg.clone();
+
 		let retstr = msg.as_text()?;
 		debug!("got msg {}", retstr);
 		match result_from_json_response(retstr) {
@@ -167,6 +185,7 @@ impl HandleMessage for SubmitOnlyHandler {
 pub struct SubmitAndWatchHandler {
 	exit_on: XtStatus,
 }
+
 impl SubmitAndWatchHandler {
 	pub fn new(exit_on: XtStatus) -> Self {
 		Self { exit_on }
@@ -175,13 +194,15 @@ impl SubmitAndWatchHandler {
 
 impl HandleMessage for SubmitAndWatchHandler {
 	type ThreadMessage = RpcMessage;
+	type Error = ws::Error;
+	type Context = MessageContext<Self::ThreadMessage>;
+	type Result = ();
 
-	fn handle_message(
-		&self,
-		msg: Message,
-		out: Sender,
-		result: ThreadOut<Self::ThreadMessage>,
-	) -> WsResult<()> {
+	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
+		let result = context.result.clone();
+		let out = context.out.clone();
+		let msg = &context.msg.clone();
+
 		let return_string = msg.as_text()?;
 		debug!("got msg {}", return_string);
 		match parse_status(return_string) {
@@ -207,7 +228,7 @@ fn end_process<ThreadMessage: Send + Sync + Debug>(
 	out: Sender,
 	result: ThreadOut<ThreadMessage>,
 	value: ThreadMessage,
-) -> WsResult<()> {
+) -> Result<(), ws::Error> {
 	// return result to calling thread
 	debug!("Thread end result :{:?} value:{:?}", result, value);
 
@@ -219,61 +240,10 @@ fn end_process<ThreadMessage: Send + Sync + Debug>(
 		.map_err(|e| Box::new(RpcClientError::Send(format!("{:?}", e))).into())
 }
 
-fn parse_status(msg: &str) -> RpcResult<(XtStatus, Option<String>)> {
-	let value: serde_json::Value = serde_json::from_str(msg)?;
-
-	if value["error"].as_object().is_some() {
-		return Err(into_extrinsic_err(&value))
-	}
-
-	if let Some(obj) = value["params"]["result"].as_object() {
-		if let Some(hash) = obj.get("finalized") {
-			info!("finalized: {:?}", hash);
-			return Ok((XtStatus::Finalized, Some(hash.to_string())))
-		} else if let Some(hash) = obj.get("inBlock") {
-			info!("inBlock: {:?}", hash);
-			return Ok((XtStatus::InBlock, Some(hash.to_string())))
-		} else if let Some(array) = obj.get("broadcast") {
-			info!("broadcast: {:?}", array);
-			return Ok((XtStatus::Broadcast, Some(array.to_string())))
-		}
-	};
-
-	match value["params"]["result"].as_str() {
-		Some("ready") => Ok((XtStatus::Ready, None)),
-		Some("future") => Ok((XtStatus::Future, None)),
-		Some(&_) => Ok((XtStatus::Unknown, None)),
-		None => Ok((XtStatus::Unknown, None)),
-	}
-}
-
-/// Todo: this is the code that was used in `parse_status` Don't we want to just print the
-/// error as is instead of introducing our custom format here?
-fn into_extrinsic_err(resp_with_err: &Value) -> RpcClientError {
-	let err_obj = match resp_with_err["error"].as_object() {
-		Some(obj) => obj,
-		None => return RpcClientError::NoErrorInformationFound(format!("{:?}", resp_with_err)),
-	};
-
-	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap_or_default());
-	let code = err_obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap_or_default());
-	let details = err_obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap_or_default());
-
-	RpcClientError::Extrinsic(format!("extrinsic error code {}: {}: {}", code, error, details))
-}
-
-fn result_from_json_response(resp: &str) -> RpcResult<String> {
-	let value: serde_json::Value = serde_json::from_str(resp)?;
-
-	let resp = value["result"].as_str().ok_or_else(|| into_extrinsic_err(&value))?;
-
-	Ok(resp.to_string())
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::rpc::Error as RpcClientError;
+	use crate::rpc::{parse_status, result_from_json_response, Error as RpcClientError};
 	use std::{assert_matches::assert_matches, fmt::Debug};
 
 	fn assert_extrinsic_err<T: Debug>(result: Result<T, RpcClientError>, msg: &str) {

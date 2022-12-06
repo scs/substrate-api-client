@@ -31,6 +31,9 @@ pub enum Error {
 	#[cfg(feature = "ws-client")]
 	#[error("Websocket ws error: {0}")]
 	Ws(Box<ws::Error>),
+	#[cfg(feature = "tungstenite-client")]
+	#[error("WebSocket tungstenite Error: {0}")]
+	TungsteniteWebSocket(#[from] tungstenite::Error),
 	#[error("Expected some error information, but nothing was found: {0}")]
 	NoErrorInformationFound(String),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]
@@ -39,8 +42,11 @@ pub enum Error {
 	Io(#[from] std::io::Error),
 	#[error(transparent)]
 	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+	#[error("Exceeded the maximum number of attempts to connect to the server")]
+	ConnectionAttemptsExceeded,
 }
 
+#[cfg(feature = "ws-client")]
 impl From<ws::Error> for Error {
 	fn from(error: ws::Error) -> Self {
 		Self::Ws(Box::new(error))
