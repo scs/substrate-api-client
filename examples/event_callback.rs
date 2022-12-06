@@ -31,7 +31,7 @@ use substrate_api_client::rpc::WsRpcClient;
 #[cfg(feature = "tungstenite-client")]
 use substrate_api_client::rpc::TungsteniteRpcClient;
 
-use substrate_api_client::{subscription, utils::FromHexString, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{utils::FromHexString, Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
