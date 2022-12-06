@@ -20,7 +20,7 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
-serde_json = { version = "1.0.79",default-features = false }
+serde_json = { version = "1.0.79", default-features = false }
 thiserror = { version = "1.0.30", optional = true }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
