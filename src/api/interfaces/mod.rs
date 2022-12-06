@@ -13,5 +13,5 @@
 
 pub mod frame_system;
 pub mod generic_storage;
-pub mod pallet_balance;
+pub mod pallet_balances;
 pub mod runtime;
