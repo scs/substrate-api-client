@@ -9,7 +9,7 @@ edition = "2021"
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-serde = { version = "1.0", default-features = false, features = ["derive","alloc"] }
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 
 # substrate no_std
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -17,6 +17,7 @@ sp-runtime = { default-features = false, git = "https://github.com/paritytech/su
 sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-weights = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
 # substrate std
 frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
