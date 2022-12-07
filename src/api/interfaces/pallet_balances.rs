@@ -11,46 +11,51 @@
    limitations under the License.
 */
 use crate::{
-	api::{Api, ApiClientError, ApiResult},
+	api::{
+		interfaces::generic_storage::GetGenericStorageInterface, Api, ApiClientError, ApiResult,
+	},
 	rpc::{json_req, RpcClient},
 	ExtrinsicParams,
 };
-use ac_primitives::{BalancesConfig, FeeDetails, RuntimeDispatchInfo};
-pub use pallet_transaction_payment::FeeDetails;
-use pallet_transaction_payment::{InclusionFee, RuntimeDispatchInfo};
+use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, RuntimeDispatchInfo};
 use sp_rpc::number::NumberOrHex;
 
 /// Interface to common calls of the substrate balances pallet.
-pub trait GetBalanceInterface<Hash, Balance> {
+pub trait GetBalanceInterface<Hash> {
+	type Balance;
+
 	fn get_fee_details(
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<FeeDetails<Balance>>>;
+	) -> ApiResult<Option<FeeDetails<Self::Balance>>>;
 
 	fn get_payment_info(
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<RuntimeDispatchInfo<Balance>>>;
+	) -> ApiResult<Option<RuntimeDispatchInfo<Self::Balance>>>;
 
-	fn get_existential_deposit(&self) -> ApiResult<Balance>;
+	fn get_existential_deposit(&self) -> ApiResult<Self::Balance>;
 }
 
-impl<Signer, Client, Params, Runtime> GetBalanceInterface<Runtime::Hash, Runtime::Balance>
+impl<Signer, Client, Params, Runtime> GetBalanceInterface<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Runtime: BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::Balance: TryFrom<NumberOrHex>,
 {
+	type Balance = Runtime::Balance;
+
 	fn get_fee_details(
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<FeeDetails<Runtime::Balance>>> {
+	) -> ApiResult<Option<FeeDetails<Self::Balance>>> {
 		let jsonreq = json_req::payment_query_fee_details(xthex_prefixed, at_block);
-		let res = self.get_request(jsonreq)?;
+		let res = self.client().get_request(jsonreq)?;
 		match res {
 			Some(details) => {
 				let details: FeeDetails<NumberOrHex> = serde_json::from_str(&details)?;
@@ -65,9 +70,9 @@ where
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<RuntimeDispatchInfo<Runtime::Balance>>> {
+	) -> ApiResult<Option<RuntimeDispatchInfo<Self::Balance>>> {
 		let jsonreq = json_req::payment_query_info(xthex_prefixed, at_block);
-		let res = self.get_request(jsonreq)?;
+		let res = self.client().get_request(jsonreq)?;
 		match res {
 			Some(info) => {
 				let info: RuntimeDispatchInfo<Runtime::Balance> = serde_json::from_str(&info)?;
@@ -77,7 +82,7 @@ where
 		}
 	}
 
-	fn get_existential_deposit(&self) -> ApiResult<Runtime::Balance> {
+	fn get_existential_deposit(&self) -> ApiResult<Self::Balance> {
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 }

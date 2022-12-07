@@ -33,21 +33,18 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 
 use crate::{
+	api::interfaces::frame_system::GetFrameSystemInterface,
 	rpc::{json_req, RpcClient},
-	ReadProof,
+	FrameSystemConfig,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{
-	AccountInfo, BalancesConfig, ExtrinsicParams, FeeDetails, InclusionFee, RuntimeDispatchInfo,
-};
-use codec::{Decode, Encode};
-use core::{
-	convert::{TryFrom, TryInto},
-	str::FromStr,
-};
+use ac_primitives::{BalancesConfig, ExtrinsicParams};
+use codec::Decode;
+use core::{convert::TryFrom, str::FromStr};
 use log::{debug, info};
 use serde::de::DeserializeOwned;
 use sp_rpc::number::NumberOrHex;
+use sp_runtime::traits::GetRuntimeBlockType;
 use sp_version::RuntimeVersion;
 
 /// Api to talk with substrate-nodes
@@ -112,11 +109,8 @@ use sp_version::RuntimeVersion;
 #[derive(Clone)]
 pub struct Api<Signer, Client, Params, Runtime>
 where
-	Client: RpcClient,
+	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex>,
 {
 	signer: Option<Signer>,
 	genesis_hash: Runtime::Hash,
@@ -128,25 +122,12 @@ where
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSigner: From<Signer::Public>,
-	Client: RpcClient,
+	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32>,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Set the api signer account.
 	pub fn set_signer(&mut self, signer: Signer) {
 		self.signer = Some(signer);
-	}
-
-	/// Get the public part of the api signer account.
-	pub fn signer_account(&self) -> Option<AccountId32> {
-		let pair = self.signer.as_ref()?;
-		let multi_signer = MultiSigner::from(pair.public());
-		Some(multi_signer.into_account())
 	}
 
 	/// Get the private key pair of the api signer.
@@ -200,21 +181,24 @@ where
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
-	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: FrameSystemConfig + GetRuntimeBlockType,
+	Runtime::AccountId: From<Signer::Public>,
+	Runtime::RuntimeBlock: DeserializeOwned,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32> + Decode,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Header: DeserializeOwned,
 {
-	/// Get nonce of signer account.
-	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
-		if self.signer.is_none() {
-			return Err(ApiClientError::NoSigner)
-		}
+	/// Get the public part of the api signer account.
+	pub fn signer_account(&self) -> Option<Runtime::AccountId> {
+		let pair = self.signer.as_ref()?;
+		Some(pair.public().into())
+	}
 
-		self.get_account_info(&self.signer_account().ok_or(ApiClientError::NoSigner)?)
+	/// Get nonce of self signer account.
+	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
+		let account = self.signer_account().ok_or(ApiClientError::NoSigner)?;
+		self.get_account_info(&account)
 			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
 }
@@ -306,10 +290,6 @@ where
 		self.metadata = metadata;
 		self.runtime_version = runtime_version;
 		Ok(())
-	}
-
-	pub fn get_request(&self, jsonreq: Value) -> ApiResult<Option<String>> {
-		self.client.get_request(jsonreq).map_err(ApiClientError::RpcClient)
 	}
 
 	pub fn get_constant<C: Decode>(

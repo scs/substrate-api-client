@@ -14,7 +14,7 @@
    limitations under the License.
 
 */
-use codec::{FullCodec, MaxEncodedLen};
+use codec::{Decode, FullCodec, MaxEncodedLen};
 use core::fmt::Debug;
 use scale_info::TypeInfo;
 use sp_runtime::traits::{
@@ -30,7 +30,13 @@ pub trait FrameSystemConfig {
 	type BlockLength;
 	type RuntimeOrigin: Clone;
 	type RuntimeCall: Dispatchable<RuntimeOrigin = Self::RuntimeOrigin> + Debug;
-	type Index: MaybeSerializeDeserialize + Debug + Default + AtLeast32Bit + Copy + MaxEncodedLen;
+	type Index: MaybeSerializeDeserialize
+		+ Debug
+		+ Default
+		+ AtLeast32Bit
+		+ Copy
+		+ MaxEncodedLen
+		+ Decode;
 	type BlockNumber: MaybeSerializeDeserialize
 		+ Debug
 		+ AtLeast32BitUnsigned
