@@ -21,7 +21,14 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::{sync::mpsc::channel, thread};
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus};
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
+use substrate_api_client::{Api, AssetTipExtrinsicParams, StaticEvent, XtStatus};
 
 // Look at the how the transfer event looks like in in the metadata
 #[derive(Decode)]
@@ -41,7 +48,13 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
+
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice);
 

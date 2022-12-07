@@ -18,7 +18,14 @@
 use frame_system::AccountInfo as GenericAccountInfo;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
+use substrate_api_client::{Api, AssetTipExtrinsicParams};
 
 type IndexFor<T> = <T as frame_system::Config>::Index;
 type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
@@ -28,7 +35,12 @@ type AccountInfo = GenericAccountInfo<IndexFor<Runtime>, AccountDataFor<Runtime>
 fn main() {
 	env_logger::init();
 
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	// get some plain storage value

@@ -17,12 +17,24 @@ limitations under the License.
 
 use kitchensink_runtime::Runtime;
 use sp_runtime::app_crypto::sp_core::sr25519;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
+use substrate_api_client::{Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
 
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+
 	let api =
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 

@@ -21,7 +21,14 @@ use sp_core::{
 	sr25519,
 };
 use sp_runtime::MultiAddress;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
+use substrate_api_client::{Api, AssetTipExtrinsicParams, XtStatus};
 
 fn main() {
 	env_logger::init();
@@ -34,7 +41,12 @@ fn main() {
 	println!("signer account: {}", alice.public().to_ss58check());
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice.clone());
 

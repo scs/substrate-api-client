@@ -37,9 +37,10 @@ use serde::{Deserialize, Serialize};
 pub mod api_client;
 pub mod error;
 
-#[cfg(feature = "ws-client")]
+#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
 pub mod subscription;
-#[cfg(feature = "ws-client")]
+
+#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
 pub use subscription::*;
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]

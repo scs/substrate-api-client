@@ -15,7 +15,6 @@
 
 */
 
-use super::HandleMessage;
 use crate::{
 	api::{FromHexString, XtStatus},
 	rpc::{
@@ -26,6 +25,8 @@ use crate::{
 		},
 		Result, RpcClient as RpcClientTrait, Subscriber,
 	},
+	ws_client::MessageContext,
+	HandleMessage,
 };
 use log::info;
 use serde_json::Value;
@@ -166,6 +167,8 @@ impl WsRpcClient {
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
+		MessageHandler::Error: Into<ws::Error>,
+		MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 	{
 		let url = self.url.clone();
 		let _client =
@@ -190,6 +193,8 @@ impl WsRpcClient {
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
+		MessageHandler::Error: Into<ws::Error>,
+		MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 	{
 		let (result_in, result_out) = channel();
 		connect(self.url.as_str(), |out| RpcClient {

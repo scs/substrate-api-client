@@ -18,9 +18,15 @@
 
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
 use substrate_api_client::{
-	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GenericAddress,
-	UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic, Api, AssetTipExtrinsicParams, GenericAddress, UncheckedExtrinsicV4, XtStatus,
 };
 
 fn main() {
@@ -28,7 +34,13 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
+
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	// set the recipient
@@ -48,6 +60,6 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// send and watch extrinsic until InBlock
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::Finalized).unwrap();
 	println!("[+] Transaction got included. Hash: {:?}", tx_hash);
 }

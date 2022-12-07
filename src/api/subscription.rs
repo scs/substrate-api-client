@@ -15,9 +15,15 @@
 
 */
 
+#[cfg(feature = "ws-client")]
+use crate::ws_client::client::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use crate::tungstenite_client::client::TungsteniteRpcClient;
+
 use crate::{
 	api::{error::Error, Api, ApiResult, FromHexString},
-	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
+	rpc::{json_req, RpcClient as RpcClientTrait, Subscriber},
 	utils,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -31,6 +37,7 @@ use sp_rpc::number::NumberOrHex;
 use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
+#[cfg(feature = "ws-client")]
 impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
 where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
@@ -41,6 +48,21 @@ where
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
+		Self::new(client)
+	}
+}
+
+#[cfg(feature = "tungstenite-client")]
+impl<Signer, Params, Runtime> Api<Signer, TungsteniteRpcClient, Params, Runtime>
+where
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: BalancesConfig,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Index: Decode,
+{
+	pub fn default_with_url(url: url::Url) -> ApiResult<Self> {
+		let client = TungsteniteRpcClient::new(url, 10);
 		Self::new(client)
 	}
 }

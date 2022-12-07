@@ -20,9 +20,15 @@ use kitchensink_runtime::Runtime as KitchensinkRuntime;
 use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
+
+#[cfg(feature = "ws-client")]
+use substrate_api_client::rpc::WsRpcClient;
+
+#[cfg(feature = "tungstenite-client")]
+use substrate_api_client::rpc::TungsteniteRpcClient;
+
 use substrate_api_client::{
-	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4,
-	XtStatus,
+	compose_extrinsic, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
 };
 
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
@@ -35,7 +41,12 @@ fn main() {
 	env_logger::init();
 
 	// Create the node-api client and set the signer.
+	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+
+	#[cfg(feature = "tungstenite-client")]
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+
 	let alice = AccountKeyring::Alice.pair();
 	let mut api =
 		Api::<_, _, AssetTipExtrinsicParams<KitchensinkRuntime>, KitchensinkRuntime>::new(client)
