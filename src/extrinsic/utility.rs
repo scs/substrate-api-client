@@ -18,16 +18,12 @@
 //! Extrinsics for `pallet-utility`.
 
 use super::common::Batch;
-use crate::{rpc::RpcClient, Api, FromHexString};
+use crate::{rpc::RpcClient, Api};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{
-	BalancesConfig, CallIndex, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4,
-};
-use codec::{Decode, Encode};
-use core::str::FromStr;
+use ac_primitives::{CallIndex, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
+use codec::Encode;
 use sp_core::Pair;
-use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::MultiSignature;
 
 const UTILITY_MODULE: &str = "Utility";
 const UTILITY_BATCH: &str = "batch";

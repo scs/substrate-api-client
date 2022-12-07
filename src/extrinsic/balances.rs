@@ -17,16 +17,14 @@
 
 //! Extrinsics for `pallet-balances`.
 
-use crate::{api::Api, rpc::RpcClient, FromHexString};
+use crate::{api::Api, rpc::RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
 };
-use codec::{Compact, Decode, Encode};
-use core::str::FromStr;
+use codec::{Compact, Encode};
 use sp_core::crypto::Pair;
-use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::MultiSignature;
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";

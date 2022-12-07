@@ -18,18 +18,16 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use crate::{api::Api, rpc::RpcClient, FromHexString};
+use crate::{api::Api, rpc::RpcClient};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, GenericAddress,
 	UncheckedExtrinsicV4,
 };
-use codec::{Compact, Decode, Encode};
-use core::str::FromStr;
+use codec::{Compact, Encode};
 use frame_support::traits::Currency as CurrencyTrait;
 use sp_core::crypto::Pair;
-use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::MultiSignature;
 use sp_std::prelude::*;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";

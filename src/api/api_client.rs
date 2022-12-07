@@ -36,14 +36,11 @@ use crate::{
 	api::interfaces::frame_system::GetAccountInformation,
 	rpc::{json_req, RpcClient},
 };
-use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{BalancesConfig, ExtrinsicParams, FrameSystemConfig};
+use ac_node_api::metadata::Metadata;
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use codec::Decode;
-use core::{convert::TryFrom, str::FromStr};
+use core::convert::TryFrom;
 use log::{debug, info};
-use serde::de::DeserializeOwned;
-use sp_rpc::number::NumberOrHex;
-use sp_runtime::traits::GetRuntimeBlockType;
 use sp_version::RuntimeVersion;
 
 /// Api to talk with substrate-nodes
