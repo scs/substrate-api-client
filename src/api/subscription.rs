@@ -18,19 +18,26 @@
 use crate::{
 	api::{error::Error, Api, ApiResult, FromHexString},
 	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
-	utils, Hash, Index,
+	utils,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
-use ac_primitives::ExtrinsicParams;
+use ac_primitives::{BalancesConfig, ExtrinsicParams};
+use codec::Decode;
+use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
+use sp_rpc::number::NumberOrHex;
 use sp_runtime::MultiSigner;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
-impl<P, Params> Api<P, WsRpcClient, Params>
+impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
 where
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: BalancesConfig,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Index: Decode,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -38,12 +45,15 @@ where
 	}
 }
 
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClientTrait + Subscriber,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: BalancesConfig,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
@@ -72,7 +82,11 @@ where
 		loop {
 			let events_str = receiver.recv()?;
 			let event_bytes = Vec::from_hex(events_str)?;
-			let events = Events::new(self.metadata().clone(), Default::default(), event_bytes);
+			let events = Events::<Runtime::Hash>::new(
+				self.metadata().clone(),
+				Default::default(),
+				event_bytes,
+			);
 
 			for maybe_event_details in events.iter() {
 				let event_details = maybe_event_details?;

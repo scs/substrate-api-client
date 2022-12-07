@@ -18,9 +18,9 @@ use crate::{
 	metadata::EventMetadata,
 	Metadata, Phase, StaticEvent,
 };
-use ac_primitives::Hash;
 use codec::{Compact, Decode, Error as CodecError};
 use log::*;
+use sp_core::H256;
 
 /// A collection of events obtained from a block, bundled with the necessary
 /// information needed to decode and iterate over them.
@@ -28,7 +28,7 @@ use log::*;
 // In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
 // hash type. We omitted this here and use the `ac_primitives::Hash` instead.
 #[derive(Clone, Debug)]
-pub struct Events {
+pub struct Events<Hash> {
 	metadata: Metadata,
 	block_hash: Hash,
 	// Note; raw event bytes are prefixed with a Compact<u32> containing
@@ -39,7 +39,7 @@ pub struct Events {
 	num_events: u32,
 }
 
-impl Events {
+impl<Hash: Copy> Events<Hash> {
 	pub fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
 		// event_bytes is a SCALE encoded vector of events. So, pluck the
 		// compact encoded length from the front, leaving the remaining bytes
@@ -180,7 +180,7 @@ impl EventDetails {
 
 		// topics come after the event data in EventRecord. They aren't used for
 		// anything at the moment, so just decode and throw them away.
-		let _topics = Vec::<Hash>::decode(input)?;
+		let _topics = Vec::<H256>::decode(input)?;
 
 		// what bytes did we skip over in total, including topics.
 		let end_idx = all_bytes.len() - input.len();
@@ -336,7 +336,7 @@ pub(crate) mod test_utils {
 	pub struct EventRecord<E: Encode> {
 		phase: Phase,
 		event: AllEvents<E>,
-		topics: Vec<Hash>,
+		topics: Vec<H256>,
 	}
 
 	/// Build an EventRecord, which encoded events in the format expected
@@ -372,7 +372,7 @@ pub(crate) mod test_utils {
 	pub fn events<E: Decode + Encode>(
 		metadata: Metadata,
 		event_records: Vec<EventRecord<E>>,
-	) -> Events {
+	) -> Events<H256> {
 		let num_events = event_records.len() as u32;
 		let mut event_bytes = Vec::new();
 		for ev in event_records {
@@ -383,11 +383,11 @@ pub(crate) mod test_utils {
 
 	/// Much like [`events`], but takes pre-encoded events and event count, so that we can
 	/// mess with the bytes in tests if we need to.
-	pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> Events {
+	pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> Events<H256> {
 		// Prepend compact encoded length to event bytes:
 		let mut all_event_bytes = Compact(num_events).encode();
 		all_event_bytes.extend(event_bytes);
-		Events::new(metadata, Hash::default(), all_event_bytes)
+		Events::new(metadata, H256::default(), all_event_bytes)
 	}
 }
 

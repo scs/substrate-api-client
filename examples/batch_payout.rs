@@ -1,6 +1,8 @@
 #[cfg(feature = "staking-xt")]
 use codec::{Decode, Encode};
 #[cfg(feature = "staking-xt")]
+use kitchensink_runtime::Runtime;
+#[cfg(feature = "staking-xt")]
 use pallet_staking::{ActiveEraInfo, Exposure};
 #[cfg(feature = "staking-xt")]
 use serde_json::Value;
@@ -17,7 +19,7 @@ fn main() {
 
 	let from = AccountKeyring::Alice.pair();
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<_, _, PlainTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
 	let mut results: Vec<Value> = Vec::new();
@@ -86,7 +88,12 @@ fn main() {
 #[cfg(feature = "staking-xt")]
 pub fn get_last_reward(
 	validator_address: &str,
-	api: &substrate_api_client::Api<sp_core::sr25519::Pair, WsRpcClient, PlainTipExtrinsicParams>,
+	api: &substrate_api_client::Api<
+		sp_core::sr25519::Pair,
+		WsRpcClient,
+		PlainTipExtrinsicParams<Runtime>,
+		Runtime,
+	>,
 ) -> u32 {
 	let account = match AccountId32::from_ss58check(validator_address) {
 		Ok(address) => address,

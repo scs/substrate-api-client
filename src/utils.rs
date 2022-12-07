@@ -21,7 +21,7 @@ extern crate alloc;
 use alloc::{string::String, vec::Vec};
 
 use hex::FromHexError;
-use sp_core::{storage::StorageKey, twox_128, H256 as Hash};
+use sp_core::{storage::StorageKey, twox_128, H256};
 
 pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
 	let mut key = twox_128(module.as_bytes()).to_vec();
@@ -43,12 +43,12 @@ impl FromHexString for Vec<u8> {
 	}
 }
 
-impl FromHexString for Hash {
+impl FromHexString for H256 {
 	fn from_hex(hex: String) -> Result<Self, FromHexError> {
 		let vec = Vec::from_hex(hex)?;
 
 		match vec.len() {
-			32 => Ok(Hash::from_slice(&vec)),
+			32 => Ok(H256::from_slice(&vec)),
 			_ => Err(hex::FromHexError::InvalidStringLength),
 		}
 	}
@@ -75,17 +75,17 @@ mod tests {
 	#[test]
 	fn test_hextstr_to_hash() {
 		assert_eq!(
-			Hash::from_hex(
+			H256::from_hex(
 				"0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
 			),
-			Ok(Hash::from([0u8; 32]))
+			Ok(H256::from([0u8; 32]))
 		);
 		assert_eq!(
-			Hash::from_hex("0x010000000000000000".to_string()),
+			H256::from_hex("0x010000000000000000".to_string()),
 			Err(hex::FromHexError::InvalidStringLength)
 		);
 		assert_eq!(
-			Hash::from_hex("0x0q".to_string()),
+			H256::from_hex("0x0q".to_string()),
 			Err(hex::FromHexError::InvalidHexCharacter { c: 'q', index: 1 })
 		);
 	}

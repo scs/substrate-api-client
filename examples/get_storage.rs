@@ -13,15 +13,23 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to get some simple storage values.
+//! Very simple example that shows how to get some simple storage values.
+
+use frame_system::AccountInfo as GenericAccountInfo;
+use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::WsRpcClient, AccountInfo, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+
+type IndexFor<T> = <T as frame_system::Config>::Index;
+type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
+
+type AccountInfo = GenericAccountInfo<IndexFor<Runtime>, AccountDataFor<Runtime>>;
 
 fn main() {
 	env_logger::init();
 
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	// get some plain storage value
 	let result: u128 = api.get_storage_value("Balances", "TotalIssuance", None).unwrap().unwrap();

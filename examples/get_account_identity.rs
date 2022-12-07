@@ -37,7 +37,9 @@ fn main() {
 	// Create the node-api client and set the signer.
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 	let alice = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api =
+		Api::<_, _, AssetTipExtrinsicParams<KitchensinkRuntime>, KitchensinkRuntime>::new(client)
+			.unwrap();
 	api.set_signer(alice.clone());
 
 	// Fill Identity storage

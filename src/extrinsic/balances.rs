@@ -17,46 +17,58 @@
 
 //! Extrinsics for `pallet-balances`.
 
-use crate::{api::Api, rpc::RpcClient, Hash, Index};
+use crate::{api::Api, rpc::RpcClient, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{Balance, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4};
-use codec::Compact;
+use ac_primitives::{
+	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
+};
+use codec::{Compact, Decode, Encode};
+use core::str::FromStr;
 use sp_core::crypto::Pair;
+use sp_rpc::number::NumberOrHex;
 use sp_runtime::{MultiSignature, MultiSigner};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
 
-pub type BalanceTransferFn = (CallIndex, GenericAddress, Compact<Balance>);
-pub type BalanceSetBalanceFn = (CallIndex, GenericAddress, Compact<Balance>, Compact<Balance>);
+pub type BalanceTransferFn<Balance> = (CallIndex, GenericAddress, Compact<Balance>);
+pub type BalanceSetBalanceFn<Balance> =
+	(CallIndex, GenericAddress, Compact<Balance>, Compact<Balance>);
 
-pub type BalanceTransferXt<SignedExtra> = UncheckedExtrinsicV4<BalanceTransferFn, SignedExtra>;
-pub type BalanceSetBalanceXt<SignedExtra> = UncheckedExtrinsicV4<BalanceSetBalanceFn, SignedExtra>;
+pub type BalanceTransferXt<SignedExtra, Balance> =
+	UncheckedExtrinsicV4<BalanceTransferFn<Balance>, SignedExtra>;
+pub type BalanceSetBalanceXt<SignedExtra, Balance> =
+	UncheckedExtrinsicV4<BalanceSetBalanceFn<Balance>, SignedExtra>;
 
 #[cfg(feature = "std")]
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSignature: From<P::Signature>,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: BalancesConfig,
+	Runtime::Hash: FromHexString,
+	Runtime::Index: Decode,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Compact<Runtime::Balance>: Encode,
 {
 	pub fn balance_transfer(
 		&self,
 		to: GenericAddress,
-		amount: Balance,
-	) -> BalanceTransferXt<Params::SignedExtra> {
+		amount: Runtime::Balance,
+	) -> BalanceTransferXt<Params::SignedExtra, Runtime::Balance> {
 		compose_extrinsic!(self, BALANCES_MODULE, BALANCES_TRANSFER, to, Compact(amount))
 	}
 
 	pub fn balance_set_balance(
 		&self,
 		who: GenericAddress,
-		free_balance: Balance,
-		reserved_balance: Balance,
-	) -> BalanceSetBalanceXt<Params::SignedExtra> {
+		free_balance: Runtime::Balance,
+		reserved_balance: Runtime::Balance,
+	) -> BalanceSetBalanceXt<Params::SignedExtra, Runtime::Balance> {
 		compose_extrinsic!(
 			self,
 			BALANCES_MODULE,
