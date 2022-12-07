@@ -18,7 +18,9 @@ use crate::{
 	ExtrinsicParams,
 };
 use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, RuntimeDispatchInfo};
+use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
+use sp_runtime::MultiSignature;
 
 /// Interface to common calls of the substrate balances pallet.
 pub trait GetBalanceInterface<Hash> {
@@ -42,10 +44,13 @@ pub trait GetBalanceInterface<Hash> {
 impl<Signer, Client, Params, Runtime> GetBalanceInterface<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::Balance: TryFrom<NumberOrHex>,
+	Runtime::AccountId: From<Signer::Public>,
 {
 	type Balance = Runtime::Balance;
 

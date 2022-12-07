@@ -39,10 +39,11 @@ pub type UtilityBatchXt<Call, SignedExtra> =
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Signer: Pair,
 	Runtime::AccountId: From<Signer::Public>,
 {
 	pub fn batch<Call: Encode + Clone>(

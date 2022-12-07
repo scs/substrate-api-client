@@ -11,13 +11,14 @@
    limitations under the License.
 */
 use crate::{
-	api::ApiResult, rpc::json_req, utils::FromHexString, Api, ExtrinsicParams,
-	MetadataError, ReadProof, RpcClient,
+	api::ApiResult, rpc::json_req, utils::FromHexString, Api, ExtrinsicParams, MetadataError,
+	ReadProof, RpcClient,
 };
 use ac_primitives::FrameSystemConfig;
 use codec::{Decode, Encode};
 use log::*;
-use sp_core::storage::StorageKey;
+use sp_core::{storage::StorageKey, Pair};
+use sp_runtime::MultiSignature;
 
 /// Generic interface to substrate storage.
 pub trait GetGenericStorageInterface<Hash> {
@@ -102,8 +103,11 @@ pub trait GetGenericStorageInterface<Hash> {
 impl<Signer, Client, Params, Runtime> GetGenericStorageInterface<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
+	Runtime::AccountId: From<Signer::Public>,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	fn get_storage_value<V: Decode>(

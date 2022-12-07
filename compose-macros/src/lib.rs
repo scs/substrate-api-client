@@ -65,8 +65,8 @@ macro_rules! compose_extrinsic_offline {
     $params: expr) => {{
 		use $crate::{
 			primitives::{ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4},
-			sp_core::crypto::Pair,
-			sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner},
+			sp_core::{crypto::Pair, Public},
+			sp_runtime::{generic::Era, traits::IdentifyAccount, AccountId32},
 		};
 
 		let extra = $params.signed_extra();
@@ -75,11 +75,11 @@ macro_rules! compose_extrinsic_offline {
 
 		let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
-		let multi_signer: MultiSigner = $signer.public().into();
+		let account_vec = $signer.public().to_public_crypto_pair().1;
 
 		UncheckedExtrinsicV4::new_signed(
 			$call,
-			GenericAddress::from(multi_signer.into_account()),
+			GenericAddress::Raw(account_vec),
 			signature.into(),
 			extra,
 		)

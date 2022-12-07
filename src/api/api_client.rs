@@ -109,7 +109,10 @@ use sp_version::RuntimeVersion;
 #[derive(Clone)]
 pub struct Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Runtime: FrameSystemConfig,
+	Runtime::AccountId: From<Signer::Public>,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	signer: Option<Signer>,
@@ -122,6 +125,9 @@ where
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	Runtime::AccountId: From<Signer::Public>,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
@@ -181,6 +187,7 @@ where
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
@@ -204,8 +211,11 @@ where
 /// If an up-to-date query is necessary, cache should be updated beforehand.
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::AccountId: From<Signer::Public>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
 {
@@ -246,8 +256,11 @@ where
 /// Substrate node calls via websocket.
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::AccountId: From<Signer::Public>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
 {

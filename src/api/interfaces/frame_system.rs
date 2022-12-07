@@ -20,10 +20,9 @@ use crate::{
 };
 use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig};
 use log::*;
-use sp_core::storage::StorageKey;
-use sp_core::Pair;
 use serde::de::DeserializeOwned;
-use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType};
+use sp_core::{storage::StorageKey, Pair};
+use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType, MultiSignature};
 
 pub trait GetAccountInformation<AccountId> {
 	type Index;
@@ -69,10 +68,11 @@ pub trait GetBlock<Number, Hash> {
 impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
 	for Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Signer: Pair,
 	Runtime::AccountId: From<Signer::Public>,
 {
 	type Index = Runtime::Index;
@@ -82,9 +82,11 @@ where
 		&self,
 		address: &Runtime::AccountId,
 	) -> ApiResult<Option<AccountInfo<Self::Index, Self::AccountData>>> {
-		let storagekey: StorageKey = self
-			.metadata()
-			.storage_map_key::<Runtime::AccountId>("System", "Account", address.clone())?;
+		let storagekey: StorageKey = self.metadata().storage_map_key::<Runtime::AccountId>(
+			"System",
+			"Account",
+			address.clone(),
+		)?;
 
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_by_key_hash(storagekey, None)
@@ -98,44 +100,48 @@ where
 	}
 }
 
-
 impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
-		for Api<Signer, Client, Params, Runtime>
-	where
-		Client: RpcClient,
-		Runtime: FrameSystemConfig,
-		Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-		Runtime::Header: DeserializeOwned,
-		Runtime::Hash: FromHexString,
-	{
-		type Header = Runtime::Header;
+	for Api<Signer, Client, Params, Runtime>
+where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	Client: RpcClient,
+	Runtime: FrameSystemConfig,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::Header: DeserializeOwned,
+	Runtime::Hash: FromHexString,
+	Runtime::AccountId: From<Signer::Public>,
+{
+	type Header = Runtime::Header;
 
-		fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
-			let h = self.client().get_request(json_req::chain_get_finalized_head())?;
-			match h {
-				Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
-				None => Ok(None),
-			}
+	fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
+		let h = self.client().get_request(json_req::chain_get_finalized_head())?;
+		match h {
+			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
+			None => Ok(None),
 		}
-
-		fn get_header(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Runtime::Header>> {
-			let h = self.client().get_request(json_req::chain_get_header(hash))?;
-			match h {
-				Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
-				None => Ok(None),
-			}
-		}
-
 	}
+
+	fn get_header(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Runtime::Header>> {
+		let h = self.client().get_request(json_req::chain_get_header(hash))?;
+		match h {
+			Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
+			None => Ok(None),
+		}
+	}
+}
 
 impl<Signer, Client, Params, Runtime> GetBlock<Runtime::BlockNumber, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::RuntimeBlock: DeserializeOwned,
 	Runtime::Hash: FromHexString,
+	Runtime::AccountId: From<Signer::Public>,
 {
 	type Block = Runtime::RuntimeBlock;
 

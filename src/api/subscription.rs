@@ -27,14 +27,17 @@ use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::MultiSigner;
+use sp_runtime::MultiSignature;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
 impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
+	Runtime::AccountId: From<Signer::Public>,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -44,9 +47,12 @@ where
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
 	Client: RpcClientTrait + Subscriber,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
+	Runtime::AccountId: From<Signer::Public>,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
