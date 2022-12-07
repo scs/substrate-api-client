@@ -18,17 +18,11 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
-use kitchensink_runtime::{BalancesCall, RuntimeCall};
-
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
+use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic_offline, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
+	UncheckedExtrinsicV4, XtStatus,
 };
 
 fn main() {
@@ -36,17 +30,9 @@ fn main() {
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-
-	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new("ws://127.0.0.1:9944", 100);
-
-	let mut api = Api::<_, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
-
-	println!("[+] Alice's Account Nonce is {}\n", api.get_nonce().unwrap());
 
 	// define the recipient
 	let to = AccountKeyring::Bob.to_account_id();

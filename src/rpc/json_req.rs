@@ -17,15 +17,15 @@
 
 use serde::Serialize;
 use serde_json::{json, to_value, Value};
-use sp_core::{storage::StorageKey, H256 as Hash};
+use sp_core::storage::StorageKey;
 
 pub const REQUEST_TRANSFER: u32 = 3;
 
-pub fn chain_get_header(hash: Option<Hash>) -> Value {
+pub fn chain_get_header<Hash: Serialize>(hash: Option<Hash>) -> Value {
 	json_req("chain_getHeader", vec![hash], 1)
 }
 
-pub fn chain_get_block_hash(number: Option<u32>) -> Value {
+pub fn chain_get_block_hash<BlockNumber: Serialize>(number: Option<BlockNumber>) -> Value {
 	chain_get_block_hash_with_id(number, 1)
 }
 
@@ -33,11 +33,14 @@ pub fn chain_get_genesis_hash() -> Value {
 	chain_get_block_hash(Some(0))
 }
 
-pub fn chain_get_block_hash_with_id(number: Option<u32>, id: u32) -> Value {
+pub fn chain_get_block_hash_with_id<BlockNumber: Serialize>(
+	number: Option<BlockNumber>,
+	id: u32,
+) -> Value {
 	json_req("chain_getBlockHash", vec![number], id)
 }
 
-pub fn chain_get_block(hash: Option<Hash>) -> Value {
+pub fn chain_get_block<Hash: Serialize>(hash: Option<Hash>) -> Value {
 	json_req("chain_getBlock", vec![hash], 1)
 }
 
@@ -49,7 +52,10 @@ pub fn chain_subscribe_finalized_heads() -> Value {
 	json_req("chain_subscribeFinalizedHeads", Value::Null, 1)
 }
 
-pub fn payment_query_fee_details(xthex_prefixed: &str, at_block: Option<Hash>) -> Value {
+pub fn payment_query_fee_details<Hash: Serialize>(
+	xthex_prefixed: &str,
+	at_block: Option<Hash>,
+) -> Value {
 	json_req(
 		"payment_queryFeeDetails",
 		vec![to_value(xthex_prefixed).unwrap(), to_value(at_block).unwrap()],
@@ -57,7 +63,7 @@ pub fn payment_query_fee_details(xthex_prefixed: &str, at_block: Option<Hash>) -
 	)
 }
 
-pub fn payment_query_info(xthex_prefixed: &str, at_block: Option<Hash>) -> Value {
+pub fn payment_query_info<Hash: Serialize>(xthex_prefixed: &str, at_block: Option<Hash>) -> Value {
 	json_req(
 		"payment_queryInfo",
 		vec![to_value(xthex_prefixed).unwrap(), to_value(at_block).unwrap()],
@@ -90,19 +96,26 @@ pub fn state_subscribe_storage_with_id(key: Vec<StorageKey>, id: u32) -> Value {
 	json_req("state_subscribeStorage", vec![key], id)
 }
 
-pub fn state_get_storage(key: StorageKey, at_block: Option<Hash>) -> Value {
+pub fn state_get_storage<Hash: Serialize>(key: StorageKey, at_block: Option<Hash>) -> Value {
 	json_req("state_getStorage", vec![to_value(key).unwrap(), to_value(at_block).unwrap()], 1)
 }
 
-pub fn state_get_storage_with_id(key: StorageKey, at_block: Option<Hash>, id: u32) -> Value {
+pub fn state_get_storage_with_id<Hash: Serialize>(
+	key: StorageKey,
+	at_block: Option<Hash>,
+	id: u32,
+) -> Value {
 	json_req("state_getStorage", vec![to_value(key).unwrap(), to_value(at_block).unwrap()], id)
 }
 
-pub fn state_get_read_proof(keys: Vec<StorageKey>, at_block: Option<Hash>) -> Value {
+pub fn state_get_read_proof<Hash: Serialize>(
+	keys: Vec<StorageKey>,
+	at_block: Option<Hash>,
+) -> Value {
 	json_req("state_getReadProof", vec![to_value(keys).unwrap(), to_value(at_block).unwrap()], 1)
 }
 
-pub fn state_get_keys(key: StorageKey, at_block: Option<Hash>) -> Value {
+pub fn state_get_keys<Hash: Serialize>(key: StorageKey, at_block: Option<Hash>) -> Value {
 	json_req("state_getKeys", vec![to_value(key).unwrap(), to_value(at_block).unwrap()], 1)
 }
 

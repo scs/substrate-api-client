@@ -13,28 +13,19 @@
 	limitations under the License.
 */
 
-///! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
-///! debugging tool.
+//! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
+//! debugging tool.
+
+use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
-use substrate_api_client::{Api, AssetTipExtrinsicParams, Metadata};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, Metadata};
 
 fn main() {
 	env_logger::init();
 
-	#[cfg(feature = "ws-client")]
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new("ws://127.0.0.1:9944", 100);
-
-	let mut api = Api::<sr25519::Pair, _, AssetTipExtrinsicParams>::new(client).unwrap();
+	let mut api =
+		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 

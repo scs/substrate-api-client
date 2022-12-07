@@ -19,9 +19,9 @@ pub use crate::{
 	api::error::{ApiResult, Error as ApiClientError},
 	utils::FromHexString,
 };
+pub use ac_primitives::FeeDetails;
 pub use api_client::Api;
 pub use frame_metadata::RuntimeMetadataPrefixed;
-pub use pallet_transaction_payment::FeeDetails;
 pub use serde_json::Value;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{

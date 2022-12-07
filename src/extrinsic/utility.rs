@@ -18,11 +18,13 @@
 //! Extrinsics for `pallet-utility`.
 
 use super::common::Batch;
-use crate::{rpc::RpcClient, Api, Hash, Index};
+use crate::{rpc::RpcClient, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
-use codec::Encode;
+use ac_primitives::{BalancesConfig, CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
+use codec::{Decode, Encode};
+use core::str::FromStr;
 use sp_core::Pair;
+use sp_rpc::number::NumberOrHex;
 use sp_runtime::{MultiSignature, MultiSigner};
 
 const UTILITY_MODULE: &str = "Utility";
@@ -33,13 +35,17 @@ pub type UtilityBatchFn<Call> = (CallIndex, Batch<Call>);
 pub type UtilityBatchXt<Call, SignedExtra> =
 	UncheckedExtrinsicV4<UtilityBatchFn<Call>, SignedExtra>;
 
-impl<P, Client, Params> Api<P, Client, Params>
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	P: Pair,
-	MultiSignature: From<P::Signature>,
-	MultiSigner: From<P::Public>,
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
-	Params: ExtrinsicParams<Index, Hash>,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: BalancesConfig,
+	Runtime::Index: Decode,
+	Runtime::Hash: FromHexString,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn batch<Call: Encode + Clone>(
 		&self,

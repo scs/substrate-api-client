@@ -15,15 +15,18 @@
 
 */
 
-use crate::Balance;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
-use sp_core::H256;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
 };
 use sp_std::{hash::Hash as HashTrait, prelude::*};
+
+pub type BalanceFor<Runtime> = <Runtime as crate::BalancesConfig>::Balance;
+pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;
+pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
+pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
@@ -81,17 +84,21 @@ pub trait ExtrinsicParams<Index, Hash> {
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams = BaseExtrinsicParams<AssetTip<Balance>, u32, H256>;
+pub type AssetTipExtrinsicParams<Runtime> =
+	BaseExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 /// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<AssetTip<Balance>, H256>;
+pub type AssetTipExtrinsicParamsBuilder<Runtime> =
+	BaseExtrinsicParamsBuilder<AssetTip<AssetBalanceFor<Runtime>>, HashFor<Runtime>>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams = BaseExtrinsicParams<PlainTip<Balance>, u32, H256>;
+pub type PlainTipExtrinsicParams<Runtime> =
+	BaseExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 /// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
 /// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder = BaseExtrinsicParamsBuilder<PlainTip<Balance>, H256>;
+pub type PlainTipExtrinsicParamsBuilder<Runtime> =
+	BaseExtrinsicParamsBuilder<PlainTip<BalanceFor<Runtime>>, HashFor<Runtime>>;
 
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
@@ -246,8 +253,8 @@ impl<Balance> From<Balance> for PlainTip<Balance> {
 	}
 }
 
-impl From<PlainTip<Balance>> for Balance {
-	fn from(tip: PlainTip<Balance>) -> Self {
+impl From<PlainTip<u128>> for u128 {
+	fn from(tip: PlainTip<u128>) -> Self {
 		tip.tip
 	}
 }
@@ -280,8 +287,8 @@ impl<Balance> From<Balance> for AssetTip<Balance> {
 	}
 }
 
-impl From<AssetTip<Balance>> for Balance {
-	fn from(tip: AssetTip<Balance>) -> Self {
+impl From<AssetTip<u128>> for u128 {
+	fn from(tip: AssetTip<u128>) -> Self {
 		tip.tip
 	}
 }

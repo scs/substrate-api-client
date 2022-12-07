@@ -15,11 +15,14 @@
 
 */
 
-//! Offers some predefined extrinsics for common runtime modules.
+pub use frame_system_config::FrameSystemConfig;
+pub use pallet_assets_config::AssetsConfig;
+pub use pallet_balances_config::BalancesConfig;
+pub use pallet_contracts_config::ContractsConfig;
+pub use pallet_staking_config::StakingConfig;
 
-pub mod balances;
-pub mod common;
-pub mod contracts;
-#[cfg(feature = "staking-xt")]
-pub mod staking;
-pub mod utility;
+pub mod frame_system_config;
+pub mod pallet_assets_config;
+pub mod pallet_balances_config;
+pub mod pallet_contracts_config;
+pub mod pallet_staking_config;
