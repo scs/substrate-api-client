@@ -73,7 +73,6 @@ where
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	type Index = Runtime::Index;
 	type AccountData = Runtime::AccountData;
@@ -110,7 +109,6 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::Header: DeserializeOwned,
 	Runtime::Hash: FromHexString,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	type Header = Runtime::Header;
 
@@ -141,7 +139,6 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::RuntimeBlock: DeserializeOwned,
 	Runtime::Hash: FromHexString,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	type Block = Runtime::RuntimeBlock;
 

@@ -50,7 +50,6 @@ where
 	Runtime: BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::Balance: TryFrom<NumberOrHex>,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	type Balance = Runtime::Balance;
 

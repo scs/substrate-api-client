@@ -107,7 +107,6 @@ where
 	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	fn get_storage_value<V: Decode>(
