@@ -121,6 +121,23 @@ where
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
+	/// Create a new api instance without any node interaction.
+	pub fn new_offline(
+		genesis_hash: Runtime::Hash,
+		metadata: Metadata,
+		runtime_version: RuntimeVersion,
+		client: Client,
+	) -> Self {
+		Self {
+			signer: None,
+			genesis_hash,
+			metadata,
+			runtime_version,
+			client,
+			extrinsic_params_builder: None,
+		}
+	}
+
 	/// Set the api signer account.
 	pub fn set_signer(&mut self, signer: Signer) {
 		self.signer = Some(signer);
@@ -214,14 +231,7 @@ where
 		let runtime_version = Self::get_runtime_version(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
 
-		Ok(Self {
-			signer: None,
-			genesis_hash,
-			metadata,
-			runtime_version,
-			client,
-			extrinsic_params_builder: None,
-		})
+		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
 
 	/// Updates the runtime and metadata of the api via node query.
