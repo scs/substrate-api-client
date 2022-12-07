@@ -41,13 +41,13 @@ pub(crate) type MySocket = WebSocket<MaybeTlsStream<TcpStream>>;
 
 #[derive(Debug, Clone)]
 pub struct TungsteniteRpcClient {
-	url: String,
+	url: Url,
 	max_attempts: u8,
 }
 
 impl TungsteniteRpcClient {
-	pub fn new(url: &str, max_attempts: u8) -> TungsteniteRpcClient {
-		TungsteniteRpcClient { url: url.to_string(), max_attempts }
+	pub fn new(url: Url, max_attempts: u8) -> TungsteniteRpcClient {
+		TungsteniteRpcClient { url, max_attempts }
 	}
 
 	fn direct_rpc_request<MessageHandler>(
@@ -56,87 +56,33 @@ impl TungsteniteRpcClient {
 		message_handler: MessageHandler,
 	) -> Result<String>
 	where
-		MessageHandler: HandleMessage<Error = (RpcClientError, bool), Context = MySocket, Result = String>
+		MessageHandler: HandleMessage<Error = RpcClientError, Context = MySocket, Result = String>
 			+ Clone
 			+ Send
 			+ 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
 	{
-		let url = Url::parse(self.url.as_str()).map_err(|e| RpcClientError::Other(e.into()))?;
-		let mut current_attempt: u8 = 1;
-		let mut socket: MySocket;
-
-		while current_attempt <= self.max_attempts {
-			match connect_with_config(url.clone(), None, u8::MAX - 1) {
-				Ok(res) => {
-					socket = res.0;
-					let response = res.1;
-					debug!("Connected to the server. Response HTTP code: {}", response.status());
-					if socket.can_read() {
-						current_attempt = 1;
-						let ping = socket.read_message();
-						if ping.is_err() {
-							error!("failed to read ping message. error: {:?}", ping.unwrap_err());
-						} else {
-							debug!(
-								"read ping message:{:?}. Connected successfully.",
-								ping.unwrap()
-							);
-							let r = match socket.write_message(Message::Text(json_req.clone())) {
-								Ok(_) => {
-									let r = message_handler.handle_message(&mut socket);
-									let _ = socket.close(None);
-									r
-								},
-								Err(e) => {
-									let _ = socket.close(None);
-									Err((RpcClientError::TungsteniteWebSocket(e), true))
-								},
-							};
-							match r {
-								Ok(e) => return Ok(e),
-								Err((e, retry)) => {
-									error!(
-										"failed to send request. error:{:?}, retry:{:?}",
-										e, retry
-									);
-									if retry {
-										if current_attempt == self.max_attempts {
-											return Err(e)
-										}
-									} else {
-										return Err(e)
-									}
-								},
-							};
-						}
-					}
-					let _ = socket.close(Some(CloseFrame {
-						code: CloseCode::Normal,
-						reason: Default::default(),
-					}));
-				},
-				Err(e) => {
-					error!("failed to connect the server({:?}). error: {:?}", self.url, e);
-				},
-			};
-			warn!(
-				"attempt to request after {} sec. current attempt {}",
-				5 * current_attempt,
-				current_attempt
-			);
-			sleep(Duration::from_secs((5 * current_attempt) as u64));
-			current_attempt += 1;
-		}
-		Err(RpcClientError::ConnectionAttemptsExceeded)
+		connect_to_server(
+			self.url.clone(),
+			self.max_attempts,
+			None,
+			|socket| -> Result<MessageHandler::Result> {
+				match socket.write_message(Message::Text(json_req.clone())) {
+					Ok(_) => message_handler.handle_message(socket),
+					Err(e) => {
+						error!("failed to send request. error:{:?}", e,);
+						Err(e.into())
+					},
+				}
+			},
+		)
 	}
 }
 
 impl RpcClientTrait for TungsteniteRpcClient {
 	fn get_request(&self, jsonreq: Value) -> Result<Option<String>> {
 		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())
-			.map(|v| Some(v))
-		// self.direct_rpc_request(jsonreq.to_string(), on_get_request_msg)
+			.map(Some)
 	}
 
 	fn send_extrinsic<Hash: FromHexString>(
@@ -238,92 +184,124 @@ impl TungsteniteRpcClient {
 		message_handler: MessageHandler,
 	) -> Result<()>
 	where
-		MessageHandler: HandleMessage<Error = (RpcClientError, bool), Context = MySocket>
-			+ Clone
-			+ Send
-			+ 'static,
+		MessageHandler:
+			HandleMessage<Error = RpcClientError, Context = MySocket> + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
 		MessageHandler::ThreadMessage: From<MessageHandler::Result>,
 	{
-		let url = Url::parse(self.url.as_str()).map_err(|e| RpcClientError::Other(e.into()))?;
+		let url = self.url.clone();
 		let max_attempts = self.max_attempts;
 
 		thread::spawn(move || {
-			let mut current_attempt: u8 = 1;
-			let mut socket: MySocket;
-
-			while current_attempt <= max_attempts {
-				match connect_with_config(url.clone(), None, u8::MAX - 1) {
-					Ok(res) => {
-						socket = res.0;
-						let response = res.1;
-						debug!(
-							"Connected to the server. Response HTTP code: {}",
-							response.status()
-						);
-						match socket.write_message(Message::Text(json_req.clone())) {
-							Ok(_) => {},
-							Err(e) => {
-								error!("write msg error:{:?}", e);
-							},
-						}
-						if socket.can_read() {
-							current_attempt = 1;
-							// After sending the subscription request, there will be a response(result)
-							let msg_from_req = read_until_text_message(&mut socket);
-							match msg_from_req {
-								Ok(msg_from_req) => {
-									debug!("response message: {:?}", msg_from_req);
-									loop {
-										let msg = read_until_text_message(&mut socket);
-										if msg.is_err() {
-											error!("err:{:?}", msg.unwrap_err());
-											break
-										}
-										match message_handler.handle_message(&mut socket) {
-											Ok(msg) =>
-												if let Err(e) = result_in.send(msg.into()) {
-													//thread_message.send(result)
-													error!("failed to send channel: {:?} ", e);
-													return
-												},
-											Err((e, retry)) => {
-												error!("on_subscription_msg: {:?}", e);
-												if retry {
-													if current_attempt == max_attempts {
-														return
-													}
-												} else {
-													return
-												}
-											},
-										}
-									}
+			let _ = connect_to_server(
+				url,
+				max_attempts,
+				Some(json_req),
+				|socket| -> Result<MessageHandler::Result> {
+					loop {
+						match message_handler.handle_message(socket) {
+							Ok(msg) =>
+								if let Err(e) = result_in.send(msg.into()) {
+									error!("failed to send channel: {:?} ", e);
+									return Err(RpcClientError::Send(format!("{:?}", e)))
 								},
-								Err(e) => {
-									error!("response message error:{:?}", e);
-								},
-							};
+							Err(e) => return Err(e),
 						}
-						let _ = socket.close(Some(CloseFrame {
-							code: CloseCode::Normal,
-							reason: Default::default(),
-						}));
-					},
-					Err(e) => {
-						error!("failed to connect the server({:?}). error: {:?}", url, e);
-					},
-				};
-				warn!(
-					"attempt to request after {} sec. current attempt {}",
-					5 * current_attempt,
-					current_attempt
-				);
-				sleep(Duration::from_secs((5 * current_attempt) as u64));
-				current_attempt += 1;
-			}
-			error!("max request attempts exceeded");
+					}
+				},
+			);
 		});
 		Ok(())
 	}
+}
+
+fn check_connection(socket: &mut MySocket, request: Option<String>) -> bool {
+	return if let Some(json_req) = request {
+		match socket.write_message(Message::Text(json_req)) {
+			Err(e) => {
+				error!("write msg error:{:?}", e);
+				false
+			},
+			Ok(_) => {
+				// After sending request(subscription), there will be a response(result)
+				match read_until_text_message(socket) {
+					Ok(msg_from_req) => {
+						debug!("response message: {:?}", msg_from_req);
+						true
+					},
+					Err(e) => {
+						error!("response message error:{:?}", e);
+						false
+					},
+				}
+			},
+		}
+	} else {
+		match socket.read_message() {
+			Ok(ping) => {
+				debug!("read ping message:{:?}. Connected successfully.", ping);
+				true
+			},
+			Err(err) => {
+				error!("failed to read ping message. error: {:?}", err);
+				false
+			},
+		}
+	}
+}
+
+fn close_connection(socket: &mut MySocket) {
+	let _ = socket.close(Some(CloseFrame { code: CloseCode::Normal, reason: Default::default() }));
+}
+
+fn connect_to_server<T, F: Fn(&mut MySocket) -> Result<T>>(
+	url: url::Url,
+	max_attempts: u8,
+	subscription_req: Option<String>,
+	handle_message: F,
+) -> Result<T> {
+	let mut current_attempt: u8 = 1;
+	while current_attempt <= max_attempts {
+		match connect_with_config(url.clone(), None, u8::MAX - 1) {
+			Err(e) => {
+				error!("failed to connect the server({:?}). error: {:?}", url, e);
+			},
+			Ok(res) => {
+				let mut socket = res.0;
+				debug!("Connected to the server. Response HTTP code: {}", res.1.status());
+				if check_connection(&mut socket, subscription_req.clone()) {
+					current_attempt = 1; // reset the value once connected successfully
+					match handle_message(&mut socket) {
+						Err(RpcClientError::TungsteniteWebSocket(e)) => {
+							error!("tungstenite error:{:?}", e);
+							// catch tungstenite::Error, then attempt to reconnect server
+							// if reach the maximum attempts, return an error
+							close_connection(&mut socket);
+							if current_attempt == max_attempts {
+								break
+							}
+						},
+						Err(e) => {
+							// catch other error(not tungstenite error), exit function
+							error!("handle message error: {:?}", e);
+							close_connection(&mut socket);
+							return Err(e)
+						},
+						Ok(t) => {
+							close_connection(&mut socket);
+							return Ok(t)
+						},
+					};
+				}
+			},
+		};
+		warn!(
+			"attempt to request after {} sec. current attempt {}",
+			5 * current_attempt,
+			current_attempt
+		);
+		sleep(Duration::from_secs((5 * current_attempt) as u64));
+		current_attempt += 1;
+	}
+	Err(RpcClientError::ConnectionAttemptsExceeded)
 }

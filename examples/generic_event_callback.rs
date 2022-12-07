@@ -53,7 +53,7 @@ fn main() {
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new("ws://127.0.0.1:9944", 100);
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice);

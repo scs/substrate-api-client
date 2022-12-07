@@ -38,7 +38,7 @@ fn main() {
 	let client = WsRpcClient::new("ws://127.0.0.1:9944");
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new("ws://127.0.0.1:9944", 100);
+	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
 
 	let api =
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
@@ -63,7 +63,7 @@ fn main() {
 	let (sender, receiver) = channel();
 	api.subscribe_finalized_heads(sender).unwrap();
 
-	for _ in 0..5 {
+	for _ in 0..10 {
 		let head: Header =
 			receiver.recv().map(|header| serde_json::from_str(&header).unwrap()).unwrap();
 		println!("Got new Block {:?}", head);

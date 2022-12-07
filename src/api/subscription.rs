@@ -61,7 +61,7 @@ where
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Runtime::Index: Decode,
 {
-	pub fn default_with_url(url: &str) -> ApiResult<Self> {
+	pub fn default_with_url(url: url::Url) -> ApiResult<Self> {
 		let client = TungsteniteRpcClient::new(url, 10);
 		Self::new(client)
 	}
