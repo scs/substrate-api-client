@@ -21,7 +21,7 @@ use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetGenericStorageInterface,
+	compose_extrinsic, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetGenericStorage,
 	UncheckedExtrinsicV4, XtStatus,
 };
 

@@ -14,7 +14,7 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{interfaces::generic_storage::GetGenericStorageInterface, ApiResult},
+	api::{interfaces::generic_storage::GetGenericStorage, ApiResult},
 	rpc::json_req,
 	Api, FromHexString, RpcClient,
 };

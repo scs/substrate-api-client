@@ -201,52 +201,6 @@ where
 	}
 }
 
-/// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
-/// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
-where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	Client: RpcClient,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::Hash: FromHexString,
-{
-	fn get_genesis_hash(client: &Client) -> ApiResult<Runtime::Hash> {
-		let jsonreq = json_req::chain_get_genesis_hash();
-		let genesis = client.get_request(jsonreq)?;
-
-		match genesis {
-			Some(g) => Runtime::Hash::from_hex(g).map_err(|e| e.into()),
-			None => Err(ApiClientError::Genesis),
-		}
-	}
-
-	/// Get runtime version from node via websocket query.
-	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
-		let jsonreq = json_req::state_get_runtime_version();
-		let version = client.get_request(jsonreq)?;
-
-		match version {
-			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
-			None => Err(ApiClientError::RuntimeVersion),
-		}
-	}
-
-	/// Get metadata from node via websocket query.
-	fn get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
-		let jsonreq = json_req::state_get_metadata();
-		let meta = client.get_request(jsonreq)?;
-
-		if meta.is_none() {
-			return Err(ApiClientError::MetadataFetch)
-		}
-		let metadata = Vec::from_hex(meta.unwrap())?;
-		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
-	}
-}
-
-/// Substrate node calls via websocket.
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
@@ -307,5 +261,50 @@ where
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		// XtStatus should never be used used but we need to put something
 		self.client.send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
+	}
+}
+
+/// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
+/// If an up-to-date query is necessary, cache should be updated beforehand.
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	Client: RpcClient,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: FrameSystemConfig,
+	Runtime::Hash: FromHexString,
+{
+	fn get_genesis_hash(client: &Client) -> ApiResult<Runtime::Hash> {
+		let jsonreq = json_req::chain_get_genesis_hash();
+		let genesis = client.get_request(jsonreq)?;
+
+		match genesis {
+			Some(g) => Runtime::Hash::from_hex(g).map_err(|e| e.into()),
+			None => Err(ApiClientError::Genesis),
+		}
+	}
+
+	/// Get runtime version from node via websocket query.
+	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
+		let jsonreq = json_req::state_get_runtime_version();
+		let version = client.get_request(jsonreq)?;
+
+		match version {
+			Some(v) => serde_json::from_str(&v).map_err(|e| e.into()),
+			None => Err(ApiClientError::RuntimeVersion),
+		}
+	}
+
+	/// Get metadata from node via websocket query.
+	fn get_metadata(client: &Client) -> ApiResult<RuntimeMetadataPrefixed> {
+		let jsonreq = json_req::state_get_metadata();
+		let meta = client.get_request(jsonreq)?;
+
+		if meta.is_none() {
+			return Err(ApiClientError::MetadataFetch)
+		}
+		let metadata = Vec::from_hex(meta.unwrap())?;
+		RuntimeMetadataPrefixed::decode(&mut metadata.as_slice()).map_err(|e| e.into())
 	}
 }

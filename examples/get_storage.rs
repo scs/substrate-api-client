@@ -18,9 +18,7 @@
 use frame_system::AccountInfo as GenericAccountInfo;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{
-	rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetGenericStorageInterface,
-};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetGenericStorage};
 
 type IndexFor<T> = <T as frame_system::Config>::Index;
 type AccountDataFor<T> = <T as frame_system::Config>::AccountData;

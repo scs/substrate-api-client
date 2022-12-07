@@ -11,9 +11,7 @@
    limitations under the License.
 */
 use crate::{
-	api::{
-		interfaces::generic_storage::GetGenericStorageInterface, Api, ApiClientError, ApiResult,
-	},
+	api::{interfaces::generic_storage::GetGenericStorage, Api, ApiClientError, ApiResult},
 	rpc::{json_req, RpcClient},
 	ExtrinsicParams,
 };
@@ -23,7 +21,7 @@ use sp_rpc::number::NumberOrHex;
 use sp_runtime::MultiSignature;
 
 /// Interface to common calls of the substrate balances pallet.
-pub trait GetBalanceInterface<Hash> {
+pub trait GetBalance<Hash> {
 	type Balance;
 
 	fn get_fee_details(
@@ -41,7 +39,7 @@ pub trait GetBalanceInterface<Hash> {
 	fn get_existential_deposit(&self) -> ApiResult<Self::Balance>;
 }
 
-impl<Signer, Client, Params, Runtime> GetBalanceInterface<Runtime::Hash>
+impl<Signer, Client, Params, Runtime> GetBalance<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,

@@ -20,7 +20,9 @@ use kitchensink_runtime::{Block, Header, Runtime};
 use sp_core::sr25519;
 use sp_runtime::generic::SignedBlock as SignedBlockG;
 use std::sync::mpsc::channel;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetBlock, GetHeader};
+use substrate_api_client::{
+	rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetBlock, GetHeader, NodeSubscription,
+};
 
 type SignedBlock = SignedBlockG<Block>;
 

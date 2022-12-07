@@ -26,7 +26,9 @@ use std::sync::mpsc::channel;
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use kitchensink_runtime::RuntimeEvent;
 
-use substrate_api_client::{rpc::WsRpcClient, utils::FromHexString, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{
+	rpc::WsRpcClient, utils::FromHexString, Api, AssetTipExtrinsicParams, NodeSubscription,
+};
 
 fn main() {
 	env_logger::init();

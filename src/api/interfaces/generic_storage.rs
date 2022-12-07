@@ -21,7 +21,7 @@ use sp_core::{storage::StorageKey, Pair};
 use sp_runtime::MultiSignature;
 
 /// Generic interface to substrate storage.
-pub trait GetGenericStorageInterface<Hash> {
+pub trait GetGenericStorage<Hash> {
 	fn get_storage_value<V: Decode>(
 		&self,
 		storage_prefix: &'static str,
@@ -100,7 +100,7 @@ pub trait GetGenericStorageInterface<Hash> {
 		-> ApiResult<C>;
 }
 
-impl<Signer, Client, Params, Runtime> GetGenericStorageInterface<Runtime::Hash>
+impl<Signer, Client, Params, Runtime> GetGenericStorage<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,

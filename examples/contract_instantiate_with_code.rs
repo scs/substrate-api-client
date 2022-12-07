@@ -20,7 +20,8 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use std::sync::mpsc::channel;
 use substrate_api_client::{
-	rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::WsRpcClient, AccountId, Api, NodeSubscription, PlainTipExtrinsicParams, StaticEvent,
+	XtStatus,
 };
 
 #[allow(unused)]
