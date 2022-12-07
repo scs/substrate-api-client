@@ -35,10 +35,9 @@ pub use sp_std::prelude::*;
 use crate::{
 	api::interfaces::frame_system::GetAccountInformation,
 	rpc::{json_req, RpcClient},
-	FrameSystemConfig,
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
-use ac_primitives::{BalancesConfig, ExtrinsicParams};
+use ac_primitives::{BalancesConfig, ExtrinsicParams, FrameSystemConfig};
 use codec::Decode;
 use core::{convert::TryFrom, str::FromStr};
 use log::{debug, info};
@@ -112,7 +111,6 @@ where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
 	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	signer: Option<Signer>,
@@ -127,7 +125,6 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
-	Runtime::AccountId: From<Signer::Public>,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
@@ -215,7 +212,6 @@ where
 	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::AccountId: From<Signer::Public>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
 {
@@ -260,7 +256,6 @@ where
 	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::AccountId: From<Signer::Public>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
 {

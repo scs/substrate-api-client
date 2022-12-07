@@ -7,7 +7,9 @@ use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 #[cfg(feature = "staking-xt")]
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
+use substrate_api_client::{
+	rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetGenericStorageInterface, XtStatus,
+};
 
 #[cfg(feature = "staking-xt")]
 fn main() {

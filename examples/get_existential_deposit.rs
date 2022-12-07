@@ -17,7 +17,7 @@ limitations under the License.
 
 use kitchensink_runtime::Runtime;
 use sp_runtime::app_crypto::sp_core::sr25519;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetBalanceInterface};
 
 fn main() {
 	env_logger::init();

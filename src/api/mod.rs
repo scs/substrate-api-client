@@ -16,7 +16,10 @@
 */
 
 pub use crate::{
-	api::error::{ApiResult, Error as ApiClientError},
+	api::{
+		error::{ApiResult, Error as ApiClientError},
+		interfaces::*,
+	},
 	utils::FromHexString,
 };
 pub use ac_primitives::FeeDetails;

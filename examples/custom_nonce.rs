@@ -21,7 +21,7 @@ use kitchensink_runtime::{BalancesCall, Header, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams,
+	compose_extrinsic_offline, rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetHeader,
 	UncheckedExtrinsicV4, XtStatus,
 };
 

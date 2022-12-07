@@ -20,7 +20,7 @@ use kitchensink_runtime::{Block, Header, Runtime};
 use sp_core::sr25519;
 use sp_runtime::generic::SignedBlock as SignedBlockG;
 use std::sync::mpsc::channel;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetBlock, GetHeader};
 
 type SignedBlock = SignedBlockG<Block>;
 
@@ -33,7 +33,7 @@ fn main() {
 
 	let head = api.get_finalized_head().unwrap().unwrap();
 
-	println!("Genesis block: \n {:?} \n", api.get_block_by_num::<Block>(Some(0)).unwrap());
+	println!("Genesis block: \n {:?} \n", api.get_block_by_num(Some(0)).unwrap());
 
 	println!("Finalized Head:\n {} \n", head);
 
@@ -43,9 +43,9 @@ fn main() {
 	let b: SignedBlock = api.get_signed_block(Some(head)).unwrap().unwrap();
 	println!("Finalized signed block:\n {:?} \n", b);
 
-	println!("Latest Header: \n {:?} \n", api.get_header::<Header>(None).unwrap());
+	println!("Latest Header: \n {:?} \n", api.get_header(None).unwrap());
 
-	println!("Latest block: \n {:?} \n", api.get_block::<Block>(None).unwrap());
+	println!("Latest block: \n {:?} \n", api.get_block(None).unwrap());
 
 	println!("Subscribing to finalized heads");
 	let (sender, receiver) = channel();
