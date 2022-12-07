@@ -25,7 +25,6 @@ use crate::{
 };
 use log::{debug, error, info, warn};
 use serde_json::Value;
-use sp_core::H256 as Hash;
 use std::{
 	fmt::Debug, net::TcpStream, sync::mpsc::Sender as ThreadOut, thread, thread::sleep,
 	time::Duration,
@@ -68,7 +67,7 @@ impl TungsteniteRpcClient {
 		let mut socket: MySocket;
 
 		while current_attempt <= self.max_attempts {
-			match connect_with_config(url.clone(), None, u8::MAX) {
+			match connect_with_config(url.clone(), None, u8::MAX - 1) {
 				Ok(res) => {
 					socket = res.0;
 					let response = res.1;
@@ -140,11 +139,11 @@ impl RpcClientTrait for TungsteniteRpcClient {
 		// self.direct_rpc_request(jsonreq.to_string(), on_get_request_msg)
 	}
 
-	fn send_extrinsic(
+	fn send_extrinsic<Hash: FromHexString>(
 		&self,
 		xthex_prefixed: String,
 		exit_on: XtStatus,
-	) -> Result<Option<sp_core::H256>> {
+	) -> Result<Option<Hash>> {
 		// Todo: Make all variants return a H256: #175.
 
 		let jsonreq = match exit_on {
@@ -254,7 +253,7 @@ impl TungsteniteRpcClient {
 			let mut socket: MySocket;
 
 			while current_attempt <= max_attempts {
-				match connect_with_config(url.clone(), None, u8::MAX) {
+				match connect_with_config(url.clone(), None, u8::MAX - 1) {
 					Ok(res) => {
 						socket = res.0;
 						let response = res.1;
