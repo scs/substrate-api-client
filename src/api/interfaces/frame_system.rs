@@ -11,16 +11,16 @@
    limitations under the License.
 */
 
-use crate::api::ApiResult;
+use crate::{api::ApiResult, rpc::json_req, Api, RpcClient};
+use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig};
+use log::*;
 use sp_runtime::generic::SignedBlock;
 
-pub type AccountInfoFor<Runtime> = frame_system::AccountInfo<
-	<Runtime as frame_system::Config>::Index,
-	<Runtime as frame_system::Config>::AccountData,
->;
+pub type AccountInfoFor<T> =
+	AccountInfo<<T as FrameSystemConfig>::Index, <T as FrameSystemConfig>::AccountData>;
 
 /// Interface to common frame system pallet information.
-pub trait FrameSystemInterface<Runtime: frame_system::Config> {
+pub trait GetFrameSystemInterface<Runtime: FrameSystemConfig> {
 	type Block;
 
 	fn get_account_info(
@@ -62,4 +62,89 @@ pub trait FrameSystemInterface<Runtime: frame_system::Config> {
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> ApiResult<Option<SignedBlock<Self::Block>>>;
+}
+
+impl<Signer, Client, Params, Runtime> GetFrameSystemInterface<Runtime>
+	for Api<Signer, Client, Params, Runtime>
+where
+	Client: RpcClient,
+	Runtime: FrameSystemConfig,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+{
+	type Block = Runtime::Block;
+
+	fn get_account_info(
+		&self,
+		address: &Runtime::AccountId,
+	) -> ApiResult<Option<AccountInfoFor<Runtime>>> {
+		let storagekey: sp_core::storage::StorageKey = self
+			.metadata
+			.storage_map_key::<Runtime::AccountId>("System", "Account", address.clone())?;
+
+		info!("storage key is: 0x{}", hex::encode(&storagekey));
+		self.get_storage_by_key_hash(storagekey, None)
+	}
+
+	fn get_account_data(
+		&self,
+		address: &Runtime::AccountId,
+	) -> ApiResult<Option<Runtime::AccountData>> {
+		self.get_account_info(address).map(|info| info.map(|i| i.data))
+	}
+
+	fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
+		let h = self.get_request(json_req::chain_get_finalized_head())?;
+		match h {
+			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
+			None => Ok(None),
+		}
+	}
+
+	fn get_header(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Runtime::Header>> {
+		let h = self.get_request(json_req::chain_get_header(hash))?;
+		match h {
+			Some(hash) => Ok(Some(serde_json::from_str(&hash)?)),
+			None => Ok(None),
+		}
+	}
+
+	fn get_block_hash(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<Runtime::Hash>> {
+		let h = self.get_request(json_req::chain_get_block_hash(number))?;
+		match h {
+			Some(hash) => Ok(Some(Runtime::Hash::from_hex(hash)?)),
+			None => Ok(None),
+		}
+	}
+
+	fn get_block(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Self::Block>> {
+		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
+	}
+
+	fn get_block_by_num(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<Self::Block>> {
+		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
+	}
+
+	fn get_signed_block(
+		&self,
+		hash: Option<Runtime::Hash>,
+	) -> ApiResult<Option<SignedBlock<Self::Block>>> {
+		let b = self.get_request(json_req::chain_get_block(hash))?;
+		match b {
+			Some(block) => Ok(Some(serde_json::from_str(&block)?)),
+			None => Ok(None),
+		}
+	}
+
+	fn get_signed_block_by_num(
+		&self,
+		number: Option<Runtime::BlockNumber>,
+	) -> ApiResult<Option<SignedBlock<Self::Block>>> {
+		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
+	}
 }
