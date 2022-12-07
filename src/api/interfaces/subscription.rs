@@ -24,8 +24,6 @@ pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
-use sp_core::Pair;
-use sp_runtime::MultiSignature;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
 pub trait NodeSubscription {
@@ -43,8 +41,6 @@ pub trait NodeSubscription {
 
 impl<Signer, Client, Params, Runtime> NodeSubscription for Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
 	Client: Subscriber,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,

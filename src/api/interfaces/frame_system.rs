@@ -102,8 +102,6 @@ where
 impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,

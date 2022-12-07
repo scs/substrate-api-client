@@ -17,8 +17,7 @@ use crate::{
 use ac_primitives::FrameSystemConfig;
 use codec::{Decode, Encode};
 use log::*;
-use sp_core::{storage::StorageKey, Pair};
-use sp_runtime::MultiSignature;
+use sp_core::storage::StorageKey;
 
 /// Generic interface to substrate storage.
 pub trait GetGenericStorage<Hash> {
@@ -103,8 +102,6 @@ pub trait GetGenericStorage<Hash> {
 impl<Signer, Client, Params, Runtime> GetGenericStorage<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
