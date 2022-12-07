@@ -71,15 +71,11 @@ type BalanceOf<T> = <<T as ContractsConfig>::Currency as CurrencyTrait<
 #[cfg(feature = "std")]
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Signer: Pair,
 	Runtime: ContractsConfig + BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Index: Decode,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::AccountId: From<Signer::Public>,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,
 	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
 {

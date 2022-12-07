@@ -22,7 +22,7 @@ use crate::{
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
-use ac_primitives::{BalancesConfig, ExtrinsicParams};
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
@@ -33,9 +33,8 @@ use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
 where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);
@@ -45,13 +44,9 @@ where
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSigner: From<Signer::Public>,
 	Client: RpcClientTrait + Subscriber,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime: FrameSystemConfig,
 {
 	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");

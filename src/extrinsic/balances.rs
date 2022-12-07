@@ -44,15 +44,11 @@ pub type BalanceSetBalanceXt<SignedExtra, Balance> =
 #[cfg(feature = "std")]
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Signer: Pair,
 	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Index: Decode,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::AccountId: From<Signer::Public>,
 	Compact<Runtime::Balance>: Encode,
 {
 	pub fn balance_transfer(

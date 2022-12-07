@@ -20,7 +20,9 @@
 use super::common::Batch;
 use crate::{rpc::RpcClient, Api, FromHexString};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{BalancesConfig, CallIndex, ExtrinsicParams, UncheckedExtrinsicV4};
+use ac_primitives::{
+	BalancesConfig, CallIndex, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4,
+};
 use codec::{Decode, Encode};
 use core::str::FromStr;
 use sp_core::Pair;
@@ -37,15 +39,11 @@ pub type UtilityBatchXt<Call, SignedExtra> =
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
+	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Index: Decode,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Signer: Pair,
+	Runtime::AccountId: From<Signer::Public>,
 {
 	pub fn batch<Call: Encode + Clone>(
 		&self,

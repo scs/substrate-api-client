@@ -90,15 +90,11 @@ pub type StakingSetValidatorCountXt<SignedExtra> =
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSigner: From<Signer::Public>,
-	MultiSignature: From<Signer::Signature>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Signer: Pair,
 	Runtime: BalancesConfig + StakingConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
-	Runtime::Index: Decode,
+	Runtime::AccountId: From<Signer::Public>,
 	Compact<Runtime::CurrencyBalance>: Encode,
 {
 	/// Bond `value` amount to `controller`

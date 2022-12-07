@@ -183,7 +183,7 @@ where
 	Signer: Pair,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
+	Runtime: FrameSystemConfig,
 	Runtime::AccountId: From<Signer::Public>,
 {
 	/// Get the public part of the api signer account.
@@ -206,9 +206,8 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	fn get_genesis_hash(client: &Client) -> ApiResult<Runtime::Hash> {
 		let jsonreq = json_req::chain_get_genesis_hash();
@@ -249,11 +248,8 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: From<u32> + Decode,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr + DeserializeOwned,
-	Runtime::AccountData: Decode,
 {
 	pub fn new(client: Client) -> ApiResult<Self> {
 		let genesis_hash = Self::get_genesis_hash(&client)?;
@@ -287,21 +283,6 @@ where
 		self.metadata = metadata;
 		self.runtime_version = runtime_version;
 		Ok(())
-	}
-
-	pub fn get_constant<C: Decode>(
-		&self,
-		pallet: &'static str,
-		constant: &'static str,
-	) -> ApiResult<C> {
-		let c = self
-			.metadata
-			.pallet(pallet)?
-			.constants
-			.get(constant)
-			.ok_or(MetadataError::ConstantNotFound(constant))?;
-
-		Ok(Decode::decode(&mut c.value.as_slice())?)
 	}
 
 	#[cfg(feature = "ws-client")]
