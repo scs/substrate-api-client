@@ -193,29 +193,6 @@ where
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	Client: RpcClient,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
-{
-	/// Get the public part of the api signer account.
-	pub fn signer_account(&self) -> Option<Runtime::AccountId> {
-		let pair = self.signer.as_ref()?;
-		Some(pair.public().into())
-	}
-
-	/// Get nonce of self signer account.
-	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
-		let account = self.signer_account().ok_or(ApiClientError::NoSigner)?;
-		self.get_account_info(&account)
-			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
-	}
-}
-
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
-where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
@@ -265,6 +242,29 @@ where
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		// XtStatus should never be used used but we need to put something
 		self.client.send_extrinsic(xthex_prefixed, XtStatus::Broadcast)
+	}
+}
+
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+where
+	Signer: Pair,
+	MultiSignature: From<Signer::Signature>,
+	Client: RpcClient,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: FrameSystemConfig,
+	Runtime::AccountId: From<Signer::Public>,
+{
+	/// Get the public part of the api signer account.
+	pub fn signer_account(&self) -> Option<Runtime::AccountId> {
+		let pair = self.signer.as_ref()?;
+		Some(pair.public().into())
+	}
+
+	/// Get nonce of self signer account.
+	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
+		let account = self.signer_account().ok_or(ApiClientError::NoSigner)?;
+		self.get_account_info(&account)
+			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
 }
 
