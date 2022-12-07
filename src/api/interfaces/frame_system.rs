@@ -14,7 +14,7 @@
 use crate::{api::ApiResult, rpc::json_req, Api, RpcClient};
 use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig};
 use log::*;
-use sp_runtime::generic::SignedBlock;
+use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType};
 
 pub type AccountInfoFor<T> =
 	AccountInfo<<T as FrameSystemConfig>::Index, <T as FrameSystemConfig>::AccountData>;
@@ -68,10 +68,10 @@ impl<Signer, Client, Params, Runtime> GetFrameSystemInterface<Runtime>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
-	Runtime: FrameSystemConfig,
+	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	type Block = Runtime::Block;
+	type Block = Runtime::RuntimeBlock;
 
 	fn get_account_info(
 		&self,

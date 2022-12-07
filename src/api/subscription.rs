@@ -23,7 +23,6 @@ use crate::{
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::{BalancesConfig, ExtrinsicParams};
-use codec::Decode;
 use core::str::FromStr;
 use log::*;
 use sp_core::Pair;
@@ -37,7 +36,6 @@ where
 	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
-	Runtime::Index: Decode,
 {
 	pub fn default_with_url(url: &str) -> ApiResult<Self> {
 		let client = WsRpcClient::new(url);

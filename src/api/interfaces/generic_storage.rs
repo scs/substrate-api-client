@@ -10,7 +10,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-use crate::{api::ApiResult, rpc::json_req, Api, BalancesConfig, ReadProof, RpcClient};
+use crate::{
+	api::ApiResult, rpc::json_req, Api, BalancesConfig, ExtrinsicParams, ReadProof, RpcClient,
+};
 use codec::{Decode, Encode};
 use log::*;
 use sp_core::storage::StorageKey;
@@ -90,6 +92,12 @@ pub trait GetGenericStorageInterface<Hash> {
 	) -> ApiResult<Option<ReadProof<Hash>>>;
 
 	fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> ApiResult<Option<Vec<String>>>;
+
+	pub fn get_constant<C: Decode>(
+		&self,
+		pallet: &'static str,
+		constant: &'static str,
+	) -> ApiResult<C>;
 }
 
 impl<Signer, Client, Params, Runtime> GetGenericStorageInterface<Runtime::Hash>
@@ -241,5 +249,20 @@ where
 			Some(keys) => Ok(Some(serde_json::from_str(&keys)?)),
 			None => Ok(None),
 		}
+	}
+
+	fn get_constant<C: Decode>(
+		&self,
+		pallet: &'static str,
+		constant: &'static str,
+	) -> ApiResult<C> {
+		let c = self
+			.metadata
+			.pallet(pallet)?
+			.constants
+			.get(constant)
+			.ok_or(MetadataError::ConstantNotFound(constant))?;
+
+		Ok(Decode::decode(&mut c.value.as_slice())?)
 	}
 }
