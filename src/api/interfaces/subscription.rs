@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, FromHexString},
-	rpc::{json_req, ws_client::client::WsRpcClient, RpcClient as RpcClientTrait, Subscriber},
+	rpc::{json_req, Subscriber},
 	utils,
 };
 pub use ac_node_api::{events::EventDetails, StaticEvent};
@@ -28,49 +28,48 @@ use sp_core::Pair;
 use sp_runtime::MultiSignature;
 use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
-impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
-where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::Hash: FromHexString,
-{
-	pub fn default_with_url(url: &str) -> ApiResult<Self> {
-		let client = WsRpcClient::new(url);
-		Self::new(client)
-	}
+pub trait NodeSubscription {
+	fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()>;
+
+	fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()>;
+
+	fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev>;
+
+	fn wait_for_event_details<Ev: StaticEvent>(
+		&self,
+		receiver: &Receiver<String>,
+	) -> ApiResult<EventDetails>;
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> NodeSubscription for Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
-	Client: RpcClientTrait + Subscriber,
+	Client: Subscriber,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 {
-	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+	fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
 		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+	fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
 		debug!("subscribing to finalized heads");
 		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
 		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
+	fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver)?;
 		maybe_event_details
 			.as_event()?
 			.ok_or(Error::Other("Could not find the specific event".into()))
 	}
 
-	pub fn wait_for_event_details<Ev: StaticEvent>(
+	fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
 		receiver: &Receiver<String>,
 	) -> ApiResult<EventDetails> {

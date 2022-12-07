@@ -11,8 +11,9 @@
    limitations under the License.
 */
 
-pub use self::{frame_system::*, generic_storage::*, pallet_balances::*};
+pub use self::{frame_system::*, generic_storage::*, pallet_balances::*, subscription::*};
 
 pub mod frame_system;
 pub mod generic_storage;
 pub mod pallet_balances;
+pub mod subscription;

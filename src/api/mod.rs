@@ -41,11 +41,6 @@ pub mod api_client;
 pub mod error;
 pub mod interfaces;
 
-#[cfg(feature = "ws-client")]
-pub mod subscription;
-#[cfg(feature = "ws-client")]
-pub use subscription::*;
-
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum XtStatus {
 	Unknown = 0,
