@@ -33,7 +33,7 @@ pub use sp_runtime::{
 pub use sp_std::prelude::*;
 
 use crate::{
-	api::interfaces::frame_system::GetFrameSystemInterface,
+	api::interfaces::frame_system::GetAccountInformation,
 	rpc::{json_req, RpcClient},
 	FrameSystemConfig,
 };
@@ -185,9 +185,6 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::AccountId: From<Signer::Public>,
-	Runtime::RuntimeBlock: DeserializeOwned,
-	Runtime::Hash: FromHexString,
-	Runtime::Header: DeserializeOwned,
 {
 	/// Get the public part of the api signer account.
 	pub fn signer_account(&self) -> Option<Runtime::AccountId> {
