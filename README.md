@@ -83,6 +83,7 @@ We also thank the teams at
 
 _In alphabetical order_
 
+- [Ajuna Network](https://github.com/ajuna-network)
 - [Encointer](https://github.com/encointer)
 - [Integritee Network](https://github.com/integritee-network)
 - [Litentry](https://github.com/litentry)
