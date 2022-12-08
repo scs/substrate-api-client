@@ -26,17 +26,14 @@ use serde_json::Value;
 use std::{
 	fmt::Debug,
 	net::TcpStream,
-	sync::mpsc::{channel, Receiver as MpscReceiver, Sender as ThreadOut},
+	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 	thread::sleep,
 	time::Duration,
 };
 use tungstenite::{
-	client::connect_with_config,
-	handshake::client::Response,
-	protocol::{frame::coding::CloseCode, CloseFrame},
-	stream::MaybeTlsStream,
-	Message, WebSocket,
+	client::connect_with_config, handshake::client::Response, stream::MaybeTlsStream, Message,
+	WebSocket,
 };
 use url::Url;
 
@@ -78,8 +75,8 @@ impl Subscribe for TungsteniteRpcClient {
 	) -> Result<Self::Subscription<Notification>> {
 		let json_req = to_json_req(sub, params)?;
 		let (result_in, receiver) = channel();
-		let socket = self.start_rpc_client_thread(json_req, result_in)?;
-		let subscription = TungsteniteSubscriptionWrapper::new(socket, receiver);
+		self.start_rpc_client_thread(json_req, result_in)?;
+		let subscription = TungsteniteSubscriptionWrapper::new(receiver);
 		Ok(subscription)
 	}
 }
@@ -102,39 +99,17 @@ impl TungsteniteRpcClient {
 
 	fn start_rpc_client_thread(
 		&self,
-		json_req: &str,
+		json_req: String,
 		result_in: ThreadOut<String>,
-	) -> Result<MySocket> {
-		let (mut socket, response) = attempt_connection_until(&self.url, self.max_attempts)?;
-		debug!("Connected to the server. Response HTTP code: {}", response.status());
-
-		// Subscribe to server
-		socket.write_message(Message::Text(json_req))?;
-
-		thread::spawn(move || -> Result<()> {
-			loop {
-				let msg = read_until_text_message(&mut socket)?;
-				send_message_to_client(&result_in, msg.as_str())?;
-			}
-		});
-
-		Ok(socket)
-	}
-
-	fn subscribe_with_automatic_reconnection(
-		&self,
-		json_req: &str,
-		result_in: &ThreadOut<String>,
-	) -> Result<MySocket> {
-		thread::spawn(move || -> Result<()> {
+	) -> Result<()> {
+		let url = self.url.clone();
+		let max_attempts = self.max_attempts;
+		thread::spawn(move || {
 			let mut current_attempt = 0;
-			while current_attempt <= self.max_attempt {
-				if let Err(error) = subscribe_to_server_without_thread(
-					&self.url,
-					self.max_attempts,
-					json_req,
-					result_in,
-				) {
+			while current_attempt <= max_attempts {
+				if let Err(error) =
+					subscribe_to_server(&url, max_attempts, json_req.clone(), result_in.clone())
+				{
 					if !do_reconnect(&error) {
 						break
 					}
@@ -146,53 +121,34 @@ impl TungsteniteRpcClient {
 	}
 }
 
-fn subscribe_to_server_without_thread(
+fn subscribe_to_server(
 	url: &Url,
 	max_attempts: u8,
-	json_req: &str,
+	json_req: String,
 	result_in: ThreadOut<String>,
 ) -> Result<()> {
 	let (mut socket, response) = attempt_connection_until(url, max_attempts)?;
 	debug!("Connected to the server. Response HTTP code: {}", response.status());
 
 	// Subscribe to server
-	socket.write_message(Message::Text(json_req))?;
+	socket.write_message(Message::Text(json_req.to_string()))?;
 
 	loop {
 		let msg = read_until_text_message(&mut socket)?;
-		send_message_to_client(&result_in, msg.as_str())?;
+		send_message_to_client(result_in.clone(), msg.as_str())?;
 	}
 }
 
 pub fn do_reconnect(error: &RpcClientError) -> bool {
 	matches!(
 		error,
-		RpcClientError::Serde | RpcClientError::ConnectionClosed | RpcClientError::Client(_)
+		RpcClientError::Serde(_) | RpcClientError::ConnectionClosed | RpcClientError::Client(_)
 	)
 }
 
-pub enum Error {
-	#[error("Serde json error: {0}")]
-	Serde(#[from] serde_json::error::Error),
-	#[error("mpsc send Error: {0}")]
-	Send(String),
-	#[error("Could not convert to valid Url: {0}")]
-	Url(#[from] url::ParseError),
-	#[error("ChannelReceiveError, sender is disconnected: {0}")]
-	ChannelDisconnected(#[from] sp_std::sync::mpsc::RecvError),
-	#[error("Failure during thread creation: {0}")]
-	Io(#[from] std::io::Error),
-	#[error("Exceeded maximum amount of connections")]
-	ConnectionAttemptsExceeded,
-	#[error("Websocket Connection was closed unexpectedly")]
-	ConnectionClosed,
-	#[error(transparent)]
-	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
-}
-
-fn send_message_to_client(result_in: &ThreadOut<String>, message: &str) -> Result<()> {
-	debug!("got on_subscription_msg {}", msg);
-	let value: Value = serde_json::from_str(msg.as_str())?;
+fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result<()> {
+	debug!("got on_subscription_msg {}", message);
+	let value: Value = serde_json::from_str(message)?;
 
 	match value["id"].as_str() {
 		Some(_idstr) => {
@@ -203,6 +159,7 @@ fn send_message_to_client(result_in: &ThreadOut<String>, message: &str) -> Resul
 			result_in.send(message.into())?;
 		},
 	};
+	Ok(())
 }
 
 fn attempt_connection_until(url: &Url, max_attempts: u8) -> Result<(MySocket, Response)> {

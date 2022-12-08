@@ -15,21 +15,20 @@
 
 */
 
-use crate::rpc::{tungstenite_client::client::MySocket, HandleSubscription, Result};
+use crate::rpc::{HandleSubscription, Result};
 use core::marker::PhantomData;
 use serde::de::DeserializeOwned;
-use std::{net::TcpStream, sync::mpsc::Receiver};
+use std::sync::mpsc::Receiver;
 
 #[derive(Debug)]
 pub struct TungsteniteSubscriptionWrapper<Notification> {
-	socket: MySocket,
 	receiver: Receiver<String>,
 	_phantom: PhantomData<Notification>,
 }
 
 impl<Notification> TungsteniteSubscriptionWrapper<Notification> {
-	pub fn new(socket: MySocket, receiver: Receiver<String>) -> Self {
-		Self { socket, receiver, _phantom: Default::default() }
+	pub fn new(receiver: Receiver<String>) -> Self {
+		Self { receiver, _phantom: Default::default() }
 	}
 }
 
@@ -40,19 +39,16 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 		let notification = match self.receiver.recv() {
 			Ok(notif) => notif,
 			// Sender was disconnected, therefore no further messages are to be expected.
-			Err(e) => return None,
+			Err(_e) => return None,
 		};
 		Some(serde_json::from_str(&notification).map_err(|e| e.into()))
 	}
 
-	fn unsubscribe(mut self) -> Result<()> {
-		self.socket.close(None);
+	fn unsubscribe(self) -> Result<()> {
+		// TODO: Nicer unsubscription.
+		// We close ungracefully: Simply drop the receiver. This will turn
+		// into an error on the sender side, terminating the websocket polling
+		// loop.
 		Ok(())
-	}
-}
-
-impl<Notification> Drop for TungsteniteSubscriptionWrapper<Notification> {
-	fn drop(&mut self) {
-		self.socket.close(None);
 	}
 }

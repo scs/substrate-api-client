@@ -17,7 +17,7 @@
 
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
-	rpc::{Error as RpcClientError, HandleSubscription, Request, Subscribe},
+	rpc::{HandleSubscription, Request, Subscribe},
 	utils, FromHexString, XtStatus,
 };
 use ac_compose_macros::rpc_params;
@@ -155,7 +155,7 @@ where
 				}
 			}
 		}
-		Err(Error::RpcClient(RpcClientError::NoStream))
+		Err(Error::NoStream)
 	}
 }
 
