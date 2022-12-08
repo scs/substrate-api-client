@@ -15,174 +15,98 @@
 
 */
 
+use super::{subscription::WsSubscriptionWrapper, HandleMessage};
 use crate::{
-	api::{FromHexString, XtStatus},
 	rpc::{
-		json_req,
-		ws_client::{
-			GetRequestHandler, RpcClient, SubmitAndWatchHandler, SubmitOnlyHandler,
-			SubscriptionHandler,
-		},
-		Result, RpcClient as RpcClientTrait, Subscriber,
+		to_json_req,
+		ws_client::{RequestHandler, RpcClient, SubscriptionHandler},
+		Request, Result, Subscribe,
 	},
 	ws_client::MessageContext,
-	HandleMessage,
+	RpcParams,
 };
-use log::info;
-use serde_json::Value;
+use serde::de::DeserializeOwned;
 use std::{
 	fmt::Debug,
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 };
-use ws::{connect, Result as WsResult};
+use url::Url;
+use ws::{connect, Result as WsResult, Sender as WsSender};
 
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {
-	url: String,
+	url: Url,
 }
 
 impl WsRpcClient {
-	pub fn new(url: &str) -> WsRpcClient {
-		WsRpcClient { url: url.to_string() }
+	pub fn new(url: &str) -> Result<Self> {
+		Ok(Self { url: Url::parse(url)? })
+	}
+
+	pub fn with_default_url() -> Self {
+		Self::new("ws://127.0.0.1:9944").unwrap()
 	}
 }
 
-impl RpcClientTrait for WsRpcClient {
-	fn get_request(&self, jsonreq: Value) -> Result<Option<String>> {
-		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())?
-	}
-
-	fn send_extrinsic<Hash: FromHexString>(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> Result<Option<Hash>> {
-		// Todo: Make all variants return a H256: #175.
-
-		let jsonreq = match exit_on {
-			XtStatus::SubmitOnly => json_req::author_submit_extrinsic(&xthex_prefixed).to_string(),
-			_ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
-		};
-
-		let maybe_response =
-			self.direct_rpc_request(jsonreq, SubmitAndWatchHandler::new(exit_on))??;
-		info!("Got response {:?} while waiting for {:?}", maybe_response, exit_on);
-		match maybe_response {
-			Some(response) => Ok(Some(Hash::from_hex(response)?)),
-			None => Ok(None),
-		}
+impl Request for WsRpcClient {
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+		let json_req = to_json_req(method, params)?;
+		let response = self.direct_rpc_request(json_req, RequestHandler::default())??;
+		let deserialized_value: R = serde_json::from_str(&response)?;
+		Ok(deserialized_value)
 	}
 }
 
-impl Subscriber for WsRpcClient {
-	fn start_subscriber(
+impl Subscribe for WsRpcClient {
+	type Subscription<Notification> = WsSubscriptionWrapper<Notification> where Notification: DeserializeOwned;
+
+	fn subscribe<Notification: DeserializeOwned>(
 		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_subscriber(json_req, result_in)
+		sub: &str,
+		params: RpcParams,
+		_unsub: &str,
+	) -> Result<Self::Subscription<Notification>> {
+		let json_req = to_json_req(sub, params)?;
+		let (result_in, receiver) = channel();
+		let sender =
+			self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())?;
+		let subscription = WsSubscriptionWrapper::new(sender, receiver);
+		Ok(subscription)
 	}
 }
 
 impl WsRpcClient {
-	pub fn get(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<GetRequestHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, GetRequestHandler::default())
-	}
-
-	pub fn send_extrinsic(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitOnlyHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, SubmitOnlyHandler::default())
-	}
-
-	pub fn send_extrinsic_until_ready(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::Ready),
-		)
-	}
-
-	pub fn send_extrinsic_and_wait_until_broadcast(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::Broadcast),
-		)
-	}
-
-	pub fn send_extrinsic_and_wait_until_in_block(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::InBlock),
-		)
-	}
-
-	pub fn send_extrinsic_and_wait_until_finalized(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::Finalized),
-		)
-	}
-
-	pub fn start_subscriber(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubscriptionHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())
-	}
-
 	fn start_rpc_client_thread<MessageHandler>(
 		&self,
 		jsonreq: String,
 		result_in: ThreadOut<MessageHandler::ThreadMessage>,
 		message_handler: MessageHandler,
-	) -> Result<()>
+	) -> Result<WsSender>
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
 		MessageHandler::Error: Into<ws::Error>,
 		MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 	{
-		let url = self.url.clone();
+		let mut socket = ws::Builder::new().build(move |out| RpcClient {
+			out,
+			request: jsonreq.clone(),
+			result: result_in.clone(),
+			message_handler: message_handler.clone(),
+		})?;
+		socket.connect(self.url.clone())?;
+		let handle = socket.broadcaster();
+
 		let _client =
 			thread::Builder::new()
 				.name("client".to_owned())
 				.spawn(move || -> WsResult<()> {
-					connect(url, |out| RpcClient {
-						out,
-						request: jsonreq.clone(),
-						result: result_in.clone(),
-						message_handler: message_handler.clone(),
-					})
+					socket.run()?;
+					Ok(())
 				})?;
-		Ok(())
+
+		Ok(handle)
 	}
 
 	fn direct_rpc_request<MessageHandler>(

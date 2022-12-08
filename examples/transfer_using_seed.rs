@@ -42,10 +42,10 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice.clone());
@@ -70,8 +70,10 @@ fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
-	let tx_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
-	println!("[+] Transaction got included. Hash: {:?}\n", tx_hash);
+	let block_hash = api
+		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
+	println!("[+] Transaction got included. Hash: {:?}\n", block_hash);
 
 	// Verify that Bob's free Balance increased.
 	let bob_account_data = api.get_account_data(&bob.into()).unwrap().unwrap();

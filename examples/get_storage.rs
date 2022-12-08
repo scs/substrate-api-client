@@ -36,10 +36,10 @@ fn main() {
 	env_logger::init();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 

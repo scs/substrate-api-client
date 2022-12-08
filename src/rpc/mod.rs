@@ -14,9 +14,9 @@
    limitations under the License.
 
 */
+
 #[cfg(feature = "ws-client")]
 pub use ws_client::WsRpcClient;
-
 #[cfg(feature = "ws-client")]
 pub mod ws_client;
 
@@ -27,94 +27,54 @@ pub use tungstenite_client::client::TungsteniteRpcClient;
 pub mod tungstenite_client;
 
 pub mod error;
-pub mod json_req;
 
 pub use error::*;
 
-use crate::api::{FromHexString, XtStatus};
-use log::info;
-use serde_json::Value;
-use std::sync::mpsc::Sender as ThreadOut;
+use ac_primitives::RpcParams;
+use serde::de::DeserializeOwned;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
-pub trait RpcClient {
-	/// Sends a RPC request to the substrate node and returns the optional answer as string.
-	fn get_request(&self, jsonreq: serde_json::Value) -> Result<Option<String>>;
-
-	/// Submits ans watches an extrinsic until requested XtStatus and returns the block hash
-	/// the extrinsic was included, if XtStatus is InBlock or Finalized.
-	fn send_extrinsic<Hash: FromHexString>(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> Result<Option<Hash>>;
+pub trait Request {
+	/// Sends a RPC request to the substrate node and returns the answer as string.
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
-pub trait Subscriber {
-	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()>;
-}
+pub trait Subscribe {
+	type Subscription<Notification>: HandleSubscription<Notification>
+	where
+		Notification: DeserializeOwned;
 
-#[allow(clippy::result_large_err)]
-pub trait HandleMessage {
-	type ThreadMessage;
-	type Error;
-	type Context;
-	type Result;
-
-	fn handle_message(
+	fn subscribe<Notification: DeserializeOwned>(
 		&self,
-		context: &mut Self::Context,
-	) -> core::result::Result<Self::Result, Self::Error>;
+		sub: &str,
+		params: RpcParams,
+		unsub: &str,
+	) -> Result<Self::Subscription<Notification>>;
 }
 
-pub(crate) fn parse_status(msg: &str) -> Result<(XtStatus, Option<String>)> {
-	let value: Value = serde_json::from_str(msg)?;
+/// Trait to use the full functionality of jsonrpseee Subscription type
+/// without actually enforcing it.
+pub trait HandleSubscription<Notification: DeserializeOwned> {
+	/// Returns the next notification from the stream.
+	/// This may return `None` if the subscription has been terminated,
+	/// which may happen if the channel becomes full or is dropped.
+	///
+	/// **Note:** This has an identical signature to the [`StreamExt::next`]
+	/// method (and delegates to that). Import [`StreamExt`] if you'd like
+	/// access to other stream combinator methods.
+	fn next(&mut self) -> Option<Result<Notification>>;
 
-	if value["error"].as_object().is_some() {
-		return Err(into_extrinsic_err(&value))
-	}
-
-	if let Some(obj) = value["params"]["result"].as_object() {
-		if let Some(hash) = obj.get("finalized") {
-			info!("finalized: {:?}", hash);
-			return Ok((XtStatus::Finalized, Some(hash.to_string())))
-		} else if let Some(hash) = obj.get("inBlock") {
-			info!("inBlock: {:?}", hash);
-			return Ok((XtStatus::InBlock, Some(hash.to_string())))
-		} else if let Some(array) = obj.get("broadcast") {
-			info!("broadcast: {:?}", array);
-			return Ok((XtStatus::Broadcast, Some(array.to_string())))
-		}
-	};
-
-	match value["params"]["result"].as_str() {
-		Some("ready") => Ok((XtStatus::Ready, None)),
-		Some("future") => Ok((XtStatus::Future, None)),
-		Some(&_) => Ok((XtStatus::Unknown, None)),
-		None => Ok((XtStatus::Unknown, None)),
-	}
+	/// Unsubscribe and consume the subscription.
+	fn unsubscribe(self) -> Result<()>;
 }
 
-/// Todo: this is the code that was used in `parse_status` Don't we want to just print the
-/// error as is instead of introducing our custom format here?
-fn into_extrinsic_err(resp_with_err: &Value) -> Error {
-	let err_obj = match resp_with_err["error"].as_object() {
-		Some(obj) => obj,
-		None => return Error::NoErrorInformationFound(format!("{:?}", resp_with_err)),
-	};
-
-	let error = err_obj.get("message").map_or_else(|| "", |e| e.as_str().unwrap_or_default());
-	let code = err_obj.get("code").map_or_else(|| -1, |c| c.as_i64().unwrap_or_default());
-	let details = err_obj.get("data").map_or_else(|| "", |d| d.as_str().unwrap_or_default());
-
-	Error::Extrinsic(format!("extrinsic error code {}: {}: {}", code, error, details))
-}
-
-fn result_from_json_response(resp: &str) -> Result<String> {
-	let value: Value = serde_json::from_str(resp)?;
-
-	let resp = value["result"].as_str().ok_or_else(|| into_extrinsic_err(&value))?;
-
-	Ok(resp.to_string())
+pub fn to_json_req(method: &str, params: RpcParams) -> Result<String> {
+	Ok(serde_json::json!({
+		"method": method,
+		"params": params.to_json_value()?,
+		"jsonrpc": "2.0",
+		"id": "1",
+	})
+	.to_string())
 }

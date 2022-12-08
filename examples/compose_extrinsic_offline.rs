@@ -36,11 +36,12 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let from = AccountKeyring::Alice.pair();
+
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
@@ -74,6 +75,9 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
-	let block_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let block_hash = api
+		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.unwrap();
 	println!("[+] Transaction got included in block {:?}", block_hash);
 }

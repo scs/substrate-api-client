@@ -14,7 +14,7 @@
    limitations under the License.
 
 */
-use codec::{FullCodec, MaxEncodedLen};
+use codec::{Codec, EncodeLike, FullCodec, MaxEncodedLen};
 use core::fmt::Debug;
 use scale_info::TypeInfo;
 use sp_runtime::traits::{
@@ -29,9 +29,33 @@ pub trait FrameSystemConfig {
 	type BlockWeights;
 	type BlockLength;
 	type RuntimeOrigin: Clone;
-	type RuntimeCall: Dispatchable<RuntimeOrigin = Self::RuntimeOrigin> + Debug;
-	type Index: MaybeSerializeDeserialize + Debug + Default + AtLeast32Bit + Copy + MaxEncodedLen;
-	type BlockNumber: MaybeSerializeDeserialize
+	type RuntimeCall: Codec
+		+ EncodeLike
+		+ Clone
+		+ Eq
+		+ Debug
+		+ TypeInfo
+		+ Dispatchable<RuntimeOrigin = Self::RuntimeOrigin>
+		+ Debug;
+	type Index: Codec
+		+ EncodeLike
+		+ Clone
+		+ Eq
+		+ Debug
+		+ TypeInfo
+		+ MaybeSerializeDeserialize
+		+ Debug
+		+ Default
+		+ AtLeast32Bit
+		+ Copy
+		+ MaxEncodedLen;
+	type BlockNumber: Codec
+		+ EncodeLike
+		+ Clone
+		+ Eq
+		+ Debug
+		+ TypeInfo
+		+ MaybeSerializeDeserialize
 		+ Debug
 		+ AtLeast32BitUnsigned
 		+ Default
@@ -42,7 +66,13 @@ pub trait FrameSystemConfig {
 		+ MaybeMallocSizeOf
 		+ MaxEncodedLen
 		+ TypeInfo;
-	type Hash: MaybeSerializeDeserialize
+	type Hash: Codec
+		+ EncodeLike
+		+ Clone
+		+ Eq
+		+ Debug
+		+ TypeInfo
+		+ MaybeSerializeDeserialize
 		+ Debug
 		+ SimpleBitOps
 		+ Ord
@@ -55,10 +85,26 @@ pub trait FrameSystemConfig {
 		+ MaybeMallocSizeOf
 		+ MaxEncodedLen;
 	type Hashing: Hash<Output = Self::Hash> + TypeInfo;
-	type AccountId: Member + MaybeSerializeDeserialize + Debug + Ord + MaxEncodedLen;
+	type AccountId: Codec
+		+ EncodeLike
+		+ Clone
+		+ Eq
+		+ Debug
+		+ TypeInfo
+		+ Member
+		+ MaybeSerializeDeserialize
+		+ Debug
+		+ Ord
+		+ MaxEncodedLen;
 	type Lookup: StaticLookup<Target = Self::AccountId>;
-	type Header: traits::Header<Number = Self::BlockNumber, Hash = Self::Hash>;
-	type RuntimeEvent: Member + Debug;
+	type Header: Codec
+		+ EncodeLike
+		+ Clone
+		+ Eq
+		+ Debug
+		+ TypeInfo
+		+ traits::Header<Number = Self::BlockNumber, Hash = Self::Hash>;
+	type RuntimeEvent: Codec + EncodeLike + Clone + Eq + TypeInfo + Member + Debug;
 	type BlockHashCount: Get<Self::BlockNumber>;
 	type DbWeight;
 	type Version;

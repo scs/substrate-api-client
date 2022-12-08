@@ -13,7 +13,7 @@ use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtSta
 fn main() {
 	env_logger::init();
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	let mut exposure: Exposure<AccountId32, u128> = Exposure { total: 0, own: 0, others: vec![] };
@@ -32,7 +32,9 @@ fn main() {
 	}
 	if exposure.total > 0_u128 {
 		let call = api.payout_stakers(idx, account);
-		let result = api.send_extrinsic(call.hex_encode(), XtStatus::InBlock).unwrap();
+		let result = api
+			.submit_and_watch_extrinsic_until(&call.hex_encode(), XtStatus::InBlock)
+			.unwrap();
 		println!("{:?}", result);
 	}
 }

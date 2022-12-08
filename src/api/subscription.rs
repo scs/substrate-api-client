@@ -15,83 +15,105 @@
 
 */
 
-#[cfg(feature = "ws-client")]
-use crate::ws_client::client::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use crate::tungstenite_client::client::TungsteniteRpcClient;
-
 use crate::{
-	api::{error::Error, Api, ApiResult, FromHexString},
-	rpc::{json_req, RpcClient as RpcClientTrait, Subscriber},
-	utils,
+	api::{error::Error, Api, ApiResult, TransactionStatus},
+	rpc::{HandleSubscription, Request, Subscribe},
+	utils, FromHexString, XtStatus,
 };
+use ac_compose_macros::rpc_params;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::{BalancesConfig, ExtrinsicParams};
-use codec::Decode;
 use core::str::FromStr;
 use log::*;
-use sp_core::Pair;
+use serde::de::DeserializeOwned;
+use sp_core::{storage::StorageChangeSet, Pair};
 use sp_rpc::number::NumberOrHex;
 use sp_runtime::MultiSigner;
-use std::sync::mpsc::{Receiver, Sender as ThreadOut};
 
-#[cfg(feature = "ws-client")]
-impl<Signer, Params, Runtime> Api<Signer, WsRpcClient, Params, Runtime>
-where
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
-	Runtime::Index: Decode,
-{
-	pub fn default_with_url(url: &str) -> ApiResult<Self> {
-		let client = WsRpcClient::new(url);
-		Self::new(client)
-	}
-}
-
-#[cfg(feature = "tungstenite-client")]
-impl<Signer, Params, Runtime> Api<Signer, TungsteniteRpcClient, Params, Runtime>
-where
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
-	Runtime::Index: Decode,
-{
-	pub fn default_with_url(url: url::Url) -> ApiResult<Self> {
-		let client = TungsteniteRpcClient::new(url, 10);
-		Self::new(client)
-	}
-}
+pub type TransactionSubscriptionFor<Client, Hash> =
+	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
 	MultiSigner: From<Signer::Public>,
-	Client: RpcClientTrait + Subscriber,
+	Client: Subscribe + Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: BalancesConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::Header: DeserializeOwned,
 {
-	pub fn subscribe_events(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+	/// Submit an extrinsic an return a websocket Subscription to watch the
+	/// extrinsic progress.
+	pub fn submit_and_watch_extrinsic(
+		&self,
+		xthex_prefixed: &str,
+	) -> ApiResult<TransactionSubscriptionFor<Client, Runtime::Hash>> {
+		self.client()
+			.subscribe(
+				"author_submitAndWatchExtrinsic",
+				rpc_params![xthex_prefixed],
+				"author_unsubmitAndWatchExtrinsic",
+			)
+			.map_err(|e| e.into())
+	}
+
+	/// Submit an extrinsic and watch in until the desired status is reached,
+	/// if no error is encountered previously. This method is blocking.
+	pub fn submit_and_watch_extrinsic_until(
+		&self,
+		xthex_prefixed: &str,
+		watch_until: XtStatus,
+	) -> ApiResult<Option<Runtime::Hash>> {
+		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
+			self.submit_and_watch_extrinsic(xthex_prefixed)?;
+		while let Some(transaction_status) = subscription.next() {
+			let transaction_status = transaction_status?;
+			if transaction_status.is_supported() {
+				if transaction_status.as_u8() >= watch_until as u8 {
+					subscription.unsubscribe()?;
+					return Ok(return_block_hash_if_available(transaction_status))
+				}
+			} else {
+				subscription.unsubscribe()?;
+				let error = Error::Extrinsic(format!(
+					"Unsupported transaction status: {:?}, stopping watch process.",
+					transaction_status
+				));
+				return Err(error)
+			}
+		}
+		Err(Error::NoStream)
+	}
+
+	pub fn subscribe_events(
+		&self,
+	) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
-		let jsonreq = json_req::state_subscribe_storage(vec![key]).to_string();
-		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
+		self.client()
+			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads(&self, sender: ThreadOut<String>) -> ApiResult<()> {
+	pub fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Runtime::Header>> {
 		debug!("subscribing to finalized heads");
-		let jsonreq = json_req::chain_subscribe_finalized_heads().to_string();
-		self.client().start_subscriber(jsonreq, sender).map_err(|e| e.into())
+		self.client()
+			.subscribe(
+				"chain_subscribeFinalizedHeads",
+				rpc_params![],
+				"chain_unsubscribeFinalizedHeads",
+			)
+			.map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<Ev: StaticEvent>(&self, receiver: &Receiver<String>) -> ApiResult<Ev> {
-		let maybe_event_details = self.wait_for_event_details::<Ev>(receiver)?;
+	pub fn wait_for_event<Ev: StaticEvent>(
+		&self,
+		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
+	) -> ApiResult<Ev> {
+		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
 			.as_event()?
 			.ok_or(Error::Other("Could not find the specific event".into()))
@@ -99,17 +121,15 @@ where
 
 	pub fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
-		receiver: &Receiver<String>,
+		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
 	) -> ApiResult<EventDetails> {
-		loop {
-			let events_str = receiver.recv()?;
-			let event_bytes = Vec::from_hex(events_str)?;
+		while let Some(change_set) = subscription.next() {
+			let event_bytes = change_set?.changes[0].1.as_ref().unwrap().0.clone();
 			let events = Events::<Runtime::Hash>::new(
 				self.metadata().clone(),
 				Default::default(),
 				event_bytes,
 			);
-
 			for maybe_event_details in events.iter() {
 				let event_details = maybe_event_details?;
 
@@ -135,9 +155,22 @@ where
 				}
 			}
 		}
+		Err(Error::NoStream)
 	}
 }
 
 fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
 	event_details.pallet_name() == "System" && event_details.variant_name() == "ExtrinsicFailed"
+}
+
+fn return_block_hash_if_available<Hash, BlockHash>(
+	transcation_status: TransactionStatus<Hash, BlockHash>,
+) -> Option<BlockHash> {
+	match transcation_status {
+		TransactionStatus::InBlock(block_hash) => Some(block_hash),
+		TransactionStatus::Retracted(block_hash) => Some(block_hash),
+		TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
+		TransactionStatus::Finalized(block_hash) => Some(block_hash),
+		_ => None,
+	}
 }

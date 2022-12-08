@@ -42,10 +42,10 @@ fn main() {
 
 	// Create the node-api client and set the signer.
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let alice = AccountKeyring::Alice.pair();
 	let mut api =
@@ -66,13 +66,14 @@ fn main() {
 		twitter: Data::None,
 	};
 
-	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> =
-		compose_extrinsic!(api.clone(), "Identity", "set_identity", Box::new(info.clone()));
+		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone()));
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	let _block_hash = api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock).unwrap();
+	let _block_hash = api
+		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap();
 
 	// Get the storage value from the pallet. Check out the pallet itself to know it's type:
 	// see https://github.com/paritytech/substrate/blob/e6768a3bd553ddbed12fe1a0e4a2ef8d4f8fdf52/frame/identity/src/lib.rs#L167

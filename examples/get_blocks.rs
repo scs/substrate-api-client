@@ -16,10 +16,9 @@
 //! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
 //! debugging tool.
 
-use kitchensink_runtime::{Block, Header, Runtime};
+use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-use sp_runtime::generic::SignedBlock as SignedBlockG;
-use std::sync::mpsc::channel;
+use substrate_api_client::HandleSubscription;
 
 #[cfg(feature = "ws-client")]
 use substrate_api_client::rpc::WsRpcClient;
@@ -29,43 +28,39 @@ use substrate_api_client::rpc::TungsteniteRpcClient;
 
 use substrate_api_client::{Api, AssetTipExtrinsicParams};
 
-type SignedBlock = SignedBlockG<Block>;
-
 fn main() {
 	env_logger::init();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let api =
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	let head = api.get_finalized_head().unwrap().unwrap();
 
-	println!("Genesis block: \n {:?} \n", api.get_block_by_num::<Block>(Some(0)).unwrap());
+	println!("Genesis block: \n {:?} \n", api.get_block_by_num(Some(0)).unwrap());
 
 	println!("Finalized Head:\n {} \n", head);
 
-	let h: Header = api.get_header(Some(head)).unwrap().unwrap();
+	let h = api.get_header(Some(head)).unwrap().unwrap();
 	println!("Finalized header:\n {:?} \n", h);
 
-	let b: SignedBlock = api.get_signed_block(Some(head)).unwrap().unwrap();
+	let b = api.get_signed_block(Some(head)).unwrap().unwrap();
 	println!("Finalized signed block:\n {:?} \n", b);
 
-	println!("Latest Header: \n {:?} \n", api.get_header::<Header>(None).unwrap());
+	println!("Latest Header: \n {:?} \n", api.get_header(None).unwrap());
 
-	println!("Latest block: \n {:?} \n", api.get_block::<Block>(None).unwrap());
+	println!("Latest block: \n {:?} \n", api.get_block(None).unwrap());
 
 	println!("Subscribing to finalized heads");
-	let (sender, receiver) = channel();
-	api.subscribe_finalized_heads(sender).unwrap();
+	let mut subscription = api.subscribe_finalized_heads().unwrap();
 
-	for _ in 0..10 {
-		let head: Header =
-			receiver.recv().map(|header| serde_json::from_str(&header).unwrap()).unwrap();
+	for _ in 0..5 {
+		let head = subscription.next().unwrap().unwrap();
 		println!("Got new Block {:?}", head);
 	}
 }

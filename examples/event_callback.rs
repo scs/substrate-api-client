@@ -14,12 +14,11 @@
 */
 
 //! Very simple example that shows how to subscribe to events.
-
 use codec::Decode;
 use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
-use std::sync::mpsc::channel;
+use substrate_api_client::HandleSubscription;
 
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
@@ -32,31 +31,29 @@ use substrate_api_client::rpc::WsRpcClient;
 #[cfg(feature = "tungstenite-client")]
 use substrate_api_client::rpc::TungsteniteRpcClient;
 
-use substrate_api_client::{utils::FromHexString, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{Api, AssetTipExtrinsicParams};
 
 fn main() {
 	env_logger::init();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let api =
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
-	let (events_in, events_out) = channel();
-	api.subscribe_events(events_in).unwrap();
+	let mut subscription = api.subscribe_events().unwrap();
 
 	for _ in 0..5 {
-		let event_str = events_out.recv().unwrap();
-
-		let _unhex = Vec::from_hex(event_str).unwrap();
-		let mut _er_enc = _unhex.as_slice();
-		let events =
-			Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(&mut _er_enc).unwrap();
+		let event_bytes = subscription.next().unwrap().unwrap().changes[0].1.clone().unwrap().0;
+		let events = Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(
+			&mut event_bytes.as_slice(),
+		)
+		.unwrap();
 		for evr in &events {
 			println!("decoded: {:?} {:?}", evr.phase, evr.event);
 			match &evr.event {

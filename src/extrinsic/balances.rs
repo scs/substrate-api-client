@@ -17,16 +17,17 @@
 
 //! Extrinsics for `pallet-balances`.
 
-use crate::{api::Api, rpc::RpcClient, FromHexString};
+use crate::{api::Api, rpc::Request, FromHexString};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
 };
-use codec::{Compact, Decode, Encode};
+use codec::{Compact, Encode};
 use core::str::FromStr;
+use serde::de::DeserializeOwned;
 use sp_core::crypto::Pair;
 use sp_rpc::number::NumberOrHex;
-use sp_runtime::{MultiSignature, MultiSigner};
+use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
@@ -47,13 +48,14 @@ where
 	Signer: Pair,
 	MultiSignature: From<Signer::Signature>,
 	MultiSigner: From<Signer::Public>,
-	Client: RpcClient,
+	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: GetRuntimeBlockType + BalancesConfig,
 	Runtime::Hash: FromHexString,
-	Runtime::Index: Decode,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<Runtime::Balance>: Encode,
+	Runtime::Header: DeserializeOwned,
+	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	pub fn balance_transfer(
 		&self,

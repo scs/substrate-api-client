@@ -17,7 +17,7 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use ac_primitives::AssetTipExtrinsicParamsBuilder;
-use kitchensink_runtime::{BalancesCall, Header, Runtime, RuntimeCall};
+use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 
@@ -38,17 +38,17 @@ fn main() {
 	let from = AccountKeyring::Alice.pair();
 
 	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 
 	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::new(url::Url::parse("ws://127.0.0.1:9944").unwrap(), 100);
+	let client = TungsteniteRpcClient::with_default_url(100);
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 
 	// Information for Era for mortal transactions.
 	let head = api.get_finalized_head().unwrap().unwrap();
-	let h: Header = api.get_header(Some(head)).unwrap().unwrap();
+	let h = api.get_header(Some(head)).unwrap().unwrap();
 	let period = 5;
 	let tx_params = AssetTipExtrinsicParamsBuilder::<Runtime>::new()
 		.era(Era::mortal(period, h.number.into()), head)
@@ -75,7 +75,7 @@ fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	match api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock) {
+	match api.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock) {
 		Err(error) => {
 			println!("Retrieved error {:?}", error);
 			assert!(format!("{:?}", error).contains("Future"));

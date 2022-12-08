@@ -14,22 +14,23 @@
    limitations under the License.
 
 */
-use codec::{Codec, MaxEncodedLen};
-use core::fmt::Debug;
+use codec::{Codec, EncodeLike, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize, Member},
 	FixedPointOperand,
 };
+
 /// Simplifed pallet balances Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait BalancesConfig: crate::FrameSystemConfig {
-	type Balance: AtLeast32BitUnsigned
-		+ Codec
+	type Balance: Codec
+		+ EncodeLike
+		+ Member
+		+ AtLeast32BitUnsigned
 		+ Default
 		+ Copy
 		+ MaybeSerializeDeserialize
-		+ Debug
 		+ MaxEncodedLen
 		+ TypeInfo
 		+ FixedPointOperand;
@@ -40,7 +41,7 @@ pub trait BalancesConfig: crate::FrameSystemConfig {
 	type WeightInfo;
 	type MaxLocks: Get<u32>;
 	type MaxReserves: Get<u32>;
-	type ReserveIdentifier: MaxEncodedLen + Ord + Copy;
+	type ReserveIdentifier: Codec + EncodeLike + TypeInfo + Member + MaxEncodedLen + Ord + Copy;
 }
 
 #[cfg(feature = "std")]

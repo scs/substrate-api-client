@@ -18,7 +18,7 @@ fn main() {
 	env_logger::init();
 
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::new("ws://127.0.0.1:9944");
+	let client = WsRpcClient::with_default_url();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
@@ -71,8 +71,9 @@ fn main() {
 		let payout_calls_len = payout_calls.len();
 		if payout_calls_len > 0 {
 			let batching = api.batch(payout_calls);
-			let results_hash =
-				api.send_extrinsic(batching.hex_encode(), XtStatus::InBlock).unwrap();
+			let results_hash = api
+				.submit_and_watch_extrinsic_until(&batching.hex_encode(), XtStatus::InBlock)
+				.unwrap();
 			num_of_claimed_payouts += payout_calls_len;
 
 			let result = serde_json::to_value(results_hash).unwrap();
