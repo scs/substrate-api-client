@@ -18,6 +18,7 @@
 use super::{subscription::WsSubscriptionWrapper, HandleMessage};
 use crate::{
 	rpc::{
+		to_json_req,
 		ws_client::{RequestHandler, RpcClient, SubscriptionHandler},
 		Request, Result, Subscribe,
 	},
@@ -25,26 +26,26 @@ use crate::{
 	RpcParams,
 };
 use serde::de::DeserializeOwned;
-use serde_json::json;
 use std::{
 	fmt::Debug,
 	sync::mpsc::{channel, Sender as ThreadOut},
 	thread,
 };
+use url::Url;
 use ws::{connect, Result as WsResult, Sender as WsSender};
 
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {
-	url: String,
+	url: Url,
 }
 
 impl WsRpcClient {
-	pub fn new(url: &str) -> Self {
-		Self { url: url.to_string() }
+	pub fn new(url: &str) -> Result<Self> {
+		Ok(Self { url: Url::parse(url)? })
 	}
 
 	pub fn with_default_url() -> Self {
-		Self::new("ws://127.0.0.1:9944")
+		Self::new("ws://127.0.0.1:9944").unwrap()
 	}
 }
 
@@ -88,14 +89,13 @@ impl WsRpcClient {
 		MessageHandler::Error: Into<ws::Error>,
 		MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 	{
-		let url = url::Url::parse(&self.url)?;
 		let mut socket = ws::Builder::new().build(move |out| RpcClient {
 			out,
 			request: jsonreq.clone(),
 			result: result_in.clone(),
 			message_handler: message_handler.clone(),
 		})?;
-		socket.connect(url)?;
+		socket.connect(self.url.clone())?;
 		let handle = socket.broadcaster();
 
 		let _client =
@@ -129,14 +129,4 @@ impl WsRpcClient {
 		})?;
 		Ok(result_out.recv()?)
 	}
-}
-
-fn to_json_req(method: &str, params: RpcParams) -> Result<String> {
-	Ok(json!({
-		"method": method,
-		"params": params.to_json_value()?,
-		"jsonrpc": "2.0",
-		"id": "1",
-	})
-	.to_string())
 }

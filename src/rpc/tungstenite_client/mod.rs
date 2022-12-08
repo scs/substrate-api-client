@@ -15,23 +15,19 @@
 
 */
 
-use crate::{
-	rpc::{error::Error as RpcClientError, parse_status, result_from_json_response},
-	HandleMessage, XtStatus,
-};
-
-use log::{debug, error};
+use crate::{rpc::error::Error as RpcClientError, HandleMessage};
+use client::MySocket;
+use log::*;
 use serde_json::Value;
 use tungstenite::Message;
 
 pub mod client;
-
-use client::MySocket;
+pub mod subscription;
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct GetRequestHandler;
+pub struct RequestHandler;
 
-impl HandleMessage for GetRequestHandler {
+impl HandleMessage for RequestHandler {
 	type ThreadMessage = String;
 	type Error = RpcClientError;
 	type Context = MySocket;
@@ -62,84 +58,17 @@ impl HandleMessage for SubscriptionHandler {
 			let value: Value = serde_json::from_str(msg.as_str())?;
 
 			match value["id"].as_str() {
-				Some(_idstr) => {},
-				_ => {
-					// subscriptions
-					debug!("no id field found in response. must be subscription");
-					debug!("method: {:?}", value["method"].as_str());
-					match value["method"].as_str() {
-						Some("state_storage") => {
-							let changes = &value["params"]["result"]["changes"];
-							match changes[0][1].as_str() {
-								Some(change_set) => return Ok(change_set.to_string()),
-								None => println!("No events happened"),
-							};
-						},
-						Some("chain_finalizedHead") => {
-							let head = serde_json::to_string(&value["params"]["result"])?;
-							return Ok(head)
-						},
-						_ => error!("unsupported method"),
-					}
+				Some(_idstr) => {
+					warn!(
+						"Expected subscription, but received an id response instead: {:?}",
+						value
+					);
+				},
+				None => {
+					let answer = serde_json::to_string(&value["params"]["result"])?;
+					return Ok(answer)
 				},
 			};
-		}
-	}
-}
-
-#[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct SubmitOnlyHandler;
-
-impl HandleMessage for SubmitOnlyHandler {
-	type ThreadMessage = String;
-	type Error = RpcClientError;
-	type Context = MySocket;
-	type Result = String;
-
-	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
-		let msg = read_until_text_message(context)?;
-		debug!("got msg {}", msg);
-		return match result_from_json_response(msg.as_str()) {
-			Ok(val) => Ok(val),
-			Err(e) => Err(e),
-		}
-	}
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct SubmitAndWatchHandler {
-	exit_on: XtStatus,
-}
-
-impl SubmitAndWatchHandler {
-	pub fn new(exit_on: XtStatus) -> Self {
-		Self { exit_on }
-	}
-}
-
-impl HandleMessage for SubmitAndWatchHandler {
-	type ThreadMessage = String;
-	type Error = RpcClientError;
-	type Context = MySocket;
-	type Result = String;
-
-	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
-		loop {
-			let msg = read_until_text_message(context)?;
-			debug!("receive msg:{:?}", msg);
-			match parse_status(msg.as_str()) {
-				Ok((xt_status, val)) =>
-					if xt_status as u32 >= 10 {
-						let error = RpcClientError::Extrinsic(format!(
-							"Unexpected extrinsic status: {:?}, stopped watch process prematurely.",
-							xt_status
-						));
-						return Err(error)
-					} else if xt_status as u32 >= self.exit_on as u32 {
-						return Ok(val.unwrap_or_default())
-					},
-				Err(e) => return Err(e),
-			}
 		}
 	}
 }

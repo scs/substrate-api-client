@@ -15,18 +15,22 @@
 
 */
 use crate::{
-	json_req,
-	rpc::{Error as RpcClientError, Result, RpcClient as RpcClientTrait},
+	rpc::{to_json_req, Error as RpcClientError, Result},
 	tungstenite_client::{
-		read_until_text_message, GetRequestHandler, SubmitAndWatchHandler, SubmitOnlyHandler,
+		read_until_text_message, subscription::TungsteniteSubscriptionWrapper, RequestHandler,
 		SubscriptionHandler,
 	},
-	FromHexString, HandleMessage, Subscriber, XtStatus,
+	HandleMessage, Request, Subscribe,
 };
-use log::{debug, error, info, warn};
-use serde_json::Value;
+use ac_primitives::RpcParams;
+use log::*;
+use serde::de::DeserializeOwned;
 use std::{
-	fmt::Debug, net::TcpStream, sync::mpsc::Sender as ThreadOut, thread, thread::sleep,
+	fmt::Debug,
+	net::TcpStream,
+	sync::mpsc::{channel, Sender as ThreadOut},
+	thread,
+	thread::sleep,
 	time::Duration,
 };
 use tungstenite::{
@@ -46,10 +50,42 @@ pub struct TungsteniteRpcClient {
 }
 
 impl TungsteniteRpcClient {
-	pub fn new(url: Url, max_attempts: u8) -> TungsteniteRpcClient {
-		TungsteniteRpcClient { url, max_attempts }
+	pub fn new(url: &str, max_attempts: u8) -> Result<Self> {
+		Ok(Self { url: Url::parse(url)?, max_attempts })
 	}
 
+	pub fn with_default_url(max_attempts: u8) -> Self {
+		Self::new("ws://127.0.0.1:9944", max_attempts).unwrap()
+	}
+}
+
+impl Request for TungsteniteRpcClient {
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+		let json_req = to_json_req(method, params)?;
+		let response = self.direct_rpc_request(json_req, RequestHandler::default())?;
+		let deserialized_value: R = serde_json::from_str(&response)?;
+		Ok(deserialized_value)
+	}
+}
+
+impl Subscribe for TungsteniteRpcClient {
+	type Subscription<Notification> = TungsteniteSubscriptionWrapper<Notification> where Notification: DeserializeOwned;
+
+	fn subscribe<Notification: DeserializeOwned>(
+		&self,
+		sub: &str,
+		params: RpcParams,
+		_unsub: &str,
+	) -> Result<Self::Subscription<Notification>> {
+		let json_req = to_json_req(sub, params)?;
+		let (result_in, receiver) = channel();
+		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())?;
+		let subscription = TungsteniteSubscriptionWrapper::new(receiver);
+		Ok(subscription)
+	}
+}
+
+impl TungsteniteRpcClient {
 	fn direct_rpc_request<MessageHandler>(
 		&self,
 		json_req: String,
@@ -77,107 +113,8 @@ impl TungsteniteRpcClient {
 			},
 		)
 	}
-}
 
-impl RpcClientTrait for TungsteniteRpcClient {
-	fn get_request(&self, jsonreq: Value) -> Result<Option<String>> {
-		self.direct_rpc_request(jsonreq.to_string(), GetRequestHandler::default())
-			.map(Some)
-	}
-
-	fn send_extrinsic<Hash: FromHexString>(
-		&self,
-		xthex_prefixed: String,
-		exit_on: XtStatus,
-	) -> Result<Option<Hash>> {
-		// Todo: Make all variants return a H256: #175.
-
-		let jsonreq = match exit_on {
-			XtStatus::SubmitOnly => json_req::author_submit_extrinsic(&xthex_prefixed).to_string(),
-			_ => json_req::author_submit_and_watch_extrinsic(&xthex_prefixed).to_string(),
-		};
-		let response = self.direct_rpc_request(jsonreq, SubmitAndWatchHandler::new(exit_on))?;
-		info!("Got response {:?} while waiting for {:?}", response, exit_on);
-		if response.is_empty() {
-			Ok(None)
-		} else {
-			Ok(Some(Hash::from_hex(response)?))
-		}
-	}
-}
-
-impl Subscriber for TungsteniteRpcClient {
-	fn start_subscriber(&self, json_req: String, result_in: ThreadOut<String>) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())
-	}
-}
-
-impl TungsteniteRpcClient {
-	pub fn get(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<GetRequestHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, GetRequestHandler::default())
-	}
-
-	pub fn send_extrinsic(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitOnlyHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(json_req, result_in, SubmitOnlyHandler::default())
-	}
-
-	pub fn send_extrinsic_until_ready(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::Ready),
-		)
-	}
-
-	pub fn send_extrinsic_and_wait_until_broadcast(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::Broadcast),
-		)
-	}
-
-	pub fn send_extrinsic_and_wait_until_in_block(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::InBlock),
-		)
-	}
-
-	pub fn send_extrinsic_and_wait_until_finalized(
-		&self,
-		json_req: String,
-		result_in: ThreadOut<<SubmitAndWatchHandler as HandleMessage>::ThreadMessage>,
-	) -> Result<()> {
-		self.start_rpc_client_thread(
-			json_req,
-			result_in,
-			SubmitAndWatchHandler::new(XtStatus::Finalized),
-		)
-	}
-
-	pub fn start_rpc_client_thread<MessageHandler>(
+	fn start_rpc_client_thread<MessageHandler>(
 		&self,
 		json_req: String,
 		result_in: ThreadOut<MessageHandler::ThreadMessage>,
@@ -250,10 +187,6 @@ fn check_connection(socket: &mut MySocket, request: Option<String>) -> bool {
 	}
 }
 
-fn close_connection(socket: &mut MySocket) {
-	let _ = socket.close(Some(CloseFrame { code: CloseCode::Normal, reason: Default::default() }));
-}
-
 fn connect_to_server<T, F: Fn(&mut MySocket) -> Result<T>>(
 	url: url::Url,
 	max_attempts: u8,
@@ -272,14 +205,18 @@ fn connect_to_server<T, F: Fn(&mut MySocket) -> Result<T>>(
 				if check_connection(&mut socket, subscription_req.clone()) {
 					current_attempt = 1; // reset the value once connected successfully
 					match handle_message(&mut socket) {
-						Err(RpcClientError::TungsteniteWebSocket(e)) => {
-							error!("tungstenite error:{:?}", e);
+						Err(RpcClientError::Client(e)) => {
 							// catch tungstenite::Error, then attempt to reconnect server
 							// if reach the maximum attempts, return an error
 							close_connection(&mut socket);
 							if current_attempt == max_attempts {
+								error!(
+									"Connection error:{:?}, max retry attempts ({:?}) reached, closing connection.",
+									e, max_attempts
+								);
 								break
 							}
+							warn!("Connection error:{:?}, trying to reconnect", e);
 						},
 						Err(e) => {
 							// catch other error(not tungstenite error), exit function
@@ -295,7 +232,7 @@ fn connect_to_server<T, F: Fn(&mut MySocket) -> Result<T>>(
 				}
 			},
 		};
-		warn!(
+		trace!(
 			"attempt to request after {} sec. current attempt {}",
 			5 * current_attempt,
 			current_attempt
@@ -304,4 +241,8 @@ fn connect_to_server<T, F: Fn(&mut MySocket) -> Result<T>>(
 		current_attempt += 1;
 	}
 	Err(RpcClientError::ConnectionAttemptsExceeded)
+}
+
+fn close_connection(socket: &mut MySocket) {
+	let _ = socket.close(Some(CloseFrame { code: CloseCode::Normal, reason: Default::default() }));
 }

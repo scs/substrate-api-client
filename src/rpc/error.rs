@@ -27,7 +27,6 @@ pub enum Error {
 	Send(String),
 	#[error("Could not convert hex value into a string: {0}")]
 	Hex(#[from] hex::FromHexError),
-	#[cfg(feature = "ws-client")]
 	#[error("Could not convert to valid Url: {0}")]
 	Url(#[from] url::ParseError),
 	#[error("Expected some error information, but nothing was found: {0}")]
@@ -38,13 +37,23 @@ pub enum Error {
 	Io(#[from] std::io::Error),
 	#[error("Stream ended unexpectedly")]
 	NoStream,
+	#[error("Exceeded maximum amount of connections")]
+	ConnectionAttemptsExceeded,
 	#[error(transparent)]
 	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
+
 #[cfg(feature = "ws-client")]
 impl From<ws::Error> for Error {
 	fn from(error: ws::Error) -> Self {
+		Self::Client(Box::new(error))
+	}
+}
+
+#[cfg(feature = "tungstenite-client")]
+impl From<tungstenite::Error> for Error {
+	fn from(error: tungstenite::Error) -> Self {
 		Self::Client(Box::new(error))
 	}
 }

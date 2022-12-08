@@ -82,6 +82,6 @@ std = [
     "ac-node-api/std",
     "ac-primitives/std",
 ]
-tungstenite-client = ["tungstenite", "url"]
-ws-client = ["ws", "url"]
+tungstenite-client = ["std", "tungstenite"]
+ws-client = ["ws"]
 staking-xt = ["std"]

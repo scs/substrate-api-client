@@ -81,3 +81,13 @@ pub trait HandleMessage {
 		context: &mut Self::Context,
 	) -> core::result::Result<Self::Result, Self::Error>;
 }
+
+pub fn to_json_req(method: &str, params: RpcParams) -> Result<String> {
+	Ok(serde_json::json!({
+		"method": method,
+		"params": params.to_json_value()?,
+		"jsonrpc": "2.0",
+		"id": "1",
+	})
+	.to_string())
+}
