@@ -22,7 +22,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::thread;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, NodeSubscription, StaticEvent, XtStatus,
 };
 
 // Look at the how the transfer event looks like in in the metadata

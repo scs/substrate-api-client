@@ -17,16 +17,14 @@
 
 //! Extrinsics for `pallet-balances`.
 
-use crate::{api::Api, rpc::Request, FromHexString};
+use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
 };
 use codec::{Compact, Encode};
-use core::str::FromStr;
 use serde::de::DeserializeOwned;
 use sp_core::crypto::Pair;
-use sp_rpc::number::NumberOrHex;
 use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
 
 pub const BALANCES_MODULE: &str = "Balances";
@@ -49,13 +47,12 @@ where
 	MultiSignature: From<Signer::Signature>,
 	MultiSigner: From<Signer::Public>,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: GetRuntimeBlockType + BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Compact<Runtime::Balance>: Encode,
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,
+	Runtime::AccountId: From<Signer::Public>,
 {
 	pub fn balance_transfer(
 		&self,

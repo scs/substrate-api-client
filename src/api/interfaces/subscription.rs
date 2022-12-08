@@ -1,53 +1,80 @@
 /*
    Copyright 2019 Supercomputing Systems AG
-
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
 	   http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
 */
 
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
-	rpc::{HandleSubscription, Request, Subscribe},
-	utils, FromHexString, XtStatus,
+	rpc::{HandleSubscription, Subscribe},
+	utils, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
-use ac_primitives::{BalancesConfig, ExtrinsicParams};
-use core::str::FromStr;
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_core::{storage::StorageChangeSet, Pair};
-use sp_rpc::number::NumberOrHex;
-use sp_runtime::MultiSigner;
+use sp_core::storage::StorageChangeSet;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+pub trait NodeSubscription<Client, Hash>
 where
-	Signer: Pair,
-	MultiSigner: From<Signer::Public>,
-	Client: Subscribe + Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
-	Runtime::Header: DeserializeOwned,
+	Client: Subscribe,
+	Hash: DeserializeOwned,
 {
+	type Header: DeserializeOwned;
+
 	/// Submit an extrinsic an return a websocket Subscription to watch the
 	/// extrinsic progress.
-	pub fn submit_and_watch_extrinsic(
+	fn submit_and_watch_extrinsic(
+		&self,
+		xthex_prefixed: &str,
+	) -> ApiResult<TransactionSubscriptionFor<Client, Hash>>;
+
+	/// Submit an extrinsic and watch in until the desired status is reached,
+	/// if no error is encountered previously. This method is blocking.
+	fn submit_and_watch_extrinsic_until(
+		&self,
+		xthex_prefixed: &str,
+		watch_until: XtStatus,
+	) -> ApiResult<Option<Hash>>;
+
+	fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
+
+	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>>;
+
+	fn wait_for_event<Ev: StaticEvent>(
+		&self,
+		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
+	) -> ApiResult<Ev>;
+
+	fn wait_for_event_details<Ev: StaticEvent>(
+		&self,
+		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
+	) -> ApiResult<EventDetails>;
+}
+
+impl<Signer, Client, Params, Runtime> NodeSubscription<Client, Runtime::Hash>
+	for Api<Signer, Client, Params, Runtime>
+where
+	Client: Subscribe,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: FrameSystemConfig,
+	Runtime::Header: DeserializeOwned,
+{
+	type Header = Runtime::Header;
+
+	fn submit_and_watch_extrinsic(
 		&self,
 		xthex_prefixed: &str,
 	) -> ApiResult<TransactionSubscriptionFor<Client, Runtime::Hash>> {
@@ -60,9 +87,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	/// Submit an extrinsic and watch in until the desired status is reached,
-	/// if no error is encountered previously. This method is blocking.
-	pub fn submit_and_watch_extrinsic_until(
+	fn submit_and_watch_extrinsic_until(
 		&self,
 		xthex_prefixed: &str,
 		watch_until: XtStatus,
@@ -88,9 +113,7 @@ where
 		Err(Error::NoStream)
 	}
 
-	pub fn subscribe_events(
-		&self,
-	) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+	fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
@@ -98,7 +121,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Runtime::Header>> {
+	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe(
@@ -109,7 +132,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	pub fn wait_for_event<Ev: StaticEvent>(
+	fn wait_for_event<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
 	) -> ApiResult<Ev> {
@@ -119,7 +142,7 @@ where
 			.ok_or(Error::Other("Could not find the specific event".into()))
 	}
 
-	pub fn wait_for_event_details<Ev: StaticEvent>(
+	fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
 	) -> ApiResult<EventDetails> {

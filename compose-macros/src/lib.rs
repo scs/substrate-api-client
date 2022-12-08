@@ -68,7 +68,7 @@ macro_rules! compose_extrinsic_offline {
     $params: expr) => {{
 		use $crate::{
 			primitives::{ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4},
-			sp_core::crypto::Pair,
+			sp_core::{crypto::Pair, Public},
 			sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner},
 		};
 
