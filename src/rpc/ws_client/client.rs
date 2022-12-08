@@ -21,6 +21,7 @@ use crate::{
 		ws_client::{RequestHandler, RpcClient, SubscriptionHandler},
 		Request, Result, Subscribe,
 	},
+	ws_client::MessageContext,
 	RpcParams,
 };
 use serde::de::DeserializeOwned;

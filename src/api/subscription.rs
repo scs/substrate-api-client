@@ -15,12 +15,6 @@
 
 */
 
-#[cfg(feature = "ws-client")]
-use crate::ws_client::client::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use crate::tungstenite_client::client::TungsteniteRpcClient;
-
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
 	rpc::{Error as RpcClientError, HandleSubscription, Request, Subscribe},

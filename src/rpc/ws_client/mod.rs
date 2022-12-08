@@ -15,12 +15,12 @@
 
 */
 
-use crate::rpc::Error as RpcClientError;
+use crate::{rpc::Error as RpcClientError, HandleMessage};
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 use log::*;
 use std::{fmt::Debug, sync::mpsc::Sender as ThreadOut};
-use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
+use ws::{CloseCode, Handler, Handshake, Message, Sender};
 
 pub mod client;
 pub mod subscription;
@@ -135,21 +135,4 @@ impl HandleMessage for SubscriptionHandler {
 		};
 		Ok(())
 	}
-}
-
-#[allow(clippy::result_large_err)]
-fn end_process<ThreadMessage: Send + Sync + Debug>(
-	out: Sender,
-	result: ThreadOut<ThreadMessage>,
-	value: ThreadMessage,
-) -> Result<(), ws::Error> {
-	// return result to calling thread
-	debug!("Thread end result :{:?} value:{:?}", result, value);
-
-	out.close(CloseCode::Normal)
-		.unwrap_or_else(|_| warn!("Could not close WebSocket normally"));
-
-	result
-		.send(value)
-		.map_err(|e| Box::new(RpcClientError::Send(format!("{:?}", e))).into())
 }

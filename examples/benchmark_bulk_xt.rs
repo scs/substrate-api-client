@@ -27,7 +27,7 @@ use substrate_api_client::rpc::TungsteniteRpcClient;
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic_offline, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic_offline, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4,
 };
 
 fn main() {

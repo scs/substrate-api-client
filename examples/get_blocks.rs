@@ -18,6 +18,7 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
+use substrate_api_client::HandleSubscription;
 
 #[cfg(feature = "ws-client")]
 use substrate_api_client::rpc::WsRpcClient;

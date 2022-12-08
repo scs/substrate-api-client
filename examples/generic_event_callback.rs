@@ -20,6 +20,7 @@ use codec::Decode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
+use std::thread;
 
 #[cfg(feature = "ws-client")]
 use substrate_api_client::rpc::WsRpcClient;
