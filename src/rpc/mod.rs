@@ -69,19 +69,6 @@ pub trait HandleSubscription<Notification: DeserializeOwned> {
 	fn unsubscribe(self) -> Result<()>;
 }
 
-#[allow(clippy::result_large_err)]
-pub trait HandleMessage {
-	type ThreadMessage;
-	type Error;
-	type Context;
-	type Result;
-
-	fn handle_message(
-		&self,
-		context: &mut Self::Context,
-	) -> core::result::Result<Self::Result, Self::Error>;
-}
-
 pub fn to_json_req(method: &str, params: RpcParams) -> Result<String> {
 	Ok(serde_json::json!({
 		"method": method,

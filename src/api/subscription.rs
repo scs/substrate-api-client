@@ -78,14 +78,14 @@ where
 				}
 			} else {
 				subscription.unsubscribe()?;
-				let error = RpcClientError::Extrinsic(format!(
+				let error = Error::Extrinsic(format!(
 					"Unsupported transaction status: {:?}, stopping watch process.",
 					transaction_status
 				));
-				return Err(error.into())
+				return Err(error)
 			}
 		}
-		Err(Error::RpcClient(RpcClientError::NoStream))
+		Err(Error::NoStream)
 	}
 
 	pub fn subscribe_events(

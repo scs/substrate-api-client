@@ -15,7 +15,7 @@
 
 */
 
-use crate::{rpc::Error as RpcClientError, HandleMessage};
+use crate::rpc::Error as RpcClientError;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 use log::*;
@@ -28,6 +28,19 @@ pub mod subscription;
 type RpcResult<T> = Result<T, RpcClientError>;
 
 pub type RpcMessage = RpcResult<String>;
+
+#[allow(clippy::result_large_err)]
+pub trait HandleMessage {
+	type ThreadMessage;
+	type Error;
+	type Context;
+	type Result;
+
+	fn handle_message(
+		&self,
+		context: &mut Self::Context,
+	) -> core::result::Result<Self::Result, Self::Error>;
+}
 
 #[derive(Debug, Clone)]
 pub struct MessageContext<ThreadMessage> {

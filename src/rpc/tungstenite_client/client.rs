@@ -16,25 +16,24 @@
 */
 use crate::{
 	rpc::{to_json_req, Error as RpcClientError, Result},
-	tungstenite_client::{
-		read_until_text_message, subscription::TungsteniteSubscriptionWrapper, RequestHandler,
-		SubscriptionHandler,
-	},
-	HandleMessage, Request, Subscribe,
+	tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
+	Request, Subscribe,
 };
 use ac_primitives::RpcParams;
 use log::*;
 use serde::de::DeserializeOwned;
+use serde_json::Value;
 use std::{
 	fmt::Debug,
 	net::TcpStream,
-	sync::mpsc::{channel, Sender as ThreadOut},
+	sync::mpsc::{channel, Receiver as MpscReceiver, Sender as ThreadOut},
 	thread,
 	thread::sleep,
 	time::Duration,
 };
 use tungstenite::{
 	client::connect_with_config,
+	handshake::client::Response,
 	protocol::{frame::coding::CloseCode, CloseFrame},
 	stream::MaybeTlsStream,
 	Message, WebSocket,
@@ -62,7 +61,7 @@ impl TungsteniteRpcClient {
 impl Request for TungsteniteRpcClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
 		let json_req = to_json_req(method, params)?;
-		let response = self.direct_rpc_request(json_req, RequestHandler::default())?;
+		let response = self.direct_rpc_request(json_req)?;
 		let deserialized_value: R = serde_json::from_str(&response)?;
 		Ok(deserialized_value)
 	}
@@ -79,170 +78,168 @@ impl Subscribe for TungsteniteRpcClient {
 	) -> Result<Self::Subscription<Notification>> {
 		let json_req = to_json_req(sub, params)?;
 		let (result_in, receiver) = channel();
-		self.start_rpc_client_thread(json_req, result_in, SubscriptionHandler::default())?;
-		let subscription = TungsteniteSubscriptionWrapper::new(receiver);
+		let socket = self.start_rpc_client_thread(json_req, result_in)?;
+		let subscription = TungsteniteSubscriptionWrapper::new(socket, receiver);
 		Ok(subscription)
 	}
 }
 
 impl TungsteniteRpcClient {
-	fn direct_rpc_request<MessageHandler>(
-		&self,
-		json_req: String,
-		message_handler: MessageHandler,
-	) -> Result<String>
-	where
-		MessageHandler: HandleMessage<Error = RpcClientError, Context = MySocket, Result = String>
-			+ Clone
-			+ Send
-			+ 'static,
-		MessageHandler::ThreadMessage: Send + Sync + Debug,
-	{
-		connect_to_server(
-			self.url.clone(),
-			self.max_attempts,
-			None,
-			|socket| -> Result<MessageHandler::Result> {
-				match socket.write_message(Message::Text(json_req.clone())) {
-					Ok(_) => message_handler.handle_message(socket),
-					Err(e) => {
-						error!("failed to send request. error:{:?}", e,);
-						Err(e.into())
-					},
-				}
-			},
-		)
+	fn direct_rpc_request(&self, json_req: String) -> Result<String> {
+		let (mut socket, response) = attempt_connection_until(&self.url, self.max_attempts)?;
+		debug!("Connected to the server. Response HTTP code: {}", response.status());
+
+		// Send request to server.
+		socket.write_message(Message::Text(json_req))?;
+
+		let msg = read_until_text_message(&mut socket)?;
+
+		debug!("Got get_request_msg {}", msg);
+		let result_str =
+			serde_json::from_str(msg.as_str()).map(|v: Value| v["result"].to_string())?;
+		Ok(result_str)
 	}
 
-	fn start_rpc_client_thread<MessageHandler>(
+	fn start_rpc_client_thread(
 		&self,
-		json_req: String,
-		result_in: ThreadOut<MessageHandler::ThreadMessage>,
-		message_handler: MessageHandler,
-	) -> Result<()>
-	where
-		MessageHandler:
-			HandleMessage<Error = RpcClientError, Context = MySocket> + Clone + Send + 'static,
-		MessageHandler::ThreadMessage: Send + Sync + Debug,
-		MessageHandler::ThreadMessage: From<MessageHandler::Result>,
-	{
-		let url = self.url.clone();
-		let max_attempts = self.max_attempts;
+		json_req: &str,
+		result_in: ThreadOut<String>,
+	) -> Result<MySocket> {
+		let (mut socket, response) = attempt_connection_until(&self.url, self.max_attempts)?;
+		debug!("Connected to the server. Response HTTP code: {}", response.status());
 
-		thread::spawn(move || {
-			let _ = connect_to_server(
-				url,
-				max_attempts,
-				Some(json_req),
-				|socket| -> Result<MessageHandler::Result> {
-					loop {
-						match message_handler.handle_message(socket) {
-							Ok(msg) =>
-								if let Err(e) = result_in.send(msg.into()) {
-									error!("failed to send channel: {:?} ", e);
-									return Err(RpcClientError::Send(format!("{:?}", e)))
-								},
-							Err(e) => return Err(e),
-						}
+		// Subscribe to server
+		socket.write_message(Message::Text(json_req))?;
+
+		thread::spawn(move || -> Result<()> {
+			loop {
+				let msg = read_until_text_message(&mut socket)?;
+				send_message_to_client(&result_in, msg.as_str())?;
+			}
+		});
+
+		Ok(socket)
+	}
+
+	fn subscribe_with_automatic_reconnection(
+		&self,
+		json_req: &str,
+		result_in: &ThreadOut<String>,
+	) -> Result<MySocket> {
+		thread::spawn(move || -> Result<()> {
+			let mut current_attempt = 0;
+			while current_attempt <= self.max_attempt {
+				if let Err(error) = subscribe_to_server_without_thread(
+					&self.url,
+					self.max_attempts,
+					json_req,
+					result_in,
+				) {
+					if !do_reconnect(&error) {
+						break
 					}
-				},
-			);
+				}
+				current_attempt += 1;
+			}
 		});
 		Ok(())
 	}
 }
 
-fn check_connection(socket: &mut MySocket, request: Option<String>) -> bool {
-	return if let Some(json_req) = request {
-		match socket.write_message(Message::Text(json_req)) {
-			Err(e) => {
-				error!("write msg error:{:?}", e);
-				false
-			},
-			Ok(_) => {
-				// After sending request(subscription), there will be a response(result)
-				match read_until_text_message(socket) {
-					Ok(msg_from_req) => {
-						debug!("response message: {:?}", msg_from_req);
-						true
-					},
-					Err(e) => {
-						error!("response message error:{:?}", e);
-						false
-					},
-				}
-			},
-		}
-	} else {
-		match socket.read_message() {
-			Ok(ping) => {
-				debug!("read ping message:{:?}. Connected successfully.", ping);
-				true
-			},
-			Err(err) => {
-				error!("failed to read ping message. error: {:?}", err);
-				false
-			},
-		}
+fn subscribe_to_server_without_thread(
+	url: &Url,
+	max_attempts: u8,
+	json_req: &str,
+	result_in: ThreadOut<String>,
+) -> Result<()> {
+	let (mut socket, response) = attempt_connection_until(url, max_attempts)?;
+	debug!("Connected to the server. Response HTTP code: {}", response.status());
+
+	// Subscribe to server
+	socket.write_message(Message::Text(json_req))?;
+
+	loop {
+		let msg = read_until_text_message(&mut socket)?;
+		send_message_to_client(&result_in, msg.as_str())?;
 	}
 }
 
-fn connect_to_server<T, F: Fn(&mut MySocket) -> Result<T>>(
-	url: url::Url,
-	max_attempts: u8,
-	subscription_req: Option<String>,
-	handle_message: F,
-) -> Result<T> {
-	let mut current_attempt: u8 = 1;
+pub fn do_reconnect(error: &RpcClientError) -> bool {
+	matches!(
+		error,
+		RpcClientError::Serde | RpcClientError::ConnectionClosed | RpcClientError::Client(_)
+	)
+}
+
+pub enum Error {
+	#[error("Serde json error: {0}")]
+	Serde(#[from] serde_json::error::Error),
+	#[error("mpsc send Error: {0}")]
+	Send(String),
+	#[error("Could not convert to valid Url: {0}")]
+	Url(#[from] url::ParseError),
+	#[error("ChannelReceiveError, sender is disconnected: {0}")]
+	ChannelDisconnected(#[from] sp_std::sync::mpsc::RecvError),
+	#[error("Failure during thread creation: {0}")]
+	Io(#[from] std::io::Error),
+	#[error("Exceeded maximum amount of connections")]
+	ConnectionAttemptsExceeded,
+	#[error("Websocket Connection was closed unexpectedly")]
+	ConnectionClosed,
+	#[error(transparent)]
+	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+}
+
+fn send_message_to_client(result_in: &ThreadOut<String>, message: &str) -> Result<()> {
+	debug!("got on_subscription_msg {}", msg);
+	let value: Value = serde_json::from_str(msg.as_str())?;
+
+	match value["id"].as_str() {
+		Some(_idstr) => {
+			warn!("Expected subscription, but received an id response instead: {:?}", value);
+		},
+		None => {
+			let message = serde_json::to_string(&value["params"]["result"])?;
+			result_in.send(message.into())?;
+		},
+	};
+}
+
+fn attempt_connection_until(url: &Url, max_attempts: u8) -> Result<(MySocket, Response)> {
+	let mut current_attempt: u8 = 0;
 	while current_attempt <= max_attempts {
 		match connect_with_config(url.clone(), None, u8::MAX - 1) {
-			Err(e) => {
-				error!("failed to connect the server({:?}). error: {:?}", url, e);
-			},
-			Ok(res) => {
-				let mut socket = res.0;
-				debug!("Connected to the server. Response HTTP code: {}", res.1.status());
-				if check_connection(&mut socket, subscription_req.clone()) {
-					current_attempt = 1; // reset the value once connected successfully
-					match handle_message(&mut socket) {
-						Err(RpcClientError::Client(e)) => {
-							// catch tungstenite::Error, then attempt to reconnect server
-							// if reach the maximum attempts, return an error
-							close_connection(&mut socket);
-							if current_attempt == max_attempts {
-								error!(
-									"Connection error:{:?}, max retry attempts ({:?}) reached, closing connection.",
-									e, max_attempts
-								);
-								break
-							}
-							warn!("Connection error:{:?}, trying to reconnect", e);
-						},
-						Err(e) => {
-							// catch other error(not tungstenite error), exit function
-							error!("handle message error: {:?}", e);
-							close_connection(&mut socket);
-							return Err(e)
-						},
-						Ok(t) => {
-							close_connection(&mut socket);
-							return Ok(t)
-						},
-					};
-				}
-			},
+			Ok((socket, responses)) => return Ok((socket, responses)),
+			Err(e) => warn!("Connection attempt failed due to {:?}", e),
 		};
-		trace!(
-			"attempt to request after {} sec. current attempt {}",
-			5 * current_attempt,
-			current_attempt
-		);
-		sleep(Duration::from_secs((5 * current_attempt) as u64));
+		trace!("Trying to reconnect. Current attempt {}", current_attempt);
+		sleep(Duration::from_secs(5));
 		current_attempt += 1;
 	}
+
 	Err(RpcClientError::ConnectionAttemptsExceeded)
 }
 
-fn close_connection(socket: &mut MySocket) {
-	let _ = socket.close(Some(CloseFrame { code: CloseCode::Normal, reason: Default::default() }));
+fn read_until_text_message(socket: &mut MySocket) -> Result<String> {
+	loop {
+		match socket.read_message()? {
+			Message::Text(s) => {
+				debug!("receive text: {:?}", s);
+				break Ok(s)
+			},
+			Message::Binary(_) => {
+				debug!("skip binary msg");
+			},
+			Message::Ping(_) => {
+				debug!("skip ping msg");
+			},
+			Message::Pong(_) => {
+				debug!("skip ping msg");
+			},
+			Message::Close(_) => break Err(RpcClientError::ConnectionClosed),
+			Message::Frame(_) => {
+				debug!("skip frame msg");
+			},
+		}
+	}
 }

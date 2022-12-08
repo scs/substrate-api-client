@@ -15,34 +15,36 @@
 
 */
 
+use std::sync::mpsc::SendError;
+
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
 	#[error("Serde json error: {0}")]
 	Serde(#[from] serde_json::error::Error),
-	#[error("Extrinsic Error: {0}")]
-	Extrinsic(String),
 	#[error("mpsc send Error: {0}")]
 	Send(String),
-	#[error("Could not convert hex value into a string: {0}")]
-	Hex(#[from] hex::FromHexError),
 	#[error("Could not convert to valid Url: {0}")]
 	Url(#[from] url::ParseError),
-	#[error("Expected some error information, but nothing was found: {0}")]
-	NoErrorInformationFound(String),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]
-	Disconnected(#[from] sp_std::sync::mpsc::RecvError),
+	ChannelDisconnected(#[from] sp_std::sync::mpsc::RecvError),
 	#[error("Failure during thread creation: {0}")]
 	Io(#[from] std::io::Error),
-	#[error("Stream ended unexpectedly")]
-	NoStream,
 	#[error("Exceeded maximum amount of connections")]
 	ConnectionAttemptsExceeded,
+	#[error("Websocket Connection was closed unexpectedly")]
+	ConnectionClosed,
 	#[error(transparent)]
 	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
+#[cfg(feature = "ws-client")]
+impl From<SendError<String>> for Error {
+	fn from(error: SendError<String>) -> Self {
+		Self::Send(error.0)
+	}
+}
 
 #[cfg(feature = "ws-client")]
 impl From<ws::Error> for Error {

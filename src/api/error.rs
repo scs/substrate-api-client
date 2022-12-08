@@ -56,6 +56,10 @@ pub enum Error {
 	TryFromIntError,
 	#[error("The node runtime could not dispatch an extrinsic")]
 	Dispatch(DispatchError),
+	#[error("Extrinsic Error: {0}")]
+	Extrinsic(String),
+	#[error("Stream ended unexpectedly")]
+	NoStream,
 	#[error(transparent)]
 	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
