@@ -9,6 +9,7 @@ accepted = [
     "ISC",
     "OpenSSL",
     "Unicode-DFS-2016",
+    "NOASSERTION",
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true
