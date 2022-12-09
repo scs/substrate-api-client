@@ -42,7 +42,7 @@ jobs:
                  cargo clippy --all --exclude test-no-std -- -D warnings,
                  cargo clippy --all-features --examples -- -D warnings,
 
-                 cargo test --all --exclude test-no-std,
+                 cargo test --all --all-features --exclude test-no-std,
 
                  cargo fmt --all -- --check
 
