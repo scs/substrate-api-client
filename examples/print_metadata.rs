@@ -20,7 +20,8 @@ use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
 use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Metadata};
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	let client = JsonrpseeClient::with_default_url().unwrap();

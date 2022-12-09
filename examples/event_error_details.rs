@@ -34,7 +34,8 @@ impl StaticEvent for TransferEventArgs {
 	const EVENT: &'static str = "Transfer";
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics

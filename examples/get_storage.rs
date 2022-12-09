@@ -25,7 +25,8 @@ type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
 
 type AccountInfo = GenericAccountInfo<IndexFor<Runtime>, AccountDataFor<Runtime>>;
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	let client = JsonrpseeClient::with_default_url().unwrap();

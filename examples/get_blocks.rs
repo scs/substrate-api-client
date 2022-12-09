@@ -22,7 +22,8 @@ use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, HandleSubscription,
 };
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	let client = JsonrpseeClient::with_default_url().unwrap();

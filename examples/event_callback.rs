@@ -28,7 +28,8 @@ use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use kitchensink_runtime::RuntimeEvent;
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	let client = JsonrpseeClient::with_default_url().unwrap();

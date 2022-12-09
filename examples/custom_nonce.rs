@@ -25,7 +25,8 @@ use substrate_api_client::{
 	UncheckedExtrinsicV4, XtStatus,
 };
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
