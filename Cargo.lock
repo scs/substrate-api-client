@@ -91,6 +91,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "ac-testing"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "kitchensink-runtime",
+ "pallet-balances",
+ "pallet-identity",
+ "pallet-staking",
+ "parity-scale-codec",
+ "serde_json",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-staking",
+ "sp-version",
+ "substrate-api-client",
+ "tokio",
+ "wabt",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -5,6 +5,7 @@ authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
 
+
 [workspace]
 members = [
     ".",
@@ -13,6 +14,7 @@ members = [
     "examples",
     "node-api",
     "test-no-std",
+    "testing",
 ]
 
 [dependencies]
