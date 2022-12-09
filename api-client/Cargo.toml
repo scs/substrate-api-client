@@ -33,14 +33,9 @@ ac-node-api = { path = "../node-api", default-features = false }
 ac-primitives = { path = "../primitives", default-features = false }
 
 [dev-dependencies]
-env_logger = "0.9.0"
 frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-wabt = "0.10.0"
 
 [features]
 default = ["std", "ws-client"]

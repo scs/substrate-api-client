@@ -28,9 +28,6 @@ dependencies = [
 name = "ac-examples"
 version = "0.1.0"
 dependencies = [
- "ac-compose-macros",
- "ac-node-api",
- "ac-primitives",
  "env_logger",
  "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
  "frame-support",
@@ -3775,21 +3772,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#9ce75afde9ada98a69e4ab3abbbfb7fa8202d72b"
-dependencies = [
- "array-bytes",
- "async-trait",
- "parking_lot",
- "serde_json",
- "sp-application-crypto",
- "sp-core",
- "sp-keystore",
- "thiserror",
-]
-
-[[package]]
 name = "scale-info"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4879,22 +4861,18 @@ dependencies = [
  "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
- "env_logger",
  "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
  "frame-support",
  "frame-system",
  "hex",
- "kitchensink-runtime",
  "log",
  "pallet-balances",
- "pallet-identity",
  "pallet-staking",
  "parity-scale-codec",
  "primitive-types",
  "serde",
  "serde_json",
  "sp-core",
- "sp-keyring",
  "sp-rpc",
  "sp-runtime",
  "sp-runtime-interface",
@@ -4903,7 +4881,6 @@ dependencies = [
  "thiserror",
  "tungstenite",
  "url",
- "wabt",
  "ws",
 ]
 
@@ -4927,7 +4904,6 @@ dependencies = [
  "async-trait",
  "hex",
  "parking_lot",
- "sc-keystore",
  "serde_json",
  "sp-application-crypto",
  "sp-core",
