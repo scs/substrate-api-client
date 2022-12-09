@@ -41,7 +41,6 @@ pub enum Error {
 	Metadata(MetadataError),
 	#[error("InvalidMetadata: {0:?}")]
 	InvalidMetadata(InvalidMetadataError),
-	#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
 	#[error("Events Error: {0:?}")]
 	NodeApi(ac_node_api::error::Error),
 	#[error("Error decoding storage value: {0}")]
@@ -76,7 +75,6 @@ impl From<MetadataError> for Error {
 	}
 }
 
-#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
 impl From<ac_node_api::error::Error> for Error {
 	fn from(error: ac_node_api::error::Error) -> Self {
 		Error::NodeApi(error)
