@@ -37,10 +37,10 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
-                 cargo build --release --examples --features staking-xt,
+                 cargo build --release --examples --all-features,
 
                  cargo clippy --all --exclude test-no-std -- -D warnings,
-                 cargo clippy --features staking-xt --examples -- -D warnings,
+                 cargo clippy --all-features --examples -- -D warnings,
 
                  cargo test --all --exclude test-no-std,
 
@@ -121,6 +121,9 @@ jobs:
           print_metadata,
           sudo,
           transfer_using_seed,
+          transfer_using_seed_tungstenite_client,
+          transfer_using_seed_ws_client,
+
         ]
     steps:
       - uses: actions/checkout@v3

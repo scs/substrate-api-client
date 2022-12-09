@@ -16,7 +16,9 @@ members = [
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
+futures = { version = "0.3", optional = true }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+jsonrpsee = { version = "0.16", optional = true, features = ["async-client", "client-ws-transport", "jsonrpsee-types"] }
 log = { version = "0.4.14", default-features = false }
 primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
@@ -50,10 +52,11 @@ pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch 
 pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+tokio = { version = "1.16", features = ["rt-multi-thread", "macros", "time"] }
 wabt = "0.10.0"
 
 [features]
-default = ["std", "ws-client"]
+default = ["std", "jsonrpsee-client"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
@@ -82,6 +85,7 @@ std = [
     "ac-node-api/std",
     "ac-primitives/std",
 ]
+jsonrpsee-client = ["std", "jsonrpsee", "futures"]
 tungstenite-client = ["std", "tungstenite"]
-ws-client = ["ws"]
+ws-client = ["std", "ws"]
 staking-xt = ["std"]

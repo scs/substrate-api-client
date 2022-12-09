@@ -21,8 +21,7 @@ use sp_core::{
 	sr25519,
 };
 use sp_runtime::MultiAddress;
-use substrate_api_client::rpc::JsonrpseeClient;
-use substrate_api_client::{Api, AssetTipExtrinsicParams, XtStatus};
+use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
 
 fn main() {
 	env_logger::init();
@@ -35,7 +34,7 @@ fn main() {
 	println!("signer account: {}", alice.public().to_ss58check());
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let client = JsonrpseeClient::with_default_url().unwrap();
+	let client = WsRpcClient::with_default_url();
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice.clone());

@@ -26,6 +26,11 @@ pub use tungstenite_client::client::TungsteniteRpcClient;
 #[cfg(feature = "tungstenite-client")]
 pub mod tungstenite_client;
 
+#[cfg(feature = "jsonrpsee-client")]
+pub use jsonrpsee_client::*;
+#[cfg(feature = "jsonrpsee-client")]
+pub mod jsonrpsee_client;
+
 pub mod error;
 
 pub use error::*;
