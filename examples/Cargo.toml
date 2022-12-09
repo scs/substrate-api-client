@@ -11,8 +11,6 @@ log = { version = "0.4.14"}
 primitive-types = { version = "0.12.1", features = ["codec"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = { version = "1.0.79" }
-thiserror = { version = "1.0.30"}
-tungstenite = { version = "0.18.0", features = ["native-tls"] }
 url = { verson = "2.0.0" }
 ws = { version = "0.9.2", features = ["ssl"] }
 
@@ -28,7 +26,7 @@ sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "ma
 ac-compose-macros = { path = "../compose-macros"}
 ac-node-api = { path = "../node-api" }
 ac-primitives = { path = "../primitives" }
-substrate-api-client = { path = "../api-client", feaures = "tungstenite-client, ws-client, staking-xt" }
+substrate-api-client = { path = "../api-client", feaures = ["tungstenite-client", "ws-client", "staking-xt"] }
 
 env_logger = "0.9.0"
 frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -38,3 +36,7 @@ pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch 
 pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 wabt = "0.10.0"
+
+[features]
+default = ["ws-client"]
+ws-client = []

@@ -51,8 +51,6 @@ dependencies = [
  "sp-runtime-interface",
  "sp-version",
  "substrate-api-client",
- "thiserror",
- "tungstenite",
  "url",
  "wabt",
  "ws",
@@ -62,7 +60,6 @@ dependencies = [
 name = "ac-node-api"
 version = "0.2.1"
 dependencies = [
- "ac-primitives",
  "bitvec",
  "derive_more",
  "either",

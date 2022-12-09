@@ -15,9 +15,6 @@ scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], def
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
-# local
-ac-primitives = { path = "../primitives", default-features = false }
-
 # substrate
 frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -43,8 +40,6 @@ std = [
     "scale-info/std",
     "serde/std",
     "serde_json/std",
-    # local
-    "ac-primitives/std",
     # substrate
     "frame-metadata/std",
     "sp-core/std",
