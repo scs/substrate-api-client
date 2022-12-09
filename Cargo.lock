@@ -25,6 +25,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "ac-examples"
+version = "0.1.0"
+dependencies = [
+ "ac-compose-macros",
+ "ac-node-api",
+ "ac-primitives",
+ "env_logger",
+ "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "kitchensink-runtime",
+ "log",
+ "pallet-balances",
+ "pallet-identity",
+ "pallet-staking",
+ "parity-scale-codec",
+ "primitive-types",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-keyring",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-runtime-interface",
+ "sp-std",
+ "sp-version",
+ "substrate-api-client",
+ "thiserror",
+ "tungstenite",
+ "url",
+ "wabt",
+ "ws",
+]
+
+[[package]]
 name = "ac-node-api"
 version = "0.2.1"
 dependencies = [
@@ -4848,22 +4884,15 @@ dependencies = [
  "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
- "env_logger",
  "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
  "frame-support",
- "frame-system",
  "hex",
- "kitchensink-runtime",
  "log",
- "pallet-balances",
- "pallet-identity",
- "pallet-staking",
  "parity-scale-codec",
  "primitive-types",
  "serde",
  "serde_json",
  "sp-core",
- "sp-keyring",
  "sp-rpc",
  "sp-runtime",
  "sp-runtime-interface",
@@ -4872,7 +4901,6 @@ dependencies = [
  "thiserror",
  "tungstenite",
  "url",
- "wabt",
  "ws",
 ]
 
