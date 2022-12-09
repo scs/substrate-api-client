@@ -29,28 +29,21 @@ name = "ac-examples"
 version = "0.1.0"
 dependencies = [
  "env_logger",
- "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
  "frame-support",
  "frame-system",
- "hex",
  "kitchensink-runtime",
  "log",
  "pallet-balances",
  "pallet-identity",
  "pallet-staking",
  "parity-scale-codec",
- "primitive-types",
- "serde",
  "serde_json",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
- "sp-runtime-interface",
  "sp-version",
  "substrate-api-client",
- "url",
  "wabt",
- "ws",
 ]
 
 [[package]]
