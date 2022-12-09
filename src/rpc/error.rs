@@ -39,7 +39,6 @@ pub enum Error {
 	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
-#[cfg(feature = "ws-client")]
 impl From<SendError<String>> for Error {
 	fn from(error: SendError<String>) -> Self {
 		Self::Send(error.0)

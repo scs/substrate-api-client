@@ -18,23 +18,13 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Metadata};
 
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
-use substrate_api_client::{Api, AssetTipExtrinsicParams, Metadata};
-
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
-	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::with_default_url();
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::with_default_url(100);
+	let client = JsonrpseeClient::with_default_url().unwrap();
 
 	let mut api =
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();

@@ -18,29 +18,20 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic_offline, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4,
+	compose_extrinsic_offline, Api, AssetTipExtrinsicParams, JsonrpseeClient, UncheckedExtrinsicV4,
 };
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
 
-	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::with_default_url();
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::with_default_url(100);
+	let client = JsonrpseeClient::with_default_url().unwrap();
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);

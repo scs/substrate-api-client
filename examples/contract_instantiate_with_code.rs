@@ -19,7 +19,7 @@ use codec::Decode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
 };
 
 #[allow(unused)]
@@ -34,12 +34,13 @@ impl StaticEvent for ContractInstantiatedEventArgs {
 	const EVENT: &'static str = "Instantiated";
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	// initialize api and set the signer (sender) that is used to sign the extrinsics
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 

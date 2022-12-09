@@ -20,15 +20,9 @@ use kitchensink_runtime::Runtime as KitchensinkRuntime;
 use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
-
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
 use substrate_api_client::{
-	compose_extrinsic, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, UncheckedExtrinsicV4,
+	XtStatus,
 };
 
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
@@ -37,15 +31,12 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	// Create the node-api client and set the signer.
-	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::with_default_url();
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::with_default_url(100);
+	let client = JsonrpseeClient::with_default_url().unwrap();
 
 	let alice = AccountKeyring::Alice.pair();
 	let mut api =

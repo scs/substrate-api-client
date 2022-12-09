@@ -11,14 +11,15 @@ use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 #[cfg(feature = "staking-xt")]
-use substrate_api_client::{rpc::WsRpcClient, Api, PlainTipExtrinsicParams, XtStatus};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, PlainTipExtrinsicParams, XtStatus};
 
 #[cfg(feature = "staking-xt")]
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
@@ -91,7 +92,7 @@ pub fn get_last_reward(
 	validator_address: &str,
 	api: &substrate_api_client::Api<
 		sp_core::sr25519::Pair,
-		WsRpcClient,
+		JsonrpseeClient,
 		PlainTipExtrinsicParams<Runtime>,
 		Runtime,
 	>,

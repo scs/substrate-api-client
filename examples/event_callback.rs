@@ -14,33 +14,25 @@
 */
 
 //! Very simple example that shows how to subscribe to events.
+
 use codec::Decode;
 use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
 use substrate_api_client::HandleSubscription;
 
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
+
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
 use kitchensink_runtime::RuntimeEvent;
 
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
-use substrate_api_client::{Api, AssetTipExtrinsicParams};
-
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
-	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::with_default_url();
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::with_default_url(100);
+	let client = JsonrpseeClient::with_default_url().unwrap();
 
 	let api =
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();

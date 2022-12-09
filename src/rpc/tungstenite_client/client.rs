@@ -131,7 +131,7 @@ fn subscribe_to_server(
 	debug!("Connected to the server. Response HTTP code: {}", response.status());
 
 	// Subscribe to server
-	socket.write_message(Message::Text(json_req.to_string()))?;
+	socket.write_message(Message::Text(json_req))?;
 
 	loop {
 		let msg = read_until_text_message(&mut socket)?;
@@ -156,7 +156,7 @@ fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result
 		},
 		None => {
 			let message = serde_json::to_string(&value["params"]["result"])?;
-			result_in.send(message.into())?;
+			result_in.send(message)?;
 		},
 	};
 	Ok(())

@@ -18,28 +18,18 @@
 use frame_system::AccountInfo as GenericAccountInfo;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
-
-#[cfg(feature = "ws-client")]
-use substrate_api_client::rpc::WsRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-use substrate_api_client::rpc::TungsteniteRpcClient;
-
-use substrate_api_client::{Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
 
 type IndexFor<T> = <T as frame_system::Config>::Index;
 type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
 
 type AccountInfo = GenericAccountInfo<IndexFor<Runtime>, AccountDataFor<Runtime>>;
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 
-	#[cfg(feature = "ws-client")]
-	let client = WsRpcClient::with_default_url();
-
-	#[cfg(feature = "tungstenite-client")]
-	let client = TungsteniteRpcClient::with_default_url(100);
+	let client = JsonrpseeClient::with_default_url().unwrap();
 
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 

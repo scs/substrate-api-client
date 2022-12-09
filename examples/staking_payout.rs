@@ -7,13 +7,14 @@ use sp_keyring::AccountKeyring;
 #[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 #[cfg(feature = "staking-xt")]
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, XtStatus};
 
 #[cfg(feature = "staking-xt")]
-fn main() {
+#[tokio::main]
+async fn main() {
 	env_logger::init();
 	let from = AccountKeyring::Alice.pair();
-	let client = WsRpcClient::with_default_url();
+	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(from);
 	let mut exposure: Exposure<AccountId32, u128> = Exposure { total: 0, own: 0, others: vec![] };

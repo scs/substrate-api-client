@@ -37,12 +37,12 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
-                 cargo build --release --examples --features staking-xt,
+                 cargo build --release --examples --all-features,
 
                  cargo clippy --all --exclude test-no-std -- -D warnings,
-                 cargo clippy --features staking-xt --examples -- -D warnings,
+                 cargo clippy --all-features --examples -- -D warnings,
 
-                 cargo test --all --exclude test-no-std,
+                 cargo test --all --all-features --exclude test-no-std,
 
                  cargo fmt --all -- --check
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload examples
         uses: actions/upload-artifact@v3
-        if: matrix.check == 'cargo build --release --examples --features staking-xt'
+        if: matrix.check == 'cargo build --release --examples --all-features'
         with:
           name: examples
           path:  |
@@ -121,6 +121,8 @@ jobs:
           print_metadata,
           sudo,
           transfer_using_seed,
+          transfer_with_tungstenite_client,
+          transfer_with_ws_client,
         ]
     steps:
       - uses: actions/checkout@v3
