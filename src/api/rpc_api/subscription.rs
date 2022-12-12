@@ -26,7 +26,7 @@ use sp_core::storage::StorageChangeSet;
 // Subscription return value, rather than the api. Or directly
 // subcribe. Should be looked at in #288
 // https://github.com/scs/substrate-api-client/issues/288#issuecomment-1346221653
-pub trait EventSubscription<Client, Hash>
+pub trait SubscribeEvents<Client, Hash>
 where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
@@ -42,7 +42,7 @@ where
 	) -> ApiResult<EventDetails>;
 }
 
-impl<Signer, Client, Params, Runtime> EventSubscription<Client, Runtime::Hash>
+impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
