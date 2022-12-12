@@ -10,12 +10,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-use crate::{api::ApiResult, Api, ExtrinsicParams, MetadataError, ReadProof, Request};
+use crate::{api::ApiResult, rpc::Subscribe, utils, Api, MetadataError, ReadProof, Request};
 use ac_compose_macros::rpc_params;
-use ac_primitives::FrameSystemConfig;
+pub use ac_node_api::{events::EventDetails, StaticEvent};
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use codec::{Decode, Encode};
 use log::*;
-use sp_core::storage::{StorageData, StorageKey};
+use serde::de::DeserializeOwned;
+use sp_core::storage::{StorageChangeSet, StorageData, StorageKey};
 
 /// Generic interface to substrate storage.
 pub trait GetState<Hash> {
@@ -251,5 +253,37 @@ where
 			.ok_or(MetadataError::ConstantNotFound(constant))?;
 
 		Ok(Decode::decode(&mut c.value.as_slice())?)
+	}
+}
+
+pub trait SubscribeState<Client, Hash>
+where
+	Client: Subscribe,
+	Hash: DeserializeOwned,
+{
+	fn subscribe_state(
+		&self,
+		pallet: &str,
+		storage_key: &str,
+	) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
+}
+
+impl<Signer, Client, Params, Runtime> SubscribeState<Client, Runtime::Hash>
+	for Api<Signer, Client, Params, Runtime>
+where
+	Client: Subscribe,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: FrameSystemConfig,
+{
+	fn subscribe_state(
+		&self,
+		pallet: &str,
+		storage_key_name: &str,
+	) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+		debug!("subscribing to events");
+		let key = utils::storage_key(pallet, storage_key_name);
+		self.client()
+			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.map_err(|e| e.into())
 	}
 }

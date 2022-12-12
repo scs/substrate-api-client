@@ -14,12 +14,19 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{interfaces::state::GetState, ApiResult},
-	Api, Request,
+	api::{interfaces::state::GetState, Api, ApiResult},
+	rpc::Subscribe,
+	utils, Request,
 };
+use ac_compose_macros::rpc_params;
+pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig};
 use log::*;
-use sp_core::{storage::StorageKey, Pair};
+use serde::de::DeserializeOwned;
+use sp_core::{
+	storage::{StorageChangeSet, StorageKey},
+	Pair,
+};
 use sp_runtime::MultiSignature;
 
 pub trait GetAccountInformation<AccountId> {
@@ -65,5 +72,31 @@ where
 		address: &Runtime::AccountId,
 	) -> ApiResult<Option<Runtime::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
+	}
+}
+
+pub trait FrameSubscription<Client, Hash>
+where
+	Client: Subscribe,
+	Hash: DeserializeOwned,
+{
+	fn subscribe_system_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
+}
+
+impl<Signer, Client, Params, Runtime> FrameSubscription<Client, Runtime::Hash>
+	for Api<Signer, Client, Params, Runtime>
+where
+	Client: Subscribe,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: FrameSystemConfig,
+{
+	fn subscribe_system_events(
+		&self,
+	) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+		debug!("subscribing to events");
+		let key = utils::storage_key("System", "Events");
+		self.client()
+			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.map_err(|e| e.into())
 	}
 }

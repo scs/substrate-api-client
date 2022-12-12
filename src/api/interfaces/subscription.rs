@@ -12,11 +12,9 @@
 */
 
 use crate::{
-	api::{error::Error, Api, ApiResult, TransactionStatus},
+	api::{error::Error, Api, ApiResult},
 	rpc::{HandleSubscription, Subscribe},
-	utils,
 };
-use ac_compose_macros::rpc_params;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
@@ -24,16 +22,15 @@ use log::*;
 use serde::de::DeserializeOwned;
 use sp_core::storage::StorageChangeSet;
 
-pub type TransactionSubscriptionFor<Client, Hash> =
-	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
-
-pub trait NodeSubscription<Client, Hash>
+// FIXME: This should rather be implemented directly on the
+// Subscription return value, rather than the api. Or directly
+// subcribe. Should be looked at in #288
+// https://github.com/scs/substrate-api-client/issues/288#issuecomment-1346221653
+pub trait EventSubscriptionHelper<Client, Hash>
 where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
-
 	fn wait_for_event<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
@@ -45,22 +42,13 @@ where
 	) -> ApiResult<EventDetails>;
 }
 
-impl<Signer, Client, Params, Runtime> NodeSubscription<Client, Runtime::Hash>
+impl<Signer, Client, Params, Runtime> EventSubscriptionHelper<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
-	Runtime::Header: DeserializeOwned,
 {
-	fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
-		debug!("subscribing to events");
-		let key = utils::storage_key("System", "Events");
-		self.client()
-			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
-			.map_err(|e| e.into())
-	}
-
 	fn wait_for_event<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
