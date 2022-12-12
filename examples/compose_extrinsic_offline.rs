@@ -22,7 +22,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetHeader,
-	NodeSubscription, UncheckedExtrinsicV4, XtStatus,
+	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[tokio::main]

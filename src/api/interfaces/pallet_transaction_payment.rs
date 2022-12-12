@@ -19,8 +19,8 @@ use ac_compose_macros::rpc_params;
 use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, RuntimeDispatchInfo};
 use sp_rpc::number::NumberOrHex;
 
-/// Interface to common calls of the substrate balances pallet.
-pub trait GetBalance<Hash> {
+/// Interface to common calls of the substrate transaction payment pallet.
+pub trait GetTransactionPayment<Hash> {
 	type Balance;
 
 	fn get_fee_details(
@@ -36,7 +36,7 @@ pub trait GetBalance<Hash> {
 	) -> ApiResult<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
-impl<Signer, Client, Params, Runtime> GetBalance<Runtime::Hash>
+impl<Signer, Client, Params, Runtime> GetTransactionPayment<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,

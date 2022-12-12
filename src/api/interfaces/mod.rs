@@ -12,8 +12,8 @@
 */
 
 pub use self::{
-	author::*, frame_system::*, pallet_balances::*, pallet_transaction_payment::*, state::*,
-	subscription::*,
+	author::*, chain::*, frame_system::*, pallet_balances::*, pallet_transaction_payment::*,
+	state::*, subscription::*,
 };
 
 pub mod author;

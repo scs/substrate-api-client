@@ -14,7 +14,7 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{interfaces::state::GetState, Api, ApiResult},
+	api::{interfaces::state::GetStorageState, Api, ApiResult},
 	rpc::Subscribe,
 	utils, Request,
 };
@@ -75,7 +75,7 @@ where
 	}
 }
 
-pub trait FrameSubscription<Client, Hash>
+pub trait SubscribeFrameSystem<Client, Hash>
 where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
@@ -83,7 +83,7 @@ where
 	fn subscribe_system_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
 }
 
-impl<Signer, Client, Params, Runtime> FrameSubscription<Client, Runtime::Hash>
+impl<Signer, Client, Params, Runtime> SubscribeFrameSystem<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,

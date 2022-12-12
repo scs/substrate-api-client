@@ -22,7 +22,7 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, NodeSubscription,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, SubmitAndWatch,
 	XtStatus,
 };
 

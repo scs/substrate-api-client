@@ -20,7 +20,7 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAddress,
-	NodeSubscription, UncheckedExtrinsicV4, XtStatus,
+	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[tokio::main]

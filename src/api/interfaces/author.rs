@@ -56,8 +56,6 @@ where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	type Header: DeserializeOwned;
-
 	/// Submit an extrinsic an return a websocket Subscription to watch the
 	/// extrinsic progress.
 	fn submit_and_watch_extrinsic(
@@ -80,10 +78,7 @@ where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
-	Runtime::Header: DeserializeOwned,
 {
-	type Header = Runtime::Header;
-
 	fn submit_and_watch_extrinsic(
 		&self,
 		xthex_prefixed: &str,

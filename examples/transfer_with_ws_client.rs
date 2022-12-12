@@ -22,8 +22,7 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetAccountInformation, NodeSubscription,
-	XtStatus,
+	rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 fn main() {

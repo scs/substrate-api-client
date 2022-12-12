@@ -124,7 +124,7 @@ where
 	}
 }
 
-pub trait ChainSubscription<Client, Hash>
+pub trait SubscribeChain<Client, Hash>
 where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
@@ -134,7 +134,7 @@ where
 	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>>;
 }
 
-impl<Signer, Client, Params, Runtime> ChainSubscription<Client, Runtime::Hash>
+impl<Signer, Client, Params, Runtime> SubscribeChain<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
