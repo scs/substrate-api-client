@@ -22,7 +22,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::thread;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, EventSubscriptionHelper, StaticEvent,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, EventSubscription, StaticEvent,
 	SubmitAndWatch, SubscribeFrameSystem, XtStatus,
 };
 

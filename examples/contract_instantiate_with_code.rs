@@ -19,8 +19,8 @@ use codec::Decode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, AccountId, Api, EventSubscriptionHelper, PlainTipExtrinsicParams,
-	StaticEvent, SubmitAndWatch, SubscribeFrameSystem, XtStatus,
+	rpc::JsonrpseeClient, AccountId, Api, EventSubscription, PlainTipExtrinsicParams, StaticEvent,
+	SubmitAndWatch, SubscribeFrameSystem, XtStatus,
 };
 
 #[allow(unused)]

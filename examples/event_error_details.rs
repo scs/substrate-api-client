@@ -19,7 +19,7 @@ use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, ApiResult, AssetTipExtrinsicParams, EventSubscriptionHelper,
+	rpc::JsonrpseeClient, Api, ApiResult, AssetTipExtrinsicParams, EventSubscription,
 	GetAccountInformation, StaticEvent, SubmitAndWatch, SubscribeFrameSystem, XtStatus,
 };
 
