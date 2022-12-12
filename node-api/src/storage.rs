@@ -75,7 +75,7 @@ impl<K: Encode, Q: Encode> StorageDoubleMap<K, Q> {
 }
 
 /// trait to extract the storage based on the [`StorageEntryMetadata`].
-pub trait GetState {
+pub trait GetStorage {
 	fn get_double_map<K: Encode, Q: Encode>(
 		&self,
 		pallet_prefix: &str,
@@ -85,7 +85,7 @@ pub trait GetState {
 	fn get_value(&self, pallet_prefix: &str) -> Result<StorageValue, MetadataError>;
 }
 
-impl GetState for StorageEntryMetadata<PortableForm> {
+impl GetStorage for StorageEntryMetadata<PortableForm> {
 	fn get_double_map<K: Encode, Q: Encode>(
 		&self,
 		pallet_prefix: &str,
