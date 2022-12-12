@@ -32,26 +32,7 @@ where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	type Header: DeserializeOwned;
-
-	/// Submit an extrinsic an return a websocket Subscription to watch the
-	/// extrinsic progress.
-	fn submit_and_watch_extrinsic(
-		&self,
-		xthex_prefixed: &str,
-	) -> ApiResult<TransactionSubscriptionFor<Client, Hash>>;
-
-	/// Submit an extrinsic and watch in until the desired status is reached,
-	/// if no error is encountered previously. This method is blocking.
-	fn submit_and_watch_extrinsic_until(
-		&self,
-		xthex_prefixed: &str,
-		watch_until: XtStatus,
-	) -> ApiResult<Option<Hash>>;
-
 	fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
-
-	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>>;
 
 	fn wait_for_event<Ev: StaticEvent>(
 		&self,
@@ -72,63 +53,11 @@ where
 	Runtime: FrameSystemConfig,
 	Runtime::Header: DeserializeOwned,
 {
-	type Header = Runtime::Header;
-
-	fn submit_and_watch_extrinsic(
-		&self,
-		xthex_prefixed: &str,
-	) -> ApiResult<TransactionSubscriptionFor<Client, Runtime::Hash>> {
-		self.client()
-			.subscribe(
-				"author_submitAndWatchExtrinsic",
-				rpc_params![xthex_prefixed],
-				"author_unsubmitAndWatchExtrinsic",
-			)
-			.map_err(|e| e.into())
-	}
-
-	fn submit_and_watch_extrinsic_until(
-		&self,
-		xthex_prefixed: &str,
-		watch_until: XtStatus,
-	) -> ApiResult<Option<Runtime::Hash>> {
-		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
-			self.submit_and_watch_extrinsic(xthex_prefixed)?;
-		while let Some(transaction_status) = subscription.next() {
-			let transaction_status = transaction_status?;
-			if transaction_status.is_supported() {
-				if transaction_status.as_u8() >= watch_until as u8 {
-					subscription.unsubscribe()?;
-					return Ok(return_block_hash_if_available(transaction_status))
-				}
-			} else {
-				subscription.unsubscribe()?;
-				let error = Error::Extrinsic(format!(
-					"Unsupported transaction status: {:?}, stopping watch process.",
-					transaction_status
-				));
-				return Err(error)
-			}
-		}
-		Err(Error::NoStream)
-	}
-
 	fn subscribe_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
-			.map_err(|e| e.into())
-	}
-
-	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>> {
-		debug!("subscribing to finalized heads");
-		self.client()
-			.subscribe(
-				"chain_subscribeFinalizedHeads",
-				rpc_params![],
-				"chain_unsubscribeFinalizedHeads",
-			)
 			.map_err(|e| e.into())
 	}
 
@@ -184,16 +113,4 @@ where
 
 fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
 	event_details.pallet_name() == "System" && event_details.variant_name() == "ExtrinsicFailed"
-}
-
-fn return_block_hash_if_available<Hash, BlockHash>(
-	transcation_status: TransactionStatus<Hash, BlockHash>,
-) -> Option<BlockHash> {
-	match transcation_status {
-		TransactionStatus::InBlock(block_hash) => Some(block_hash),
-		TransactionStatus::Retracted(block_hash) => Some(block_hash),
-		TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
-		TransactionStatus::Finalized(block_hash) => Some(block_hash),
-		_ => None,
-	}
 }
