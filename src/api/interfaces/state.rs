@@ -170,15 +170,17 @@ where
 			None => Ok(None),
 		}
 	}
+
 	fn get_opaque_storage_by_key_hash(
 		&self,
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
 		let storage: Option<StorageData> =
-			self.client().request("state_GetStorage", rpc_params![key, at_block])?;
+			self.client().request("state_getStorage", rpc_params![key, at_block])?;
 		Ok(storage.map(|storage_data| storage_data.0))
 	}
+
 	fn get_storage_value_proof(
 		&self,
 		storage_prefix: &'static str,
