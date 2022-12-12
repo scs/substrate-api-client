@@ -12,7 +12,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 #[cfg(feature = "staking-xt")]
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, GetState, PlainTipExtrinsicParams, SubmitAndWatch, XtStatus,
+	rpc::JsonrpseeClient, Api, GetStorage, PlainTipExtrinsicParams, SubmitAndWatch, XtStatus,
 };
 
 #[cfg(feature = "staking-xt")]

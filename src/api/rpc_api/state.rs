@@ -20,7 +20,7 @@ use serde::de::DeserializeOwned;
 use sp_core::storage::{StorageChangeSet, StorageData, StorageKey};
 
 /// Generic interface to substrate storage.
-pub trait GetState<Hash> {
+pub trait GetStorage<Hash> {
 	fn get_storage_value<V: Decode>(
 		&self,
 		storage_prefix: &'static str,
@@ -99,7 +99,7 @@ pub trait GetState<Hash> {
 		-> ApiResult<C>;
 }
 
-impl<Signer, Client, Params, Runtime> GetState<Runtime::Hash>
+impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
