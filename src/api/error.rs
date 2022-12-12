@@ -33,7 +33,7 @@ pub enum Error {
 	MetadataFetch,
 	#[error("Operation needs a signer to be set in the api")]
 	NoSigner,
-	#[error("RpcClient  error: {0:?}")]
+	#[error("RpcClient error: {0:?}")]
 	RpcClient(#[from] RpcClientError),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]
 	Disconnected(#[from] sp_std::sync::mpsc::RecvError),
