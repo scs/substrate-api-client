@@ -18,7 +18,7 @@ use log::*;
 use sp_core::storage::{StorageData, StorageKey};
 
 /// Generic interface to substrate storage.
-pub trait GetStorage<Hash> {
+pub trait GetState<Hash> {
 	fn get_storage_value<V: Decode>(
 		&self,
 		storage_prefix: &'static str,
@@ -97,7 +97,7 @@ pub trait GetStorage<Hash> {
 		-> ApiResult<C>;
 }
 
-impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
+impl<Signer, Client, Params, Runtime> GetState<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
@@ -174,7 +174,7 @@ where
 		at_block: Option<Runtime::Hash>,
 	) -> ApiResult<Option<Vec<u8>>> {
 		let storage: Option<StorageData> =
-			self.client().request("state_getStorage", rpc_params![key, at_block])?;
+			self.client().request("state_GetState", rpc_params![key, at_block])?;
 		Ok(storage.map(|storage_data| storage_data.0))
 	}
 	fn get_storage_value_proof(

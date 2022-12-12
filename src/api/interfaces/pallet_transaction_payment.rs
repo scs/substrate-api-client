@@ -11,7 +11,7 @@
    limitations under the License.
 */
 use crate::{
-	api::{interfaces::storage::GetStorage, Api, ApiClientError, ApiResult},
+	api::{interfaces::state::GetState, Api, ApiClientError, ApiResult},
 	rpc::Request,
 	ExtrinsicParams,
 };
