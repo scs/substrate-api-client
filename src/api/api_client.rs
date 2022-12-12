@@ -28,7 +28,7 @@ pub use sp_runtime::{
 };
 pub use sp_std::prelude::*;
 
-use crate::{api::interfaces::frame_system::GetAccountInformation, rpc::Request};
+use crate::{rpc::Request, GetAccountInformation};
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};

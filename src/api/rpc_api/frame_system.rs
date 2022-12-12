@@ -14,7 +14,7 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{interfaces::state::GetState, Api, ApiResult},
+	api::{Api, ApiResult, GetState},
 	rpc::Subscribe,
 	utils, Request,
 };
