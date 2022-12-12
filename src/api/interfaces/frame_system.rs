@@ -14,7 +14,7 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{interfaces::generic_storage::GetGenericStorage, ApiResult},
+	api::{interfaces::storage::GetStorage, ApiResult},
 	Api, FromHexString, Request,
 };
 use ac_compose_macros::rpc_params;

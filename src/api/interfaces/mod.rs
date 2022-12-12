@@ -12,11 +12,11 @@
 */
 
 pub use self::{
-	frame_system::*, generic_storage::*, pallet_balances::*, submit_extrinisc::*, subscription::*,
+	frame_system::*, pallet_balances::*, storage::*, submit_extrinisc::*, subscription::*,
 };
 
 pub mod frame_system;
-pub mod generic_storage;
 pub mod pallet_balances;
+pub mod storage;
 pub mod submit_extrinisc;
 pub mod subscription;

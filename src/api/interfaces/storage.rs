@@ -18,7 +18,7 @@ use log::*;
 use sp_core::storage::{StorageData, StorageKey};
 
 /// Generic interface to substrate storage.
-pub trait GetGenericStorage<Hash> {
+pub trait GetStorage<Hash> {
 	fn get_storage_value<V: Decode>(
 		&self,
 		storage_prefix: &'static str,
@@ -97,7 +97,7 @@ pub trait GetGenericStorage<Hash> {
 		-> ApiResult<C>;
 }
 
-impl<Signer, Client, Params, Runtime> GetGenericStorage<Runtime::Hash>
+impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
