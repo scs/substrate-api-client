@@ -14,7 +14,7 @@
 use crate::{
 	api::{error::Error, Api, ApiResult, TransactionStatus},
 	rpc::{HandleSubscription, Subscribe},
-	utils, XtStatus,
+	utils,
 };
 use ac_compose_macros::rpc_params;
 pub use ac_node_api::{events::EventDetails, StaticEvent};
