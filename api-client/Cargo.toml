@@ -36,6 +36,7 @@ ac-primitives = { path = "../primitives", default-features = false }
 
 [dev-dependencies]
 frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
