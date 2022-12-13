@@ -25,7 +25,7 @@ pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch 
 pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # local deps
-substrate-api-client = { path = "../api-client", feaures = ["tungstenite-client", "ws-client", "staking-xt"] }
+substrate-api-client = { path = "../api-client", features = ["tungstenite-client", "ws-client", "staking-xt"] }
 
 [features]
 default = ["ws-client"]
