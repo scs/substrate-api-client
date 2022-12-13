@@ -6,12 +6,14 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
+codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
 log = { version = "0.4.14", default-features = false }
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# needed for full-crypto feautres of sp-core in no-std
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 
 # local

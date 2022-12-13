@@ -36,6 +36,7 @@ jobs:
                  cargo build --release -p test-no-std --features api-client,
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
+                 cargo build --release -p test-no-std --features primitives,
 
                  cargo build --release --examples --all-features,
 
