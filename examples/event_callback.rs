@@ -19,9 +19,9 @@ use codec::Decode;
 use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
-use substrate_api_client::HandleSubscription;
-
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, HandleSubscription, SubscribeFrameSystem,
+};
 
 // This module depends on node_runtime.
 // To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
@@ -38,7 +38,7 @@ async fn main() {
 		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
-	let mut subscription = api.subscribe_events().unwrap();
+	let mut subscription = api.subscribe_system_events().unwrap();
 
 	for _ in 0..5 {
 		let event_bytes = subscription.next().unwrap().unwrap().changes[0].1.clone().unwrap().0;

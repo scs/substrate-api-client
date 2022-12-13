@@ -18,17 +18,15 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use crate::{api::Api, rpc::Request, FromHexString};
+use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, GenericAddress,
 	UncheckedExtrinsicV4,
 };
 use codec::{Compact, Encode};
-use core::str::FromStr;
 use serde::de::DeserializeOwned;
 use sp_core::crypto::Pair;
-use sp_rpc::number::NumberOrHex;
 use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
 use sp_std::prelude::*;
 
@@ -77,9 +75,8 @@ where
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: GetRuntimeBlockType + ContractsConfig + BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,
+	Runtime::AccountId: From<Signer::Public>,
 	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,

@@ -21,7 +21,7 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	compose_call, compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	GenericAddress, UncheckedExtrinsicV4, XtStatus,
+	GenericAddress, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[tokio::main]

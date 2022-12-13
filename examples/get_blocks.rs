@@ -19,7 +19,8 @@
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, HandleSubscription,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetBlock, GetHeader, HandleSubscription,
+	SubscribeChain,
 };
 
 #[tokio::main]

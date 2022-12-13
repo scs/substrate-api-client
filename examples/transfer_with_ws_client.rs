@@ -21,7 +21,9 @@ use sp_core::{
 	sr25519,
 };
 use sp_runtime::MultiAddress;
-use substrate_api_client::{rpc::WsRpcClient, Api, AssetTipExtrinsicParams, XtStatus};
+use substrate_api_client::{
+	rpc::WsRpcClient, Api, AssetTipExtrinsicParams, GetAccountInformation, SubmitAndWatch, XtStatus,
+};
 
 fn main() {
 	env_logger::init();

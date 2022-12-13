@@ -17,7 +17,7 @@ limitations under the License.
 
 use kitchensink_runtime::Runtime;
 use sp_runtime::app_crypto::sp_core::sr25519;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetBalance};
 
 #[tokio::main]
 async fn main() {

@@ -18,17 +18,15 @@
 //! Extrinsics for `pallet-staking`.
 
 use super::common::*;
-use crate::{rpc::Request, Api, FromHexString};
+use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, RewardDestination, StakingConfig,
 	UncheckedExtrinsicV4,
 };
 use codec::{Compact, Encode};
-use core::str::FromStr;
 use serde::de::DeserializeOwned;
 use sp_core::Pair;
-use sp_rpc::number::NumberOrHex;
 use sp_runtime::{traits::GetRuntimeBlockType, AccountId32, MultiSignature, MultiSigner};
 
 const STAKING_MODULE: &str = "Staking";
@@ -92,13 +90,12 @@ pub type StakingSetValidatorCountXt<SignedExtra> =
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,
-	MultiSigner: From<Signer::Public>,
 	MultiSignature: From<Signer::Signature>,
+	MultiSigner: From<Signer::Public>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: GetRuntimeBlockType + BalancesConfig + StakingConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	Runtime::AccountId: From<Signer::Public>,
 	Compact<Runtime::CurrencyBalance>: Encode,
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,

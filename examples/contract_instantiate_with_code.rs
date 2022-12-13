@@ -19,7 +19,8 @@ use codec::Decode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, SubmitAndWatch,
+	SubscribeEvents, SubscribeFrameSystem, XtStatus,
 };
 
 #[allow(unused)]
@@ -55,7 +56,7 @@ async fn main() {
 "#;
 	let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
-	let mut subscription = api.subscribe_events().expect("cannot subscribe to events");
+	let mut subscription = api.subscribe_system_events().expect("cannot subscribe to events");
 
 	let xt = api.contract_instantiate_with_code(
 		1_000_000_000_000_000,

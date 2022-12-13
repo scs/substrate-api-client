@@ -21,7 +21,10 @@ use sp_core::{
 	sr25519,
 };
 use sp_runtime::MultiAddress;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, XtStatus};
+use substrate_api_client::{
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, SubmitAndWatch,
+	XtStatus,
+};
 
 #[tokio::main]
 async fn main() {

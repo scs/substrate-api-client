@@ -22,6 +22,7 @@ pub use crate::{
 pub use ac_primitives::FeeDetails;
 pub use api_client::Api;
 pub use frame_metadata::RuntimeMetadataPrefixed;
+pub use rpc_api::*;
 pub use serde_json::Value;
 pub use sp_core::{crypto::Pair, storage::StorageKey};
 pub use sp_runtime::{
@@ -36,12 +37,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod api_client;
 pub mod error;
-
-#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
-pub mod subscription;
-
-#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
-pub use subscription::*;
+pub mod rpc_api;
 
 /// Simplified TransactionStatus to allow the user to choose until when to watch
 /// an extrinsic.

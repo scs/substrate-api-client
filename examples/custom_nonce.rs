@@ -21,8 +21,8 @@ use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetHeader,
+	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[tokio::main]

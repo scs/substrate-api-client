@@ -10,7 +10,7 @@
 //!
 //! This file is mostly subxt.
 
-use crate::{alloc::borrow::ToOwned, storage::GetStorage, Encoded};
+use crate::{alloc::borrow::ToOwned, storage::GetStorageTypes, Encoded};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
 	PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,

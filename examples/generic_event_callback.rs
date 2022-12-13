@@ -22,7 +22,8 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use std::thread;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, StaticEvent, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, StaticEvent, SubmitAndWatch,
+	SubscribeEvents, SubscribeFrameSystem, XtStatus,
 };
 
 // Look at the how the transfer event looks like in in the metadata
@@ -52,7 +53,7 @@ async fn main() {
 
 	let api2 = api.clone();
 	let thread_output = thread::spawn(move || {
-		let mut subscription = api2.subscribe_events().unwrap();
+		let mut subscription = api2.subscribe_system_events().unwrap();
 		let args: TransferEventArgs =
 			api2.wait_for_event::<TransferEventArgs>(&mut subscription).unwrap();
 		args
