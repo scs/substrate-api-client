@@ -1,10 +1,9 @@
 [workspace]
 members = [
     "examples",
-    "api-client",
+    "substrate-api-client",
     "compose-macros",
     "client-keystore",
     "node-api",
     "test-no-std",
-
 ]
