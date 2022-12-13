@@ -11,6 +11,7 @@ libc = { version = "0.2.119", default-features = false }
 # local dependencies
 ac-compose-macros = { path = "../compose-macros", default-features = false, optional = true }
 ac-node-api = { path = "../node-api", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
+ac-primitives = { path = "../primitives", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 substrate-api-client = { path = "../substrate-api-client", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 
 # substrate dependencies
@@ -21,4 +22,5 @@ sp-io = { default-features = false, features = ["disable_oom", "disable_panic_ha
 # leaks might cause successful `no-std` builds, which would fail in standalone build.
 api-client = ["substrate-api-client"]
 compose-macros = ["ac-compose-macros"]
+primitives = ["ac-primitives"]
 node-api = ["ac-node-api"]

@@ -3,9 +3,14 @@
 #![no_std]
 #![no_main]
 
-#[cfg(not(any(feature = "api-client", feature = "node-api", feature = "compose-macros")))]
+#[cfg(not(any(
+	feature = "api-client",
+	feature = "node-api",
+	feature = "compose-macros",
+	feature = "primitives"
+)))]
 compile_error!(
-	"either feature \"api-client\", \"compose-macro\", or feature \"node-api\" must be enabled"
+	"either feature \"api-client\", \"compose-macro\", \"primitives\", or feature \"node-api\" must be enabled"
 );
 
 // DUTs

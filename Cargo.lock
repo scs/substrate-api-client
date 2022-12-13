@@ -85,6 +85,7 @@ dependencies = [
  "serde_json",
  "sp-core",
  "sp-runtime",
+ "sp-runtime-interface",
  "sp-staking",
  "sp-std",
  "sp-weights",
@@ -5300,6 +5301,7 @@ version = "0.7.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
+ "ac-primitives",
  "libc",
  "sp-io",
  "substrate-api-client",

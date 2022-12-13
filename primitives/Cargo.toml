@@ -19,18 +19,26 @@ sp-staking = { default-features = false, git = "https://github.com/paritytech/su
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-weights = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
-# substrate std
+# substrate std / wasm
 frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
+
+# need to add this for `no_std` disable_target_static_assertions
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+
 [dev-dependencies]
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
+disable_target_static_assertions = [
+    "sp-runtime-interface/disable_target_static_assertions",
+]
 std = [
     "codec/std",
     "hex/std",
