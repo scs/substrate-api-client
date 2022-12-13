@@ -10,7 +10,7 @@
 	feature = "primitives"
 )))]
 compile_error!(
-	"either feature \"api-client\", \"compose-macro\", \"primitives\", or feature \"node-api\" must be enabled"
+	"either feature \"api-client\", \"compose-macros\", \"primitives\", or feature \"node-api\" must be enabled"
 );
 
 // DUTs

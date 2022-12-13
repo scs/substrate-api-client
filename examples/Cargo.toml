@@ -26,7 +26,3 @@ pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch =
 
 # local deps
 substrate-api-client = { path = "../substrate-api-client", features = ["tungstenite-client", "ws-client", "staking-xt"] }
-
-[features]
-default = ["ws-client"]
-ws-client = []

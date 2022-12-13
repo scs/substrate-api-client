@@ -27,7 +27,7 @@ pallet-contracts = { optional = true, git = "https://github.com/paritytech/subst
 pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 
-# need to add this for `no_std` disable_target_static_assertions
+# need to add this for `no_std` disable_target_static_assertions feature
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 
