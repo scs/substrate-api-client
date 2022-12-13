@@ -11,7 +11,7 @@ libc = { version = "0.2.119", default-features = false }
 # local dependencies
 ac-compose-macros = { path = "../compose-macros", default-features = false, optional = true }
 ac-node-api = { path = "../node-api", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
-substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
+substrate-api-client = { path = "../api-client", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 
 # substrate dependencies
 sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
