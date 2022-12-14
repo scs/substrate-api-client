@@ -17,6 +17,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(assert_matches)]
 
+extern crate alloc;
+
 pub use ac_compose_macros::{compose_call, compose_extrinsic_offline};
 pub use ac_node_api::*;
 pub use ac_primitives::*;
