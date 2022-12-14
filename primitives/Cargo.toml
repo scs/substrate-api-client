@@ -19,7 +19,7 @@ sp-staking = { default-features = false, git = "https://github.com/paritytech/su
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-weights = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
-# substrate std
+# substrate std / wasm only
 frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }

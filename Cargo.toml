@@ -15,28 +15,34 @@ members = [
 ]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
-futures = { version = "0.3", optional = true }
+# crates.io no_std
+codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
-jsonrpsee = { version = "0.16", optional = true, features = ["async-client", "client-ws-transport", "jsonrpsee-types"] }
 log = { version = "0.4.14", default-features = false }
-primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.79", default-features = false }
+
+# crates.io std only
+primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
 thiserror = { version = "1.0.30", optional = true }
-tungstenite = { version = "0.18.0", optional = true, features = ["native-tls"] }
 url = { version = "2.0.0", optional = true }
+
+# websocket dependent features
+futures = { version = "0.3", optional = true }
+jsonrpsee = { version = "0.16", optional = true, features = ["async-client", "client-ws-transport", "jsonrpsee-types"] }
+tungstenite = { version = "0.18.0", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
-
-# Substrate dependencies
+# Substrate no_std dependencies
 frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
-frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-rpc = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# substrate std / wasm only
+frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-rpc = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-version = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # local deps
@@ -45,7 +51,7 @@ ac-node-api = { path = "node-api", default-features = false }
 ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -62,23 +68,25 @@ disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
 std = [
-    #crate io
+    # crates.io no_std
     "codec/std",
     "hex/std",
     "log/std",
-    "primitive-types",
     "serde/std",
     "serde_json/std",
+    # crates.io std only
+    "primitive-types",
     "thiserror",
     "url",
-    # substrate
+    # substrate no_std
     "frame-metadata/std",
-    "frame-support",
     "sp-core/std",
-    "sp-rpc",
     "sp-runtime/std",
     "sp-runtime-interface/std",
     "sp-std/std",
+    # substrate std
+    "frame-support",
+    "sp-rpc",
     "sp-version",
     # local deps
     "ac-compose-macros/std",
