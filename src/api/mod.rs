@@ -25,7 +25,7 @@ pub mod rpc_api;
 
 use serde::{Deserialize, Serialize};
 pub struct TransactionReport<Hash> {
-	pub tx_hash: Hash,
+	pub xt_hash: Hash,
 	pub block_hash: Option<Hash>,
 	pub status: TransactionStatus<Hash, Hash>,
 	pub events: Option<Events<Hash>>,
@@ -33,12 +33,12 @@ pub struct TransactionReport<Hash> {
 
 impl<Hash> TransactionReport<Hash> {
 	pub fn new(
-		tx_hash: Hash,
+		xt_hash: Hash,
 		block_hash: Option<Hash>,
 		status: TransactionStatus<Hash, Hash>,
 		events: Option<Events<Hash>>,
 	) -> Self {
-		Self { tx_hash, block_hash, status, events }
+		Self { xt_hash, block_hash, status, events }
 	}
 }
 
