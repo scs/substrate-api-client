@@ -1,21 +1,42 @@
-#[cfg(feature = "staking-xt")]
+/*
+	Copyright 2019 Supercomputing Systems AG
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+		http://www.apache.org/licenses/LICENSE-2.0
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+*/
+
 use codec::{Decode, Encode};
-#[cfg(feature = "staking-xt")]
 use kitchensink_runtime::Runtime;
-#[cfg(feature = "staking-xt")]
 use pallet_staking::{ActiveEraInfo, Exposure};
-#[cfg(feature = "staking-xt")]
 use serde_json::Value;
-#[cfg(feature = "staking-xt")]
 use sp_keyring::AccountKeyring;
-#[cfg(feature = "staking-xt")]
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
-#[cfg(feature = "staking-xt")]
 use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, GetStorage, PlainTipExtrinsicParams, SubmitAndWatch, XtStatus,
 };
 
-#[cfg(feature = "staking-xt")]
+pub struct GracePeriod {
+	pub enabled: bool,
+	pub eras: u32,
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
+pub struct StakingLedger {
+	pub stash: AccountId32,
+	#[codec(compact)]
+	pub total: u128,
+	#[codec(compact)]
+	pub active: u128,
+	pub unlocking: Vec<u32>,
+	pub claimed_rewards: Vec<u32>,
+}
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -89,7 +110,6 @@ async fn main() {
 	println!("Unclaimed payouts: {:?}", num_of_claimed_payouts);
 }
 
-#[cfg(feature = "staking-xt")]
 pub fn get_last_reward(
 	validator_address: &str,
 	api: &substrate_api_client::Api<
@@ -129,23 +149,3 @@ pub fn get_last_reward(
 	println!("{}", last_reward);
 	last_reward
 }
-
-#[cfg(feature = "staking-xt")]
-pub struct GracePeriod {
-	pub enabled: bool,
-	pub eras: u32,
-}
-#[cfg(feature = "staking-xt")]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
-pub struct StakingLedger {
-	pub stash: AccountId32,
-	#[codec(compact)]
-	pub total: u128,
-	#[codec(compact)]
-	pub active: u128,
-	pub unlocking: Vec<u32>,
-	pub claimed_rewards: Vec<u32>,
-}
-
-#[cfg(not(feature = "staking-xt"))]
-fn main() {}
