@@ -14,22 +14,17 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{Error, Result},
+	api::{rpc_api::extrinsic_has_failed, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	Api, TransactionStatus, XtStatus,
-	TransactionReport, GetBlock,
-	TransactionStatus, XtStatus, Events, GetStorage, Phase,
+	utils, Api, DispatchError, Events, FromHexString, GetBlock, GetStorage, Phase,
+	TransactionReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
+use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::Hash as HashTrait;
-use sp_runtime::traits::Block as BlockTrait;
-use sp_runtime::traits::GetRuntimeBlockType;
-use codec::Encode;
-use crate::utils;
-use crate::FromHexString;
+use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -89,7 +84,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		wait_for_finalized: bool,
-	) -> Result<Option<Hash>>;
+	) -> Result<TransactionReport<Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
@@ -119,7 +114,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		watch_until: XtStatus,
-		) -> Result<TransactionReport<Runtime::Hash>> {
+	) -> Result<TransactionReport<Runtime::Hash>> {
 		let tx_hash = Runtime::Hashing::hash_of(&xthex_prefixed.encode());
 		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
 			self.submit_and_watch_extrinsic(xthex_prefixed)?;
@@ -129,7 +124,7 @@ where
 			if transaction_status.is_supported() {
 				if transaction_status.as_u8() >= watch_until as u8 {
 					subscription.unsubscribe()?;
-					let block_hash = get_maybe_block_hash(transaction_status);
+					let block_hash = get_maybe_block_hash(transaction_status.clone());
 					return Ok(TransactionReport::new(tx_hash, block_hash, transaction_status, None))
 				}
 			} else {
@@ -144,14 +139,13 @@ where
 		Err(Error::NoStream)
 	}
 
-
-		/// Submit an extrinsic and watch in until inBlock or Finalized is reached,
+	/// Submit an extrinsic and watch in until inBlock or Finalized is reached,
 	/// if no error is encountered previously. This method is blocking.
 	fn submit_and_watch_extrinsic_until_success(
 		&self,
 		xthex_prefixed: &str,
 		wait_for_finalized: bool,
-	) -> Result<Option<Runtime::Hash>> {
+	) -> Result<TransactionReport<Runtime::Hash>> {
 		let xt_status = match wait_for_finalized {
 			true => XtStatus::Finalized,
 			false => XtStatus::InBlock,
@@ -161,38 +155,42 @@ where
 		// Retrieve block details from node.
 		let block_hash = report.block_hash.ok_or(Error::NoBlockHash)?;
 		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
-		let xt_index = block.extrinsics().iter().position(|xt|
-			let xt_hash = Runtime::Hashing::hash_of(&xt.encode())
-			report.xt_hash == xt_hash
-		).ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
+		let xt_index = block
+			.extrinsics()
+			.iter()
+			.position(|xt| {
+				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
+				report.xt_hash == xt_hash
+			})
+			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
 
 		// Fetch events from this block.
 		let key = utils::storage_key("System", "Events");
-		let event_bytes = self.get_opaque_storage_by_key_hash(key, Some(block_hash))?.ok_or(Error::NoBlock)?;
-		let events = Events::<Runtime::Hash>::new(
-			self.metadata().clone(),
-			Default::default(),
-			event_bytes,
-		);
+		let event_bytes = self
+			.get_opaque_storage_by_key_hash(key, Some(block_hash))?
+			.ok_or(Error::NoBlock)?;
+		let events =
+			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 
 		// Filter events associated to our extrinsic.
-		let associated_events = events.iter().filter(|ev | { ev.map(ev.phase() == Phase::ApplyExtrinsic(xt_index as u32))?})?;
-
-		for event in associated_events.iter() {
+		let associated_event_results = events.iter().filter(|ev| {
+			ev.as_ref()
+				.map_or(true, |ev| ev.phase() == Phase::ApplyExtrinsic(xt_index as u32))
+		});
+		let mut associated_events = Vec::new();
+		for event_details in associated_event_results {
+			let event_details = event_details?;
 			if extrinsic_has_failed(&event_details) {
 				let dispatch_error =
 					DispatchError::decode_from(event_details.field_bytes(), self.metadata());
 				return Err(Error::Dispatch(dispatch_error))
-			}
+			};
+			associated_events.push(event_details);
 		}
 
-		report.events = Some(associated_events)
+		report.events = Some(associated_events);
 		Ok(report)
-
-
 	}
-
-
 }
 
 fn get_maybe_block_hash<Hash, BlockHash>(

@@ -12,7 +12,7 @@
 */
 
 use crate::{
-	api::{error::Error, Api, Result},
+	api::{error::Error, rpc_api::extrinsic_has_failed, Api, Result},
 	rpc::{HandleSubscription, Subscribe},
 };
 use ac_node_api::{events::EventDetails, DispatchError, Events, StaticEvent};
@@ -96,8 +96,4 @@ where
 		}
 		Err(Error::NoStream)
 	}
-}
-
-fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
-	event_details.pallet_name() == "System" && event_details.variant_name() == "ExtrinsicFailed"
 }

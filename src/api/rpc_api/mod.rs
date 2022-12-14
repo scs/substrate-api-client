@@ -23,3 +23,7 @@ pub mod pallet_balances;
 pub mod pallet_transaction_payment;
 pub mod state;
 pub mod subscribe_events;
+
+pub(crate) fn extrinsic_has_failed(event_details: &EventDetails) -> bool {
+	event_details.pallet_name() == "System" && event_details.variant_name() == "ExtrinsicFailed"
+}

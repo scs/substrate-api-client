@@ -28,7 +28,7 @@ pub struct TransactionReport<Hash> {
 	pub xt_hash: Hash,
 	pub block_hash: Option<Hash>,
 	pub status: TransactionStatus<Hash, Hash>,
-	pub events: Option<Events<Hash>>,
+	pub events: Option<Vec<EventDetails>>,
 }
 
 impl<Hash> TransactionReport<Hash> {
@@ -36,7 +36,7 @@ impl<Hash> TransactionReport<Hash> {
 		xt_hash: Hash,
 		block_hash: Option<Hash>,
 		status: TransactionStatus<Hash, Hash>,
-		events: Option<Events<Hash>>,
+		events: Option<Vec<EventDetails>>,
 	) -> Self {
 		Self { xt_hash, block_hash, status, events }
 	}
