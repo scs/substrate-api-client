@@ -24,6 +24,23 @@ pub mod error;
 pub mod rpc_api;
 
 use serde::{Deserialize, Serialize};
+pub struct TransactionReport<Hash> {
+	pub tx_hash: Hash,
+	pub block_hash: Option<Hash>,
+	pub status: TransactionStatus<Hash, Hash>,
+	pub events: Option<Events<Hash>>,
+}
+
+impl<Hash> TransactionReport<Hash> {
+	pub fn new(
+		tx_hash: Hash,
+		block_hash: Option<Hash>,
+		status: TransactionStatus<Hash, Hash>,
+		events: Option<Events<Hash>>,
+	) -> Self {
+		Self { tx_hash, block_hash, status, events }
+	}
+}
 
 /// Simplified TransactionStatus to allow the user to choose until when to watch
 /// an extrinsic.
@@ -92,6 +109,10 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 				| TransactionStatus::FinalityTimeout(_)
 				| TransactionStatus::Finalized(_)
 		)
+	}
+
+	pub fn is_final(&self) -> bool {
+		matches!(self, TransactionStatus::FinalityTimeout(_) | TransactionStatus::Finalized(_))
 	}
 }
 
