@@ -8,8 +8,8 @@ edition = "2021"
 [workspace]
 members = [
     ".",
-    "compose-macros",
     "client-keystore",
+    "compose-macros",
     "examples",
     "node-api",
     "test-no-std",
