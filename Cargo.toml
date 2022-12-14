@@ -40,11 +40,12 @@ sp-core = { default-features = false, features = ["full_crypto"], git = "https:/
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # substrate std / wasm only
 frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
 
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
@@ -78,10 +79,10 @@ std = [
     "sp-runtime/std",
     "sp-runtime-interface/std",
     "sp-std/std",
+    "sp-version/std",
     # substrate std
     "frame-support",
     "sp-rpc",
-    "sp-version",
     # local deps
     "ac-compose-macros/std",
     "ac-node-api/std",
