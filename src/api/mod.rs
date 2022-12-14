@@ -24,21 +24,32 @@ pub mod error;
 pub mod rpc_api;
 
 use serde::{Deserialize, Serialize};
-pub struct TransactionReport<Hash> {
-	pub xt_hash: Hash,
+
+/// Extrinsic report returned upon a submit_and_watch request.
+/// Holds as much information as available.
+#[derive(Debug, Clone)]
+pub struct ExtrinsicReport<Hash> {
+	// Hash of the extrinsic.
+	pub extrinsic_hash: Hash,
+	// Block hash of the block the extrinsic was included in.
+	// Only available if watched until at least `InBlock`.
 	pub block_hash: Option<Hash>,
+	// Last known Transaction Status.
 	pub status: TransactionStatus<Hash, Hash>,
+	// Events assosciated to the extrinsic.
+	// Only available if explicitly stated, because
+	// extra node queries are necessary to fetch the events.
 	pub events: Option<Vec<EventDetails>>,
 }
 
-impl<Hash> TransactionReport<Hash> {
+impl<Hash> ExtrinsicReport<Hash> {
 	pub fn new(
-		xt_hash: Hash,
+		extrinsic_hash: Hash,
 		block_hash: Option<Hash>,
 		status: TransactionStatus<Hash, Hash>,
 		events: Option<Vec<EventDetails>>,
 	) -> Self {
-		Self { xt_hash, block_hash, status, events }
+		Self { extrinsic_hash, block_hash, status, events }
 	}
 }
 

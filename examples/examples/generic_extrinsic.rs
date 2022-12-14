@@ -51,8 +51,8 @@ async fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// send and watch extrinsic until InBlock
-	let tx_hash = api
+	let report = api
 		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
 		.unwrap();
-	println!("[+] Transaction got included. Hash: {:?}", tx_hash);
+	println!("[+] Extrinsic got included. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }

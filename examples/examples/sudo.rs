@@ -54,6 +54,8 @@ async fn main() {
 	// send and watch extrinsic until in block
 	let block_hash = api
 		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.block_hash
 		.unwrap();
-	println!("[+] Transaction got included. Hash: {:?}", block_hash);
+	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
 }

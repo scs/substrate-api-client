@@ -97,6 +97,8 @@ async fn main() {
 			let batching = api.batch(payout_calls);
 			let results_hash = api
 				.submit_and_watch_extrinsic_until(&batching.hex_encode(), XtStatus::InBlock)
+				.unwrap()
+				.block_hash
 				.unwrap();
 			num_of_claimed_payouts += payout_calls_len;
 

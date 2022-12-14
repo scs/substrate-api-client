@@ -64,6 +64,8 @@ async fn main() {
 	// Send and watch extrinsic until InBlock.
 	let _block_hash = api
 		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.block_hash
 		.unwrap();
 
 	// Get the storage value from the pallet. Check out the pallet itself to know it's type:

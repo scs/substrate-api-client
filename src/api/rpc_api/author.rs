@@ -16,8 +16,8 @@
 use crate::{
 	api::{rpc_api::extrinsic_has_failed, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils, Api, DispatchError, Events, FromHexString, GetBlock, GetStorage, Phase,
-	TransactionReport, TransactionStatus, XtStatus,
+	utils, Api, DispatchError, Events, ExtrinsicReport, FromHexString, GetBlock, GetStorage, Phase,
+	TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
@@ -73,7 +73,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		watch_until: XtStatus,
-	) -> Result<TransactionReport<Hash>>;
+	) -> Result<ExtrinsicReport<Hash>>;
 
 	/// Submit an extrinsic and watch in until
 	/// - wait_for_finalized = false => InBlock
@@ -84,7 +84,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		wait_for_finalized: bool,
-	) -> Result<TransactionReport<Hash>>;
+	) -> Result<ExtrinsicReport<Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
@@ -114,7 +114,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		watch_until: XtStatus,
-	) -> Result<TransactionReport<Runtime::Hash>> {
+	) -> Result<ExtrinsicReport<Runtime::Hash>> {
 		let tx_hash = Runtime::Hashing::hash_of(&xthex_prefixed.encode());
 		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
 			self.submit_and_watch_extrinsic(xthex_prefixed)?;
@@ -125,7 +125,7 @@ where
 				if transaction_status.as_u8() >= watch_until as u8 {
 					subscription.unsubscribe()?;
 					let block_hash = get_maybe_block_hash(transaction_status.clone());
-					return Ok(TransactionReport::new(tx_hash, block_hash, transaction_status, None))
+					return Ok(ExtrinsicReport::new(tx_hash, block_hash, transaction_status, None))
 				}
 			} else {
 				subscription.unsubscribe()?;
@@ -145,7 +145,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		wait_for_finalized: bool,
-	) -> Result<TransactionReport<Runtime::Hash>> {
+	) -> Result<ExtrinsicReport<Runtime::Hash>> {
 		let xt_status = match wait_for_finalized {
 			true => XtStatus::Finalized,
 			false => XtStatus::InBlock,
@@ -160,7 +160,7 @@ where
 			.iter()
 			.position(|xt| {
 				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
-				report.xt_hash == xt_hash
+				report.extrinsic_hash == xt_hash
 			})
 			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
 

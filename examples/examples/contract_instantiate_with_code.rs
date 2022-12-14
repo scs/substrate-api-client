@@ -69,8 +69,10 @@ async fn main() {
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
 	let block_hash = api
 		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.unwrap()
+		.block_hash
 		.unwrap();
-	println!("[+] Transaction is in Block. Hash: {:?}\n", block_hash);
+	println!("[+] Extrinsic is in Block. Hash: {:?}\n", block_hash);
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
@@ -81,8 +83,8 @@ async fn main() {
 	let xt = api.contract_call(args.contract.into(), 500_000, 500_000, vec![0u8]);
 
 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	let block_hash = api
+	let report = api
 		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::Finalized)
 		.unwrap();
-	println!("[+] Transaction got finalized. Hash: {:?}", block_hash);
+	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }
