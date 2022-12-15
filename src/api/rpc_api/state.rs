@@ -70,7 +70,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<ReadProof<Hash>>>;
 
-	fn get_storage_map_proof<K: Encode, V: Decode + Clone>(
+	fn get_storage_map_proof<K: Encode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -78,7 +78,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> ApiResult<Option<ReadProof<Hash>>>;
 
-	fn get_storage_double_map_proof<K: Encode, Q: Encode, V: Decode + Clone>(
+	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -192,7 +192,7 @@ where
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
 
-	fn get_storage_map_proof<K: Encode, V: Decode + Clone>(
+	fn get_storage_map_proof<K: Encode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
@@ -206,7 +206,7 @@ where
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
 
-	fn get_storage_double_map_proof<K: Encode, Q: Encode, V: Decode + Clone>(
+	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,

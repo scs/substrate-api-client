@@ -47,7 +47,7 @@ pub enum XtStatus {
 	Ready = 1,
 	Broadcast = 2,
 	InBlock = 4,
-	Finalized = 7,
+	Finalized = 6,
 }
 
 /// Possible transaction status events.
