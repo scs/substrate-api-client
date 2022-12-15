@@ -91,6 +91,7 @@ impl<Balance: AtLeast32BitUnsigned + Copy> InclusionFee<Balance> {
 pub struct FeeDetails<Balance> {
 	/// The minimum fee for a transaction to be included in a block.
 	pub inclusion_fee: Option<InclusionFee<Balance>>,
+	#[cfg_attr(feature = "std", serde(skip))]
 	pub tip: Balance,
 }
 
@@ -115,7 +116,15 @@ impl<Balance: AtLeast32BitUnsigned + Copy> FeeDetails<Balance> {
 #[derive(Eq, PartialEq, Encode, Decode, Default, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::Weight> {
+#[cfg_attr(
+	feature = "std",
+	serde(bound(serialize = "Balance: std::fmt::Display, Weight: Serialize"))
+)]
+#[cfg_attr(
+	feature = "std",
+	serde(bound(deserialize = "Balance: std::str::FromStr, Weight: Deserialize<'de>"))
+)]
+pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::OldWeight> {
 	/// Weight of this dispatch.
 	pub weight: Weight,
 	/// Class of this dispatch.
@@ -124,7 +133,27 @@ pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::Weight> {
 	///
 	/// This does not include a tip or anything else that
 	/// depends on the signature (i.e. depends on a `SignedExtension`).
+	#[cfg_attr(feature = "std", serde(with = "serde_balance"))]
 	pub partial_fee: Balance,
+}
+
+#[cfg(feature = "std")]
+mod serde_balance {
+	use serde::{Deserialize, Deserializer, Serializer};
+
+	pub fn serialize<S: Serializer, T: std::fmt::Display>(
+		t: &T,
+		serializer: S,
+	) -> Result<S::Ok, S::Error> {
+		serializer.serialize_str(&t.to_string())
+	}
+
+	pub fn deserialize<'de, D: Deserializer<'de>, T: std::str::FromStr>(
+		deserializer: D,
+	) -> Result<T, D::Error> {
+		let s = String::deserialize(deserializer)?;
+		s.parse::<T>().map_err(|_| serde::de::Error::custom("Parse from string failed"))
+	}
 }
 
 /// A generalized group of dispatch types.

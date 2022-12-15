@@ -17,6 +17,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, RuntimeDispatchInfo};
+use core::str::FromStr;
 use sp_rpc::number::NumberOrHex;
 
 /// Interface to common calls of the substrate transaction payment pallet.
@@ -42,7 +43,7 @@ where
 	Client: Request,
 	Runtime: BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Balance: TryFrom<NumberOrHex>,
+	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	type Balance = Runtime::Balance;
 
