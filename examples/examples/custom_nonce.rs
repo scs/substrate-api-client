@@ -16,13 +16,12 @@
 //! This examples shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use ac_primitives::AssetTipExtrinsicParamsBuilder;
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetHeader,
-	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	AssetTipExtrinsicParamsBuilder, GetHeader, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[tokio::main]

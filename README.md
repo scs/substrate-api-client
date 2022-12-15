@@ -37,7 +37,7 @@ To run an example, clone the `substrate-api-client` repository and run the desir
 ```bash
 git clone https://github.com/scs/substrate-api-client.git
 cd substrate-api-client
-cargo run --example get_storage
+cargo run -p examples --example get_storage
 ```
 or download the already built binaries from Github Actions: https://github.com/scs/substrate-api-client/actions and run them without any building:
 

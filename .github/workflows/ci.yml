@@ -37,7 +37,7 @@ jobs:
                  cargo build --release -p test-no-std --features compose-macros,
                  cargo build --release -p test-no-std --features node-api,
 
-                 cargo build --release --examples --all-features,
+                 cargo build --release --workspace --examples --all-features,
 
                  cargo clippy --all --exclude test-no-std -- -D warnings,
                  cargo clippy --all-features --examples -- -D warnings,
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload examples
         uses: actions/upload-artifact@v3
-        if: matrix.check == 'cargo build --release --examples --all-features'
+        if: matrix.check == 'cargo build --release --workspace --examples --all-features'
         with:
           name: examples
           path:  |

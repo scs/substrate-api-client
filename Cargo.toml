@@ -8,8 +8,9 @@ edition = "2021"
 [workspace]
 members = [
     ".",
-    "compose-macros",
     "client-keystore",
+    "compose-macros",
+    "examples",
     "node-api",
     "test-no-std",
 ]
@@ -51,15 +52,8 @@ ac-node-api = { path = "node-api", default-features = false }
 ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
-env_logger = "0.10.0"
-frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-tokio = { version = "1.16", features = ["rt-multi-thread", "macros", "time"] }
-wabt = "0.10.0"
+
 
 [features]
 default = ["std", "jsonrpsee-client"]
