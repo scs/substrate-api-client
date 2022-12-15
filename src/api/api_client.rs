@@ -11,21 +11,12 @@
    limitations under the License.
 */
 
-pub use crate::{
-	api::{
-		error::{ApiResult, Error as ApiClientError},
-		XtStatus,
-	},
+use crate::{
+	api::error::{ApiResult, Error as ApiClientError},
+	rpc::Request,
 	utils::FromHexString,
+	GetAccountInformation,
 };
-use sp_core::{crypto::Pair, storage::StorageKey};
-use sp_runtime::{
-	generic::SignedBlock,
-	traits::{Block, Header, IdentifyAccount},
-	AccountId32, MultiSignature, MultiSigner,
-};
-
-use crate::{rpc::Request, GetAccountInformation};
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
@@ -33,7 +24,8 @@ use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
-use sp_core::Bytes;
+use sp_core::{crypto::Pair, Bytes};
+use sp_runtime::MultiSignature;
 use sp_version::RuntimeVersion;
 
 /// Api to talk with substrate-nodes

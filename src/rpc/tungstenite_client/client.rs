@@ -14,10 +14,9 @@
    limitations under the License.
 
 */
-use crate::{
-	rpc::{to_json_req, Error as RpcClientError, Result},
-	tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
-	Request, Subscribe,
+use crate::rpc::{
+	to_json_req, tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
+	Error as RpcClientError, Request, Result, Subscribe,
 };
 use ac_primitives::RpcParams;
 use log::*;

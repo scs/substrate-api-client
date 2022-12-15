@@ -78,7 +78,7 @@ impl Subscribe for JsonrpseeClient {
 	}
 }
 
-pub struct RpcParamsWrapper(RpcParams);
+struct RpcParamsWrapper(RpcParams);
 
 impl ToRpcParams for RpcParamsWrapper {
 	fn to_rpc_params(self) -> core::result::Result<Option<Box<RawValue>>, jsonrpsee::core::Error> {

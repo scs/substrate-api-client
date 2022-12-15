@@ -46,7 +46,6 @@ sp-version = { default-features = false, git = "https://github.com/paritytech/su
 frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-rpc = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
-
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
 ac-node-api = { path = "node-api", default-features = false }

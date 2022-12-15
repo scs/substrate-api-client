@@ -19,10 +19,9 @@ use super::{subscription::WsSubscriptionWrapper, HandleMessage};
 use crate::{
 	rpc::{
 		to_json_req,
-		ws_client::{RequestHandler, RpcClient, SubscriptionHandler},
+		ws_client::{MessageContext, RequestHandler, RpcClient, SubscriptionHandler},
 		Request, Result, Subscribe,
 	},
-	ws_client::MessageContext,
 	RpcParams,
 };
 use serde::de::DeserializeOwned;

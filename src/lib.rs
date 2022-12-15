@@ -19,18 +19,17 @@
 
 extern crate alloc;
 
-pub use ac_compose_macros::{compose_call, compose_extrinsic, compose_extrinsic_offline};
+pub use ac_compose_macros::*;
 pub use ac_node_api::*;
 pub use ac_primitives::*;
 
+pub use utils::*;
 pub mod utils;
 
 // std only features:
 
 #[cfg(feature = "std")]
 pub use crate::api::*;
-#[cfg(feature = "std")]
-pub use crate::rpc::*;
 #[cfg(feature = "std")]
 pub mod api;
 #[cfg(feature = "std")]

@@ -10,9 +10,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-use crate::{api::ApiResult, rpc::Subscribe, utils, Api, MetadataError, ReadProof, Request};
+use crate::{
+	api::ApiResult,
+	rpc::{Request, Subscribe},
+	utils, Api, MetadataError, ReadProof,
+};
 use ac_compose_macros::rpc_params;
-pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use codec::{Decode, Encode};
 use log::*;

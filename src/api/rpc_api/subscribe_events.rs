@@ -15,7 +15,7 @@ use crate::{
 	api::{error::Error, Api, ApiResult},
 	rpc::{HandleSubscription, Subscribe},
 };
-pub use ac_node_api::{events::EventDetails, StaticEvent};
+use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_node_api::{DispatchError, Events};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;

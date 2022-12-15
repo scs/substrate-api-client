@@ -15,11 +15,10 @@
 
 use crate::{
 	api::{Api, ApiResult, GetStorage},
-	rpc::Subscribe,
-	utils, Request,
+	rpc::{Request, Subscribe},
+	utils,
 };
 use ac_compose_macros::rpc_params;
-pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;

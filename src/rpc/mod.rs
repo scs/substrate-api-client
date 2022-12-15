@@ -15,25 +15,22 @@
 
 */
 
-#[cfg(feature = "ws-client")]
-pub use ws_client::WsRpcClient;
-#[cfg(feature = "ws-client")]
-pub mod ws_client;
-
-#[cfg(feature = "tungstenite-client")]
-pub use tungstenite_client::client::TungsteniteRpcClient;
-
-#[cfg(feature = "tungstenite-client")]
-pub mod tungstenite_client;
+pub use error::*;
+pub mod error;
 
 #[cfg(feature = "jsonrpsee-client")]
 pub use jsonrpsee_client::*;
+#[cfg(feature = "tungstenite-client")]
+pub use tungstenite_client::*;
+#[cfg(feature = "ws-client")]
+pub use ws_client::*;
+
 #[cfg(feature = "jsonrpsee-client")]
 pub mod jsonrpsee_client;
-
-pub mod error;
-
-pub use error::*;
+#[cfg(feature = "tungstenite-client")]
+pub mod tungstenite_client;
+#[cfg(feature = "ws-client")]
+pub mod ws_client;
 
 use ac_primitives::RpcParams;
 use serde::de::DeserializeOwned;
