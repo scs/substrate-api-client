@@ -115,7 +115,8 @@ impl<Balance: AtLeast32BitUnsigned + Copy> FeeDetails<Balance> {
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L92-L116
 #[derive(Eq, PartialEq, Encode, Decode, Default, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))][cfg_attr(
+#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+#[cfg_attr(
 	feature = "std",
 	serde(bound(serialize = "Balance: std::fmt::Display, Weight: Serialize"))
 )]
