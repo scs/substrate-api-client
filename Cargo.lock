@@ -28,7 +28,7 @@ dependencies = [
 name = "ac-examples"
 version = "0.1.0"
 dependencies = [
- "env_logger 0.10.0",
+ "env_logger",
  "frame-support",
  "frame-system",
  "kitchensink-runtime",
@@ -845,19 +845,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
-dependencies = [
- "humantime",
- "is-terminal",
- "log",
- "regex",
- "termcolor",
 ]
 
 [[package]]
@@ -5171,34 +5158,26 @@ dependencies = [
  "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
- "env_logger 0.9.1",
  "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
  "frame-support",
- "frame-system",
  "futures",
  "hex",
  "jsonrpsee",
  "kitchensink-runtime",
  "log",
- "pallet-balances",
- "pallet-identity",
- "pallet-staking",
  "parity-scale-codec",
  "primitive-types",
  "serde",
  "serde_json",
  "sp-core",
- "sp-keyring",
  "sp-rpc",
  "sp-runtime",
  "sp-runtime-interface",
  "sp-std",
  "sp-version",
  "thiserror",
- "tokio",
  "tungstenite",
  "url",
- "wabt",
  "ws",
 ]
 
