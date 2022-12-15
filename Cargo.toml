@@ -80,7 +80,6 @@ std = [
     "sp-version/std",
     # substrate std
     "frame-support",
-    "sp-rpc",
     # local deps
     "ac-compose-macros/std",
     "ac-node-api/std",

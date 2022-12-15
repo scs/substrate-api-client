@@ -4793,16 +4793,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-rpc"
-version = "6.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#9ce75afde9ada98a69e4ab3abbbfb7fa8202d72b"
-dependencies = [
- "rustc-hash",
- "serde",
- "sp-core",
-]
-
-[[package]]
 name = "sp-runtime"
 version = "7.0.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#9ce75afde9ada98a69e4ab3abbbfb7fa8202d72b"
@@ -5170,7 +5160,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-core",
- "sp-rpc",
  "sp-runtime",
  "sp-runtime-interface",
  "sp-std",
