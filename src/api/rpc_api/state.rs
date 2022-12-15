@@ -10,9 +10,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-use crate::{api::ApiResult, rpc::Subscribe, utils, Api, MetadataError, ReadProof, Request};
+use crate::{
+	api::Result,
+	rpc::{Request, Subscribe},
+	utils, Api, MetadataError, ReadProof,
+};
 use ac_compose_macros::rpc_params;
-pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use codec::{Decode, Encode};
 use log::*;
@@ -26,7 +29,7 @@ pub trait GetStorage<Hash> {
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<V>>;
+	) -> Result<Option<V>>;
 
 	fn get_storage_map<K: Encode, V: Decode>(
 		&self,
@@ -34,13 +37,13 @@ pub trait GetStorage<Hash> {
 		storage_key_name: &'static str,
 		map_key: K,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<V>>;
+	) -> Result<Option<V>>;
 
 	fn get_storage_map_key_prefix(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
-	) -> ApiResult<StorageKey>;
+	) -> Result<StorageKey>;
 
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
@@ -49,26 +52,26 @@ pub trait GetStorage<Hash> {
 		first: K,
 		second: Q,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<V>>;
+	) -> Result<Option<V>>;
 
 	fn get_storage_by_key_hash<V: Decode>(
 		&self,
 		key: StorageKey,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<V>>;
+	) -> Result<Option<V>>;
 
 	fn get_opaque_storage_by_key_hash(
 		&self,
 		key: StorageKey,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<Vec<u8>>>;
+	) -> Result<Option<Vec<u8>>>;
 
 	fn get_storage_value_proof(
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>>;
+	) -> Result<Option<ReadProof<Hash>>>;
 
 	fn get_storage_map_proof<K: Encode>(
 		&self,
@@ -76,7 +79,7 @@ pub trait GetStorage<Hash> {
 		storage_key_name: &'static str,
 		map_key: K,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>>;
+	) -> Result<Option<ReadProof<Hash>>>;
 
 	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
@@ -85,18 +88,17 @@ pub trait GetStorage<Hash> {
 		first: K,
 		second: Q,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>>;
+	) -> Result<Option<ReadProof<Hash>>>;
 
 	fn get_storage_proof_by_keys(
 		&self,
 		keys: Vec<StorageKey>,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<ReadProof<Hash>>>;
+	) -> Result<Option<ReadProof<Hash>>>;
 
-	fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> ApiResult<Option<Vec<String>>>;
+	fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Result<Option<Vec<String>>>;
 
-	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str)
-		-> ApiResult<C>;
+	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str) -> Result<C>;
 }
 
 impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
@@ -111,7 +113,7 @@ where
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<V>> {
+	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_value_key(storage_prefix, storage_key_name)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_by_key_hash(storagekey, at_block)
@@ -123,7 +125,7 @@ where
 		storage_key_name: &'static str,
 		map_key: K,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<V>> {
+	) -> Result<Option<V>> {
 		let storagekey =
 			self.metadata()
 				.storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
@@ -135,7 +137,7 @@ where
 		&self,
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
-	) -> ApiResult<StorageKey> {
+	) -> Result<StorageKey> {
 		self.metadata()
 			.storage_map_key_prefix(storage_prefix, storage_key_name)
 			.map_err(|e| e.into())
@@ -148,7 +150,7 @@ where
 		first: K,
 		second: Q,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<V>> {
+	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_double_map_key::<K, Q>(
 			storage_prefix,
 			storage_key_name,
@@ -163,7 +165,7 @@ where
 		&self,
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<V>> {
+	) -> Result<Option<V>> {
 		let s = self.get_opaque_storage_by_key_hash(key, at_block)?;
 		match s {
 			Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
@@ -175,7 +177,7 @@ where
 		&self,
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<Vec<u8>>> {
+	) -> Result<Option<Vec<u8>>> {
 		let storage: Option<StorageData> =
 			self.client().request("state_getStorage", rpc_params![key, at_block])?;
 		Ok(storage.map(|storage_data| storage_data.0))
@@ -186,7 +188,7 @@ where
 		storage_prefix: &'static str,
 		storage_key_name: &'static str,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
+	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey = self.metadata().storage_value_key(storage_prefix, storage_key_name)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
@@ -198,7 +200,7 @@ where
 		storage_key_name: &'static str,
 		map_key: K,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
+	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey =
 			self.metadata()
 				.storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
@@ -213,7 +215,7 @@ where
 		first: K,
 		second: Q,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
+	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey = self.metadata().storage_double_map_key::<K, Q>(
 			storage_prefix,
 			storage_key_name,
@@ -228,7 +230,7 @@ where
 		&self,
 		keys: Vec<StorageKey>,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<ReadProof<Runtime::Hash>>> {
+	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let proof = self.client().request("state_getReadProof", rpc_params![keys, at_block])?;
 		Ok(proof)
 	}
@@ -237,16 +239,12 @@ where
 		&self,
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<Vec<String>>> {
+	) -> Result<Option<Vec<String>>> {
 		let keys = self.client().request("state_getKeys", rpc_params![key, at_block])?;
 		Ok(keys)
 	}
 
-	fn get_constant<C: Decode>(
-		&self,
-		pallet: &'static str,
-		constant: &'static str,
-	) -> ApiResult<C> {
+	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str) -> Result<C> {
 		let c = self
 			.metadata()
 			.pallet(pallet)?
@@ -267,7 +265,7 @@ where
 		&self,
 		pallet: &str,
 		storage_key: &str,
-	) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
+	) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeState<Client, Runtime::Hash>
@@ -281,7 +279,7 @@ where
 		&self,
 		pallet: &str,
 		storage_key_name: &str,
-	) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+	) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key(pallet, storage_key_name);
 		self.client()

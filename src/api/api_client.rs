@@ -11,31 +11,21 @@
    limitations under the License.
 */
 
-pub use crate::{
-	api::{
-		error::{ApiResult, Error as ApiClientError},
-		XtStatus,
-	},
+use crate::{
+	api::error::{Error, Result},
+	rpc::Request,
 	utils::FromHexString,
+	GetAccountInformation,
 };
-pub use frame_metadata::RuntimeMetadataPrefixed;
-pub use serde_json::Value;
-pub use sp_core::{crypto::Pair, storage::StorageKey};
-pub use sp_runtime::{
-	generic::SignedBlock,
-	traits::{Block, Header, IdentifyAccount},
-	AccountId32, MultiSignature, MultiSigner,
-};
-pub use sp_std::prelude::*;
-
-use crate::{rpc::Request, GetAccountInformation};
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use codec::Decode;
 use core::convert::TryFrom;
+use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
-use sp_core::Bytes;
+use sp_core::{crypto::Pair, Bytes};
+use sp_runtime::MultiSignature;
 use sp_version::RuntimeVersion;
 
 /// Api to talk with substrate-nodes
@@ -46,7 +36,7 @@ use sp_version::RuntimeVersion;
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString,  Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, FromHexString, rpc::Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
@@ -190,7 +180,7 @@ where
 	Runtime::Hash: FromHexString,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
-	pub fn new(client: Client) -> ApiResult<Self> {
+	pub fn new(client: Client) -> Result<Self> {
 		let genesis_hash = Self::get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 
@@ -205,7 +195,7 @@ where
 
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
-	pub fn update_runtime(&mut self) -> ApiResult<()> {
+	pub fn update_runtime(&mut self) -> Result<()> {
 		let metadata = Self::get_metadata(&self.client)?;
 		debug!("Metadata: {:?}", metadata);
 
@@ -234,8 +224,8 @@ where
 	}
 
 	/// Get nonce of self signer account.
-	pub fn get_nonce(&self) -> ApiResult<Runtime::Index> {
-		let account = self.signer_account().ok_or(ApiClientError::NoSigner)?;
+	pub fn get_nonce(&self) -> Result<Runtime::Index> {
+		let account = self.signer_account().ok_or(Error::NoSigner)?;
 		self.get_account_info(&account)
 			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
@@ -251,20 +241,20 @@ where
 	Runtime::Hash: FromHexString,
 {
 	/// Get the genesis hash from node via websocket query.
-	fn get_genesis_hash(client: &Client) -> ApiResult<Runtime::Hash> {
+	fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
 		let genesis: Option<Runtime::Hash> =
 			client.request("chain_getBlockHash", rpc_params![Some(0)])?;
-		genesis.ok_or(ApiClientError::Genesis)
+		genesis.ok_or(Error::Genesis)
 	}
 
 	/// Get runtime version from node via websocket query.
-	fn get_runtime_version(client: &Client) -> ApiResult<RuntimeVersion> {
+	fn get_runtime_version(client: &Client) -> Result<RuntimeVersion> {
 		let version: RuntimeVersion = client.request("state_getRuntimeVersion", rpc_params![])?;
 		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
-	fn get_metadata(client: &Client) -> ApiResult<Metadata> {
+	fn get_metadata(client: &Client) -> Result<Metadata> {
 		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![])?;
 
 		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;

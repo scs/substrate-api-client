@@ -17,20 +17,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(assert_matches)]
 
-pub use ac_compose_macros::{compose_call, compose_extrinsic_offline};
+pub use ac_compose_macros::*;
 pub use ac_node_api::*;
 pub use ac_primitives::*;
+pub use utils::*;
 
 pub mod utils;
 
 // std only features:
 
 #[cfg(feature = "std")]
-pub use crate::api::*;
-#[cfg(feature = "std")]
-pub use crate::rpc::*;
-#[cfg(feature = "std")]
-pub use ac_compose_macros::compose_extrinsic;
+pub use api::*;
 
 #[cfg(feature = "std")]
 pub mod api;

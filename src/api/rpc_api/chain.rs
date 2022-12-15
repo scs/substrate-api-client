@@ -12,12 +12,11 @@
 */
 
 use crate::{
-	api::{Api, ApiResult},
+	api::{Api, Result},
 	rpc::{Request, Subscribe},
 	FromHexString,
 };
 use ac_compose_macros::rpc_params;
-pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
@@ -27,9 +26,9 @@ use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType, MultiSignatu
 pub trait GetHeader<Hash> {
 	type Header;
 
-	fn get_finalized_head(&self) -> ApiResult<Option<Hash>>;
+	fn get_finalized_head(&self) -> Result<Option<Hash>>;
 
-	fn get_header(&self, hash: Option<Hash>) -> ApiResult<Option<Self::Header>>;
+	fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
@@ -43,13 +42,13 @@ where
 {
 	type Header = Runtime::Header;
 
-	fn get_finalized_head(&self) -> ApiResult<Option<Runtime::Hash>> {
+	fn get_finalized_head(&self) -> Result<Option<Runtime::Hash>> {
 		let finalized_block_hash =
 			self.client().request("chain_getFinalizedHead", rpc_params![])?;
 		Ok(finalized_block_hash)
 	}
 
-	fn get_header(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Runtime::Header>> {
+	fn get_header(&self, hash: Option<Runtime::Hash>) -> Result<Option<Runtime::Header>> {
 		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
 		Ok(block_hash)
 	}
@@ -58,22 +57,22 @@ where
 pub trait GetBlock<Number, Hash> {
 	type Block;
 
-	fn get_block_hash(&self, number: Option<Number>) -> ApiResult<Option<Hash>>;
+	fn get_block_hash(&self, number: Option<Number>) -> Result<Option<Hash>>;
 
-	fn get_block(&self, hash: Option<Hash>) -> ApiResult<Option<Self::Block>>;
+	fn get_block(&self, hash: Option<Hash>) -> Result<Option<Self::Block>>;
 
-	fn get_block_by_num(&self, number: Option<Number>) -> ApiResult<Option<Self::Block>>;
+	fn get_block_by_num(&self, number: Option<Number>) -> Result<Option<Self::Block>>;
 
 	/// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
 	/// The interval at which finality proofs are provided is set via the
 	/// the `GrandpaConfig.justification_period` in a node's service.rs.
 	/// The Justification may be None.
-	fn get_signed_block(&self, hash: Option<Hash>) -> ApiResult<Option<SignedBlock<Self::Block>>>;
+	fn get_signed_block(&self, hash: Option<Hash>) -> Result<Option<SignedBlock<Self::Block>>>;
 
 	fn get_signed_block_by_num(
 		&self,
 		number: Option<Number>,
-	) -> ApiResult<Option<SignedBlock<Self::Block>>>;
+	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetBlock<Runtime::BlockNumber, Runtime::Hash>
@@ -92,26 +91,26 @@ where
 	fn get_block_hash(
 		&self,
 		number: Option<Runtime::BlockNumber>,
-	) -> ApiResult<Option<Runtime::Hash>> {
+	) -> Result<Option<Runtime::Hash>> {
 		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
 		Ok(block_hash)
 	}
 
-	fn get_block(&self, hash: Option<Runtime::Hash>) -> ApiResult<Option<Self::Block>> {
+	fn get_block(&self, hash: Option<Runtime::Hash>) -> Result<Option<Self::Block>> {
 		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	fn get_block_by_num(
 		&self,
 		number: Option<Runtime::BlockNumber>,
-	) -> ApiResult<Option<Self::Block>> {
+	) -> Result<Option<Self::Block>> {
 		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	fn get_signed_block(
 		&self,
 		hash: Option<Runtime::Hash>,
-	) -> ApiResult<Option<SignedBlock<Self::Block>>> {
+	) -> Result<Option<SignedBlock<Self::Block>>> {
 		let block = self.client().request("chain_getBlock", rpc_params![hash])?;
 		Ok(block)
 	}
@@ -119,7 +118,7 @@ where
 	fn get_signed_block_by_num(
 		&self,
 		number: Option<Runtime::BlockNumber>,
-	) -> ApiResult<Option<SignedBlock<Self::Block>>> {
+	) -> Result<Option<SignedBlock<Self::Block>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 }
@@ -131,7 +130,7 @@ where
 {
 	type Header: DeserializeOwned;
 
-	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>>;
+	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeChain<Client, Runtime::Hash>
@@ -144,7 +143,7 @@ where
 {
 	type Header = Runtime::Header;
 
-	fn subscribe_finalized_heads(&self) -> ApiResult<Client::Subscription<Self::Header>> {
+	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe(

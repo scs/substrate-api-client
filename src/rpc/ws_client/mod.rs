@@ -30,7 +30,7 @@ type RpcResult<T> = Result<T, RpcClientError>;
 pub type RpcMessage = RpcResult<String>;
 
 #[allow(clippy::result_large_err)]
-pub trait HandleMessage {
+pub(crate) trait HandleMessage {
 	type ThreadMessage;
 	type Error;
 	type Context;
@@ -42,8 +42,9 @@ pub trait HandleMessage {
 	) -> core::result::Result<Self::Result, Self::Error>;
 }
 
-#[derive(Debug, Clone)]
-pub struct MessageContext<ThreadMessage> {
+// Clippy says request is never used, even though it is..
+#[allow(dead_code)]
+pub(crate) struct MessageContext<ThreadMessage> {
 	pub out: Sender,
 	pub request: String,
 	pub result: ThreadOut<ThreadMessage>,
@@ -51,7 +52,7 @@ pub struct MessageContext<ThreadMessage> {
 }
 
 #[derive(Debug, Clone)]
-pub struct RpcClient<MessageHandler, ThreadMessage> {
+pub(crate) struct RpcClient<MessageHandler, ThreadMessage> {
 	pub out: Sender,
 	pub request: String,
 	pub result: ThreadOut<ThreadMessage>,
@@ -86,7 +87,7 @@ where
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct RequestHandler;
+pub(crate) struct RequestHandler;
 
 impl HandleMessage for RequestHandler {
 	type ThreadMessage = RpcMessage;
@@ -114,7 +115,7 @@ impl HandleMessage for RequestHandler {
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct SubscriptionHandler {}
+pub(crate) struct SubscriptionHandler {}
 
 impl HandleMessage for SubscriptionHandler {
 	type ThreadMessage = String;

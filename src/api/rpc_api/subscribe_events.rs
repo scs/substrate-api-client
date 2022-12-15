@@ -12,11 +12,10 @@
 */
 
 use crate::{
-	api::{error::Error, Api, ApiResult},
+	api::{error::Error, Api, Result},
 	rpc::{HandleSubscription, Subscribe},
 };
-pub use ac_node_api::{events::EventDetails, StaticEvent};
-use ac_node_api::{DispatchError, Events};
+use ac_node_api::{events::EventDetails, DispatchError, Events, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
@@ -34,12 +33,12 @@ where
 	fn wait_for_event<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
-	) -> ApiResult<Ev>;
+	) -> Result<Ev>;
 
 	fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
-	) -> ApiResult<EventDetails>;
+	) -> Result<EventDetails>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
@@ -52,7 +51,7 @@ where
 	fn wait_for_event<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
-	) -> ApiResult<Ev> {
+	) -> Result<Ev> {
 		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
 		maybe_event_details
 			.as_event()?
@@ -62,7 +61,7 @@ where
 	fn wait_for_event_details<Ev: StaticEvent>(
 		&self,
 		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
-	) -> ApiResult<EventDetails> {
+	) -> Result<EventDetails> {
 		while let Some(change_set) = subscription.next() {
 			let event_bytes = change_set?.changes[0].1.as_ref().unwrap().0.clone();
 			let events = Events::<Runtime::Hash>::new(
