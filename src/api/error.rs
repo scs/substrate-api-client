@@ -20,6 +20,7 @@ use ac_node_api::{
 	metadata::{InvalidMetadataError, MetadataError},
 	DispatchError,
 };
+use alloc::{boxed::Box, string::String};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -35,8 +36,6 @@ pub enum Error {
 	NoSigner,
 	#[error("RpcClient error: {0:?}")]
 	RpcClient(#[from] RpcClientError),
-	#[error("ChannelReceiveError, sender is disconnected: {0}")]
-	Disconnected(#[from] sp_std::sync::mpsc::RecvError),
 	#[error("Metadata Error: {0:?}")]
 	Metadata(MetadataError),
 	#[error("InvalidMetadata: {0:?}")]
@@ -44,11 +43,7 @@ pub enum Error {
 	#[error("Events Error: {0:?}")]
 	NodeApi(ac_node_api::error::Error),
 	#[error("Error decoding storage value: {0}")]
-	StorageValueDecode(#[from] codec::Error),
-	#[error("Received invalid hex string: {0}")]
-	InvalidHexString(#[from] hex::FromHexError),
-	#[error("Error deserializing with serde: {0}")]
-	Deserializing(#[from] serde_json::Error),
+	StorageValueDecode(codec::Error),
 	#[error("UnsupportedXtStatus Error: Can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
 	UnsupportedXtStatus(XtStatus),
 	#[error("Error converting NumberOrHex to Balance")]
@@ -60,7 +55,13 @@ pub enum Error {
 	#[error("Stream ended unexpectedly")]
 	NoStream,
 	#[error(transparent)]
-	Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+	Other(#[from] Box<dyn core::error::Error + Send + Sync + 'static>),
+}
+
+impl From<codec::Error> for Error {
+	fn from(error: codec::Error) -> Self {
+		Error::StorageValueDecode(error)
+	}
 }
 
 impl From<InvalidMetadataError> for Error {

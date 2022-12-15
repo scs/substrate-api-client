@@ -17,10 +17,10 @@ use crate::{
 	FromHexString,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType};
+use sp_runtime::traits::GetRuntimeBlockType;
 
 pub trait GetHeader<Hash> {
 	type Header;
@@ -119,7 +119,6 @@ where
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 }
-
 pub trait SubscribeChain<Client, Hash>
 where
 	Client: Subscribe,

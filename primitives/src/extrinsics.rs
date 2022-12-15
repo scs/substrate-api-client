@@ -19,9 +19,10 @@
 
 extern crate alloc;
 
+use alloc::vec::Vec;
 use codec::{Decode, Encode, Error, Input};
+use core::fmt;
 use sp_runtime::MultiSignature;
-use sp_std::{fmt, prelude::*};
 
 pub use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 
@@ -121,7 +122,7 @@ where
 
 /// Same function as in primitives::generic. Needed to be copied as it is private there.
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
-	let size = sp_std::mem::size_of::<T>();
+	let size = core::mem::size_of::<T>();
 	let reserve = match size {
 		0..=0b0011_1111 => 1,
 		0b0100_0000..=0b0011_1111_1111_1111 => 2,

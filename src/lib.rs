@@ -23,17 +23,10 @@ extern crate alloc;
 pub use ac_compose_macros::*;
 pub use ac_node_api::*;
 pub use ac_primitives::*;
+pub use api::*;
 pub use utils::*;
 
+pub mod api;
+pub mod extrinsic;
 pub mod rpc;
 pub mod utils;
-
-// std only features:
-
-#[cfg(feature = "std")]
-pub use api::*;
-
-#[cfg(feature = "std")]
-pub mod api;
-#[cfg(feature = "std")]
-pub mod extrinsic;

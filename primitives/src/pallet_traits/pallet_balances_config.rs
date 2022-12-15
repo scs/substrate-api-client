@@ -16,8 +16,9 @@
 */
 use codec::{Codec, EncodeLike, MaxEncodedLen};
 use scale_info::TypeInfo;
+use serde::{de::DeserializeOwned, Serialize};
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize, Member},
+	traits::{AtLeast32BitUnsigned, Get, Member},
 	FixedPointOperand,
 };
 
@@ -30,7 +31,8 @@ pub trait BalancesConfig: crate::FrameSystemConfig {
 		+ AtLeast32BitUnsigned
 		+ Default
 		+ Copy
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ MaxEncodedLen
 		+ TypeInfo
 		+ FixedPointOperand;

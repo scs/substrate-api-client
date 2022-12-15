@@ -17,8 +17,9 @@
 use crate::FrameSystemConfig;
 use codec::MaxEncodedLen;
 use scale_info::TypeInfo;
+use serde::{de::DeserializeOwned, Serialize};
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, Get},
 	Perbill,
 };
 use sp_staking::{EraIndex, SessionIndex};
@@ -33,7 +34,8 @@ pub trait StakingConfig: FrameSystemConfig {
 	type CurrencyBalance: AtLeast32BitUnsigned
 		+ codec::FullCodec
 		+ Copy
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ core::fmt::Debug
 		+ Default
 		+ From<u64>

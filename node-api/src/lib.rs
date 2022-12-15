@@ -16,8 +16,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate alloc;
-use alloc::{borrow::ToOwned, vec::Vec};
 
+use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
 pub use decoder::*;

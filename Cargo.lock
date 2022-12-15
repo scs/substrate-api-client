@@ -51,6 +51,7 @@ dependencies = [
 name = "ac-node-api"
 version = "0.2.1"
 dependencies = [
+ "ac-primitives",
  "bitvec",
  "derive_more",
  "either",
@@ -65,7 +66,6 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-std",
 ]
 
 [[package]]
@@ -74,20 +74,21 @@ version = "0.3.0"
 dependencies = [
  "frame-system",
  "hex",
+ "impl-serde",
  "node-template-runtime",
  "pallet-assets",
  "pallet-balances",
  "pallet-contracts",
  "pallet-staking",
  "parity-scale-codec",
+ "primitive-types",
  "scale-info",
  "serde",
  "serde_json",
  "sp-core",
  "sp-runtime",
  "sp-staking",
- "sp-std",
- "sp-weights",
+ "sp-version",
 ]
 
 [[package]]
@@ -4790,16 +4791,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-rpc"
-version = "6.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=master#ce025f3a989d165225c0f2f7ab497cf53319dd6d"
-dependencies = [
- "rustc-hash",
- "serde",
- "sp-core",
-]
-
-[[package]]
 name = "sp-runtime"
 version = "7.0.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#ce025f3a989d165225c0f2f7ab497cf53319dd6d"
@@ -5148,11 +5139,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-core",
- "sp-rpc",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-std",
- "sp-version",
  "thiserror-core",
  "tungstenite",
  "url",

@@ -17,9 +17,10 @@
 use codec::{Codec, Decode, EncodeLike, FullCodec, MaxEncodedLen};
 use core::fmt::Debug;
 use scale_info::TypeInfo;
+use serde::{de::DeserializeOwned, Serialize};
 use sp_runtime::traits::{
-	self, AtLeast32Bit, AtLeast32BitUnsigned, Bounded, CheckEqual, Dispatchable, Get, Hash,
-	MaybeSerializeDeserialize, Member, SimpleBitOps, StaticLookup,
+	self, AtLeast32Bit, AtLeast32BitUnsigned, Bounded, CheckEqual, Dispatchable, Get, Hash, Member,
+	SimpleBitOps, StaticLookup,
 };
 
 /// Simplifed Frame system Config trait. Needed because substrate pallets compile to wasm
@@ -37,7 +38,8 @@ pub trait FrameSystemConfig {
 		+ TypeInfo
 		+ Dispatchable<RuntimeOrigin = Self::RuntimeOrigin>
 		+ Debug;
-	type Index: MaybeSerializeDeserialize
+	type Index: Serialize
+		+ DeserializeOwned
 		+ Debug
 		+ Default
 		+ AtLeast32Bit
@@ -50,14 +52,15 @@ pub trait FrameSystemConfig {
 		+ Eq
 		+ Debug
 		+ TypeInfo
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ Debug
 		+ AtLeast32BitUnsigned
 		+ Default
 		+ Bounded
 		+ Copy
-		+ sp_std::hash::Hash
-		+ sp_std::str::FromStr
+		+ core::hash::Hash
+		+ core::str::FromStr
 		+ MaxEncodedLen
 		+ TypeInfo;
 	type Hash: Codec
@@ -66,14 +69,15 @@ pub trait FrameSystemConfig {
 		+ Eq
 		+ Debug
 		+ TypeInfo
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ Debug
 		+ SimpleBitOps
 		+ Ord
 		+ Default
 		+ Copy
 		+ CheckEqual
-		+ sp_std::hash::Hash
+		+ core::hash::Hash
 		+ AsRef<[u8]>
 		+ AsMut<[u8]>
 		+ MaxEncodedLen;
@@ -85,7 +89,8 @@ pub trait FrameSystemConfig {
 		+ Debug
 		+ TypeInfo
 		+ Member
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ Debug
 		+ Ord
 		+ MaxEncodedLen;
