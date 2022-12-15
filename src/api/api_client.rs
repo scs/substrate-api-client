@@ -36,7 +36,7 @@ use sp_version::RuntimeVersion;
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, ApiClientError, ApiResult, FromHexString,  Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, FromHexString,  rpc::Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;

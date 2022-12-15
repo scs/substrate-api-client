@@ -11,7 +11,7 @@
    limitations under the License.
 */
 use crate::{
-	api::{Api, ApiClientError, ApiResult},
+	api::{Api, ApiResult, Error},
 	rpc::Request,
 	ExtrinsicParams,
 };
@@ -83,7 +83,7 @@ fn convert_fee_details<Balance: TryFrom<NumberOrHex>>(
 	} else {
 		None
 	};
-	let tip = details.tip.try_into().map_err(|_| ApiClientError::TryFromIntError)?;
+	let tip = details.tip.try_into().map_err(|_| Error::TryFromIntError)?;
 	Ok(FeeDetails { inclusion_fee, tip })
 }
 
@@ -91,11 +91,11 @@ fn inclusion_fee_with_balance<Balance: TryFrom<NumberOrHex>>(
 	inclusion_fee: InclusionFee<NumberOrHex>,
 ) -> ApiResult<InclusionFee<Balance>> {
 	Ok(InclusionFee {
-		base_fee: inclusion_fee.base_fee.try_into().map_err(|_| ApiClientError::TryFromIntError)?,
-		len_fee: inclusion_fee.len_fee.try_into().map_err(|_| ApiClientError::TryFromIntError)?,
+		base_fee: inclusion_fee.base_fee.try_into().map_err(|_| Error::TryFromIntError)?,
+		len_fee: inclusion_fee.len_fee.try_into().map_err(|_| Error::TryFromIntError)?,
 		adjusted_weight_fee: inclusion_fee
 			.adjusted_weight_fee
 			.try_into()
-			.map_err(|_| ApiClientError::TryFromIntError)?,
+			.map_err(|_| Error::TryFromIntError)?,
 	})
 }

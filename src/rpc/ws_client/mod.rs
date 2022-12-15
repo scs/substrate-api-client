@@ -42,6 +42,8 @@ pub(crate) trait HandleMessage {
 	) -> core::result::Result<Self::Result, Self::Error>;
 }
 
+// Clippy says request is never used, even though it is..
+#[allow(dead_code)]
 pub(crate) struct MessageContext<ThreadMessage> {
 	pub out: Sender,
 	pub request: String,

@@ -16,10 +16,9 @@
 */
 
 pub use api_client::*;
-pub use error::*;
+pub use error::{ApiResult, Error};
 pub use rpc_api::*;
 
-use crate::api::error::{ApiResult, Error as ApiClientError};
 use serde::{Deserialize, Serialize};
 
 pub mod api_client;

@@ -29,7 +29,7 @@ pub mod utils;
 // std only features:
 
 #[cfg(feature = "std")]
-pub use crate::api::*;
+pub use api::*;
 #[cfg(feature = "std")]
 pub mod api;
 #[cfg(feature = "std")]
