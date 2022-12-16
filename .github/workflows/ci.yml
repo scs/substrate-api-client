@@ -20,7 +20,7 @@ jobs:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
   build:
-    name: Rust check ${{ matrix.check }}
+    name: ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,21 +30,25 @@ jobs:
         #
         # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
         # we omit clippy and test there.
-        #
-        # `--locked` to enforce an up-to-date Cargo.lock
-        check: [ cargo build --release --all --locked --exclude test-no-std,
-                 cargo build --release -p test-no-std --features api-client,
-                 cargo build --release -p test-no-std --features compose-macros,
-                 cargo build --release -p test-no-std --features node-api,
+        check: [
+                # Test for no-std compatibility.
+                # `--locked` to enforce an up-to-date Cargo.lock
+                cargo build --release --workspace --locked --exclude test-no-std,
 
-                 cargo build --release --workspace --examples --all-features,
+                # Test for no-std compatibility.
+                cargo build --release -p test-no-std --features api-client,
+                cargo build --release -p test-no-std --features compose-macros,
+                cargo build --release -p test-no-std --features node-api,
 
-                 cargo clippy --all --exclude test-no-std -- -D warnings,
-                 cargo clippy --all-features --examples -- -D warnings,
+                # Clippy
+                cargo clippy --workspace --exclude test-no-std -- -D warnings,
+                cargo clippy --all-features --examples -- -D warnings,
 
-                 cargo test --all --all-features --exclude test-no-std,
+                # Run tests and build examples
+                cargo test --release --workspace --all-features --exclude test-no-std,
 
-                 cargo fmt --all -- --check
+                 # Fmt
+                cargo fmt --all -- --check
 
         ]
     steps:
@@ -61,7 +65,7 @@ jobs:
 
       - name: Upload examples
         uses: actions/upload-artifact@v3
-        if: matrix.check == 'cargo build --release --workspace --examples --all-features'
+        if: contains(matrix.check, 'cargo test')
         with:
           name: examples
           path:  |
@@ -69,7 +73,8 @@ jobs:
             !target/release/examples/*.d
             !target/release/examples/*-*
 
-  fmt:
+  taplo-fmt:
+    name: "Taplo fmt"
     runs-on: ubuntu-latest
     container: "tamasfe/taplo:0.7.0-alpine"
     steps:
@@ -79,6 +84,7 @@ jobs:
         run: taplo fmt --check
 
   license-check:
+    name: "License check"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -116,13 +122,18 @@ jobs:
           generic_extrinsic,
           get_account_identity,
           get_blocks,
-          get_existential_deposit,
           get_storage,
           print_metadata,
           sudo,
           transfer_using_seed,
           transfer_with_tungstenite_client,
           transfer_with_ws_client,
+          author_tests,
+          chain_tests,
+          frame_system_tests,
+          pallet_balances_tests,
+          pallet_transaction_payment_tests,
+          state_tests,
         ]
     steps:
       - uses: actions/checkout@v3
