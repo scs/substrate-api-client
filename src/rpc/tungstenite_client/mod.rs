@@ -15,5 +15,8 @@
 
 */
 
+pub use client::*;
+pub use subscription::*;
+
 pub mod client;
 pub mod subscription;

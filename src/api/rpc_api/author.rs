@@ -14,9 +14,9 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{error::Error, ApiResult},
-	rpc::HandleSubscription,
-	Api, Request, Subscribe, TransactionStatus, XtStatus,
+	api::{Error, Result},
+	rpc::{HandleSubscription, Request, Subscribe},
+	Api, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
@@ -32,7 +32,7 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an extrsinic to the substrate node, without watching.
 	/// Retruns the extrinsic hash.
-	fn submit_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Self::Hash>;
+	fn submit_extrinsic(&self, xthex_prefixed: String) -> Result<Self::Hash>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
@@ -43,7 +43,7 @@ where
 {
 	type Hash = Runtime::Hash;
 
-	fn submit_extrinsic(&self, xthex_prefixed: String) -> ApiResult<Self::Hash> {
+	fn submit_extrinsic(&self, xthex_prefixed: String) -> Result<Self::Hash> {
 		debug!("sending extrinsic: {:?}", xthex_prefixed);
 		let xt_hash =
 			self.client().request("author_submitExtrinsic", rpc_params![xthex_prefixed])?;
@@ -61,7 +61,7 @@ where
 	fn submit_and_watch_extrinsic(
 		&self,
 		xthex_prefixed: &str,
-	) -> ApiResult<TransactionSubscriptionFor<Client, Hash>>;
+	) -> Result<TransactionSubscriptionFor<Client, Hash>>;
 
 	/// Submit an extrinsic and watch in until the desired status is reached,
 	/// if no error is encountered previously. This method is blocking.
@@ -69,7 +69,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		watch_until: XtStatus,
-	) -> ApiResult<Option<Hash>>;
+	) -> Result<Option<Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
@@ -82,7 +82,7 @@ where
 	fn submit_and_watch_extrinsic(
 		&self,
 		xthex_prefixed: &str,
-	) -> ApiResult<TransactionSubscriptionFor<Client, Runtime::Hash>> {
+	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -96,7 +96,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		watch_until: XtStatus,
-	) -> ApiResult<Option<Runtime::Hash>> {
+	) -> Result<Option<Runtime::Hash>> {
 		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
 			self.submit_and_watch_extrinsic(xthex_prefixed)?;
 		while let Some(transaction_status) = subscription.next() {

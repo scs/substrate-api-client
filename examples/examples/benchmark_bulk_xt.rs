@@ -21,7 +21,7 @@
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic_offline, Api, AssetTipExtrinsicParams, JsonrpseeClient, SubmitExtrinsic,
+	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, SubmitExtrinsic,
 	UncheckedExtrinsicV4,
 };
 

@@ -19,8 +19,9 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, HandleSubscription, MultiAddress,
-	SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
+	rpc::{HandleSubscription, JsonrpseeClient},
+	Api, AssetTipExtrinsicParams, MultiAddress, SubmitAndWatch, SubmitExtrinsic, TransactionStatus,
+	XtStatus,
 };
 
 #[tokio::main]

@@ -16,13 +16,12 @@
 */
 
 #[cfg(feature = "ws-client")]
-pub use ws_client::WsRpcClient;
+pub use ws_client::*;
 #[cfg(feature = "ws-client")]
 pub mod ws_client;
 
 #[cfg(feature = "tungstenite-client")]
-pub use tungstenite_client::client::TungsteniteRpcClient;
-
+pub use tungstenite_client::*;
 #[cfg(feature = "tungstenite-client")]
 pub mod tungstenite_client;
 

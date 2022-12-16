@@ -20,7 +20,8 @@ use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::{sr25519, H256 as Hash};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, HandleSubscription, SubscribeFrameSystem,
+	rpc::{HandleSubscription, JsonrpseeClient},
+	Api, AssetTipExtrinsicParams, SubscribeFrameSystem,
 };
 
 // This module depends on node_runtime.

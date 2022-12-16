@@ -11,7 +11,7 @@
    limitations under the License.
 */
 use crate::{
-	api::{Api, ApiClientError, ApiResult},
+	api::{Api, Error, Result},
 	rpc::Request,
 	ExtrinsicParams,
 };
@@ -28,13 +28,13 @@ pub trait GetTransactionPayment<Hash> {
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<FeeDetails<Self::Balance>>>;
+	) -> Result<Option<FeeDetails<Self::Balance>>>;
 
 	fn get_payment_info(
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Hash>,
-	) -> ApiResult<Option<RuntimeDispatchInfo<Self::Balance>>>;
+	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetTransactionPayment<Runtime::Hash>
@@ -51,7 +51,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<FeeDetails<Self::Balance>>> {
+	) -> Result<Option<FeeDetails<Self::Balance>>> {
 		let details: Option<FeeDetails<NumberOrHex>> = self
 			.client()
 			.request("payment_queryFeeDetails", rpc_params![xthex_prefixed, at_block])?;
@@ -67,7 +67,7 @@ where
 		&self,
 		xthex_prefixed: &str,
 		at_block: Option<Runtime::Hash>,
-	) -> ApiResult<Option<RuntimeDispatchInfo<Self::Balance>>> {
+	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>> {
 		let res = self
 			.client()
 			.request("payment_queryInfo", rpc_params![xthex_prefixed, at_block])?;
@@ -77,25 +77,25 @@ where
 
 fn convert_fee_details<Balance: TryFrom<NumberOrHex>>(
 	details: FeeDetails<NumberOrHex>,
-) -> ApiResult<FeeDetails<Balance>> {
+) -> Result<FeeDetails<Balance>> {
 	let inclusion_fee = if let Some(inclusion_fee) = details.inclusion_fee {
 		Some(inclusion_fee_with_balance(inclusion_fee)?)
 	} else {
 		None
 	};
-	let tip = details.tip.try_into().map_err(|_| ApiClientError::TryFromIntError)?;
+	let tip = details.tip.try_into().map_err(|_| Error::TryFromIntError)?;
 	Ok(FeeDetails { inclusion_fee, tip })
 }
 
 fn inclusion_fee_with_balance<Balance: TryFrom<NumberOrHex>>(
 	inclusion_fee: InclusionFee<NumberOrHex>,
-) -> ApiResult<InclusionFee<Balance>> {
+) -> Result<InclusionFee<Balance>> {
 	Ok(InclusionFee {
-		base_fee: inclusion_fee.base_fee.try_into().map_err(|_| ApiClientError::TryFromIntError)?,
-		len_fee: inclusion_fee.len_fee.try_into().map_err(|_| ApiClientError::TryFromIntError)?,
+		base_fee: inclusion_fee.base_fee.try_into().map_err(|_| Error::TryFromIntError)?,
+		len_fee: inclusion_fee.len_fee.try_into().map_err(|_| Error::TryFromIntError)?,
 		adjusted_weight_fee: inclusion_fee
 			.adjusted_weight_fee
 			.try_into()
-			.map_err(|_| ApiClientError::TryFromIntError)?,
+			.map_err(|_| Error::TryFromIntError)?,
 	})
 }

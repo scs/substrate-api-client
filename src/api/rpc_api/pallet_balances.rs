@@ -11,7 +11,7 @@
    limitations under the License.
 */
 use crate::{
-	api::{Api, ApiResult, GetStorage},
+	api::{Api, GetStorage, Result},
 	rpc::Request,
 	ExtrinsicParams,
 };
@@ -21,7 +21,7 @@ use ac_primitives::BalancesConfig;
 pub trait GetBalance<Hash> {
 	type Balance;
 
-	fn get_existential_deposit(&self) -> ApiResult<Self::Balance>;
+	fn get_existential_deposit(&self) -> Result<Self::Balance>;
 }
 
 impl<Signer, Client, Params, Runtime> GetBalance<Runtime::Hash>
@@ -33,7 +33,7 @@ where
 {
 	type Balance = Runtime::Balance;
 
-	fn get_existential_deposit(&self) -> ApiResult<Self::Balance> {
+	fn get_existential_deposit(&self) -> Result<Self::Balance> {
 		self.get_constant("Balances", "ExistentialDeposit")
 	}
 }

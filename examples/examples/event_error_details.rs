@@ -19,8 +19,8 @@ use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, ApiResult, AssetTipExtrinsicParams, GetAccountInformation,
-	StaticEvent, SubmitAndWatch, SubscribeEvents, SubscribeFrameSystem, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, Result, StaticEvent,
+	SubmitAndWatch, SubscribeEvents, SubscribeFrameSystem, XtStatus,
 };
 
 #[derive(Decode)]
@@ -83,7 +83,7 @@ async fn main() {
 
 	// Transfer should fail as Alice wants to transfer all her balance. She does not have enough money to pay the fees.
 	let mut subscription = api.subscribe_system_events().unwrap();
-	let args: ApiResult<TransferEventArgs> = api.wait_for_event(&mut subscription);
+	let args: Result<TransferEventArgs> = api.wait_for_event(&mut subscription);
 	match args {
 		Ok(_transfer) => {
 			panic!("Exptected the call to fail.");

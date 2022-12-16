@@ -14,12 +14,11 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{Api, ApiResult, GetStorage},
-	rpc::Subscribe,
-	utils, Request,
+	api::{Api, GetStorage, Result},
+	rpc::{Request, Subscribe},
+	utils,
 };
 use ac_compose_macros::rpc_params;
-pub use ac_node_api::{events::EventDetails, StaticEvent};
 use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
@@ -36,9 +35,9 @@ pub trait GetAccountInformation<AccountId> {
 	fn get_account_info(
 		&self,
 		address: &AccountId,
-	) -> ApiResult<Option<AccountInfo<Self::Index, Self::AccountData>>>;
+	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>>;
 
-	fn get_account_data(&self, address: &AccountId) -> ApiResult<Option<Self::AccountData>>;
+	fn get_account_data(&self, address: &AccountId) -> Result<Option<Self::AccountData>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
@@ -56,7 +55,7 @@ where
 	fn get_account_info(
 		&self,
 		address: &Runtime::AccountId,
-	) -> ApiResult<Option<AccountInfo<Self::Index, Self::AccountData>>> {
+	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>> {
 		let storagekey: StorageKey = self.metadata().storage_map_key::<Runtime::AccountId>(
 			"System",
 			"Account",
@@ -70,7 +69,7 @@ where
 	fn get_account_data(
 		&self,
 		address: &Runtime::AccountId,
-	) -> ApiResult<Option<Runtime::AccountData>> {
+	) -> Result<Option<Runtime::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 }
@@ -80,7 +79,7 @@ where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	fn subscribe_system_events(&self) -> ApiResult<Client::Subscription<StorageChangeSet<Hash>>>;
+	fn subscribe_system_events(&self) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeFrameSystem<Client, Runtime::Hash>
@@ -92,7 +91,7 @@ where
 {
 	fn subscribe_system_events(
 		&self,
-	) -> ApiResult<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+	) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
 		debug!("subscribing to events");
 		let key = utils::storage_key("System", "Events");
 		self.client()

@@ -18,8 +18,8 @@
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetBlock, GetHeader, HandleSubscription,
-	SubscribeChain,
+	rpc::{HandleSubscription, JsonrpseeClient},
+	Api, AssetTipExtrinsicParams, GetBlock, GetHeader, SubscribeChain,
 };
 
 #[tokio::main]
