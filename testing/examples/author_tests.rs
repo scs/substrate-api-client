@@ -60,8 +60,8 @@ async fn main() {
 
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt2 = api.balance_transfer(bob.clone(), 1000).hex_encode();
-	let none = api.submit_and_watch_extrinsic_until(&xt2, XtStatus::Ready).unwrap();
-	assert!(none.is_none());
+	let report = api.submit_and_watch_extrinsic_until(&xt2, XtStatus::Ready).unwrap();
+	assert!(report.block_hash.is_none());
 	println!("Success: submit_and_watch_extrinsic_until Ready");
 
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
@@ -70,6 +70,7 @@ async fn main() {
 	let _some_hash = api
 		.submit_and_watch_extrinsic_until(&xt3, XtStatus::Broadcast)
 		.unwrap()
+		.block_hash
 		.unwrap();
 	println!("Success: submit_and_watch_extrinsic_until Broadcast");
 
@@ -77,8 +78,11 @@ async fn main() {
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt4 = api2.balance_transfer(bob.clone(), 1000).hex_encode();
 	let until_in_block_handle = thread::spawn(move || {
-		let _block_hash =
-			api2.submit_and_watch_extrinsic_until(&xt4, XtStatus::InBlock).unwrap().unwrap();
+		let _block_hash = api2
+			.submit_and_watch_extrinsic_until(&xt4, XtStatus::InBlock)
+			.unwrap()
+			.block_hash
+			.unwrap();
 		println!("Success: submit_and_watch_extrinsic_until InBlock");
 	});
 
@@ -89,6 +93,7 @@ async fn main() {
 		let _block_hash = api3
 			.submit_and_watch_extrinsic_until(&xt5, XtStatus::Finalized)
 			.unwrap()
+			.block_hash
 			.unwrap();
 		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
