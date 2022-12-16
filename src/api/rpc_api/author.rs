@@ -139,8 +139,6 @@ where
 		Err(Error::NoStream)
 	}
 
-	/// Submit an extrinsic and watch in until inBlock or Finalized is reached,
-	/// if no error is encountered previously. This method is blocking.
 	fn submit_and_watch_extrinsic_until_success(
 		&self,
 		xthex_prefixed: &str,

@@ -88,7 +88,7 @@ async fn main() {
 
 	let api3 = api.clone();
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let xt5 = api.balance_transfer(bob, 1000).hex_encode();
+	let xt5 = api.balance_transfer(bob.clone(), 1000).hex_encode();
 	let until_finalized_handle = thread::spawn(move || {
 		let _block_hash = api3
 			.submit_and_watch_extrinsic_until(&xt5, XtStatus::Finalized)
@@ -97,6 +97,17 @@ async fn main() {
 			.unwrap();
 		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
+
+	// Test Success
+	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	let xt6 = api.balance_transfer(bob, 1000).hex_encode();
+
+	let events = api
+		.submit_and_watch_extrinsic_until_success(&xt6, false)
+		.unwrap()
+		.events
+		.unwrap();
+	println!("Success: Found events: {:?}", events);
 
 	watch_handle.join().unwrap();
 	until_in_block_handle.join().unwrap();
