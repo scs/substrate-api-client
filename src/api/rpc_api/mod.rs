@@ -15,6 +15,7 @@ pub use self::{
 	author::*, chain::*, frame_system::*, pallet_balances::*, pallet_transaction_payment::*,
 	state::*, subscribe_events::*,
 };
+use ac_node_api::EventDetails;
 
 pub mod author;
 pub mod chain;

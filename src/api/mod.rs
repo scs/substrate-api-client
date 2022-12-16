@@ -23,6 +23,7 @@ pub mod api_client;
 pub mod error;
 pub mod rpc_api;
 
+use ac_node_api::EventDetails;
 use serde::{Deserialize, Serialize};
 
 /// Extrinsic report returned upon a submit_and_watch request.
