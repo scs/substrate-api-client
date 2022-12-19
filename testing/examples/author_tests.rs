@@ -42,75 +42,76 @@ async fn main() {
 	// Submit and watch
 
 	// Subscribe works.
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let api1 = api.clone();
-	let xt1 = api.balance_transfer(bob.clone(), 1000).encode();
-	let watch_handle = thread::spawn(move || {
-		let mut tx_subscription = api1.submit_and_watch_extrinsic(xt1).unwrap();
-		let tx_status = tx_subscription.next().unwrap().unwrap();
-		assert!(matches!(tx_status, TransactionStatus::Ready));
-		let tx_status = tx_subscription.next().unwrap().unwrap();
-		assert!(matches!(tx_status, TransactionStatus::InBlock(_)));
-		let tx_status = tx_subscription.next().unwrap().unwrap();
-		assert!(matches!(tx_status, TransactionStatus::Finalized(_)));
-		tx_subscription.unsubscribe().unwrap();
-		println!("Success: submit_and_watch_extrinsic");
-	});
-
-	// Test different _watch_untils:
-
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let xt2 = api.balance_transfer(bob.clone(), 1000).encode();
-	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
-	assert!(report.block_hash.is_none());
-	println!("Success: submit_and_watch_extrinsic_until Ready");
-
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let xt3 = api.balance_transfer(bob.clone(), 1000).encode();
-	// The xt is not broadcast - we only have one node running. Therefore, InBlock is returned.
-	let _some_hash = api
-		.submit_and_watch_extrinsic_until(xt3, XtStatus::Broadcast)
-		.unwrap()
-		.block_hash
-		.unwrap();
-	println!("Success: submit_and_watch_extrinsic_until Broadcast");
-
-	let api2 = api.clone();
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let xt4 = api2.balance_transfer(bob.clone(), 1000).encode();
-	let until_in_block_handle = thread::spawn(move || {
-		let _block_hash = api2
-			.submit_and_watch_extrinsic_until(xt4, XtStatus::InBlock)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("Success: submit_and_watch_extrinsic_until InBlock");
-	});
-
-	let api3 = api.clone();
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let xt5 = api.balance_transfer(bob.clone(), 1000).encode();
-	let until_finalized_handle = thread::spawn(move || {
-		let _block_hash = api3
-			.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("Success: submit_and_watch_extrinsic_until Finalized");
-	});
+	// 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	// 	let api1 = api.clone();
+	// 	let xt1 = api.balance_transfer(bob.clone(), 1000).encode();
+	// 	let watch_handle = thread::spawn(move || {
+	// 		let mut tx_subscription = api1.submit_and_watch_extrinsic(xt1).unwrap();
+	// 		let tx_status = tx_subscription.next().unwrap().unwrap();
+	// 		assert!(matches!(tx_status, TransactionStatus::Ready));
+	// 		let tx_status = tx_subscription.next().unwrap().unwrap();
+	// 		assert!(matches!(tx_status, TransactionStatus::InBlock(_)));
+	// 		let tx_status = tx_subscription.next().unwrap().unwrap();
+	// 		assert!(matches!(tx_status, TransactionStatus::Finalized(_)));
+	// 		tx_subscription.unsubscribe().unwrap();
+	// 		println!("Success: submit_and_watch_extrinsic");
+	// 	});
+	//
+	// 	// Test different _watch_untils:
+	//
+	// 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	// 	let xt2 = api.balance_transfer(bob.clone(), 1000).encode();
+	// 	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
+	// 	assert!(report.block_hash.is_none());
+	// 	println!("Success: submit_and_watch_extrinsic_until Ready");
+	//
+	// 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	// 	let xt3 = api.balance_transfer(bob.clone(), 1000).encode();
+	// 	// The xt is not broadcast - we only have one node running. Therefore, InBlock is returned.
+	// 	let _some_hash = api
+	// 		.submit_and_watch_extrinsic_until(xt3, XtStatus::Broadcast)
+	// 		.unwrap()
+	// 		.block_hash
+	// 		.unwrap();
+	// 	println!("Success: submit_and_watch_extrinsic_until Broadcast");
+	//
+	// 	let api2 = api.clone();
+	// 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	// 	let xt4 = api2.balance_transfer(bob.clone(), 1000).encode();
+	// 	let until_in_block_handle = thread::spawn(move || {
+	// 		let _block_hash = api2
+	// 			.submit_and_watch_extrinsic_until(xt4, XtStatus::InBlock)
+	// 			.unwrap()
+	// 			.block_hash
+	// 			.unwrap();
+	// 		println!("Success: submit_and_watch_extrinsic_until InBlock");
+	// 	});
+	//
+	// 	let api3 = api.clone();
+	// 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	// 	let xt5 = api.balance_transfer(bob.clone(), 1000).encode();
+	// 	let until_finalized_handle = thread::spawn(move || {
+	// 		let _block_hash = api3
+	// 			.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized)
+	// 			.unwrap()
+	// 			.block_hash
+	// 			.unwrap();
+	// 		println!("Success: submit_and_watch_extrinsic_until Finalized");
+	// 	});
 
 	//Test Success
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-									   // 	let xt6 = api.balance_transfer(bob, 1000).encode();
-									   //
-									   // 	let events = api
-									   // 		.submit_and_watch_extrinsic_until_success(xt6, false)
-									   // 		.unwrap()
-									   // 		.events
-									   // 		.unwrap();
-									   // 	println!("Success: Found events: {:?}", events);
+	thread::sleep(Duration::from_secs(6));
+	//Wait a little to avoid transaction too low priority error.
+	let xt6 = api.balance_transfer(bob, 1000).encode();
 
-	watch_handle.join().unwrap();
-	until_in_block_handle.join().unwrap();
-	until_finalized_handle.join().unwrap();
+	let events = api
+		.submit_and_watch_extrinsic_until_success(xt6, false)
+		.unwrap()
+		.events
+		.unwrap();
+	println!("Success: Found events: {:?}", events);
+
+	// watch_handle.join().unwrap();
+	// until_in_block_handle.join().unwrap();
+	// until_finalized_handle.join().unwrap();
 }
