@@ -16,7 +16,7 @@
 //! Very simple example that shows how to subscribe to events generically
 //! implying no runtime needs to be imported
 
-use codec::Decode;
+use codec::{Decode, Encode};
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
@@ -68,7 +68,7 @@ async fn main() {
 
 	// Send extrinsic.
 	let block_hash = api
-		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
 		.unwrap()
 		.block_hash
 		.unwrap();

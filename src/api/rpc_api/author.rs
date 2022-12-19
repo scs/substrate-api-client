@@ -16,7 +16,9 @@
 use crate::{
 	api::{rpc_api::extrinsic_has_failed, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils, Api, DispatchError, Events, ExtrinsicReport, FromHexString, GetBlock, GetStorage, Phase,
+	utils,
+	utils::ToHexString,
+	Api, DispatchError, Events, ExtrinsicReport, FromHexString, GetBlock, GetStorage, Phase,
 	TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
@@ -35,7 +37,7 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an extrsinic to the substrate node, without watching.
 	/// Retruns the extrinsic hash.
-	fn submit_extrinsic(&self, xthex_prefixed: String) -> Result<Self::Hash>;
+	fn submit_extrinsic(&self, encoded_extrinsic: Vec<u8>) -> Result<Self::Hash>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
@@ -46,10 +48,11 @@ where
 {
 	type Hash = Runtime::Hash;
 
-	fn submit_extrinsic(&self, xthex_prefixed: String) -> Result<Self::Hash> {
-		debug!("sending extrinsic: {:?}", xthex_prefixed);
+	fn submit_extrinsic(&self, encoded_extrinsic: Vec<u8>) -> Result<Self::Hash> {
+		let hex_encoded_xt = encoded_extrinsic.to_hex();
+		debug!("sending extrinsic: {:?}", hex_encoded_xt);
 		let xt_hash =
-			self.client().request("author_submitExtrinsic", rpc_params![xthex_prefixed])?;
+			self.client().request("author_submitExtrinsic", rpc_params![hex_encoded_xt])?;
 		Ok(xt_hash)
 	}
 }
@@ -63,7 +66,7 @@ where
 	/// extrinsic progress.
 	fn submit_and_watch_extrinsic(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 	) -> Result<TransactionSubscriptionFor<Client, Hash>>;
 
 	/// Submit an extrinsic and watch in until the desired status is reached,
@@ -71,7 +74,7 @@ where
 	// This method is blocking.
 	fn submit_and_watch_extrinsic_until(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Hash>>;
 
@@ -82,7 +85,7 @@ where
 	// This method is blocking.
 	fn submit_and_watch_extrinsic_until_success(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Hash>>;
 }
@@ -99,12 +102,12 @@ where
 {
 	fn submit_and_watch_extrinsic(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
-				rpc_params![xthex_prefixed],
+				rpc_params![encoded_extrinsic.to_hex()],
 				"author_unsubmitAndWatchExtrinsic",
 			)
 			.map_err(|e| e.into())
@@ -112,12 +115,12 @@ where
 
 	fn submit_and_watch_extrinsic_until(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Runtime::Hash>> {
-		let tx_hash = Runtime::Hashing::hash_of(&xthex_prefixed.encode());
+		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic);
 		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
-			self.submit_and_watch_extrinsic(xthex_prefixed)?;
+			self.submit_and_watch_extrinsic(encoded_extrinsic)?;
 
 		while let Some(transaction_status) = subscription.next() {
 			let transaction_status = transaction_status?;
@@ -141,14 +144,14 @@ where
 
 	fn submit_and_watch_extrinsic_until_success(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Runtime::Hash>> {
 		let xt_status = match wait_for_finalized {
 			true => XtStatus::Finalized,
 			false => XtStatus::InBlock,
 		};
-		let mut report = self.submit_and_watch_extrinsic_until(xthex_prefixed, xt_status)?;
+		let mut report = self.submit_and_watch_extrinsic_until(encoded_extrinsic, xt_status)?;
 
 		// Retrieve block details from node.
 		let block_hash = report.block_hash.ok_or(Error::NoBlockHash)?;
@@ -157,7 +160,9 @@ where
 			.extrinsics()
 			.iter()
 			.position(|xt| {
+				println!("Got xt: {:?}", xt);
 				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
+				println!("Looking for: {:?}, got xt_hash {:?}", report.extrinsic_hash, xt_hash);
 				report.extrinsic_hash == xt_hash
 			})
 			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
