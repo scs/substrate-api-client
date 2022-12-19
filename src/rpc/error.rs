@@ -15,33 +15,33 @@
 
 */
 
-use std::sync::mpsc::SendError;
+use alloc::{boxed::Box, string::String};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
 	#[error("Serde json error: {0}")]
-	Serde(#[from] serde_json::error::Error),
+	Serde(serde_json::error::Error),
 	#[error("mpsc send Error: {0}")]
 	Send(String),
 	#[error("Could not convert to valid Url: {0}")]
-	Url(#[from] url::ParseError),
+	Url(String),
 	#[error("ChannelReceiveError, sender is disconnected: {0}")]
-	ChannelDisconnected(#[from] sp_std::sync::mpsc::RecvError),
+	ChannelDisconnected(String),
 	#[error("Failure during thread creation: {0}")]
-	Io(#[from] std::io::Error),
+	Io(String),
 	#[error("Exceeded maximum amount of connections")]
 	ConnectionAttemptsExceeded,
 	#[error("Websocket Connection was closed unexpectedly")]
 	ConnectionClosed,
 	#[error(transparent)]
-	Client(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),
+	Client(#[from] Box<dyn core::error::Error + Send + Sync + 'static>),
 }
 
-impl From<SendError<String>> for Error {
-	fn from(error: SendError<String>) -> Self {
-		Self::Send(error.0)
+impl From<serde_json::error::Error> for Error {
+	fn from(error: serde_json::error::Error) -> Self {
+		Self::Serde(error)
 	}
 }
 
@@ -56,5 +56,37 @@ impl From<ws::Error> for Error {
 impl From<tungstenite::Error> for Error {
 	fn from(error: tungstenite::Error) -> Self {
 		Self::Client(Box::new(error))
+	}
+}
+
+#[cfg(feature = "std")]
+pub use std_only::*;
+#[cfg(feature = "std")]
+mod std_only {
+	use super::*;
+	use std::sync::mpsc::{RecvError, SendError};
+
+	impl From<SendError<String>> for Error {
+		fn from(error: SendError<String>) -> Self {
+			Self::Send(error.0)
+		}
+	}
+
+	impl From<RecvError> for Error {
+		fn from(error: RecvError) -> Self {
+			Self::ChannelDisconnected(format!("{:?}", error))
+		}
+	}
+
+	impl From<std::io::Error> for Error {
+		fn from(error: std::io::Error) -> Self {
+			Self::Io(format!("{:?}", error))
+		}
+	}
+
+	impl From<url::ParseError> for Error {
+		fn from(error: url::ParseError) -> Self {
+			Self::Io(format!("{:?}", error))
+		}
 	}
 }

@@ -35,6 +35,7 @@ pub mod error;
 pub use error::*;
 
 use ac_primitives::RpcParams;
+use alloc::string::{String, ToString};
 use serde::de::DeserializeOwned;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
