@@ -78,9 +78,9 @@ where
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Hash>>;
 
-	/// Submit an extrinsic and watch in until
+	/// Submit an extrinsic and watch it until
 	/// - wait_for_finalized = false => InBlock
-	/// - wait_for_finalized = false => Finalized
+	/// - wait_for_finalized = true => Finalized
 	/// and check if the extrinsic has been successful or not.
 	// This method is blocking.
 	fn submit_and_watch_extrinsic_until_success(
@@ -152,7 +152,6 @@ where
 			false => XtStatus::InBlock,
 		};
 		let mut report = self.submit_and_watch_extrinsic_until(encoded_extrinsic, xt_status)?;
-
 		// Retrieve block details from node.
 		let block_hash = report.block_hash.ok_or(Error::NoBlockHash)?;
 		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
@@ -160,13 +159,11 @@ where
 			.extrinsics()
 			.iter()
 			.position(|xt| {
-				println!("Got xt: {:?}", xt);
 				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
-				println!("Looking for: {:?}, got xt_hash {:?}", report.extrinsic_hash, xt_hash);
+				trace!("Looking for: {:?}, got xt_hash {:?}", report.extrinsic_hash, xt_hash);
 				report.extrinsic_hash == xt_hash
 			})
 			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
-
 		// Fetch events from this block.
 		let key = utils::storage_key("System", "Events");
 		let event_bytes = self
@@ -174,7 +171,6 @@ where
 			.ok_or(Error::NoBlock)?;
 		let events =
 			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
-
 		// Filter events associated to our extrinsic.
 		let associated_event_results = events.iter().filter(|ev| {
 			ev.as_ref()
@@ -183,6 +179,11 @@ where
 		let mut associated_events = Vec::new();
 		for event_details in associated_event_results {
 			let event_details = event_details?;
+			debug!(
+				"associated event_details {:?} {:?}",
+				event_details.pallet_name(),
+				event_details.variant_name()
+			);
 			if extrinsic_has_failed(&event_details) {
 				let dispatch_error =
 					DispatchError::decode_from(event_details.field_bytes(), self.metadata());

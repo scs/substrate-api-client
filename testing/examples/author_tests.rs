@@ -13,16 +13,19 @@
 	limitations under the License.
 */
 
+#![feature(assert_matches)]
+
 //! Tests for the author rpc interface functions.
 
 use codec::Encode;
+use core::assert_matches::assert_matches;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, AssetTipExtrinsicParams, MultiAddress, SubmitAndWatch, SubmitExtrinsic, TransactionStatus,
-	XtStatus,
+	Api, AssetTipExtrinsicParams, EventDetails, MultiAddress, SubmitAndWatch, SubmitExtrinsic,
+	TransactionStatus, XtStatus,
 };
 
 #[tokio::main]
@@ -36,8 +39,8 @@ async fn main() {
 	let bob = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
 	// Submit extrinisc
-	let xt0 = api.balance_transfer(bob.clone(), 1000).encode();
-	let _tx_hash = api.submit_extrinsic(xt0).unwrap();
+	//let xt0 = api.balance_transfer(bob.clone(), 1000).encode();
+	//let _tx_hash = api.submit_extrinsic(xt0).unwrap();
 
 	// Submit and watch
 
@@ -100,7 +103,7 @@ async fn main() {
 	// 	});
 
 	//Test Success
-	thread::sleep(Duration::from_secs(6));
+	//thread::sleep(Duration::from_secs(6));
 	//Wait a little to avoid transaction too low priority error.
 	let xt6 = api.balance_transfer(bob, 1000).encode();
 
@@ -109,9 +112,34 @@ async fn main() {
 		.unwrap()
 		.events
 		.unwrap();
-	println!("Success: Found events: {:?}", events);
+	println!("Extrinsic got successfully included in Block!");
+	assert_assosciated_events_match_expected(events);
 
 	// watch_handle.join().unwrap();
 	// until_in_block_handle.join().unwrap();
 	// until_finalized_handle.join().unwrap();
+}
+
+fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {
+	// First event
+	assert_matches!(events[0].pallet_name(), "Balances");
+	assert_matches!(events[0].variant_name(), "Withdraw");
+
+	assert_matches!(events[1].pallet_name(), "Balances");
+	assert_matches!(events[1].variant_name(), "Transfer");
+
+	assert_matches!(events[2].pallet_name(), "Balances");
+	assert_matches!(events[2].variant_name(), "Deposit");
+
+	assert_matches!(events[3].pallet_name(), "Treasury");
+	assert_matches!(events[3].variant_name(), "Deposit");
+
+	assert_matches!(events[4].pallet_name(), "Balances");
+	assert_matches!(events[4].variant_name(), "Deposit");
+
+	assert_matches!(events[5].pallet_name(), "TransactionPayment");
+	assert_matches!(events[5].variant_name(), "TransactionFeePaid");
+
+	assert_matches!(events[6].pallet_name(), "System");
+	assert_matches!(events[6].variant_name(), "ExtrinsicSuccess");
 }
