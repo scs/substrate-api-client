@@ -5188,7 +5188,6 @@ dependencies = [
  "kitchensink-runtime",
  "log",
  "parity-scale-codec",
- "primitive-types",
  "serde",
  "serde_json",
  "sp-core",
@@ -5197,7 +5196,7 @@ dependencies = [
  "sp-runtime-interface",
  "sp-std",
  "sp-version",
- "thiserror",
+ "thiserror-core",
  "tungstenite",
  "url",
  "ws",
@@ -5331,6 +5330,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10deb33631e3c9018b9baf9dcbbc4f737320d2b576bac10f6aefa048fa407e3e"
 dependencies = [
  "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-core"
+version = "1.0.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "808e769db82353a456db04af0e76a4e211c5428516cead2b420dfa3d82cb83d3"
+dependencies = [
+ "thiserror-core-impl",
+]
+
+[[package]]
+name = "thiserror-core-impl"
+version = "1.0.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7905b4dad6617f9e81544469da6bb1c658c02c6c7e420ee953d03687db1e1cfe"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

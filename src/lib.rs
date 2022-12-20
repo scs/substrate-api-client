@@ -16,12 +16,16 @@
 */
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(assert_matches)]
+#![feature(error_in_core)]
+
+extern crate alloc;
 
 pub use ac_compose_macros::*;
 pub use ac_node_api::*;
 pub use ac_primitives::*;
 pub use utils::*;
 
+pub mod rpc;
 pub mod utils;
 
 // std only features:
@@ -33,5 +37,3 @@ pub use api::*;
 pub mod api;
 #[cfg(feature = "std")]
 pub mod extrinsic;
-#[cfg(feature = "std")]
-pub mod rpc;

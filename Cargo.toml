@@ -25,9 +25,10 @@ log = { version = "0.4.14", default-features = false }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.79", default-features = false }
 
+#FIXME: convert back to thiserror once possible #317
+thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
+
 # crates.io std only
-primitive-types = { version = "0.12.1", optional = true, features = ["codec"] }
-thiserror = { version = "1.0.30", optional = true }
 url = { version = "2.0.0", optional = true }
 
 # websocket dependent features
@@ -70,9 +71,8 @@ std = [
     "log/std",
     "serde/std",
     "serde_json/std",
+    "thiserror/std",
     # crates.io std only
-    "primitive-types",
-    "thiserror",
     "url",
     # substrate no_std
     "frame-metadata/std",

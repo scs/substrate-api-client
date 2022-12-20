@@ -42,7 +42,6 @@ impl RpcParams {
 	}
 
 	/// Insert a plain value into the builder.
-	#[cfg(feature = "std")]
 	pub fn insert<P: Serialize>(&mut self, value: P) -> Result<()> {
 		self.0.insert(value)
 	}
@@ -143,6 +142,13 @@ impl ParamsBuilder {
 		self.bytes.push(b',');
 
 		Ok(())
+	}
+
+	/// Insert a plain value into the builder with heap allocation. If available,
+	/// use the more efficient std version.
+	#[cfg(not(feature = "std"))]
+	pub(crate) fn insert<P: Serialize>(&mut self, value: P) -> Result<()> {
+		self.insert_with_allocation(value)
 	}
 
 	/// Insert a plain value into the builder with heap allocation. For better performance,
