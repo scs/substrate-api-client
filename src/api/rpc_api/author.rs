@@ -14,16 +14,13 @@
 //! Interface to common frame system pallet information.
 
 use crate::{
-	api::{rpc_api::extrinsic_has_failed, Error, Result},
+	api::{Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils,
 	utils::ToHexString,
-	Api, DispatchError, Events, ExtrinsicReport, FromHexString, GetBlock, GetStorage, Phase,
-	TransactionStatus, XtStatus,
+	Api, ExtrinsicReport, FromHexString, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
-use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
