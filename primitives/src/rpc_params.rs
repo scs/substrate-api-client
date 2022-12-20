@@ -144,9 +144,9 @@ impl ParamsBuilder {
 		Ok(())
 	}
 
-	#[cfg(not(feature = "std"))]
 	/// Insert a plain value into the builder with heap allocation. If available,
 	/// use the more efficient std version.
+	#[cfg(not(feature = "std"))]
 	pub(crate) fn insert<P: Serialize>(&mut self, value: P) -> Result<()> {
 		self.insert_with_allocation(value)
 	}
