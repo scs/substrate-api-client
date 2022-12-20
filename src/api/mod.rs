@@ -124,7 +124,7 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 	}
 
 	pub fn is_final(&self) -> bool {
-		matches!(self, TransactionStatus::FinalityTimeout(_) | TransactionStatus::Finalized(_))
+		matches!(self, TransactionStatus::Finalized(_))
 	}
 }
 
