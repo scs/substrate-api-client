@@ -21,9 +21,7 @@
 
 // re-export for macro resolution
 pub use ac_primitives as primitives;
-#[cfg(feature = "std")]
 pub use codec;
-#[cfg(feature = "std")]
 pub use log;
 pub use rpc::*;
 pub use sp_core;
@@ -98,7 +96,6 @@ macro_rules! compose_extrinsic_offline {
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
-#[cfg(feature = "std")]
 macro_rules! compose_extrinsic {
 	($api: expr,
 	$module: expr,
