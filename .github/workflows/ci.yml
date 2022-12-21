@@ -3,9 +3,9 @@ name: Build & Test & Clippy
 on:
   workflow_dispatch:
   push:
-    branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+-*' ]
+    branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+*' ]
   pull_request:
-    branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+-*' ]
+    branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+*' ]
 
 env:
   CARGO_TERM_COLOR: always
