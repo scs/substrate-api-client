@@ -15,11 +15,10 @@
 
 //! This example is community maintained and not CI tested, therefore it may not work as is.
 
-use std::sync::mpsc::channel;
-
 use clap::{load_yaml, App};
 use codec::Decode;
 use sp_keyring::AccountKeyring;
+use std::sync::mpsc::channel;
 use substrate_api_client::{
 	rpc::WsRpcClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, XtStatus,
 };
