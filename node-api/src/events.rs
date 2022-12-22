@@ -314,7 +314,7 @@ impl EventDetails {
 
 impl EventDetails {
 	/// Checks if the extrinsic has failed. If so, the corresponding DispatchError is returned.
-	pub fn check_failed(&self) -> Result<(), DispatchError> {
+	pub fn check_if_failed(&self) -> Result<(), DispatchError> {
 		if self.pallet_name() == "System" && self.variant_name() == "ExtrinsicFailed" {
 			let dispatch_error = DispatchError::decode_from(self.field_bytes(), &self.metadata);
 			return Err(dispatch_error)

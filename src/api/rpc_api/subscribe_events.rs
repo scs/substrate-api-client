@@ -75,7 +75,7 @@ where
 				// Check for failed xt and return as Dispatch Error in case we find one.
 				// Careful - this reports the first one encountered. This event may belong to another extrinsic
 				// than the one that is being waited for.
-				event_details.check_failed()?;
+				event_details.check_if_failed()?;
 
 				let event_metadata = event_details.event_metadata();
 				trace!(
