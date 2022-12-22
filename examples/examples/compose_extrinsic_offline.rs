@@ -20,8 +20,8 @@ use kitchensink_runtime::{BalancesCall, Header, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	AssetTipExtrinsicParamsBuilder, GetHeader, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, AssetTipExtrinsicParamsBuilder, GetHeader,
+	SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]
@@ -55,11 +55,8 @@ async fn main() {
 	let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
 	// Compose the extrinsic.
-	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-		&api.signer().unwrap(),
-		RuntimeCall::Balances(BalancesCall::transfer { dest: to.clone(), value: 42 }),
-		api.extrinsic_params(alice_nonce)
-	);
+	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: to, value: 42 });
+	let xt = api.compose_extrinsic_offline(call, alice_nonce);
 
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
