@@ -139,3 +139,50 @@ pub struct ReadProof<Hash> {
 	/// A proof used to prove that storage entries are included in the storage trie
 	pub proof: Vec<sp_core::Bytes>,
 }
+
+#[cfg(test)]
+mod tests {
+	use super::{TransactionStatus as GenericTransactionStatus, *};
+	use sp_core::H256;
+
+	type TransactionStatus = GenericTransactionStatus<H256, H256>;
+
+	#[test]
+	fn test_xt_status_as_u8() {
+		assert_eq!(1, XtStatus::Ready as u8);
+		assert_eq!(2, XtStatus::Broadcast as u8);
+		assert_eq!(4, XtStatus::InBlock as u8);
+		assert_eq!(6, XtStatus::Finalized as u8);
+	}
+
+	#[test]
+	fn test_transaction_status_as_u8() {
+		assert_eq!(0, TransactionStatus::Future.as_u8());
+		assert_eq!(1, TransactionStatus::Ready.as_u8());
+		assert_eq!(2, TransactionStatus::Broadcast(vec![]).as_u8());
+		assert_eq!(3, TransactionStatus::InBlock(H256::random()).as_u8());
+		assert_eq!(4, TransactionStatus::Retracted(H256::random()).as_u8());
+		assert_eq!(5, TransactionStatus::FinalityTimeout(H256::random()).as_u8());
+		assert_eq!(6, TransactionStatus::Finalized(H256::random()).as_u8());
+		assert_eq!(7, TransactionStatus::Usurped(H256::random()).as_u8());
+		assert_eq!(8, TransactionStatus::Dropped.as_u8());
+		assert_eq!(9, TransactionStatus::Invalid.as_u8());
+	}
+
+	#[test]
+	fn test_transaction_status_is_supported() {
+		// Supported.
+		assert!(TransactionStatus::Ready.is_supported());
+		assert!(TransactionStatus::Broadcast(vec![]).is_supported());
+		assert!(TransactionStatus::InBlock(H256::random()).is_supported());
+		assert!(TransactionStatus::FinalityTimeout(H256::random()).is_supported());
+		assert!(TransactionStatus::Finalized(H256::random()).is_supported());
+
+		// Not supported.
+		assert!(!TransactionStatus::Future.is_supported());
+		assert!(!TransactionStatus::Retracted(H256::random()).is_supported());
+		assert!(!TransactionStatus::Usurped(H256::random()).is_supported());
+		assert!(!TransactionStatus::Dropped.is_supported());
+		assert!(!TransactionStatus::Invalid.is_supported());
+	}
+}
