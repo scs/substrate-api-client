@@ -12,10 +12,10 @@
 */
 
 use crate::{
-	api::{error::Error, rpc_api::extrinsic_has_failed, Api, Result},
+	api::{error::Error, Api, Result},
 	rpc::{HandleSubscription, Subscribe},
 };
-use ac_node_api::{events::EventDetails, DispatchError, Events, StaticEvent};
+use ac_node_api::{events::EventDetails, Events, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
@@ -75,11 +75,7 @@ where
 				// Check for failed xt and return as Dispatch Error in case we find one.
 				// Careful - this reports the first one encountered. This event may belong to another extrinsic
 				// than the one that is being waited for.
-				if extrinsic_has_failed(&event_details) {
-					let dispatch_error =
-						DispatchError::decode_from(event_details.field_bytes(), self.metadata());
-					return Err(Error::Dispatch(dispatch_error))
-				}
+				event_details.check_failed()?;
 
 				let event_metadata = event_details.event_metadata();
 				trace!(
