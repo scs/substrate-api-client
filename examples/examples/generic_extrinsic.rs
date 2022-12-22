@@ -39,9 +39,8 @@ async fn main() {
 
 	// call Balances::transfer
 	// the names are given as strings
-	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(
-		api.clone(),
+		&api,
 		"Balances",
 		"transfer",
 		GenericAddress::Id(to),
