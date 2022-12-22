@@ -23,7 +23,7 @@ use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
+use sp_runtime::traits::Hash as HashTrait;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
