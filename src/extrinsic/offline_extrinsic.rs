@@ -16,7 +16,7 @@
 */
 
 //! Helper function to easily create extrinsics offline (without getter calls to the node).
-//!
+
 use crate::Api;
 use ac_compose_macros::compose_extrinsic_offline;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
