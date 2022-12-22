@@ -55,9 +55,8 @@ async fn main() {
 	let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
 	// Compose the extrinsic.
-	#[allow(clippy::redundant_clone)]
 	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-		api.signer().unwrap().clone(),
+		&api.signer().unwrap(),
 		RuntimeCall::Balances(BalancesCall::transfer { dest: to.clone(), value: 42 }),
 		api.extrinsic_params(alice_nonce)
 	);
