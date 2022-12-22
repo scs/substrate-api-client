@@ -81,8 +81,7 @@ impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
+	Runtime: FrameSystemConfig,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 	Runtime::Hash: FromHexString,
 {
