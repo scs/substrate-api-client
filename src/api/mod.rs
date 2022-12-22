@@ -32,7 +32,7 @@ use serde::{Deserialize, Serialize};
 pub enum XtStatus {
 	Ready = 1,
 	Broadcast = 2,
-	InBlock = 4,
+	InBlock = 3,
 	Finalized = 6,
 }
 
