@@ -20,8 +20,7 @@ use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_core::Pair;
-use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType, MultiSignature};
+use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType};
 
 pub trait GetHeader<Hash> {
 	type Header;
@@ -78,8 +77,6 @@ pub trait GetBlock<Number, Hash> {
 impl<Signer, Client, Params, Runtime> GetBlock<Runtime::BlockNumber, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
 	Client: Request,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,

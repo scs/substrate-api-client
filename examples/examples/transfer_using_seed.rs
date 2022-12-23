@@ -15,6 +15,7 @@
 
 //! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
 
+use codec::Encode;
 use kitchensink_runtime::Runtime;
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
@@ -64,9 +65,11 @@ async fn main() {
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api
-		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
+		.unwrap()
+		.block_hash
 		.unwrap();
-	println!("[+] Transaction got included. Hash: {:?}\n", block_hash);
+	println!("[+] Extrinsic got included. Hash: {:?}\n", block_hash);
 
 	// Verify that Bob's free Balance increased.
 	let bob_account_data = api.get_account_data(&bob.into()).unwrap().unwrap();

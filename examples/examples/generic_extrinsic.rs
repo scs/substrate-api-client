@@ -16,6 +16,7 @@
 //! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
 //! module, whereas the desired module and call are supplied as a string.
 
+use codec::Encode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -51,8 +52,6 @@ async fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// send and watch extrinsic until InBlock
-	let tx_hash = api
-		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
-		.unwrap();
-	println!("[+] Transaction got included. Hash: {:?}", tx_hash);
+	let report = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock).unwrap();
+	println!("[+] Extrinsic got included. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }

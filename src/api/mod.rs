@@ -23,7 +23,36 @@ pub mod api_client;
 pub mod error;
 pub mod rpc_api;
 
+use ac_node_api::EventDetails;
 use serde::{Deserialize, Serialize};
+
+/// Extrinsic report returned upon a submit_and_watch request.
+/// Holds as much information as available.
+#[derive(Debug, Clone)]
+pub struct ExtrinsicReport<Hash> {
+	// Hash of the extrinsic.
+	pub extrinsic_hash: Hash,
+	// Block hash of the block the extrinsic was included in.
+	// Only available if watched until at least `InBlock`.
+	pub block_hash: Option<Hash>,
+	// Last known Transaction Status.
+	pub status: TransactionStatus<Hash, Hash>,
+	// Events assosciated to the extrinsic.
+	// Only available if explicitly stated, because
+	// extra node queries are necessary to fetch the events.
+	pub events: Option<Vec<EventDetails>>,
+}
+
+impl<Hash> ExtrinsicReport<Hash> {
+	pub fn new(
+		extrinsic_hash: Hash,
+		block_hash: Option<Hash>,
+		status: TransactionStatus<Hash, Hash>,
+		events: Option<Vec<EventDetails>>,
+	) -> Self {
+		Self { extrinsic_hash, block_hash, status, events }
+	}
+}
 
 /// Simplified TransactionStatus to allow the user to choose until when to watch
 /// an extrinsic.
@@ -92,6 +121,10 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 				| TransactionStatus::FinalityTimeout(_)
 				| TransactionStatus::Finalized(_)
 		)
+	}
+
+	pub fn is_final(&self) -> bool {
+		matches!(self, TransactionStatus::Finalized(_))
 	}
 }
 

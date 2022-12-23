@@ -16,12 +16,14 @@
 use crate::{
 	api::{Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	Api, TransactionStatus, XtStatus,
+	utils::ToHexString,
+	Api, ExtrinsicReport, FromHexString, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use log::*;
 use serde::de::DeserializeOwned;
+use sp_runtime::traits::Hash as HashTrait;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -32,7 +34,7 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an extrsinic to the substrate node, without watching.
 	/// Retruns the extrinsic hash.
-	fn submit_extrinsic(&self, xthex_prefixed: String) -> Result<Self::Hash>;
+	fn submit_extrinsic(&self, encoded_extrinsic: Vec<u8>) -> Result<Self::Hash>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
@@ -43,10 +45,11 @@ where
 {
 	type Hash = Runtime::Hash;
 
-	fn submit_extrinsic(&self, xthex_prefixed: String) -> Result<Self::Hash> {
-		debug!("sending extrinsic: {:?}", xthex_prefixed);
+	fn submit_extrinsic(&self, encoded_extrinsic: Vec<u8>) -> Result<Self::Hash> {
+		let hex_encoded_xt = encoded_extrinsic.to_hex();
+		debug!("sending extrinsic: {:?}", hex_encoded_xt);
 		let xt_hash =
-			self.client().request("author_submitExtrinsic", rpc_params![xthex_prefixed])?;
+			self.client().request("author_submitExtrinsic", rpc_params![hex_encoded_xt])?;
 		Ok(xt_hash)
 	}
 }
@@ -60,16 +63,17 @@ where
 	/// extrinsic progress.
 	fn submit_and_watch_extrinsic(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 	) -> Result<TransactionSubscriptionFor<Client, Hash>>;
 
 	/// Submit an extrinsic and watch in until the desired status is reached,
-	/// if no error is encountered previously. This method is blocking.
+	/// if no error is encountered previously.
+	// This method is blocking.
 	fn submit_and_watch_extrinsic_until(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 		watch_until: XtStatus,
-	) -> Result<Option<Hash>>;
+	) -> Result<ExtrinsicReport<Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
@@ -78,15 +82,17 @@ where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Hash: FromHexString,
 {
 	fn submit_and_watch_extrinsic(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
-				rpc_params![xthex_prefixed],
+				rpc_params![encoded_extrinsic.to_hex()],
 				"author_unsubmitAndWatchExtrinsic",
 			)
 			.map_err(|e| e.into())
@@ -94,17 +100,20 @@ where
 
 	fn submit_and_watch_extrinsic_until(
 		&self,
-		xthex_prefixed: &str,
+		encoded_extrinsic: Vec<u8>,
 		watch_until: XtStatus,
-	) -> Result<Option<Runtime::Hash>> {
+	) -> Result<ExtrinsicReport<Runtime::Hash>> {
+		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic);
 		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
-			self.submit_and_watch_extrinsic(xthex_prefixed)?;
+			self.submit_and_watch_extrinsic(encoded_extrinsic)?;
+
 		while let Some(transaction_status) = subscription.next() {
 			let transaction_status = transaction_status?;
 			if transaction_status.is_supported() {
 				if transaction_status.as_u8() >= watch_until as u8 {
 					subscription.unsubscribe()?;
-					return Ok(return_block_hash_if_available(transaction_status))
+					let block_hash = get_maybe_block_hash(transaction_status.clone());
+					return Ok(ExtrinsicReport::new(tx_hash, block_hash, transaction_status, None))
 				}
 			} else {
 				subscription.unsubscribe()?;
@@ -119,7 +128,7 @@ where
 	}
 }
 
-fn return_block_hash_if_available<Hash, BlockHash>(
+fn get_maybe_block_hash<Hash, BlockHash>(
 	transcation_status: TransactionStatus<Hash, BlockHash>,
 ) -> Option<BlockHash> {
 	match transcation_status {

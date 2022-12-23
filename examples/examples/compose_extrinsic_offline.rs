@@ -16,6 +16,7 @@
 //! This examples shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
+use codec::Encode;
 use kitchensink_runtime::{BalancesCall, Header, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
@@ -66,8 +67,9 @@ async fn main() {
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api
-		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
 		.unwrap()
+		.block_hash
 		.unwrap();
-	println!("[+] Transaction got included in block {:?}", block_hash);
+	println!("[+] Extrinsic got included in block {:?}", block_hash);
 }

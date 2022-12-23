@@ -80,3 +80,9 @@ impl From<ac_node_api::error::Error> for Error {
 		Error::NodeApi(error)
 	}
 }
+
+impl From<ac_node_api::error::DispatchError> for Error {
+	fn from(error: ac_node_api::error::DispatchError) -> Self {
+		Error::Dispatch(error)
+	}
+}
