@@ -263,7 +263,7 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{rpc::JsonrpseeClient, PlainTipExtrinsicParams, PlainTipExtrinsicParamsBuilder};
+	use crate::{rpc::WsRpcClient, PlainTipExtrinsicParams, PlainTipExtrinsicParamsBuilder};
 	use kitchensink_runtime::Runtime;
 	use sp_core::{sr25519::Pair, H256};
 	use std::fs;
@@ -277,7 +277,7 @@ mod tests {
 		let metadata: RuntimeMetadataPrefixed =
 			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
 		let metadata = Metadata::try_from(metadata).unwrap();
-		let client = JsonrpseeClient::with_default_url().unwrap();
+		let client = WsRpcClient::with_default_url();
 
 		let mut api = Api::<Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new_offline(
 			genesis_hash,
