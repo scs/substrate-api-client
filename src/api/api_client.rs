@@ -261,3 +261,46 @@ where
 		Metadata::try_from(metadata).map_err(|e| e.into())
 	}
 }
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{rpc::JsonrpseeClient, PlainTipExtrinsicParams, PlainTipExtrinsicParamsBuilder};
+	use kitchensink_runtime::Runtime;
+	use sp_core::{sr25519::Pair, H256};
+	use std::fs;
+
+	#[test]
+	fn test_extrinsic_params() {
+		// Create new api.
+		let genesis_hash = H256::random();
+		let runtime_version = RuntimeVersion::default();
+		let encoded_metadata = fs::read("./ksm_metadata_v14.bin").unwrap();
+		let metadata: RuntimeMetadataPrefixed =
+			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(metadata).unwrap();
+		let client = JsonrpseeClient::with_default_url().unwrap();
+
+		let api = Api::<Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new_offline(
+			genesis_hash,
+			metadata,
+			runtime_version,
+			client,
+		);
+
+		// Information for Era for mortal transactions.
+		api.set_extrinsic_params_builder(PlainTipExtrinsicParamsBuilder::<Runtime>::new());
+
+		let nonce = 6;
+		let retrieved_params = api.extrinsic_params(nonce);
+
+		let expected_params = PlainTipExtrinsicParams::new(
+			runtime_version.spec_version,
+			runtime_version.transaction_version,
+			nonce,
+			genesis_hash,
+			Default::default(),
+		);
+
+		assert_eq!(expected_params, retrieved_params)
+	}
+}
