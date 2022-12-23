@@ -123,10 +123,6 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 		)
 	}
 
-	pub fn is_final(&self) -> bool {
-		matches!(self, TransactionStatus::Finalized(_))
-	}
-
 	/// Returns true if the input status has been reached (or overreached)
 	/// and false in case the status is not yet on the expected level.
 	pub fn reached_status(&self, status: XtStatus) -> bool {
