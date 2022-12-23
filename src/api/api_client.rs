@@ -279,20 +279,21 @@ mod tests {
 		let metadata = Metadata::try_from(metadata).unwrap();
 		let client = JsonrpseeClient::with_default_url().unwrap();
 
-		let api = Api::<Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new_offline(
+		let mut api = Api::<Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new_offline(
 			genesis_hash,
 			metadata,
-			runtime_version,
+			runtime_version.clone(),
 			client,
 		);
 
 		// Information for Era for mortal transactions.
-		api.set_extrinsic_params_builder(PlainTipExtrinsicParamsBuilder::<Runtime>::new());
+		let builder = PlainTipExtrinsicParamsBuilder::<Runtime>::new();
+		api.set_extrinsic_params_builder(builder);
 
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
 
-		let expected_params = PlainTipExtrinsicParams::new(
+		let expected_params = PlainTipExtrinsicParams::<Runtime>::new(
 			runtime_version.spec_version,
 			runtime_version.transaction_version,
 			nonce,
