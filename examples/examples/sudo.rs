@@ -39,9 +39,8 @@ async fn main() {
 	let to = AccountKeyring::Bob.to_account_id();
 
 	// this call can only be called by sudo
-	#[allow(clippy::redundant_clone)]
 	let call = compose_call!(
-		api.metadata().clone(),
+		api.metadata(),
 		"Balances",
 		"set_balance",
 		GenericAddress::Id(to),

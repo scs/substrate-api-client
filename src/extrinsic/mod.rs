@@ -20,6 +20,7 @@
 pub mod balances;
 pub mod common;
 pub mod contracts;
+pub mod offline_extrinsic;
 #[cfg(feature = "staking-xt")]
 pub mod staking;
 pub mod utility;
