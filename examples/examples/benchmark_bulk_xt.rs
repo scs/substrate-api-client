@@ -18,6 +18,7 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
+use codec::Encode;
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -50,7 +51,7 @@ async fn main() {
 		let xt = api.compose_extrinsic_offline(call, nonce);
 
 		println!("sending extrinsic with nonce {}", nonce);
-		let _tx_hash = api.submit_extrinsic(xt.hex_encode()).unwrap();
+		let _tx_hash = api.submit_extrinsic(xt.encode()).unwrap();
 
 		nonce += 1;
 	}

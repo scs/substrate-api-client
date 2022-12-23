@@ -11,6 +11,7 @@
 	limitations under the License.
 */
 
+use codec::Encode;
 use kitchensink_runtime::Runtime;
 use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
@@ -42,9 +43,8 @@ async fn main() {
 	}
 	if exposure.total > 0_u128 {
 		let call = api.payout_stakers(idx, account);
-		let result = api
-			.submit_and_watch_extrinsic_until(&call.hex_encode(), XtStatus::InBlock)
-			.unwrap();
-		println!("{:?}", result);
+		let report =
+			api.submit_and_watch_extrinsic_until(call.encode(), XtStatus::InBlock).unwrap();
+		println!("{:?}", report);
 	}
 }

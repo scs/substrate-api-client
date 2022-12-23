@@ -15,7 +15,7 @@
 
 //! This example is community maintained and not CI tested, therefore it may not work as is.
 
-use codec::Decode;
+use codec::{Decode, Encode};
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -68,9 +68,11 @@ async fn main() {
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
 	let block_hash = api
-		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
+		.unwrap()
+		.block_hash
 		.unwrap();
-	println!("[+] Transaction is in Block. Hash: {:?}\n", block_hash);
+	println!("[+] Extrinsic is in Block. Hash: {:?}\n", block_hash);
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
@@ -81,8 +83,6 @@ async fn main() {
 	let xt = api.contract_call(args.contract.into(), 500_000, 500_000, vec![0u8]);
 
 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	let block_hash = api
-		.submit_and_watch_extrinsic_until(&xt.hex_encode(), XtStatus::Finalized)
-		.unwrap();
-	println!("[+] Transaction got finalized. Hash: {:?}", block_hash);
+	let report = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::Finalized).unwrap();
+	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }

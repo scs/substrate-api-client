@@ -15,6 +15,7 @@
 
 //! Tests for the pallet transaction payment interface functions.
 
+use codec::Encode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -33,9 +34,9 @@ async fn main() {
 	let bob = AccountKeyring::Bob.to_account_id();
 
 	let block_hash = api.get_block_hash(None).unwrap().unwrap();
-	let xthex_prefixed = api.balance_transfer(GenericAddress::Id(bob), 1000000000000).hex_encode();
+	let encoded_xt = api.balance_transfer(GenericAddress::Id(bob), 1000000000000).encode();
 
 	// Tests
-	let _fee_details = api.get_fee_details(&xthex_prefixed, Some(block_hash)).unwrap().unwrap();
-	let _payment_info = api.get_payment_info(&xthex_prefixed, Some(block_hash)).unwrap().unwrap();
+	let _fee_details = api.get_fee_details(encoded_xt.clone(), Some(block_hash)).unwrap().unwrap();
+	let _payment_info = api.get_payment_info(encoded_xt, Some(block_hash)).unwrap().unwrap();
 }

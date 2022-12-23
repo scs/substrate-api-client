@@ -52,12 +52,6 @@ where
 	) -> Self {
 		UncheckedExtrinsicV4 { signature: Some((signed, signature, extra)), function }
 	}
-
-	pub fn hex_encode(&self) -> alloc::string::String {
-		let mut hex_str = hex::encode(self.encode());
-		hex_str.insert_str(0, "0x");
-		hex_str
-	}
 }
 
 impl<Call, SignedExtra> fmt::Debug for UncheckedExtrinsicV4<Call, SignedExtra>

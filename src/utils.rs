@@ -50,6 +50,20 @@ impl FromHexString for H256 {
 	}
 }
 
+pub trait ToHexString {
+	fn to_hex(self) -> String
+	where
+		Self: Sized;
+}
+
+impl ToHexString for Vec<u8> {
+	fn to_hex(self) -> String {
+		let mut hex_str = hex::encode(self);
+		hex_str.insert_str(0, "0x");
+		hex_str
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	// Note this useful idiom: importing names from outer (for mod tests) scope.

@@ -14,7 +14,7 @@
 use crate::{
 	alloc::{string::ToString, sync::Arc, vec, vec::Vec},
 	decoder::{decode_as_type, Composite, TypeId},
-	error::Error,
+	error::{DispatchError, Error},
 	metadata::EventMetadata,
 	Metadata, Phase, StaticEvent,
 };
@@ -309,6 +309,17 @@ impl EventDetails {
 	/// type for this is exposed via static codegen as a root level `Event` type.
 	pub fn as_root_event<E: Decode>(&self) -> Result<E, CodecError> {
 		E::decode(&mut self.bytes())
+	}
+}
+
+impl EventDetails {
+	/// Checks if the extrinsic has failed. If so, the corresponding DispatchError is returned.
+	pub fn check_if_failed(&self) -> Result<(), DispatchError> {
+		if self.pallet_name() == "System" && self.variant_name() == "ExtrinsicFailed" {
+			let dispatch_error = DispatchError::decode_from(self.field_bytes(), &self.metadata);
+			return Err(dispatch_error)
+		}
+		Ok(())
 	}
 }
 
