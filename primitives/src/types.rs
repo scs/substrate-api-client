@@ -89,7 +89,6 @@ impl<Balance: AtLeast32BitUnsigned + Copy> InclusionFee<Balance> {
 pub struct FeeDetails<Balance> {
 	/// The minimum fee for a transaction to be included in a block.
 	pub inclusion_fee: Option<InclusionFee<Balance>>,
-	//#[cfg_attr(feature = "std", serde(skip))]
 	#[serde(skip)]
 	pub tip: Balance,
 }
@@ -125,7 +124,6 @@ pub struct RuntimeDispatchInfo<Balance, Weight = crate::serde_impls::OldWeight> 
 	///
 	/// This does not include a tip or anything else that
 	/// depends on the signature (i.e. depends on a `SignedExtension`).
-	//#[cfg_attr(feature = "std", serde(with = "serde_balance"))]
 	#[serde(with = "serde_balance")]
 	pub partial_fee: Balance,
 }
