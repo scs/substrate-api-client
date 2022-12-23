@@ -22,8 +22,8 @@ use scale_info::{form::PortableForm, PortableRegistry, Type};
 #[cfg(feature = "std")]
 use serde::Serialize;
 
-// We use `BTreeMap` because we can't use `HashMap` in `no_std`.
 use alloc::{
+	// We use `BTreeMap` because we can't use `HashMap` in `no_std`.
 	collections::btree_map::BTreeMap,
 	string::{String, ToString},
 	vec,
