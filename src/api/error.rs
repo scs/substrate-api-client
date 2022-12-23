@@ -54,6 +54,10 @@ pub enum Error {
 	Extrinsic(String),
 	#[error("Stream ended unexpectedly")]
 	NoStream,
+	#[error("Expected a block hash")]
+	NoBlockHash,
+	#[error("Did not find any block")]
+	NoBlock,
 	#[error(transparent)]
 	Other(#[from] Box<dyn core::error::Error + Send + Sync + 'static>),
 }

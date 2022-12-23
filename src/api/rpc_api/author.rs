@@ -16,15 +16,17 @@
 use crate::{
 	api::{Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils::ToHexString,
-	Api, ExtrinsicReport, FromHexString, TransactionStatus, XtStatus,
+	utils, Api, Events, ExtrinsicReport, FromHexString, GetBlock, GetStorage, Phase, ToHexString,
+	TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
+use ac_node_api::EventDetails;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
-use alloc::{format, vec::Vec};
+use alloc::{format, string::ToString, vec::Vec};
+use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::Hash as HashTrait;
+use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -77,6 +79,23 @@ where
 	) -> Result<ExtrinsicReport<Hash>>;
 }
 
+pub trait SubmitAndWatchUntilSuccess<Client, Hash>
+where
+	Client: Subscribe,
+	Hash: DeserializeOwned,
+{
+	/// Submit an extrinsic and watch it until
+	/// - wait_for_finalized = false => InBlock
+	/// - wait_for_finalized = true => Finalized
+	/// and check if the extrinsic has been successful or not.
+	// This method is blocking.
+	fn submit_and_watch_extrinsic_until_success(
+		&self,
+		encoded_extrinsic: Vec<u8>,
+		wait_for_finalized: bool,
+	) -> Result<ExtrinsicReport<Hash>>;
+}
+
 impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
@@ -113,8 +132,13 @@ where
 			if transaction_status.is_supported() {
 				if transaction_status.reached_status(watch_until) {
 					subscription.unsubscribe()?;
-					let block_hash = get_maybe_block_hash(transaction_status.clone());
-					return Ok(ExtrinsicReport::new(tx_hash, block_hash, transaction_status, None))
+					let block_hash = transaction_status.get_maybe_block_hash();
+					return Ok(ExtrinsicReport::new(
+						tx_hash,
+						block_hash.copied(),
+						transaction_status,
+						None,
+					))
 				}
 			} else {
 				subscription.unsubscribe()?;
@@ -129,14 +153,99 @@ where
 	}
 }
 
-fn get_maybe_block_hash<Hash, BlockHash>(
-	transcation_status: TransactionStatus<Hash, BlockHash>,
-) -> Option<BlockHash> {
-	match transcation_status {
-		TransactionStatus::InBlock(block_hash) => Some(block_hash),
-		TransactionStatus::Retracted(block_hash) => Some(block_hash),
-		TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
-		TransactionStatus::Finalized(block_hash) => Some(block_hash),
-		_ => None,
+impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime::Hash>
+	for Api<Signer, Client, Params, Runtime>
+where
+	Client: Subscribe + Request,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime: FrameSystemConfig + GetRuntimeBlockType,
+	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Hash: FromHexString,
+{
+	fn submit_and_watch_extrinsic_until_success(
+		&self,
+		encoded_extrinsic: Vec<u8>,
+		wait_for_finalized: bool,
+	) -> Result<ExtrinsicReport<Runtime::Hash>> {
+		let xt_status = match wait_for_finalized {
+			true => XtStatus::Finalized,
+			false => XtStatus::InBlock,
+		};
+		let mut report = self.submit_and_watch_extrinsic_until(encoded_extrinsic, xt_status)?;
+
+		let block_hash = report.block_hash.ok_or(Error::NoBlockHash)?;
+		let extrinsic_index =
+			self.retrieve_extrinsic_index_from_block(block_hash, report.extrinsic_hash)?;
+		let block_events = self.fetch_events_from_block(block_hash)?;
+		let extrinsic_events = self.filter_extrinsic_events(block_events, extrinsic_index)?;
+		report.events = Some(extrinsic_events);
+		Ok(report)
+	}
+}
+
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+where
+	Client: Request,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime: FrameSystemConfig + GetRuntimeBlockType,
+	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Hash: FromHexString,
+{
+	/// Retrieve block details from node and search for the position of the given extrinsic.
+	fn retrieve_extrinsic_index_from_block(
+		&self,
+		block_hash: Runtime::Hash,
+		extrinsic_hash: Runtime::Hash,
+	) -> Result<u32> {
+		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
+		let xt_index = block
+			.extrinsics()
+			.iter()
+			.position(|xt| {
+				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
+				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
+				extrinsic_hash == xt_hash
+			})
+			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
+		Ok(xt_index as u32)
+	}
+
+	/// Fetch all block events from node for the given block hash.
+	fn fetch_events_from_block(&self, block_hash: Runtime::Hash) -> Result<Events<Runtime::Hash>> {
+		let key = utils::storage_key("System", "Events");
+		let event_bytes = self
+			.get_opaque_storage_by_key_hash(key, Some(block_hash))?
+			.ok_or(Error::NoBlock)?;
+		let events =
+			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
+		Ok(events)
+	}
+
+	/// Filter events and return the ones associated to the given extrinsic index.
+	fn filter_extrinsic_events(
+		&self,
+		events: Events<Runtime::Hash>,
+		extrinsic_index: u32,
+	) -> Result<Vec<EventDetails>> {
+		let extrinsic_event_results = events.iter().filter(|ev| {
+			ev.as_ref()
+				.map_or(true, |ev| ev.phase() == Phase::ApplyExtrinsic(extrinsic_index))
+		});
+		let mut extrinsic_events = Vec::new();
+		for event_details in extrinsic_event_results {
+			let event_details = event_details?;
+			debug!(
+				"associated event_details {:?} {:?}",
+				event_details.pallet_name(),
+				event_details.variant_name()
+			);
+			event_details.check_if_failed()?;
+			extrinsic_events.push(event_details);
+		}
+		Ok(extrinsic_events)
 	}
 }
