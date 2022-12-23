@@ -18,6 +18,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo};
+use alloc::vec::Vec;
 use core::str::FromStr;
 /// Interface to common calls of the substrate transaction payment pallet.
 pub trait GetTransactionPayment<Hash> {
