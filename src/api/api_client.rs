@@ -19,14 +19,13 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
+use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion};
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
-use sp_core::{crypto::Pair, Bytes};
+use sp_core::Pair;
 use sp_runtime::MultiSignature;
-use sp_version::RuntimeVersion;
 
 /// Api to talk with substrate-nodes
 ///

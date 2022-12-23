@@ -48,9 +48,8 @@ pub struct AccountInfo<Index, AccountData> {
 
 /// The base fee and adjusted weight and length fees constitute the _inclusion fee_.
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L29-L60
-#[derive(Encode, Decode, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+#[derive(Encode, Decode, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct InclusionFee<Balance> {
 	/// This is the minimum amount a user pays for a transaction. It is declared
 	/// as a base _weight_ in the runtime and converted to a fee using `WeightToFee`.
@@ -85,13 +84,12 @@ impl<Balance: AtLeast32BitUnsigned + Copy> InclusionFee<Balance> {
 ///   - `tip`: If included in the transaction, the tip will be added on top. Only signed
 ///     transactions can have a tip.
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L62-L90
-#[derive(Encode, Decode, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+#[derive(Encode, Decode, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct FeeDetails<Balance> {
 	/// The minimum fee for a transaction to be included in a block.
 	pub inclusion_fee: Option<InclusionFee<Balance>>,
-	#[cfg_attr(feature = "std", serde(skip))]
+	#[serde(skip)]
 	pub tip: Balance,
 }
 
@@ -113,18 +111,11 @@ impl<Balance: AtLeast32BitUnsigned + Copy> FeeDetails<Balance> {
 /// Information related to a dispatchable's class, weight, and fee that can be queried from the
 /// runtime.
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/transaction-payment/src/types.rs#L92-L116
-#[derive(Eq, PartialEq, Encode, Decode, Default, Debug)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-#[cfg_attr(
-	feature = "std",
-	serde(bound(serialize = "Balance: std::fmt::Display, Weight: Serialize"))
-)]
-#[cfg_attr(
-	feature = "std",
-	serde(bound(deserialize = "Balance: std::str::FromStr, Weight: Deserialize<'de>"))
-)]
-pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::OldWeight> {
+#[derive(Eq, PartialEq, Encode, Decode, Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(bound(serialize = "Balance: core::fmt::Display, Weight: Serialize"))]
+#[serde(bound(deserialize = "Balance: core::str::FromStr, Weight: Deserialize<'de>"))]
+pub struct RuntimeDispatchInfo<Balance, Weight = crate::serde_impls::OldWeight> {
 	/// Weight of this dispatch.
 	pub weight: Weight,
 	/// Class of this dispatch.
@@ -133,25 +124,25 @@ pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::OldWeight> {
 	///
 	/// This does not include a tip or anything else that
 	/// depends on the signature (i.e. depends on a `SignedExtension`).
-	#[cfg_attr(feature = "std", serde(with = "serde_balance"))]
+	#[serde(with = "serde_balance")]
 	pub partial_fee: Balance,
 }
 
-#[cfg(feature = "std")]
 mod serde_balance {
+	use alloc::string::ToString;
 	use serde::{Deserialize, Deserializer, Serializer};
 
-	pub fn serialize<S: Serializer, T: std::fmt::Display>(
+	pub fn serialize<S: Serializer, T: core::fmt::Display>(
 		t: &T,
 		serializer: S,
 	) -> Result<S::Ok, S::Error> {
 		serializer.serialize_str(&t.to_string())
 	}
 
-	pub fn deserialize<'de, D: Deserializer<'de>, T: std::str::FromStr>(
+	pub fn deserialize<'de, D: Deserializer<'de>, T: core::str::FromStr>(
 		deserializer: D,
 	) -> Result<T, D::Error> {
-		let s = String::deserialize(deserializer)?;
+		let s = alloc::string::String::deserialize(deserializer)?;
 		s.parse::<T>().map_err(|_| serde::de::Error::custom("Parse from string failed"))
 	}
 }
@@ -161,9 +152,10 @@ mod serde_balance {
 /// NOTE whenever upgrading the enum make sure to also update
 /// [DispatchClass::all] and [DispatchClass::non_mandatory] helper functions.
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/support/src/dispatch.rs#L133-L177
-#[derive(PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+#[derive(
+	PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo, Serialize, Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
 pub enum DispatchClass {
 	/// A normal dispatch.
 	Normal,

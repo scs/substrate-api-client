@@ -22,6 +22,7 @@ use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
 };
+use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
 use sp_core::crypto::Pair;
@@ -40,7 +41,6 @@ pub type BalanceTransferXt<SignedExtra, Balance> =
 pub type BalanceSetBalanceXt<SignedExtra, Balance> =
 	UncheckedExtrinsicV4<BalanceSetBalanceFn<Balance>, SignedExtra>;
 
-#[cfg(feature = "std")]
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Signer: Pair,

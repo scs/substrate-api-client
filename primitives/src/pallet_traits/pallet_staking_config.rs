@@ -17,8 +17,9 @@
 use crate::FrameSystemConfig;
 use codec::MaxEncodedLen;
 use scale_info::TypeInfo;
+use serde::{de::DeserializeOwned, Serialize};
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, Get},
 	Perbill,
 };
 use sp_staking::{EraIndex, SessionIndex};
@@ -30,10 +31,13 @@ pub type BalanceOf<T> = <T as StakingConfig>::CurrencyBalance;
 /// in no_std mode.
 pub trait StakingConfig: FrameSystemConfig {
 	type Currency;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type CurrencyBalance: AtLeast32BitUnsigned
 		+ codec::FullCodec
 		+ Copy
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ core::fmt::Debug
 		+ Default
 		+ From<u64>

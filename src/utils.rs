@@ -15,9 +15,10 @@
 
 */
 
+use ac_primitives::StorageKey;
 use alloc::{string::String, vec::Vec};
 use hex::FromHexError;
-use sp_core::{storage::StorageKey, twox_128, H256};
+use sp_core::{twox_128, H256};
 
 pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
 	let mut key = twox_128(module.as_bytes()).to_vec();
