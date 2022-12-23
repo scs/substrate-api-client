@@ -24,7 +24,7 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-//! RPC parameters, orginally belonging to jsonrpsee:
+//! RPC parameters, originally belonging to jsonrpsee:
 //! https://github.com/paritytech/jsonrpsee
 //! It is copied & pasted here to avoid std dependencies.
 
@@ -133,8 +133,8 @@ impl ParamsBuilder {
 		Some(unsafe { String::from_utf8_unchecked(self.bytes) })
 	}
 
-	#[cfg(feature = "std")]
 	/// Insert a plain value into the builder without heap allocation.
+	#[cfg(feature = "std")]
 	pub(crate) fn insert<P: Serialize>(&mut self, value: P) -> Result<()> {
 		self.maybe_initialize();
 
@@ -188,6 +188,15 @@ mod tests {
 		let mut params = RpcParams::new();
 		params.insert(Some(0)).unwrap();
 		params.insert(0).unwrap();
+		let built_params = params.build().unwrap();
+		assert_eq!(built_params, "[0,0]".to_string());
+	}
+
+	#[test]
+	fn insert_with_allocation_multiple_params_works() {
+		let mut params = RpcParams::new();
+		params.insert_with_allocation(Some(0)).unwrap();
+		params.insert_with_allocation(0).unwrap();
 		let built_params = params.build().unwrap();
 		assert_eq!(built_params, "[0,0]".to_string());
 	}

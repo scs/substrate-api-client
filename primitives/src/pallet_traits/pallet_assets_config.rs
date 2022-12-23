@@ -16,20 +16,26 @@
 */
 use codec::MaxEncodedLen;
 use scale_info::TypeInfo;
-use sp_runtime::traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize, Member};
+use serde::{de::DeserializeOwned, Serialize};
+use sp_runtime::traits::{AtLeast32BitUnsigned, Get, Member};
 
 /// Simplifed pallet assets Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait AssetsConfig: crate::FrameSystemConfig {
 	type RuntimeEvent;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type Balance: AtLeast32BitUnsigned
 		+ Default
 		+ Copy
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ MaxEncodedLen
 		+ TypeInfo;
 	type RemoveItemsLimit: Get<u32>;
-	type AssetId: Member + Copy + MaybeSerializeDeserialize + MaxEncodedLen;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
+	type AssetId: Member + Copy + Serialize + DeserializeOwned + MaxEncodedLen;
 	type AssetIdParameter: Copy + From<Self::AssetId> + Into<Self::AssetId> + MaxEncodedLen;
 	type Currency;
 	type CreateOrigin;

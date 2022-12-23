@@ -24,11 +24,11 @@ use ac_primitives::{
 	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, GenericAddress,
 	UncheckedExtrinsicV4,
 };
+use alloc::vec::Vec;
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
 use sp_core::crypto::Pair;
 use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
-use sp_std::prelude::*;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";

@@ -17,10 +17,9 @@ use crate::{
 	ExtrinsicParams,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, RuntimeDispatchInfo};
+use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo};
+use alloc::vec::Vec;
 use core::str::FromStr;
-use sp_rpc::number::NumberOrHex;
-
 /// Interface to common calls of the substrate transaction payment pallet.
 pub trait GetTransactionPayment<Hash> {
 	type Balance;

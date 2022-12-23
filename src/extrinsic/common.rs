@@ -17,6 +17,7 @@
 
 //! Common types.
 
+use alloc::vec::Vec;
 use codec::{Decode, Encode};
 use sp_runtime::AccountId32;
 
