@@ -22,8 +22,7 @@ use codec::Encode;
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic_offline, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, SubmitExtrinsic,
-	UncheckedExtrinsicV4,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAddress, SubmitExtrinsic,
 };
 
 #[tokio::main]
@@ -45,15 +44,11 @@ async fn main() {
 	let first_nonce = nonce;
 	while nonce < first_nonce + 500 {
 		// compose the extrinsic with all the element
-		#[allow(clippy::redundant_clone)]
-		let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic_offline!(
-			api.signer().unwrap().clone(),
-			RuntimeCall::Balances(BalancesCall::transfer {
-				dest: GenericAddress::Id(to.clone()),
-				value: 1_000_000
-			}),
-			api.extrinsic_params(nonce)
-		);
+		let call = RuntimeCall::Balances(BalancesCall::transfer {
+			dest: GenericAddress::Id(to.clone()),
+			value: 1_000_000,
+		});
+		let xt = api.compose_extrinsic_offline(call, nonce);
 
 		println!("sending extrinsic with nonce {}", nonce);
 		let _tx_hash = api.submit_extrinsic(xt.encode()).unwrap();
