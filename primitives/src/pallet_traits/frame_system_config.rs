@@ -14,6 +14,7 @@
    limitations under the License.
 
 */
+
 use codec::{Codec, Decode, EncodeLike, FullCodec, MaxEncodedLen};
 use core::fmt::Debug;
 use scale_info::TypeInfo;
@@ -38,6 +39,8 @@ pub trait FrameSystemConfig {
 		+ TypeInfo
 		+ Dispatchable<RuntimeOrigin = Self::RuntimeOrigin>
 		+ Debug;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type Index: Serialize
 		+ DeserializeOwned
 		+ Debug
@@ -46,6 +49,8 @@ pub trait FrameSystemConfig {
 		+ Copy
 		+ MaxEncodedLen
 		+ Decode;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type BlockNumber: Codec
 		+ EncodeLike
 		+ Clone
@@ -63,6 +68,10 @@ pub trait FrameSystemConfig {
 		+ core::str::FromStr
 		+ MaxEncodedLen
 		+ TypeInfo;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
+	/// A type redefinition might be necessary in no-std.
+	/// See primitives/serde_impls for examples
 	type Hash: Codec
 		+ EncodeLike
 		+ Clone
@@ -82,6 +91,10 @@ pub trait FrameSystemConfig {
 		+ AsMut<[u8]>
 		+ MaxEncodedLen;
 	type Hashing: Hash<Output = Self::Hash> + TypeInfo;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
+	/// A type redefinition might be necessary in no-std.
+	/// See primitives/serde_impls for examples.
 	type AccountId: Codec
 		+ EncodeLike
 		+ Clone

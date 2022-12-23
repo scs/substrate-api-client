@@ -23,6 +23,8 @@ use sp_runtime::traits::{AtLeast32BitUnsigned, Get, Member};
 /// in no_std mode.
 pub trait AssetsConfig: crate::FrameSystemConfig {
 	type RuntimeEvent;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type Balance: AtLeast32BitUnsigned
 		+ Default
 		+ Copy
@@ -31,6 +33,8 @@ pub trait AssetsConfig: crate::FrameSystemConfig {
 		+ MaxEncodedLen
 		+ TypeInfo;
 	type RemoveItemsLimit: Get<u32>;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type AssetId: Member + Copy + Serialize + DeserializeOwned + MaxEncodedLen;
 	type AssetIdParameter: Copy + From<Self::AssetId> + Into<Self::AssetId> + MaxEncodedLen;
 	type Currency;

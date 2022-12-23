@@ -31,6 +31,8 @@ pub type BalanceOf<T> = <T as StakingConfig>::CurrencyBalance;
 /// in no_std mode.
 pub trait StakingConfig: FrameSystemConfig {
 	type Currency;
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type CurrencyBalance: AtLeast32BitUnsigned
 		+ codec::FullCodec
 		+ Copy
