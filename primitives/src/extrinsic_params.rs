@@ -16,12 +16,11 @@
 */
 
 use codec::{Decode, Encode};
-use core::marker::PhantomData;
+use core::{hash::Hash as HashTrait, marker::PhantomData};
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
 };
-use sp_std::{hash::Hash as HashTrait, prelude::*};
 
 pub type BalanceFor<Runtime> = <Runtime as crate::BalancesConfig>::Balance;
 pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;

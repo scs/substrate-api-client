@@ -16,21 +16,25 @@
 */
 use codec::{Codec, EncodeLike, MaxEncodedLen};
 use scale_info::TypeInfo;
+use serde::{de::DeserializeOwned, Serialize};
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Get, MaybeSerializeDeserialize, Member},
+	traits::{AtLeast32BitUnsigned, Get, Member},
 	FixedPointOperand,
 };
 
 /// Simplifed pallet balances Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait BalancesConfig: crate::FrameSystemConfig {
+	/// This type enforces the (de)serialization implementation
+	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
 	type Balance: Codec
 		+ EncodeLike
 		+ Member
 		+ AtLeast32BitUnsigned
 		+ Default
 		+ Copy
-		+ MaybeSerializeDeserialize
+		+ Serialize
+		+ DeserializeOwned
 		+ MaxEncodedLen
 		+ TypeInfo
 		+ FixedPointOperand;

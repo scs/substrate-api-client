@@ -24,6 +24,8 @@ pub mod error;
 pub mod rpc_api;
 
 use ac_node_api::EventDetails;
+use ac_primitives::Bytes;
+use alloc::{string::String, vec::Vec};
 use serde::{Deserialize, Serialize};
 
 /// Extrinsic report returned upon a submit_and_watch request.
@@ -137,5 +139,5 @@ pub struct ReadProof<Hash> {
 	/// Block hash used to generate the proof
 	pub at: Hash,
 	/// A proof used to prove that storage entries are included in the storage trie
-	pub proof: Vec<sp_core::Bytes>,
+	pub proof: Vec<Bytes>,
 }
