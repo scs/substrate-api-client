@@ -54,7 +54,6 @@ ac-primitives = { path = "primitives", default-features = false }
 [dev-dependencies]
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
-
 [features]
 default = ["std", "jsonrpsee-client"]
 # To support `no_std` builds in non-32 bit environments.

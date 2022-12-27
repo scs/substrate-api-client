@@ -125,8 +125,10 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 		)
 	}
 
-	pub fn is_final(&self) -> bool {
-		matches!(self, TransactionStatus::Finalized(_))
+	/// Returns true if the input status has been reached (or overreached)
+	/// and false in case the status is not yet on the expected level.
+	pub fn reached_status(&self, status: XtStatus) -> bool {
+		self.as_u8() >= status as u8
 	}
 }
 
@@ -140,4 +142,127 @@ pub struct ReadProof<Hash> {
 	pub at: Hash,
 	/// A proof used to prove that storage entries are included in the storage trie
 	pub proof: Vec<Bytes>,
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{TransactionStatus as GenericTransactionStatus, *};
+	use sp_core::H256;
+
+	type TransactionStatus = GenericTransactionStatus<H256, H256>;
+
+	#[test]
+	fn test_xt_status_as_u8() {
+		assert_eq!(1, XtStatus::Ready as u8);
+		assert_eq!(2, XtStatus::Broadcast as u8);
+		assert_eq!(3, XtStatus::InBlock as u8);
+		assert_eq!(6, XtStatus::Finalized as u8);
+	}
+
+	#[test]
+	fn test_transaction_status_as_u8() {
+		assert_eq!(0, TransactionStatus::Future.as_u8());
+		assert_eq!(1, TransactionStatus::Ready.as_u8());
+		assert_eq!(2, TransactionStatus::Broadcast(vec![]).as_u8());
+		assert_eq!(3, TransactionStatus::InBlock(H256::random()).as_u8());
+		assert_eq!(4, TransactionStatus::Retracted(H256::random()).as_u8());
+		assert_eq!(5, TransactionStatus::FinalityTimeout(H256::random()).as_u8());
+		assert_eq!(6, TransactionStatus::Finalized(H256::random()).as_u8());
+		assert_eq!(7, TransactionStatus::Usurped(H256::random()).as_u8());
+		assert_eq!(8, TransactionStatus::Dropped.as_u8());
+		assert_eq!(9, TransactionStatus::Invalid.as_u8());
+	}
+
+	#[test]
+	fn test_transaction_status_is_supported() {
+		// Supported.
+		assert!(TransactionStatus::Ready.is_supported());
+		assert!(TransactionStatus::Broadcast(vec![]).is_supported());
+		assert!(TransactionStatus::InBlock(H256::random()).is_supported());
+		assert!(TransactionStatus::FinalityTimeout(H256::random()).is_supported());
+		assert!(TransactionStatus::Finalized(H256::random()).is_supported());
+
+		// Not supported.
+		assert!(!TransactionStatus::Future.is_supported());
+		assert!(!TransactionStatus::Retracted(H256::random()).is_supported());
+		assert!(!TransactionStatus::Usurped(H256::random()).is_supported());
+		assert!(!TransactionStatus::Dropped.is_supported());
+		assert!(!TransactionStatus::Invalid.is_supported());
+	}
+
+	#[test]
+	fn test_reached_xt_status_for_ready() {
+		let status = XtStatus::Ready;
+
+		// Has not yet reached XtStatus.
+		assert!(!TransactionStatus::Future.reached_status(status));
+
+		// Reached XtStatus.
+		assert!(TransactionStatus::Ready.reached_status(status));
+		assert!(TransactionStatus::Broadcast(vec![]).reached_status(status));
+		assert!(TransactionStatus::InBlock(H256::random()).reached_status(status));
+		assert!(TransactionStatus::FinalityTimeout(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Finalized(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Retracted(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Usurped(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Dropped.reached_status(status));
+		assert!(TransactionStatus::Invalid.reached_status(status));
+	}
+
+	#[test]
+	fn test_reached_xt_status_for_broadcast() {
+		let status = XtStatus::Broadcast;
+
+		// Has not yet reached XtStatus.
+		assert!(!TransactionStatus::Future.reached_status(status));
+		assert!(!TransactionStatus::Ready.reached_status(status));
+
+		// Reached XtStatus.
+		assert!(TransactionStatus::Broadcast(vec![]).reached_status(status));
+		assert!(TransactionStatus::InBlock(H256::random()).reached_status(status));
+		assert!(TransactionStatus::FinalityTimeout(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Finalized(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Retracted(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Usurped(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Dropped.reached_status(status));
+		assert!(TransactionStatus::Invalid.reached_status(status));
+	}
+
+	#[test]
+	fn test_reached_xt_status_for_in_block() {
+		let status = XtStatus::InBlock;
+
+		// Has not yet reached XtStatus.
+		assert!(!TransactionStatus::Future.reached_status(status));
+		assert!(!TransactionStatus::Ready.reached_status(status));
+		assert!(!TransactionStatus::Broadcast(vec![]).reached_status(status));
+
+		// Reached XtStatus.
+		assert!(TransactionStatus::InBlock(H256::random()).reached_status(status));
+		assert!(TransactionStatus::FinalityTimeout(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Finalized(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Retracted(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Usurped(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Dropped.reached_status(status));
+		assert!(TransactionStatus::Invalid.reached_status(status));
+	}
+
+	#[test]
+	fn test_reached_xt_status_for_finalized() {
+		let status = XtStatus::Finalized;
+
+		// Has not yet reached XtStatus.
+		assert!(!TransactionStatus::Future.reached_status(status));
+		assert!(!TransactionStatus::Ready.reached_status(status));
+		assert!(!TransactionStatus::Broadcast(vec![]).reached_status(status));
+		assert!(!TransactionStatus::InBlock(H256::random()).reached_status(status));
+		assert!(!TransactionStatus::Retracted(H256::random()).reached_status(status));
+		assert!(!TransactionStatus::FinalityTimeout(H256::random()).reached_status(status));
+
+		// Reached XtStatus.
+		assert!(TransactionStatus::Finalized(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Usurped(H256::random()).reached_status(status));
+		assert!(TransactionStatus::Dropped.reached_status(status));
+		assert!(TransactionStatus::Invalid.reached_status(status));
+	}
 }

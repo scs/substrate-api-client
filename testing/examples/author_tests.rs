@@ -13,19 +13,16 @@
 	limitations under the License.
 */
 
-#![feature(assert_matches)]
-
 //! Tests for the author rpc interface functions.
 
 use codec::Encode;
-use core::assert_matches::assert_matches;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, AssetTipExtrinsicParams, EventDetails, MultiAddress, SubmitAndWatch, SubmitExtrinsic,
-	TransactionStatus, XtStatus,
+	Api, AssetTipExtrinsicParams, MultiAddress, SubmitAndWatch, SubmitExtrinsic, TransactionStatus,
+	XtStatus,
 };
 
 #[tokio::main]

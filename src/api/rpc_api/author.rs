@@ -111,7 +111,7 @@ where
 		while let Some(transaction_status) = subscription.next() {
 			let transaction_status = transaction_status?;
 			if transaction_status.is_supported() {
-				if transaction_status.as_u8() >= watch_until as u8 {
+				if transaction_status.reached_status(watch_until) {
 					subscription.unsubscribe()?;
 					let block_hash = get_maybe_block_hash(transaction_status.clone());
 					return Ok(ExtrinsicReport::new(tx_hash, block_hash, transaction_status, None))

@@ -260,3 +260,99 @@ where
 		Metadata::try_from(metadata).map_err(|e| e.into())
 	}
 }
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{
+		rpc::mocks::RpcClientMock, utils::ToHexString, PlainTipExtrinsicParams,
+		PlainTipExtrinsicParamsBuilder,
+	};
+	use kitchensink_runtime::Runtime;
+	use sp_core::{sr25519::Pair, H256};
+	use std::{
+		collections::{BTreeMap, HashMap},
+		fs,
+	};
+
+	fn create_mock_api(
+		genesis_hash: H256,
+		runtime_version: RuntimeVersion,
+		metadata: Metadata,
+		data: HashMap<String, String>,
+	) -> Api<Pair, RpcClientMock, PlainTipExtrinsicParams<Runtime>, Runtime> {
+		let client = RpcClientMock::new(data);
+		Api::new_offline(genesis_hash, metadata, runtime_version, client)
+	}
+
+	#[test]
+	fn api_extrinsic_params_works() {
+		// Create new api.
+		let genesis_hash = H256::random();
+		let runtime_version = RuntimeVersion::default();
+		let encoded_metadata = fs::read("./ksm_metadata_v14.bin").unwrap();
+		let metadata: RuntimeMetadataPrefixed =
+			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(metadata).unwrap();
+
+		let mut api =
+			create_mock_api(genesis_hash, runtime_version.clone(), metadata, Default::default());
+
+		// Information for Era for mortal transactions.
+		let builder = PlainTipExtrinsicParamsBuilder::<Runtime>::new();
+		api.set_extrinsic_params_builder(builder);
+
+		let nonce = 6;
+		let retrieved_params = api.extrinsic_params(nonce);
+
+		let expected_params = PlainTipExtrinsicParams::<Runtime>::new(
+			runtime_version.spec_version,
+			runtime_version.transaction_version,
+			nonce,
+			genesis_hash,
+			Default::default(),
+		);
+
+		assert_eq!(expected_params, retrieved_params)
+	}
+
+	#[test]
+	fn api_runtime_update_works() {
+		let runtime_version = RuntimeVersion { spec_version: 10, ..Default::default() };
+		// Update metadata
+		let encoded_metadata = fs::read("./ksm_metadata_v14.bin").unwrap();
+		let metadata: RuntimeMetadataPrefixed =
+			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(metadata).unwrap();
+
+		let mut changed_metadata = metadata.clone();
+		changed_metadata.errors = BTreeMap::default();
+
+		let data = HashMap::<String, String>::from([
+			(
+				"chain_getBlockHash".to_owned(),
+				serde_json::to_string(&Some(H256::from([1u8; 32]))).unwrap(),
+			),
+			(
+				"state_getRuntimeVersion".to_owned(),
+				serde_json::to_string(&runtime_version).unwrap(),
+			),
+			(
+				"state_getMetadata".to_owned(),
+				serde_json::to_string(&encoded_metadata.to_hex()).unwrap(),
+			),
+		]);
+		let mut api =
+			create_mock_api(Default::default(), Default::default(), changed_metadata, data);
+
+		// Ensure current metadata and runtime version are different.
+		assert_ne!(api.metadata.errors, metadata.errors);
+		assert_ne!(api.runtime_version, runtime_version);
+
+		// Update runtime.
+		api.update_runtime().unwrap();
+
+		// Ensure metadata and runtime version have been updated.
+		assert_eq!(api.metadata.errors, metadata.errors);
+		assert_eq!(api.runtime_version, runtime_version);
+	}
+}

@@ -34,6 +34,9 @@ pub mod error;
 
 pub use error::*;
 
+#[cfg(test)]
+pub mod mocks;
+
 use ac_primitives::RpcParams;
 use alloc::string::{String, ToString};
 use serde::de::DeserializeOwned;
