@@ -116,24 +116,24 @@ async fn main() {
 
 fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {
 	// First event
-	assert_matches!(events[0].pallet_name(), "Balances");
-	assert_matches!(events[0].variant_name(), "Withdraw");
+	assert_eq!(events[0].pallet_name(), "Balances");
+	assert_eq!(events[0].variant_name(), "Withdraw");
 
-	assert_matches!(events[1].pallet_name(), "Balances");
-	assert_matches!(events[1].variant_name(), "Transfer");
+	assert_eq!(events[1].pallet_name(), "Balances");
+	assert_eq!(events[1].variant_name(), "Transfer");
 
-	assert_matches!(events[2].pallet_name(), "Balances");
-	assert_matches!(events[2].variant_name(), "Deposit");
+	assert_eq!(events[2].pallet_name(), "Balances");
+	assert_eq!(events[2].variant_name(), "Deposit");
 
-	assert_matches!(events[3].pallet_name(), "Treasury");
-	assert_matches!(events[3].variant_name(), "Deposit");
+	assert_eq!(events[3].pallet_name(), "Treasury");
+	assert_eq!(events[3].variant_name(), "Deposit");
 
-	assert_matches!(events[4].pallet_name(), "Balances");
-	assert_matches!(events[4].variant_name(), "Deposit");
+	assert_eq!(events[4].pallet_name(), "Balances");
+	assert_eq!(events[4].variant_name(), "Deposit");
 
-	assert_matches!(events[5].pallet_name(), "TransactionPayment");
-	assert_matches!(events[5].variant_name(), "TransactionFeePaid");
+	assert_eq!(events[5].pallet_name(), "TransactionPayment");
+	assert_eq!(events[5].variant_name(), "TransactionFeePaid");
 
-	assert_matches!(events[6].pallet_name(), "System");
-	assert_matches!(events[6].variant_name(), "ExtrinsicSuccess");
+	assert_eq!(events[6].pallet_name(), "System");
+	assert_eq!(events[6].variant_name(), "ExtrinsicSuccess");
 }
