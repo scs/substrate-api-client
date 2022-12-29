@@ -41,29 +41,27 @@ pub struct StakingLedger {
 async fn main() {
 	env_logger::init();
 
-	let from = AccountKeyring::Alice.pair();
+	// Create api.
+	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(from);
-	let grace_period: GracePeriod = GracePeriod { enabled: false, eras: 0 };
-	let mut results: Vec<Value> = Vec::new();
+	api.set_signer(alice);
 
 	// Give a valid validator account address, given one is westend chain validator account
 	let account =
-		match AccountId32::from_ss58check("5DJcEbkNxsnNwHGrseg7cgbfUG8eiKzpuZqgSph5HqHrjgf6") {
-			Ok(address) => address,
-			Err(e) => panic!("Invalid Account id : {:?}", e),
-		};
+		AccountId32::from_ss58check("5DJcEbkNxsnNwHGrseg7cgbfUG8eiKzpuZqgSph5HqHrjgf6").unwrap();
 
 	let active_era: ActiveEraInfo =
 		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
-	let mut last_reward = get_last_reward("5DJcEbkNxsnNwHGrseg7cgbfUG8eiKzpuZqgSph5HqHrjgf6", &api);
+	let mut last_reward = get_last_reward(&account, &api);
 	let max_batched_transactions = 9;
 	let current_active_era = active_era.index;
 	let mut num_of_unclaimed_payout = current_active_era - last_reward - 1;
 	let mut start = 1;
 	let mut num_of_claimed_payouts = 0;
+	let grace_period = GracePeriod { enabled: false, eras: 0 };
 
+	let mut results: Vec<Value> = Vec::new();
 	while num_of_unclaimed_payout > 0 {
 		let mut payout_calls = vec![];
 		let mut tx_limit = num_of_unclaimed_payout;
@@ -113,7 +111,7 @@ async fn main() {
 }
 
 pub fn get_last_reward(
-	validator_address: &str,
+	account: &AccountId32,
 	api: &substrate_api_client::Api<
 		sp_core::sr25519::Pair,
 		JsonrpseeClient,
@@ -121,15 +119,11 @@ pub fn get_last_reward(
 		Runtime,
 	>,
 ) -> u32 {
-	let account = match AccountId32::from_ss58check(validator_address) {
-		Ok(address) => address,
-		Err(e) => panic!("Invalid Account id : {:?}", e),
-	};
 	let active_era: ActiveEraInfo =
 		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
-	let storagekey = api.metadata().storage_map_key("Staking", "Ledger", &account).unwrap();
+	let storagekey = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();
 	let mut res = StakingLedger {
-		stash: account,
+		stash: account.clone(),
 		total: 0,
 		active: 0,
 		unlocking: Vec::new(),
@@ -140,7 +134,7 @@ pub fn get_last_reward(
 		res = ledger
 	}
 
-	let is_history_checked_force: bool = false;
+	let is_history_checked_force = false;
 
 	let last_reward = if is_history_checked_force || res.claimed_rewards.is_empty() {
 		let history_depth: u32 = api.get_constant("Staking", "HistoryDepth").unwrap();
