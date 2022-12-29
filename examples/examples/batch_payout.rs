@@ -41,7 +41,7 @@ pub struct StakingLedger {
 async fn main() {
 	env_logger::init();
 
-	// Create api.
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();

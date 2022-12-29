@@ -30,34 +30,32 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let from = AccountKeyring::Alice.pair();
-
+	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
+	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
+	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(from);
+	api.set_signer(signer);
 
 	// Information for Era for mortal transactions.
-	let head = api.get_finalized_head().unwrap().unwrap();
-	let h = api.get_header(Some(head)).unwrap().unwrap();
+	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
+	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
 	let tx_params = AssetTipExtrinsicParamsBuilder::<Runtime>::new()
-		.era(Era::mortal(period, h.number.into()), head)
+		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
 
-	// Set the custom parmas builder:
+	// Set the custom parmas builder.
 	api.set_extrinsic_params_builder(tx_params);
 
 	// Get the nonce of Alice.
-	let alice_nonce = api.get_nonce().unwrap();
-	println!("[+] Alice's Account Nonce is {}\n", alice_nonce);
-
-	// Define the recipient.
-	let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Signer's Account Nonce is {}\n", signer_nonce);
 
 	// Create an extrinsic that should get included in the future pool due to a nonce that is too high.
-	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: to, value: 42 });
-	let xt = api.compose_extrinsic_offline(call, alice_nonce + 1);
+	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: recipient, value: 42 });
+	let xt = api.compose_extrinsic_offline(call, signer_nonce + 1);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
