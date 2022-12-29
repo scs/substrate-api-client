@@ -56,8 +56,6 @@ ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 
-
-
 [features]
 default = ["std", "jsonrpsee-client"]
 # To support `no_std` builds in non-32 bit environments.
