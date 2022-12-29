@@ -72,6 +72,11 @@ impl<Hash: Copy> Events<Hash> {
 		self.block_hash
 	}
 
+	/// Return the encoded bytes of the Events.
+	pub fn event_bytes(&self) -> Arc<[u8]> {
+		self.event_bytes.clone()
+	}
+
 	/// Iterate over all of the events, using metadata to dynamically
 	/// decode them as we go, and returning the raw bytes and other associated
 	/// details. If an error occurs, all subsequent iterations return `None`.
