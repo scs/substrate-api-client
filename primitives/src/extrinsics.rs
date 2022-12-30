@@ -17,8 +17,6 @@
 
 //! Primitives for substrate extrinsics.
 
-extern crate alloc;
-
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
