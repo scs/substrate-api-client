@@ -16,7 +16,7 @@
 */
 
 use codec::{Decode, Encode};
-use core::{hash::Hash as HashTrait, marker::PhantomData};
+use core::hash::Hash as HashTrait;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -26,6 +26,16 @@ pub type BalanceFor<Runtime> = <Runtime as crate::BalancesConfig>::Balance;
 pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;
 pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
 pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
+
+/// A struct representing the signed extra and additional parameters required
+/// to construct a transaction and pay in asset fees
+pub type AssetTipExtrinsicParams<Runtime> =
+	BaseExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
+
+/// A struct representing the signed extra and additional parameters required
+/// to construct a transaction and pay in token fees
+pub type PlainTipExtrinsicParams<Runtime> =
+	BaseExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
@@ -81,24 +91,6 @@ pub trait ExtrinsicParams<Index, Hash> {
 	fn additional_signed(&self) -> Self::AdditionalSigned;
 }
 
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams<Runtime> =
-	BaseExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-/// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
-/// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder<Runtime> =
-	BaseExtrinsicParamsBuilder<AssetTip<AssetBalanceFor<Runtime>>, HashFor<Runtime>>;
-
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams<Runtime> =
-	BaseExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-/// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
-/// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder<Runtime> =
-	BaseExtrinsicParamsBuilder<PlainTip<BalanceFor<Runtime>>, HashFor<Runtime>>;
-
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
@@ -111,7 +103,6 @@ pub struct BaseExtrinsicParams<Tip, Index, Hash> {
 	transaction_version: u32,
 	genesis_hash: Hash,
 	mortality_checkpoint: Hash,
-	marker: PhantomData<()>,
 }
 
 /// This builder allows you to provide the parameters that can be configured in order to
@@ -181,7 +172,6 @@ where
 			genesis_hash,
 			mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
 			nonce,
-			marker: Default::default(),
 		}
 	}
 

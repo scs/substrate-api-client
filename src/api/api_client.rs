@@ -264,8 +264,8 @@ where
 mod tests {
 	use super::*;
 	use crate::{
-		rpc::mocks::RpcClientMock, utils::ToHexString, PlainTipExtrinsicParams,
-		PlainTipExtrinsicParamsBuilder,
+		rpc::mocks::RpcClientMock, utils::ToHexString, BaseExtrinsicParamsBuilder,
+		PlainTipExtrinsicParams,
 	};
 	use kitchensink_runtime::Runtime;
 	use sp_core::{sr25519::Pair, H256};
@@ -298,7 +298,7 @@ mod tests {
 			create_mock_api(genesis_hash, runtime_version.clone(), metadata, Default::default());
 
 		// Information for Era for mortal transactions.
-		let builder = PlainTipExtrinsicParamsBuilder::<Runtime>::new();
+		let builder = BaseExtrinsicParamsBuilder::new();
 		api.set_extrinsic_params_builder(builder);
 
 		let nonce = 6;
