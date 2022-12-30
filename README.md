@@ -62,7 +62,6 @@ The following examples can be found in the [examples](/examples/examples) folder
 * [get_block](/examples/examples/get_block.rs): Read header, block and signed block from storage.
 * [get_storage](/examples/examples/get_storage.rs): Read storage values.
 * [print_metadata](/examples/examples/print_metadata.rs): Print the metadata of the node in a readable way.
-* [staking_payout](/src/examples/examples/staking_payout.rs): Westend staking reward payout for validator.
 * [sudo](/examples/examples/sudo.rs): Create and send a sudo wrapped call.
 * [transfer_with_tungstenite_client](/examples/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
