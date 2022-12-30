@@ -38,14 +38,15 @@ async fn main() {
 
 	// Create the node-api client and set the signer.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
-	let alice = AccountKeyring::Alice.pair();
+	let signer = AccountKeyring::Alice.pair();
+	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
+	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api =
 		Api::<_, _, AssetTipExtrinsicParams<KitchensinkRuntime>, KitchensinkRuntime>::new(client)
 			.unwrap();
-	api.set_signer(alice.clone());
+	api.set_signer(signer.clone());
 
-	// Fill Identity storage
+	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {
 		additional: Default::default(),
 		display: Data::Keccak256(H256::random().into()),
@@ -78,7 +79,7 @@ async fn main() {
 	>;
 
 	let registration: RegistrationType = api
-		.get_storage_map("Identity", "IdentityOf", alice.public(), None)
+		.get_storage_map("Identity", "IdentityOf", signer.public(), None)
 		.unwrap()
 		.unwrap();
 	println!("[+] Retrieved {:?}", registration);
