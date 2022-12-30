@@ -37,7 +37,7 @@ async fn main() {
 	// Set the recipient of newly issued funds.
 	let recipient = AccountKeyring::Bob.to_account_id();
 
-	// Get the current balance of the recipient:
+	// Get the current balance of the recipient.
 	let recipient_balance = api.get_account_data(&recipient).unwrap().unwrap().free;
 	println!("[+] Recipients's Free Balance is now {}\n", recipient_balance);
 
