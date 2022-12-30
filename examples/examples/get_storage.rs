@@ -57,4 +57,12 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	api.set_signer(signer);
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
+
+	// Get storage up to `max_keys` that start with the given storage key prefix.
+	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
+	let max_keys = 3;
+	let storage_keys = api
+		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
+		.unwrap();
+	assert_eq!(storage_keys.len() as u32, max_keys);
 }
