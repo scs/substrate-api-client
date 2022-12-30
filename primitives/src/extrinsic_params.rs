@@ -78,7 +78,7 @@ pub trait ExtrinsicParams<Index, Hash> {
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::AdditionalParams,
+		additional_params: Self::AdditionalParams,
 	) -> Self;
 
 	/// These are the parameters which are sent along with the transaction,
@@ -162,15 +162,15 @@ where
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::AdditionalParams,
+		additional_params: Self::AdditionalParams,
 	) -> Self {
 		BaseExtrinsicParams {
-			era: other_params.era,
-			tip: other_params.tip,
+			era: additional_params.era,
+			tip: additional_params.tip,
 			spec_version,
 			transaction_version,
 			genesis_hash,
-			mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
+			mortality_checkpoint: additional_params.mortality_checkpoint.unwrap_or(genesis_hash),
 			nonce,
 		}
 	}
