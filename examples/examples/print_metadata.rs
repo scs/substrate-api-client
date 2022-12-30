@@ -18,16 +18,16 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Metadata};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, Metadata, PlainTipExtrinsicParams};
 
 #[tokio::main]
 async fn main() {
 	env_logger::init();
 
+	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
 	let mut api =
-		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 
