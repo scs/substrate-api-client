@@ -16,7 +16,7 @@
 */
 
 use codec::{Decode, Encode};
-use core::{hash::Hash as HashTrait, marker::PhantomData};
+use core::hash::Hash as HashTrait;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -27,17 +27,27 @@ pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;
 pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
 pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
+/// A type representing the signed extra and additional parameters required
+/// to construct a transaction and pay in asset fees
+pub type AssetTipExtrinsicParams<Runtime> =
+	DefaultExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
+
+/// A type representing the signed extra and additional parameters required
+/// to construct a transaction and pay in token fees
+pub type PlainTipExtrinsicParams<Runtime> =
+	DefaultExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
+
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateDefaultSignedExtra<Tip, Index> {
+pub struct DefaultSignedExtra<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
 }
 
-impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
+impl<Tip, Index> DefaultSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		Self { era, nonce, tip }
 	}
@@ -45,31 +55,18 @@ impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
 
 /// Default AdditionalSigned fields of the respective SignedExtra fields.
 /// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-pub type SubstrateDefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+pub type DefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in transactions.
-/// see [`BaseExtrinsicParams`] for an implementation that is compatible with
+/// see [`DefaultExtrinsicParams`] for an implementation that is compatible with
 /// a Polkadot node.
-pub trait ExtrinsicParams<Index, Hash> {
-	/// These parameters can be provided to the constructor along with
-	/// some default parameters in order to help construct your [`ExtrinsicParams`] object.
-	type OtherParams: Default + Clone;
-
+pub trait ExtrinsicParams<Tip, Index, Hash> {
 	/// SignedExtra format of the node.
 	type SignedExtra: Copy + Encode;
 
 	/// Additional Signed format of the node
 	type AdditionalSigned: Encode;
-
-	/// Construct a new instance of our [`ExtrinsicParams`]
-	fn new(
-		spec_version: u32,
-		transaction_version: u32,
-		nonce: Index,
-		genesis_hash: Hash,
-		other_params: Self::OtherParams,
-	) -> Self;
 
 	/// These are the parameters which are sent along with the transaction,
 	/// as well as taken into account when signing the transaction.
@@ -81,29 +78,11 @@ pub trait ExtrinsicParams<Index, Hash> {
 	fn additional_signed(&self) -> Self::AdditionalSigned;
 }
 
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams<Runtime> =
-	BaseExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-/// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
-/// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder<Runtime> =
-	BaseExtrinsicParamsBuilder<AssetTip<AssetBalanceFor<Runtime>>, HashFor<Runtime>>;
-
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams<Runtime> =
-	BaseExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-/// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
-/// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder<Runtime> =
-	BaseExtrinsicParamsBuilder<PlainTip<BalanceFor<Runtime>>, HashFor<Runtime>>;
-
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParams<Tip, Index, Hash> {
+pub struct DefaultExtrinsicParams<Tip, Index, Hash> {
 	era: Era,
 	nonce: Index,
 	tip: Tip,
@@ -111,79 +90,48 @@ pub struct BaseExtrinsicParams<Tip, Index, Hash> {
 	transaction_version: u32,
 	genesis_hash: Hash,
 	mortality_checkpoint: Hash,
-	marker: PhantomData<()>,
 }
 
-/// This builder allows you to provide the parameters that can be configured in order to
-/// construct a [`BaseExtrinsicParams`] value.
-#[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParamsBuilder<Tip, Hash> {
-	era: Era,
-	mortality_checkpoint: Option<Hash>,
-	tip: Tip,
-}
-
-impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
-	/// Instantiate the default set of [`BaseExtrinsicParamsBuilder`]
-	pub fn new() -> Self {
-		Self::default()
-	}
-
-	/// Set the [`Era`], which defines how long the transaction will be valid for
-	/// (it can be either immortal, or it can be mortal and expire after a certain amount
-	/// of time). The second argument is the block hash after which the transaction
-	/// becomes valid, and must align with the era phase (see the [`Era::Mortal`] docs
-	/// for more detail on that).
-	pub fn era(mut self, era: Era, checkpoint: Hash) -> Self {
-		self.era = era;
-		self.mortality_checkpoint = Some(checkpoint);
-		self
-	}
-
-	/// Set the tip you'd like to give to the block author
-	/// for this transaction.
-	pub fn tip(mut self, tip: impl Into<Tip>) -> Self {
-		self.tip = tip.into();
-		self
-	}
-}
-
-impl<Tip: Default, Hash> Default for BaseExtrinsicParamsBuilder<Tip, Hash> {
-	fn default() -> Self {
-		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
-	}
-}
-
-impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for BaseExtrinsicParams<Tip, Index, Hash>
+impl<Tip, Index, Hash> DefaultExtrinsicParams<Tip, Index, Hash>
 where
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
 	Index: Copy + Default + Encode,
 	Hash: HashTrait + Encode + Copy,
-	SubstrateDefaultSignedExtra<Tip, Index>: Encode,
+	DefaultSignedExtra<Tip, Index>: Encode,
 {
-	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
-	type SignedExtra = SubstrateDefaultSignedExtra<Tip, Index>;
-	type AdditionalSigned = SubstrateDefaultAdditionalSigned<Hash>;
-
-	fn new(
+	pub fn new(
 		spec_version: u32,
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::OtherParams,
+		era: Era,
+		mortality_checkpoint: Option<Hash>,
+		tip: Tip,
 	) -> Self {
-		BaseExtrinsicParams {
-			era: other_params.era,
-			tip: other_params.tip,
+		DefaultExtrinsicParams {
+			era,
+			tip,
 			spec_version,
 			transaction_version,
 			genesis_hash,
-			mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
+			mortality_checkpoint: mortality_checkpoint.unwrap_or(genesis_hash),
 			nonce,
-			marker: Default::default(),
 		}
 	}
+}
+
+impl<Tip, Index, Hash> ExtrinsicParams<Tip, Index, Hash>
+	for DefaultExtrinsicParams<Tip, Index, Hash>
+where
+	u128: From<Tip>,
+	Tip: Copy + Default + Encode,
+	Index: Copy + Default + Encode,
+	Hash: HashTrait + Encode + Copy,
+	DefaultSignedExtra<Tip, Index>: Encode,
+{
+	type SignedExtra = DefaultSignedExtra<Tip, Index>;
+	type AdditionalSigned = DefaultAdditionalSigned<Hash>;
 
 	fn signed_extra(&self) -> Self::SignedExtra {
 		Self::SignedExtra::new(self.era, self.nonce, self.tip)
