@@ -61,12 +61,25 @@ pub type DefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 /// "additional" parameters that are signed and used in transactions.
 /// see [`DefaultExtrinsicParams`] for an implementation that is compatible with
 /// a Polkadot node.
-pub trait ExtrinsicParams<Tip, Index, Hash> {
+pub trait ExtrinsicParams<Index, Hash> {
 	/// SignedExtra format of the node.
 	type SignedExtra: Copy + Encode;
 
 	/// Additional Signed format of the node
 	type AdditionalSigned: Encode;
+
+	// Additioanl params that are needed to create the full set of Extrinsic params, other
+	// than the absolutely necessary ones defined in new()
+	type OtherParams: Clone + Default;
+
+	/// Create a new Self with the given parameters.
+	fn new(
+		spec_version: u32,
+		transaction_version: u32,
+		nonce: Index,
+		genesis_hash: Hash,
+		other_params: Self::OtherParams,
+	) -> Self;
 
 	/// These are the parameters which are sent along with the transaction,
 	/// as well as taken into account when signing the transaction.
@@ -92,37 +105,29 @@ pub struct DefaultExtrinsicParams<Tip, Index, Hash> {
 	mortality_checkpoint: Hash,
 }
 
-impl<Tip, Index, Hash> DefaultExtrinsicParams<Tip, Index, Hash>
-where
-	u128: From<Tip>,
-	Tip: Copy + Default + Encode,
-	Index: Copy + Default + Encode,
-	Hash: HashTrait + Encode + Copy,
-	DefaultSignedExtra<Tip, Index>: Encode,
-{
-	pub fn new(
-		spec_version: u32,
-		transaction_version: u32,
-		nonce: Index,
-		genesis_hash: Hash,
-		era: Era,
-		mortality_checkpoint: Option<Hash>,
-		tip: Tip,
-	) -> Self {
-		DefaultExtrinsicParams {
-			era,
-			tip,
-			spec_version,
-			transaction_version,
-			genesis_hash,
-			mortality_checkpoint: mortality_checkpoint.unwrap_or(genesis_hash),
-			nonce,
-		}
+#[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
+pub struct DefaultOtherParams<Tip, Hash> {
+	pub era: Era,
+	pub mortality_checkpoint: Option<Hash>,
+	pub tip: Tip,
+}
+
+impl<Tip, Hash> DefaultOtherParams<Tip, Hash> {
+	pub fn new(era: Era, mortality_checkpoint: Option<Hash>, tip: Tip) -> Self {
+		Self { era, mortality_checkpoint, tip }
 	}
 }
 
-impl<Tip, Index, Hash> ExtrinsicParams<Tip, Index, Hash>
-	for DefaultExtrinsicParams<Tip, Index, Hash>
+impl<Tip, Hash> Default for DefaultOtherParams<Tip, Hash>
+where
+	Tip: Default,
+{
+	fn default() -> Self {
+		Self::new(Era::Immortal, None, Default::default())
+	}
+}
+
+impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for DefaultExtrinsicParams<Tip, Index, Hash>
 where
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
@@ -132,6 +137,25 @@ where
 {
 	type SignedExtra = DefaultSignedExtra<Tip, Index>;
 	type AdditionalSigned = DefaultAdditionalSigned<Hash>;
+	type OtherParams = DefaultOtherParams<Tip, Hash>;
+
+	fn new(
+		spec_version: u32,
+		transaction_version: u32,
+		nonce: Index,
+		genesis_hash: Hash,
+		other_params: Self::OtherParams,
+	) -> Self {
+		DefaultExtrinsicParams {
+			era: other_params.era,
+			tip: other_params.tip,
+			spec_version,
+			transaction_version,
+			genesis_hash,
+			mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
+			nonce,
+		}
+	}
 
 	fn signed_extra(&self) -> Self::SignedExtra {
 		Self::SignedExtra::new(self.era, self.nonce, self.tip)

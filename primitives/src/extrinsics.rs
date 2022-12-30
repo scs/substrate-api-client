@@ -144,7 +144,7 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{DefaultExtrinsicParams, ExtrinsicParams, PlainTip};
+	use crate::{DefaultExtrinsicParams, DefaultOtherParams, ExtrinsicParams, PlainTip};
 	use sp_core::{Pair, H256 as Hash};
 	use sp_runtime::{generic::Era, testing::sr25519, MultiSignature};
 
@@ -157,16 +157,10 @@ mod tests {
 		let account: AccountId = pair.public().into();
 
 		let era = Era::mortal(8, 0);
+		let other_params = DefaultOtherParams::new(era, None, PlainTip::default());
 
-		let default_extra = DefaultExtrinsicParams::new(
-			0,
-			0,
-			0u32,
-			Hash::from([0u8; 32]),
-			era,
-			None,
-			PlainTip::new(0),
-		);
+		let default_extra =
+			DefaultExtrinsicParams::new(0, 0, 0u32, Hash::from([0u8; 32]), other_params);
 		let xt = UncheckedExtrinsicV4::new_signed(
 			vec![1, 1, 1],
 			account.into(),

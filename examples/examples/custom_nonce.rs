@@ -21,7 +21,7 @@ use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, AssetTipExtrinsicParamsBuilder, GetHeader,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, DefaultOtherParams, GetHeader,
 	SubmitAndWatch, XtStatus,
 };
 
@@ -41,12 +41,11 @@ async fn main() {
 	let head = api.get_finalized_head().unwrap().unwrap();
 	let h = api.get_header(Some(head)).unwrap().unwrap();
 	let period = 5;
-	let tx_params = AssetTipExtrinsicParamsBuilder::<Runtime>::new()
-		.era(Era::mortal(period, h.number.into()), head)
-		.tip(0);
+	let tx_params =
+		DefaultOtherParams::new(Era::mortal(period, h.number.into()), Some(head), 0.into());
 
 	// Set the custom parmas builder:
-	api.set_extrinsic_params_builder(tx_params);
+	api.set_other_params(tx_params);
 
 	// Get the nonce of Alice.
 	let alice_nonce = api.get_nonce().unwrap();
