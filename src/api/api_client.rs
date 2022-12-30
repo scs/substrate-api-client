@@ -93,7 +93,7 @@ where
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
-	extrinsic_params_builder: Option<Params::OtherParams>,
+	additional_extrinsic_params: Option<Params::OtherParams>,
 }
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
@@ -114,7 +114,7 @@ where
 			metadata,
 			runtime_version,
 			client,
-			extrinsic_params_builder: None,
+			additional_extrinsic_params: None,
 		}
 	}
 
@@ -155,18 +155,19 @@ where
 
 	/// Set the extrinscs param builder.
 	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::OtherParams) {
-		self.extrinsic_params_builder = Some(extrinsic_params);
+		self.additional_extrinsic_params = Some(extrinsic_params);
 	}
 
 	/// Get the extrinsic params, built with the set or if none, the default Params Builder.
 	pub fn extrinsic_params(&self, nonce: Runtime::Index) -> Params {
-		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
+		let additional_extrinsic_params =
+			self.additional_extrinsic_params.clone().unwrap_or_default();
 		<Params as ExtrinsicParams<Runtime::Index, Runtime::Hash>>::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
 			self.genesis_hash,
-			extrinsic_params_builder,
+			additional_extrinsic_params,
 		)
 	}
 }
