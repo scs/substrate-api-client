@@ -93,7 +93,7 @@ where
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
-	additional_extrinsic_params: Option<Params::OtherParams>,
+	additional_extrinsic_params: Option<Params::AdditionalParams>,
 }
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
@@ -154,7 +154,7 @@ where
 	}
 
 	/// Set the extrinscs param builder.
-	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::OtherParams) {
+	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::AdditionalParams) {
 		self.additional_extrinsic_params = Some(extrinsic_params);
 	}
 

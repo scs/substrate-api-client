@@ -64,7 +64,7 @@ pub type DefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 pub trait ExtrinsicParams<Index, Hash> {
 	/// These parameters can be provided to the constructor along with
 	/// some default parameters in order to help construct your [`ExtrinsicParams`] object.
-	type OtherParams: Default + Clone;
+	type AdditionalParams: Default + Clone;
 
 	/// SignedExtra format of the node.
 	type SignedExtra: Copy + Encode;
@@ -78,7 +78,7 @@ pub trait ExtrinsicParams<Index, Hash> {
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::OtherParams,
+		other_params: Self::AdditionalParams,
 	) -> Self;
 
 	/// These are the parameters which are sent along with the transaction,
@@ -153,7 +153,7 @@ where
 	Hash: HashTrait + Encode + Copy,
 	DefaultSignedExtra<Tip, Index>: Encode,
 {
-	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
+	type AdditionalParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
 	type SignedExtra = DefaultSignedExtra<Tip, Index>;
 	type AdditionalSigned = DefaultAdditionalSigned<Hash>;
 
@@ -162,7 +162,7 @@ where
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::OtherParams,
+		other_params: Self::AdditionalParams,
 	) -> Self {
 		BaseExtrinsicParams {
 			era: other_params.era,
