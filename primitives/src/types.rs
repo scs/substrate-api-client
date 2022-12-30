@@ -18,6 +18,7 @@
 //! Re-defintion of substrate primitives.
 //! Needed because substrate pallets compile to wasm in no_std.
 
+use alloc::string::String;
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
