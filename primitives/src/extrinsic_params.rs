@@ -108,14 +108,14 @@ pub struct BaseExtrinsicParams<Tip, Index, Hash> {
 /// This builder allows you to provide the parameters that can be configured in order to
 /// construct a [`BaseExtrinsicParams`] value.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParamsBuilder<Tip, Hash> {
+pub struct DefaultAdditionalParams<Tip, Hash> {
 	era: Era,
 	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
 }
 
-impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
-	/// Instantiate the default set of [`BaseExtrinsicParamsBuilder`]
+impl<Tip: Default, Hash> DefaultAdditionalParams<Tip, Hash> {
+	/// Instantiate the default set of [`DefaultAdditionalParams`]
 	pub fn new() -> Self {
 		Self::default()
 	}
@@ -139,7 +139,7 @@ impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
 	}
 }
 
-impl<Tip: Default, Hash> Default for BaseExtrinsicParamsBuilder<Tip, Hash> {
+impl<Tip: Default, Hash> Default for DefaultAdditionalParams<Tip, Hash> {
 	fn default() -> Self {
 		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
 	}
@@ -153,7 +153,7 @@ where
 	Hash: HashTrait + Encode + Copy,
 	DefaultSignedExtra<Tip, Index>: Encode,
 {
-	type AdditionalParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
+	type AdditionalParams = DefaultAdditionalParams<Tip, Hash>;
 	type SignedExtra = DefaultSignedExtra<Tip, Index>;
 	type AdditionalSigned = DefaultAdditionalSigned<Hash>;
 
