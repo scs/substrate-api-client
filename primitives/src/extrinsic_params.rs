@@ -40,14 +40,14 @@ pub type PlainTipExtrinsicParams<Runtime> =
 /// Default SignedExtra.
 /// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateDefaultSignedExtra<Tip, Index> {
+pub struct DefaultSignedExtra<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
 }
 
-impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
+impl<Tip, Index> DefaultSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		Self { era, nonce, tip }
 	}
@@ -55,7 +55,7 @@ impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
 
 /// Default AdditionalSigned fields of the respective SignedExtra fields.
 /// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-pub type SubstrateDefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+pub type DefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in transactions.
@@ -151,11 +151,11 @@ where
 	Tip: Copy + Default + Encode,
 	Index: Copy + Default + Encode,
 	Hash: HashTrait + Encode + Copy,
-	SubstrateDefaultSignedExtra<Tip, Index>: Encode,
+	DefaultSignedExtra<Tip, Index>: Encode,
 {
 	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
-	type SignedExtra = SubstrateDefaultSignedExtra<Tip, Index>;
-	type AdditionalSigned = SubstrateDefaultAdditionalSigned<Hash>;
+	type SignedExtra = DefaultSignedExtra<Tip, Index>;
+	type AdditionalSigned = DefaultAdditionalSigned<Hash>;
 
 	fn new(
 		spec_version: u32,
