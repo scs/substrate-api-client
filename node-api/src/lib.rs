@@ -32,6 +32,9 @@ pub mod events;
 pub mod metadata;
 pub mod storage;
 
+#[cfg(any(feature = "mocks", test))]
+pub mod test_utils;
+
 #[cfg(feature = "std")]
 mod print_metadata;
 

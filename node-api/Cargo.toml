@@ -53,3 +53,5 @@ std = [
     # local
     "ac-primitives/std",
 ]
+# Enable import of test_utils also outside of crate (feature test does not allow to do so).
+mocks = []

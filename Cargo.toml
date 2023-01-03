@@ -52,7 +52,9 @@ ac-node-api = { path = "node-api", default-features = false }
 ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
+ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+scale-info = { version = "2.1.1", features = ["derive"] }
 
 [features]
 default = ["std", "jsonrpsee-client"]
