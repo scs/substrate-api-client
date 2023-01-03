@@ -62,6 +62,17 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
+	/// Returns the keys with prefix with pagination support.
+	/// Up to `count` keys will be returned.
+	/// If `start_key` is passed, return next keys in storage in lexicographic order.
+	fn get_storage_keys_paged(
+		&self,
+		prefix: Option<StorageKey>,
+		count: u32,
+		start_key: Option<StorageKey>,
+		at_block: Option<Hash>,
+	) -> Result<Vec<StorageKey>>;
+
 	fn get_opaque_storage_by_key_hash(
 		&self,
 		key: StorageKey,
@@ -173,6 +184,19 @@ where
 			Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
 			None => Ok(None),
 		}
+	}
+
+	fn get_storage_keys_paged(
+		&self,
+		prefix: Option<StorageKey>,
+		count: u32,
+		start_key: Option<StorageKey>,
+		at_block: Option<Runtime::Hash>,
+	) -> Result<Vec<StorageKey>> {
+		let storage = self
+			.client()
+			.request("state_getKeysPaged", rpc_params![prefix, count, start_key, at_block])?;
+		Ok(storage)
 	}
 
 	fn get_opaque_storage_by_key_hash(

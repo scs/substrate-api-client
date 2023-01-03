@@ -56,4 +56,20 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	api.set_signer(signer);
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
+
+	// Get an vector of storage keys, numbering up to the given max keys and that start with the (optionally) given storage key prefix.
+	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
+	let max_keys = 3;
+	let storage_keys = api
+		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
+		.unwrap();
+	assert_eq!(storage_keys.len() as u32, max_keys);
+	// Get the storage values that belong to the retrieved storage keys.
+	for storage_key in storage_keys.iter() {
+		println!("Retrieving value for key {:?}", storage_key);
+		// We're expecting account info as return value because we fetch added a prefix of "System" + "Account".
+		let storage_data: AccountInfo =
+			api.get_storage_by_key_hash(storage_key.clone(), None).unwrap().unwrap();
+		println!("Retrieved data {:?}", storage_data);
+	}
 }

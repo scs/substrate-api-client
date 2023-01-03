@@ -90,4 +90,14 @@ async fn main() {
 		api.get_storage_proof_by_keys(vec![storage_key.clone()], None).unwrap().unwrap();
 	let _keys = api.get_keys(storage_key, None).unwrap().unwrap();
 	let _constants: Balance = api.get_constant("Balances", "ExistentialDeposit").unwrap();
+
+	let max_keys = 3;
+	let storage_keys = api
+		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
+		.unwrap();
+	assert_eq!(storage_keys.len() as u32, max_keys);
+
+	let max_keys = 20;
+	let storage_keys = api.get_storage_keys_paged(None, max_keys, None, None).unwrap();
+	assert_eq!(storage_keys.len() as u32, max_keys);
 }
