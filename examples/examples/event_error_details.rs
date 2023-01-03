@@ -15,7 +15,6 @@ limitations under the License.
 
 use codec::{Decode, Encode};
 use kitchensink_runtime::Runtime;
-use sp_core::crypto::Pair;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
@@ -39,49 +38,33 @@ impl StaticEvent for TransferEventArgs {
 async fn main() {
 	env_logger::init();
 
-	// initialize api and set the signer (sender) that is used to sign the extrinsics
-	let from = AccountKeyring::Alice.pair();
-
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
+	let alice_signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
+	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
+	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(from.clone());
+	api.set_signer(alice_signer);
 
-	let from_account_id = AccountKeyring::Alice.to_account_id();
+	let alice = AccountKeyring::Alice.to_account_id();
+	let balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;
+	println!("[+] Alice's Free Balance is is {}\n", balance_of_alice);
 
-	let amount = match api.get_account_data(&from_account_id).unwrap() {
-		Some(alice) => {
-			println!("[+] Alice's Free Balance is is {}\n", alice.free);
-			alice.free
-		},
-		None => {
-			println!("[+] Alice's Free Balance is is 0\n");
-			10000000000000000000
-		},
-	};
-
-	let to = AccountKeyring::Bob.to_account_id();
-
-	let balance_of_bob = match api.get_account_data(&to).unwrap() {
-		Some(bob) => bob.free,
-		None => 0,
-	};
-
+	let bob = AccountKeyring::Bob.to_account_id();
+	let balance_of_bob = api.get_account_data(&bob).unwrap().unwrap_or_default().free;
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
-	// generate extrinsic
-	let xt = api.balance_transfer(MultiAddress::Id(to.clone()), amount);
 
-	println!(
-		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
-		from.public(),
-		to
-	);
+	// Generate a transfer extrinsic.
+	let xt = api.balance_transfer(MultiAddress::Id(bob.clone()), balance_of_alice);
+	println!("Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n", alice, bob);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until Ready.
 	let _tx_hash = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::Ready).unwrap();
 	println!("[+] Transaction got included into the TxPool.");
 
-	// Transfer should fail as Alice wants to transfer all her balance. She does not have enough money to pay the fees.
+	// Subscribe to system events. We expect the transfer to fail as Alice wants to transfer all her balance.
+	// Therefore, she will not have enough money to pay the fees.
 	let mut subscription = api.subscribe_system_events().unwrap();
 	let args: Result<TransferEventArgs> = api.wait_for_event(&mut subscription);
 	match args {
@@ -97,12 +80,12 @@ async fn main() {
 	};
 
 	// Verify that Bob's free Balance hasn't changed.
-	let bob = api.get_account_data(&to).unwrap().unwrap();
-	println!("[+] Bob's Free Balance is now {}\n", bob.free);
-	assert_eq!(balance_of_bob, bob.free);
+	let new_balance_of_bob = api.get_account_data(&bob).unwrap().unwrap().free;
+	println!("[+] Bob's Free Balance is now {}\n", new_balance_of_bob);
+	assert_eq!(balance_of_bob, new_balance_of_bob);
 
 	// Verify that Alice's free Balance decreased: paid fees.
-	let alice = api.get_account_data(&from_account_id).unwrap().unwrap();
-	println!("[+] Alice's Free Balance is now {}\n", alice.free);
-	assert!(amount > alice.free);
+	let new_balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;
+	println!("[+] Alice's Free Balance is now {}\n", new_balance_of_alice);
+	assert!(balance_of_alice > new_balance_of_alice);
 }

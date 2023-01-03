@@ -17,7 +17,7 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use codec::Encode;
-use kitchensink_runtime::{BalancesCall, Header, Runtime, RuntimeCall};
+use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
@@ -30,38 +30,40 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let from = AccountKeyring::Alice.pair();
-
+	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
+	// Api::new(..) is not actually an offline call, but retrieves metadata and other information from the node.
+	// If this is not acceptable, use the Api::new_offline(..) function instead. There are no examples for this,
+	// because of the constantly changing substrate node. But check out our unit tests - there are Apis created with `new_offline`.
+	//
+	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
+	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(from);
+	api.set_signer(signer);
 
-	// Information for Era for mortal transactions.
-	let head = api.get_finalized_head().unwrap().unwrap();
-	let h: Header = api.get_header(Some(head)).unwrap().unwrap();
+	// Information for Era for mortal transactions (online).
+	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
+	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
 	let tx_params = AssetTipExtrinsicParamsBuilder::<Runtime>::new()
-		.era(Era::mortal(period, h.number.into()), head)
+		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
 
-	// Set the custom params builder:
+	// Set the custom params builder.
 	api.set_extrinsic_params_builder(tx_params);
 
-	// Get the nonce of Alice.
-	let alice_nonce = api.get_nonce().unwrap();
-	println!("[+] Alice's Account Nonce is {}\n", alice_nonce);
+	// Get the nonce of the signer account (online).
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
 
-	// Define the recipient.
-	let to = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
-
-	// Compose the extrinsic.
-	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: to, value: 42 });
-	let xt = api.compose_extrinsic_offline(call, alice_nonce);
+	// Compose the extrinsic (offline).
+	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: recipient, value: 42 });
+	let xt = api.compose_extrinsic_offline(call, signer_nonce);
 
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
-	// Send and watch extrinsic until in block.
+	// Send and watch extrinsic until in block (online).
 	let block_hash = api
 		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
 		.unwrap()

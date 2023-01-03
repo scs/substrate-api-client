@@ -28,6 +28,7 @@ use substrate_api_client::{
 
 fn main() {
 	env_logger::init();
+
 	// Alice's seed: subkey inspect //Alice.
 	let alice: sr25519::Pair = Pair::from_string(
 		"0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
@@ -38,27 +39,22 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::with_default_url();
-
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice.clone());
 
-	// Bob
+	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
 		.unwrap();
+	let bob_balance = api.get_account_data(&bob.into()).unwrap().unwrap_or_default().free;
+	println!("[+] Bob's Free Balance is is {}\n", bob_balance);
 
-	match api.get_account_data(&bob.into()).unwrap() {
-		Some(account_data) => println!("[+] Bob's Free Balance is is {}\n", account_data.free),
-		None => println!("[+] Bob's Free Balance is is 0\n"),
-	}
 	// Generate extrinsic.
 	let xt = api.balance_transfer(MultiAddress::Id(bob.into()), 1000000000000);
-
 	println!(
 		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
 		alice.public(),
 		bob
 	);
-
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until in block.
@@ -70,6 +66,7 @@ fn main() {
 	println!("[+] Extrinsic got included. Hash: {:?}\n", block_hash);
 
 	// Verify that Bob's free Balance increased.
-	let bob_account_data = api.get_account_data(&bob.into()).unwrap().unwrap();
-	println!("[+] Bob's Free Balance is now {}\n", bob_account_data.free);
+	let bob_new_balance = api.get_account_data(&bob.into()).unwrap().unwrap().free;
+	println!("[+] Bob's Free Balance is now {}\n", bob_new_balance);
+	assert!(bob_new_balance > bob_balance);
 }
