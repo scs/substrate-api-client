@@ -130,6 +130,16 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 	pub fn reached_status(&self, status: XtStatus) -> bool {
 		self.as_u8() >= status as u8
 	}
+
+	pub fn get_maybe_block_hash(&self) -> Option<&BlockHash> {
+		match self {
+			TransactionStatus::InBlock(block_hash) => Some(block_hash),
+			TransactionStatus::Retracted(block_hash) => Some(block_hash),
+			TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
+			TransactionStatus::Finalized(block_hash) => Some(block_hash),
+			_ => None,
+		}
+	}
 }
 
 // Exact structure from

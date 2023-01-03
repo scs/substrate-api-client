@@ -21,8 +21,8 @@ use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, AssetTipExtrinsicParams, MultiAddress, SubmitAndWatch, SubmitExtrinsic, TransactionStatus,
-	XtStatus,
+	Api, AssetTipExtrinsicParams, EventDetails, MultiAddress, SubmitAndWatch,
+	SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
 #[tokio::main]
@@ -97,7 +97,43 @@ async fn main() {
 		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
 
+	// Test Success.
+	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	let xt6 = api.balance_transfer(bob, 1000).encode();
+
+	let events = api
+		.submit_and_watch_extrinsic_until_success(xt6, false)
+		.unwrap()
+		.events
+		.unwrap();
+	println!("Extrinsic got successfully included in Block!");
+	assert_assosciated_events_match_expected(events);
+
 	watch_handle.join().unwrap();
 	until_in_block_handle.join().unwrap();
 	until_finalized_handle.join().unwrap();
+}
+
+fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {
+	// First event
+	assert_eq!(events[0].pallet_name(), "Balances");
+	assert_eq!(events[0].variant_name(), "Withdraw");
+
+	assert_eq!(events[1].pallet_name(), "Balances");
+	assert_eq!(events[1].variant_name(), "Transfer");
+
+	assert_eq!(events[2].pallet_name(), "Balances");
+	assert_eq!(events[2].variant_name(), "Deposit");
+
+	assert_eq!(events[3].pallet_name(), "Treasury");
+	assert_eq!(events[3].variant_name(), "Deposit");
+
+	assert_eq!(events[4].pallet_name(), "Balances");
+	assert_eq!(events[4].variant_name(), "Deposit");
+
+	assert_eq!(events[5].pallet_name(), "TransactionPayment");
+	assert_eq!(events[5].variant_name(), "TransactionFeePaid");
+
+	assert_eq!(events[6].pallet_name(), "System");
+	assert_eq!(events[6].variant_name(), "ExtrinsicSuccess");
 }

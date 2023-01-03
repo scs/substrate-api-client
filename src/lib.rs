@@ -15,7 +15,6 @@
 
 */
 #![cfg_attr(not(feature = "std"), no_std)]
-#![feature(assert_matches)]
 #![feature(error_in_core)]
 
 extern crate alloc;
