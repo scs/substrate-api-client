@@ -17,10 +17,10 @@ use crate::{
 	Error,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, SignedBlock};
-use alloc::vec::Vec;
+use ac_primitives::{config::Config, ExtrinsicParams};
 use log::*;
 use serde::de::DeserializeOwned;
+use sp_runtime::{generic::SignedBlock, traits::GetRuntimeBlockType};
 
 #[maybe_async::maybe_async(?Send)]
 pub trait GetChainInfo {

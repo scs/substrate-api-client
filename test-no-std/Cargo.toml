@@ -14,8 +14,48 @@ ac-node-api = { path = "../node-api", default-features = false, optional = true,
 ac-primitives = { path = "../primitives", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
 
+sp-application-crypto = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-arithmetic = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-babe = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-beefy = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-grandpa = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-slots = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-core = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-mmr-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-npos-elections = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-rpc = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
+sp-runtime = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-serializer = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
+sp-storage = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-test-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-version = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-weights = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+
 # substrate dependencies
-sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-io = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, features = ["disable_oom", "disable_panic_handler"] }
+sp-runtime-interface = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, features = ["disable_target_static_assertions"] }
+
+# sp-application-crypto = { path = "../../../haerdib/substrate/primitives/application-crypto", default-features = false, optional = true, features = ["serde"] }
+# sp-arithmetic = { path = "../../../haerdib/substrate/primitives/arithmetic", default-features = false, optional = true, features = ["serde"] }
+# sp-consensus-beefy = { path = "../../../haerdib/substrate/primitives/consensus/beefy", default-features = false, optional = true, features = ["serde"] }
+# sp-consensus-babe = { path = "../../../haerdib/substrate/primitives/consensus/babe", default-features = false, optional = true, features = ["serde"] }
+# sp-consensus-slots = { path = "../../../haerdib/substrate/primitives/consensus/slots", default-features = false, optional = true, features = ["serde"] }
+# sp-core = { path = "../../../haerdib/substrate/primitives/core", default-features = false, optional = true, features = ["serde"] }
+# sp-consensus-grandpa = { path = "../../../haerdib/substrate/primitives/consensus/grandpa", default-features = false, optional = true, features = ["serde"] }
+# sp-mmr-primitives = { path = "../../../haerdib/substrate/primitives/merkle-mountain-range", default-features = false, optional = true, features = ["serde"] }
+# sp-npos-elections = { path = "../../../haerdib/substrate/primitives/npos-elections", default-features = false, optional = true, features = ["serde"] }
+# sp-rpc = { path = "../../../haerdib/substrate/primitives/rpc", default-features = false, optional = true }
+# sp-runtime = { path = "../../../haerdib/substrate/primitives/runtime", default-features = false, optional = true, features = ["serde"] }
+# sp-serializer = { path = "../../../haerdib/substrate/primitives/serializer", default-features = false, optional = true }
+# sp-storage = { path = "../../../haerdib/substrate/primitives/storage", default-features = false, optional = true, features = ["serde"] }
+# sp-test-primitives = { path = "../../../haerdib/substrate/primitives/test-primitives", default-features = false, optional = true, features = ["serde"] }
+# sp-version = { path = "../../../haerdib/substrate/primitives/version", default-features = false, optional = true, features = ["serde"] }
+# sp-weights = { path = "../../../haerdib/substrate/primitives/weights", default-features = false, optional = true }
+#
+#
+# # substrate dependencies
+# sp-io = { path = "../../../haerdib/substrate/primitives/io", default-features = false, features = ["disable_oom", "disable_panic_handler"] }
+# sp-runtime-interface = { path = "../../../haerdib/substrate/primitives/runtime-interface", default-features = false, features = ["disable_target_static_assertions"] }
 
 [features]
 # It is better to test the no-std crates standalone (don't enable both features at the same time) because dependency
@@ -24,3 +64,19 @@ api-client = ["substrate-api-client"]
 compose-macros = ["ac-compose-macros"]
 node-api = ["ac-node-api"]
 primitives = ["ac-primitives"]
+application-crypto = ["sp-application-crypto"]
+arithmetic = ["sp-arithmetic"]
+beefy = ["sp-consensus-beefy"]
+babe = ["sp-consensus-babe"]
+slots = ["sp-consensus-slots"]
+core = ["sp-core"]
+finality-grandpa = ["sp-consensus-grandpa"]
+mmr = ["sp-mmr-primitives"]
+npos-elections = ["sp-npos-elections"]
+rpc = ["sp-rpc"]
+runtime = ["sp-runtime"]
+serializer = ["sp-serializer"]
+storage = ["sp-storage"]
+test-primitives = ["sp-test-primitives"]
+version = ["sp-version"]
+weights = ["sp-weights"]

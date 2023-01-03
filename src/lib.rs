@@ -19,8 +19,8 @@
 
 extern crate alloc;
 
-use ac_primitives::StorageKey;
 use sp_core::twox_128;
+use sp_storage::StorageKey;
 
 pub use ac_compose_macros;
 pub use ac_node_api;

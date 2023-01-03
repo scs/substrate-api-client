@@ -3,16 +3,6 @@
 #![no_std]
 #![no_main]
 
-#[cfg(not(any(
-	feature = "api-client",
-	feature = "node-api",
-	feature = "compose-macros",
-	feature = "primitives"
-)))]
-compile_error!(
-	"either feature \"api-client\", \"compose-macro\", or feature \"node-api\" must be enabled"
-);
-
 // DUTs
 
 #[cfg(feature = "api-client")]
@@ -26,6 +16,54 @@ extern crate ac_node_api;
 
 #[cfg(feature = "primitives")]
 extern crate ac_primitives;
+
+#[cfg(feature = "application-crypto")]
+extern crate sp_application_crypto;
+
+#[cfg(feature = "arithmetic")]
+extern crate sp_arithmetic;
+
+#[cfg(feature = "beefy")]
+extern crate sp_consensus_beefy;
+
+#[cfg(feature = "babe")]
+extern crate sp_consensus_babe;
+
+#[cfg(feature = "slots")]
+extern crate sp_consensus_slots;
+
+#[cfg(feature = "core")]
+extern crate sp_core;
+
+#[cfg(feature = "finality-grandpa")]
+extern crate sp_consensus_grandpa;
+
+#[cfg(feature = "mmr")]
+extern crate sp_mmr_primitives;
+
+#[cfg(feature = "npos-elections")]
+extern crate sp_npos_elections;
+
+#[cfg(feature = "rpc")]
+extern crate sp_rpc;
+
+#[cfg(feature = "runtime")]
+extern crate sp_runtime;
+
+#[cfg(feature = "serializer")]
+extern crate sp_serializer;
+
+#[cfg(feature = "storage")]
+extern crate sp_storage;
+
+#[cfg(feature = "test-primitives")]
+extern crate sp_test_primitives;
+
+#[cfg(feature = "versiom")]
+extern crate sp_version;
+
+#[cfg(feature = "weights")]
+extern crate sp_weights;
 
 // The libc crate allows importing functions from C.
 extern crate libc;

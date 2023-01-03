@@ -21,14 +21,22 @@
 
 // FIXME: This module is currently outdated. See https://github.com/scs/substrate-api-client/issues/435.
 
+#[cfg(feature = "std")]
 use crate::{api::Api, rpc::Request};
+#[cfg(feature = "std")]
 use ac_compose_macros::compose_extrinsic;
+#[cfg(feature = "std")]
 use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
+#[cfg(feature = "std")]
 use alloc::vec::Vec;
-use codec::{Compact, Encode};
+#[cfg(feature = "std")]
+use codec::Encode;
+
+use ac_primitives::CallIndex;
+use codec::Compact;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const PUT_CODE: &str = "put_code";

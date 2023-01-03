@@ -14,19 +14,19 @@ tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 wabt = "0.10.0"
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-support = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+frame-system = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+kitchensink-runtime = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 sp-core = { features = [
     "full_crypto",
-], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+sp-keyring = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+sp-runtime = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+sp-staking = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+sp-version = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+pallet-balances = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+pallet-identity = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+pallet-staking = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 
 # local deps
 substrate-api-client = { path = "..", features = [

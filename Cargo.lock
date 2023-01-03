@@ -64,6 +64,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-runtime-interface",
+ "sp-storage",
 ]
 
 [[package]]
@@ -5041,6 +5042,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-rpc"
+version = "6.0.0"
+source = "git+https://github.com/haerdib/substrate.git?branch=add-serde-feature-to-primitives#ee4ce975cd2e4bcf246ac5061da12edb1a8eb9f1"
+dependencies = [
+ "rustc-hash",
+ "serde",
+ "sp-core",
+ "sp-std",
+]
+
+[[package]]
 name = "sp-runtime"
 version = "7.0.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#4e93782c16f741cde18a8b98bd791838e03788fb"
@@ -5153,6 +5165,19 @@ dependencies = [
  "ref-cast",
  "serde",
  "sp-debug-derive",
+ "sp-std",
+]
+
+[[package]]
+name = "sp-test-primitives"
+version = "2.0.0"
+source = "git+https://github.com/haerdib/substrate.git?branch=add-serde-feature-to-primitives#ee4ce975cd2e4bcf246ac5061da12edb1a8eb9f1"
+dependencies = [
+ "parity-scale-codec",
+ "serde",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
  "sp-std",
 ]
 
@@ -5381,8 +5406,11 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-core",
+ "sp-rpc",
  "sp-runtime",
  "sp-runtime-interface",
+ "sp-storage",
+ "sp-version",
  "tungstenite",
  "url",
  "ws",
@@ -5504,7 +5532,24 @@ dependencies = [
  "ac-node-api",
  "ac-primitives",
  "libc",
+ "sp-application-crypto",
+ "sp-arithmetic",
+ "sp-consensus-babe",
+ "sp-consensus-beefy",
+ "sp-consensus-grandpa",
+ "sp-consensus-slots",
+ "sp-core",
  "sp-io",
+ "sp-mmr-primitives",
+ "sp-npos-elections",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-runtime-interface",
+ "sp-serializer",
+ "sp-storage",
+ "sp-test-primitives",
+ "sp-version",
+ "sp-weights",
  "substrate-api-client",
 ]
 
@@ -5788,9 +5833,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.6",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
