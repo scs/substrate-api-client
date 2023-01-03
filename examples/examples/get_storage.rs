@@ -18,7 +18,7 @@
 use frame_system::AccountInfo as GenericAccountInfo;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetStorage};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, GetStorage, PlainTipExtrinsicParams};
 
 type IndexFor<T> = <T as frame_system::Config>::Index;
 type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
@@ -29,9 +29,9 @@ type AccountInfo = GenericAccountInfo<IndexFor<Runtime>, AccountDataFor<Runtime>
 async fn main() {
 	env_logger::init();
 
+	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	// get some plain storage value
 	let result: u128 = api.get_storage_value("Balances", "TotalIssuance", None).unwrap().unwrap();
@@ -40,7 +40,6 @@ async fn main() {
 	let proof = api.get_storage_value_proof("Balances", "TotalIssuance", None).unwrap();
 	println!("[+] StorageValueProof: {:?}", proof);
 
-	// get StorageMap
 	let account = AccountKeyring::Alice.public();
 	let result: AccountInfo = api
 		.get_storage_map("System", "Account", account, None)

@@ -29,28 +29,30 @@ use substrate_api_client::{
 async fn main() {
 	env_logger::init();
 
-	// initialize api and set the signer (sender) that is used to sign the extrinsics
-	let from = AccountKeyring::Alice.pair();
-
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
+	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
+	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
+	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(from);
+	api.set_signer(signer);
 
-	// define the recipient
-	let to = AccountKeyring::Bob.to_account_id();
-
+	let recipient = AccountKeyring::Bob.to_account_id();
+	// We use a manual nonce input here, because otherwise the api retrieves the nonce via getter and needs
+	// to wait for the response of the node (and the actual execution of the previous extrinsic).
+	// But because we want to spam the node with extrinsic, we simple monotonically increase the nonce, without
+	// waiting for the response of the node.
 	let mut nonce = api.get_nonce().unwrap();
 	let first_nonce = nonce;
 	while nonce < first_nonce + 500 {
-		// compose the extrinsic with all the element
+		// Compose a balance extrinsic.
 		let call = RuntimeCall::Balances(BalancesCall::transfer {
-			dest: GenericAddress::Id(to.clone()),
+			dest: GenericAddress::Id(recipient.clone()),
 			value: 1_000_000,
 		});
 		let xt = api.compose_extrinsic_offline(call, nonce);
 
-		println!("sending extrinsic with nonce {}", nonce);
+		println!("Sending extrinsic with nonce {}", nonce);
 		let _tx_hash = api.submit_extrinsic(xt.encode()).unwrap();
 
 		nonce += 1;
