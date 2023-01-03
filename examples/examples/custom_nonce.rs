@@ -45,8 +45,8 @@ async fn main() {
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
 
-	// Set the custom parmas builder.
-	api.set_extrinsic_params_builder(tx_params);
+	// Set the custom additional params.
+	api.set_additional_params(tx_params);
 
 	// Get the nonce of Alice.
 	let signer_nonce = api.get_nonce().unwrap();

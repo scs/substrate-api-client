@@ -154,7 +154,7 @@ where
 	}
 
 	/// Set the extrinscs param builder.
-	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::AdditionalParams) {
+	pub fn set_additional_params(&mut self, extrinsic_params: Params::AdditionalParams) {
 		self.additional_extrinsic_params = Some(extrinsic_params);
 	}
 
@@ -300,7 +300,7 @@ mod tests {
 
 		// Information for Era for mortal transactions.
 		let builder = DefaultAdditionalParams::new();
-		api.set_extrinsic_params_builder(builder);
+		api.set_additional_params(builder);
 
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
