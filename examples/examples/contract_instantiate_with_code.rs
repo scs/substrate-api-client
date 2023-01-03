@@ -39,11 +39,13 @@ impl StaticEvent for ContractInstantiatedEventArgs {
 async fn main() {
 	env_logger::init();
 
-	// initialize api and set the signer (sender) that is used to sign the extrinsics
-	let from = AccountKeyring::Alice.pair();
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
+	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
+	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
+	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(from);
+	api.set_signer(signer);
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
