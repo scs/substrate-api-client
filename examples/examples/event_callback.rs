@@ -21,7 +21,7 @@ use log::debug;
 use sp_core::{sr25519, H256 as Hash};
 use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, AssetTipExtrinsicParams, SubscribeFrameSystem,
+	Api, PlainTipExtrinsicParams, SubscribeFrameSystem,
 };
 
 // This module depends on node_runtime.
@@ -33,14 +33,15 @@ use kitchensink_runtime::RuntimeEvent;
 async fn main() {
 	env_logger::init();
 
+	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
 	let api =
-		Api::<sr25519::Pair, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
 	let mut subscription = api.subscribe_system_events().unwrap();
 
+	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
 		let event_bytes = subscription.next().unwrap().unwrap().changes[0].1.clone().unwrap().0;
 		let events = Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(

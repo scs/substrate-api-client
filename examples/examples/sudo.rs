@@ -21,40 +21,48 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	compose_call, compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	GenericAddress, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
+	GenericAddress, GetAccountInformation, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 #[tokio::main]
 async fn main() {
 	env_logger::init();
 
-	// initialize api and set the signer (sender) that is used to sign the extrinsics
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(sudoer);
 
-	// set the recipient of newly issued funds
-	let to = AccountKeyring::Bob.to_account_id();
+	// Set the recipient of newly issued funds.
+	let recipient = AccountKeyring::Bob.to_account_id();
 
-	// this call can only be called by sudo
+	// Get the current balance of the recipient.
+	let recipient_balance = api.get_account_data(&recipient).unwrap().unwrap().free;
+	println!("[+] Recipients's Free Balance is now {}\n", recipient_balance);
+
+	// Compose a call that should only be executable via Sudo.
+	let new_balance = recipient_balance + 100;
 	let call = compose_call!(
 		api.metadata(),
 		"Balances",
 		"set_balance",
-		GenericAddress::Id(to),
-		Compact(42_u128),
-		Compact(42_u128)
+		GenericAddress::Id(recipient.clone()),
+		Compact(new_balance),
+		Compact(new_balance)
 	);
 
 	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
 
-	// send and watch extrinsic until in block
+	// Send and watch extrinsic until in block.
 	let block_hash = api
 		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
 		.unwrap()
 		.block_hash
 		.unwrap();
 	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
+
+	// Ensure the extrinisc has been executed.
+	let recipient_new_balance = api.get_account_data(&recipient).unwrap().unwrap().free;
+	assert_eq!(recipient_new_balance, new_balance);
 }
