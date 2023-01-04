@@ -28,7 +28,7 @@ pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
 pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
 /// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in asset fees
+/// to construct a transaction and pay in asset fees.
 pub type AssetTipExtrinsicParams<Runtime> = PolkadotExtrinsicParams<
 	AssetTip<AssetBalanceFor<Runtime>>,
 	IndexFor<Runtime>,
@@ -36,11 +36,11 @@ pub type AssetTipExtrinsicParams<Runtime> = PolkadotExtrinsicParams<
 >;
 
 /// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in token fees
+/// to construct a transaction and pay in token fees.
 pub type PlainTipExtrinsicParams<Runtime> =
 	PolkadotExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 
-/// SignedExtra that is compatible with the current polkadot node.
+/// SignedExtra that is compatible with the polkadot node.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
 pub struct PolkadotSignedExtra<Tip, Index> {
 	pub era: Era,
@@ -55,22 +55,31 @@ impl<Tip, Index> PolkadotSignedExtra<Tip, Index> {
 	}
 }
 
-/// Default AdditionalSigned fields of the respective SignedExtra fields used in a Polkadot/Substrate node.
-/// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+/// Default AdditionalSigned fields of a Polkadot/Substrate node.
+/// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+// The order and types can must match the one defined in the runtime.
+// Example: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
+// Careful! The `SignedExtra` defined there is not the `SignedExtra` on the client side.
+// The `AdditionalSigned` is the tuple returned from SignedExtra::additional_signed.
+// Each member of the `SignedExtra` on the node side implements the trait `SignedExtension`
+// and defines what is returned upon the `additional_signed` fn.
+// The AdditinalSigned Type must mirror these return values.
+// Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L60
 pub type PolkadotAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
-/// "additional" parameters that are signed and used in extrinsics.
+/// "additional" parameters that are signed and used in substrate extrinsics.
 pub trait ExtrinsicParams<Index, Hash> {
-	/// These params represent optional / additional params which are subject
-	/// to change. This way, the trait does not need to be adapted if one of
+	/// These params represent optional / additional params which are most likely
+	/// subject to change. This way, the trait does not need to be adapted if one of
 	/// these params is updated.
 	type AdditionalParams: Default + Clone;
 
-	/// Signed extra mirroring the `SignedExtra` used in substrate extrinsics.
+	/// Extra mirroring the `SignedExtra` used in substrate extrinsics.
+	// Careful: This is not the SignedExtra defined in the substrate runtime.
 	type SignedExtra: Copy + Encode;
 
-	/// Additional Signed format of the node
+	/// AdditionalSigned format of the node, which is returned upon the call `additional_signed`.
 	type AdditionalSigned: Encode;
 
 	/// Construct a new instance.
@@ -88,7 +97,7 @@ pub trait ExtrinsicParams<Index, Hash> {
 	fn signed_extra(&self) -> Self::SignedExtra;
 
 	/// Construct any additional data that should be in the signed payload of the extrinsic.
-	/// These parameters are not sent along with the transaction, but are
+	/// These parameters are not necessarily sent along with the transaction, but are
 	/// taken into account when signing it, meaning the client and node must agree
 	/// on their values.
 	fn additional_signed(&self) -> Self::AdditionalSigned;
