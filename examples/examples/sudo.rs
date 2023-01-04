@@ -13,7 +13,7 @@
 	limitations under the License.
 */
 
-//! This examples shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
+//! This example shows how to use the compose_extrinsic macro to create an extrinsic for any (custom)
 //! module, whereas the desired module and call are supplied as a string.
 
 use codec::{Compact, Encode};
