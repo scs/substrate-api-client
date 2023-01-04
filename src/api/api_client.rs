@@ -86,20 +86,18 @@ use sp_runtime::MultiSignature;
 pub struct Api<Signer, Client, Params, Runtime>
 where
 	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	signer: Option<Signer>,
 	genesis_hash: Runtime::Hash,
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
-	extrinsic_params_builder: Option<Params::OtherParams>,
+	extrinsic_params_builder: Option<Params>,
 }
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	/// Create a new api instance without any node interaction.
 	pub fn new_offline(
@@ -152,9 +150,17 @@ where
 	pub fn client(&self) -> &Client {
 		&self.client
 	}
+}
 
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+where
+	Runtime: FrameSystemConfig,
+{
 	/// Set the extrinscs param builder.
-	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::OtherParams) {
+	pub fn set_extrinsic_params_builder<Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>>(
+		&mut self,
+		extrinsic_params: Params::OtherParams,
+	) {
 		self.extrinsic_params_builder = Some(extrinsic_params);
 	}
 
