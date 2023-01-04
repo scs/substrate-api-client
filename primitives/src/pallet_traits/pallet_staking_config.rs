@@ -56,7 +56,7 @@ pub trait StakingConfig: FrameSystemConfig {
 	type SessionsPerEra: Get<SessionIndex>;
 	type BondingDuration: Get<EraIndex>;
 	type SlashDeferDuration: Get<EraIndex>;
-	type SlashCancelOrigin;
+	type AdminOrigin;
 	type SessionInterface;
 	type EraPayout;
 	type NextNewSession;
@@ -89,7 +89,7 @@ where
 	type SessionsPerEra = T::SessionsPerEra;
 	type BondingDuration = T::BondingDuration;
 	type SlashDeferDuration = T::SlashDeferDuration;
-	type SlashCancelOrigin = T::SlashCancelOrigin;
+	type AdminOrigin = T::AdminOrigin;
 	type SessionInterface = T::SessionInterface;
 	type EraPayout = T::EraPayout;
 	type NextNewSession = T::NextNewSession;
