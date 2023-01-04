@@ -29,8 +29,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api =
-		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let api = Api::<(), _, (), Runtime>::new(client).unwrap();
 
 	println!("Genesis block: \n {:?} \n", api.get_block_by_num(Some(0)).unwrap());
 

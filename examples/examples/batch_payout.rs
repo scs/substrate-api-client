@@ -18,7 +18,7 @@ use serde_json::Value;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, GetStorage, PlainTipExtrinsicParams, SubmitAndWatch, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetStorage, SubmitAndWatch, XtStatus,
 };
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;
@@ -46,7 +46,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice);
 
 	// Give a valid validator account address, given one is westend chain validator account.
@@ -120,7 +120,7 @@ pub fn get_last_reward(
 	api: &substrate_api_client::Api<
 		sp_core::sr25519::Pair,
 		JsonrpseeClient,
-		PlainTipExtrinsicParams<Runtime>,
+		AssetTipExtrinsicParams<Runtime>,
 		Runtime,
 	>,
 ) -> u32 {

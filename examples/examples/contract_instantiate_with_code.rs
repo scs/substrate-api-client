@@ -19,7 +19,7 @@ use codec::{Decode, Encode};
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, SubmitAndWatch,
+	rpc::JsonrpseeClient, AccountId, Api, AssetTipExtrinsicParams, StaticEvent, SubmitAndWatch,
 	SubscribeEvents, SubscribeFrameSystem, XtStatus,
 };
 
@@ -44,7 +44,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(signer);
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());

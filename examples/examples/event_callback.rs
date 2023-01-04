@@ -35,8 +35,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api =
-		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let api = Api::<(), _, (), Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
 	let mut subscription = api.subscribe_system_events().unwrap();

@@ -17,6 +17,7 @@
 
 use codec::{Decode, Encode};
 use core::{hash::Hash as HashTrait, marker::PhantomData};
+use sp_core::H256;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -290,4 +291,24 @@ impl From<AssetTip<u128>> for u128 {
 	fn from(tip: AssetTip<u128>) -> Self {
 		tip.tip
 	}
+}
+
+/// Emtpy implementation in case no ExtrinsicParams are needed, such as unsigned extrinsics or getter calls.
+impl ExtrinsicParams<u32, H256> for () {
+	type OtherParams = ();
+	type SignedExtra = ();
+	type AdditionalSigned = ();
+
+	fn new(
+		_spec_version: u32,
+		_transaction_version: u32,
+		_nonce: u32,
+		_genesis_hash: H256,
+		_other_params: Self::OtherParams,
+	) -> Self {
+	}
+
+	fn signed_extra(&self) -> Self::SignedExtra {}
+
+	fn additional_signed(&self) -> Self::AdditionalSigned {}
 }

@@ -31,7 +31,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, (), Runtime>::new(client).unwrap();
 
 	// get some plain storage value
 	let result: u128 = api.get_storage_value("Balances", "TotalIssuance", None).unwrap().unwrap();
