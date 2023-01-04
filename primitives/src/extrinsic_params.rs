@@ -41,6 +41,15 @@ pub type PlainTipExtrinsicParams<Runtime> =
 	PolkadotExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 
 /// SignedExtra that is compatible with the polkadot node.
+// Unlike the SignedExtra on the node side, which seemingly contains a lot more parameters
+// see: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
+// The SignedExtra on the client side mirrors the actual values contained. E.g.
+// CheckNonZeroSender does not hold any value inside (see link below)
+// https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L33
+// and is therefore not represented on this side of the SignedExtra.
+// The Era however is actually defined in the CheckMortality part:
+// https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_mortality.rs#L36
+// and needs to be defined here. Be sure the order matches the one on the node side.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
 pub struct PolkadotSignedExtra<Tip, Index> {
 	pub era: Era,
@@ -59,12 +68,11 @@ impl<Tip, Index> PolkadotSignedExtra<Tip, Index> {
 /// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
 // The order and types can must match the one defined in the runtime.
 // Example: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
-// Careful! The `SignedExtra` defined there is not the `SignedExtra` on the client side.
-// The `AdditionalSigned` is the tuple returned from SignedExtra::additional_signed.
-// Each member of the `SignedExtra` on the node side implements the trait `SignedExtension`
-// and defines what is returned upon the `additional_signed` fn.
-// The AdditinalSigned Type must mirror these return values.
-// Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L60
+// The `AdditionalSigned` is the tuple returned from the call SignedExtra::additional_signed().
+// Each member defined in the `SignedExtra` on the node side implements the trait `SignedExtension`, which
+// defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
+// must mirror these return values.
+// Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
 pub type PolkadotAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
@@ -75,11 +83,15 @@ pub trait ExtrinsicParams<Index, Hash> {
 	/// these params is updated.
 	type AdditionalParams: Default + Clone;
 
-	/// Extra mirroring the `SignedExtra` used in substrate extrinsics.
-	// Careful: This is not the SignedExtra defined in the substrate runtime.
+	/// Extra mirroring the `SignedExtra` defined on the node side.
+	/// These parameters are sent along with the extrinsic and are taken into account
+	/// when signing the extrinsic.
+	/// It represents the inner values of the SignedExtra, PhantomData is ignored.
 	type SignedExtra: Copy + Encode;
 
 	/// AdditionalSigned format of the node, which is returned upon the call `additional_signed`.
+	/// These parameters are not sent along with the extrinsic, but are taken into account
+	/// when signing it, meaning the client and node must agree on their values.
 	type AdditionalSigned: Encode;
 
 	/// Construct a new instance.
@@ -91,15 +103,10 @@ pub trait ExtrinsicParams<Index, Hash> {
 		additional_params: Self::AdditionalParams,
 	) -> Self;
 
-	/// Construct the signed extra needed constructing an extrinsic.
-	/// These parameters are sent along with the extrinsic and are taken into account
-	/// when signing the extrinsic.
+	/// Construct the signed extra needed for constructing an extrinsic.
 	fn signed_extra(&self) -> Self::SignedExtra;
 
 	/// Construct any additional data that should be in the signed payload of the extrinsic.
-	/// These parameters are not necessarily sent along with the transaction, but are
-	/// taken into account when signing it, meaning the client and node must agree
-	/// on their values.
 	fn additional_signed(&self) -> Self::AdditionalSigned;
 }
 
@@ -234,7 +241,7 @@ where
 	}
 }
 
-/// Default tip payment for a substrate node using the Balance pallet.
+/// Default tip payment for a substrate node using the balance pallet.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
 pub struct PlainTip<Balance> {
 	#[codec(compact)]
