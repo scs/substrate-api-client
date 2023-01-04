@@ -18,7 +18,7 @@
 use codec::Decode;
 use kitchensink_runtime::Runtime;
 use log::debug;
-use sp_core::{sr25519, H256 as Hash};
+use sp_core::H256 as Hash;
 use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, PlainTipExtrinsicParams, SubscribeFrameSystem,
@@ -35,8 +35,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api =
-		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
 	let mut subscription = api.subscribe_system_events().unwrap();

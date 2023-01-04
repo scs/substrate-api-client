@@ -16,12 +16,12 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
+use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, Signature};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Error, GenericAdditionalParams, GetHeader,
-	SubmitAndWatch, UnexpectedTxStatus, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Error, ExtrinsicSigner,
+	GenericAdditionalParams, GetHeader, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
 #[tokio::main]
@@ -34,7 +34,7 @@ async fn main() {
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(signer);
+	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 
 	// Information for Era for mortal transactions.
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

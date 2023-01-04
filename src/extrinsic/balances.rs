@@ -20,54 +20,60 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, UncheckedExtrinsicV4,
+	BalancesConfig, CallIndex, ExtrinsicParams, SignExtrinsic, UncheckedExtrinsicV4,
 };
 use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
-use sp_core::crypto::Pair;
-use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
+use sp_runtime::traits::GetRuntimeBlockType;
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const BALANCES_TRANSFER: &str = "transfer";
 pub const BALANCES_SET_BALANCE: &str = "set_balance";
 
-pub type BalanceTransferFn<Balance> = (CallIndex, GenericAddress, Compact<Balance>);
-pub type BalanceSetBalanceFn<Balance> =
-	(CallIndex, GenericAddress, Compact<Balance>, Compact<Balance>);
+pub type BalanceTransferFn<Address, Balance> = (CallIndex, Address, Compact<Balance>);
+pub type BalanceSetBalanceFn<Address, Balance> =
+	(CallIndex, Address, Compact<Balance>, Compact<Balance>);
 
-pub type BalanceTransferXt<SignedExtra, Balance> =
-	UncheckedExtrinsicV4<BalanceTransferFn<Balance>, SignedExtra>;
-pub type BalanceSetBalanceXt<SignedExtra, Balance> =
-	UncheckedExtrinsicV4<BalanceSetBalanceFn<Balance>, SignedExtra>;
+pub type BalanceTransferXt<Address, Balance, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, BalanceTransferFn<Address, Balance>, Signature, SignedExtra>;
+pub type BalanceSetBalanceXt<Address, Balance, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, BalanceSetBalanceFn<Address, Balance>, Signature, SignedExtra>;
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
+	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Runtime: GetRuntimeBlockType + BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Compact<Runtime::Balance>: Encode,
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	pub fn balance_transfer(
 		&self,
-		to: GenericAddress,
+		to: Signer::ExtrinsicAddress,
 		amount: Runtime::Balance,
-	) -> BalanceTransferXt<Params::SignedExtra, Runtime::Balance> {
+	) -> BalanceTransferXt<
+		Signer::ExtrinsicAddress,
+		Runtime::Balance,
+		Signer::Signature,
+		Params::SignedExtra,
+	> {
 		compose_extrinsic!(self, BALANCES_MODULE, BALANCES_TRANSFER, to, Compact(amount))
 	}
 
 	pub fn balance_set_balance(
 		&self,
-		who: GenericAddress,
+		who: Signer::ExtrinsicAddress,
 		free_balance: Runtime::Balance,
 		reserved_balance: Runtime::Balance,
-	) -> BalanceSetBalanceXt<Params::SignedExtra, Runtime::Balance> {
+	) -> BalanceSetBalanceXt<
+		Signer::ExtrinsicAddress,
+		Runtime::Balance,
+		Signer::Signature,
+		Params::SignedExtra,
+	> {
 		compose_extrinsic!(
 			self,
 			BALANCES_MODULE,

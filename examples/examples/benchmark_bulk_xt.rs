@@ -18,11 +18,15 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
-use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
+use kitchensink_runtime::{AccountId, BalancesCall, Runtime, RuntimeCall, Signature};
+use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAddress, SubmitExtrinsic,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, SignExtrinsic,
+	SubmitExtrinsic,
 };
+
+type MyExtrinsicSigner = ExtrinsicSigner<Pair, Signature, Runtime>;
 
 #[tokio::main]
 async fn main() {
@@ -34,9 +38,10 @@ async fn main() {
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(signer);
+	api.set_signer(MyExtrinsicSigner::new(signer));
 
-	let recipient = AccountKeyring::Bob.to_account_id();
+	let recipient: <MyExtrinsicSigner as SignExtrinsic<AccountId>>::ExtrinsicAddress =
+		AccountKeyring::Bob.to_account_id().into();
 	// We use a manual nonce input here, because otherwise the api retrieves the nonce via getter and needs
 	// to wait for the response of the node (and the actual execution of the previous extrinsic).
 	// But because we want to spam the node with extrinsic, we simple monotonically increase the nonce, without
@@ -46,7 +51,7 @@ async fn main() {
 	while nonce < first_nonce + 500 {
 		// Compose a balance extrinsic.
 		let call = RuntimeCall::Balances(BalancesCall::transfer {
-			dest: GenericAddress::Id(recipient.clone()),
+			dest: recipient.clone(),
 			value: 1_000_000,
 		});
 		let xt = api.compose_extrinsic_offline(call, nonce);

@@ -21,14 +21,13 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, GenericAddress,
+	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
-use sp_core::crypto::Pair;
-use sp_runtime::{traits::GetRuntimeBlockType, MultiSignature, MultiSigner};
+use sp_runtime::traits::GetRuntimeBlockType;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const CONTRACTS_PUT_CODE: &str = "put_code";
@@ -44,39 +43,49 @@ type Salt = Vec<u8>;
 type GasLimit = Compact<Gas>;
 type Endowment<Currency> = Compact<Currency>;
 type Value<Currency> = Compact<Currency>;
-type Destination = GenericAddress;
 
 pub type ContractPutCodeFn = (CallIndex, GasLimit, Data);
 pub type ContractInstantiateFn<Currency, Hash> =
 	(CallIndex, Endowment<Currency>, GasLimit, Hash, Data);
 pub type ContractInstantiateWithCodeFn<Currency> =
 	(CallIndex, Endowment<Currency>, GasLimit, Code, Data, Salt);
-pub type ContractCallFn<Currency> = (CallIndex, Destination, Value<Currency>, GasLimit, Data);
+pub type ContractCallFn<Address, Currency> = (CallIndex, Address, Value<Currency>, GasLimit, Data);
 
-pub type ContractPutCodeXt<SignedExtra> = UncheckedExtrinsicV4<ContractPutCodeFn, SignedExtra>;
-pub type ContractInstantiateXt<SignedExtra, Currency, Hash> =
-	UncheckedExtrinsicV4<ContractInstantiateFn<Currency, Hash>, SignedExtra>;
-pub type ContractInstantiateWithCodeXt<SignedExtra, Currency> =
-	UncheckedExtrinsicV4<ContractInstantiateWithCodeFn<Currency>, SignedExtra>;
-pub type ContractCallXt<SignedExtra, Currency> =
-	UncheckedExtrinsicV4<ContractCallFn<Currency>, SignedExtra>;
+pub type ContractPutCodeXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, ContractPutCodeFn, Signature, SignedExtra>;
+pub type ContractInstantiateXt<Address, Signature, SignedExtra, Currency, Hash> =
+	UncheckedExtrinsicV4<Address, ContractInstantiateFn<Currency, Hash>, Signature, SignedExtra>;
+pub type ContractInstantiateWithCodeXt<Address, Signature, SignedExtra, Currency> =
+	UncheckedExtrinsicV4<Address, ContractInstantiateWithCodeFn<Currency>, Signature, SignedExtra>;
+pub type ContractCallXt<Address, Signature, SignedExtra, Currency> =
+	UncheckedExtrinsicV4<Address, ContractCallFn<Address, Currency>, Signature, SignedExtra>;
 
 #[cfg(feature = "std")]
 type BalanceOf<T> = <<T as ContractsConfig>::Currency as frame_support::traits::Currency<
 	<T as FrameSystemConfig>::AccountId,
 >>::Balance;
+type ExtrinsicAddressOf<Signer, AccountId> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
+type SignatureOf<Signer, AccountId> = <Signer as SignExtrinsic<AccountId>>::Signature;
+type HashOf<Runtime> = <Runtime as FrameSystemConfig>::Hash;
+type AccountIdOf<Runtime> = <Runtime as FrameSystemConfig>::AccountId;
+
+#[cfg(feature = "std")]
+type ContractInstantiateXtOf<Signer, SignedExtra, Runtime> = ContractInstantiateXt<
+	ExtrinsicAddressOf<Signer, AccountIdOf<Runtime>>,
+	SignatureOf<Signer, AccountIdOf<Runtime>>,
+	SignedExtra,
+	BalanceOf<Runtime>,
+	HashOf<Runtime>,
+>;
 
 #[cfg(feature = "std")]
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
+	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: GetRuntimeBlockType + ContractsConfig + BalancesConfig,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,
-	Runtime::AccountId: From<Signer::Public>,
 	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,
@@ -85,7 +94,7 @@ where
 		&self,
 		gas_limit: Gas,
 		code: Data,
-	) -> ContractPutCodeXt<Params::SignedExtra> {
+	) -> ContractPutCodeXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
 		compose_extrinsic!(self, CONTRACTS_MODULE, CONTRACTS_PUT_CODE, Compact(gas_limit), code)
 	}
 
@@ -95,7 +104,7 @@ where
 		gas_limit: Gas,
 		code_hash: Runtime::Hash,
 		data: Data,
-	) -> ContractInstantiateXt<Params::SignedExtra, BalanceOf<Runtime>, Runtime::Hash> {
+	) -> ContractInstantiateXtOf<Signer, Params::SignedExtra, Runtime> {
 		compose_extrinsic!(
 			self,
 			CONTRACTS_MODULE,
@@ -114,7 +123,12 @@ where
 		code: Data,
 		data: Data,
 		salt: Data,
-	) -> ContractInstantiateWithCodeXt<Params::SignedExtra, BalanceOf<Runtime>> {
+	) -> ContractInstantiateWithCodeXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		BalanceOf<Runtime>,
+	> {
 		compose_extrinsic!(
 			self,
 			CONTRACTS_MODULE,
@@ -129,11 +143,16 @@ where
 
 	pub fn contract_call(
 		&self,
-		dest: GenericAddress,
+		dest: Signer::ExtrinsicAddress,
 		value: BalanceOf<Runtime>,
 		gas_limit: Gas,
 		data: Data,
-	) -> ContractCallXt<Params::SignedExtra, BalanceOf<Runtime>> {
+	) -> ContractCallXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		BalanceOf<Runtime>,
+	> {
 		compose_extrinsic!(
 			self,
 			CONTRACTS_MODULE,
