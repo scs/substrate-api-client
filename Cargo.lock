@@ -70,7 +70,7 @@ dependencies = [
 
 [[package]]
 name = "ac-primitives"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "frame-system",
  "hex",
