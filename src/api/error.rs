@@ -24,70 +24,21 @@ use alloc::{boxed::Box, string::String};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, derive_more::From)]
 pub enum Error {
-	#[error("Fetching genesis hash failed. Are you connected to the correct endpoint?")]
-	Genesis,
-	#[error("Fetching runtime version failed. Are you connected to the correct endpoint?")]
-	RuntimeVersion,
-	#[error("Fetching Metadata failed. Are you connected to the correct endpoint?")]
-	MetadataFetch,
-	#[error("Operation needs a signer to be set in the api")]
+	FetchGenesisHash,
 	NoSigner,
-	#[error("RpcClient error: {0:?}")]
-	RpcClient(#[from] RpcClientError),
-	#[error("Metadata Error: {0:?}")]
+	RpcClient(RpcClientError),
 	Metadata(MetadataError),
-	#[error("InvalidMetadata: {0:?}")]
 	InvalidMetadata(InvalidMetadataError),
-	#[error("Events Error: {0:?}")]
 	NodeApi(ac_node_api::error::Error),
-	#[error("Error decoding storage value: {0}")]
 	StorageValueDecode(codec::Error),
-	#[error("UnsupportedXtStatus Error: Can only wait for finalized, in block, broadcast and ready. Waited for: {0:?}")]
 	UnsupportedXtStatus(XtStatus),
-	#[error("Error converting NumberOrHex to Balance")]
 	TryFromIntError,
-	#[error("The node runtime could not dispatch an extrinsic")]
 	Dispatch(DispatchError),
-	#[error("Extrinsic Error: {0}")]
 	Extrinsic(String),
-	#[error("Stream ended unexpectedly")]
 	NoStream,
-	#[error("Expected a block hash")]
 	NoBlockHash,
-	#[error("Did not find any block")]
 	NoBlock,
-	#[error(transparent)]
-	Other(#[from] Box<dyn core::error::Error + Send + Sync + 'static>),
-}
-
-impl From<codec::Error> for Error {
-	fn from(error: codec::Error) -> Self {
-		Error::StorageValueDecode(error)
-	}
-}
-
-impl From<InvalidMetadataError> for Error {
-	fn from(error: InvalidMetadataError) -> Self {
-		Error::InvalidMetadata(error)
-	}
-}
-
-impl From<MetadataError> for Error {
-	fn from(error: MetadataError) -> Self {
-		Error::Metadata(error)
-	}
-}
-
-impl From<ac_node_api::error::Error> for Error {
-	fn from(error: ac_node_api::error::Error) -> Self {
-		Error::NodeApi(error)
-	}
-}
-
-impl From<ac_node_api::error::DispatchError> for Error {
-	fn from(error: ac_node_api::error::DispatchError) -> Self {
-		Error::Dispatch(error)
-	}
+	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
 }

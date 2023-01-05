@@ -141,7 +141,7 @@ fn subscribe_to_server(
 pub fn do_reconnect(error: &RpcClientError) -> bool {
 	matches!(
 		error,
-		RpcClientError::Serde(_) | RpcClientError::ConnectionClosed | RpcClientError::Client(_)
+		RpcClientError::SerdeJson(_) | RpcClientError::ConnectionClosed | RpcClientError::Client(_)
 	)
 }
 
@@ -173,7 +173,7 @@ fn attempt_connection_until(url: &Url, max_attempts: u8) -> Result<(MySocket, Re
 		current_attempt += 1;
 	}
 
-	Err(RpcClientError::ConnectionAttemptsExceeded)
+	Err(RpcClientError::MaxConnectionAttemptsExceeded)
 }
 
 fn read_until_text_message(socket: &mut MySocket) -> Result<String> {
