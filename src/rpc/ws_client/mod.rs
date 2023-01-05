@@ -93,11 +93,9 @@ impl HandleMessage for RequestHandler {
 		info!("Got get_request_msg {}", msg);
 		let result_str = serde_json::from_str(msg.as_text()?)
 			.map(|v: serde_json::Value| v["result"].to_string())
-			.map_err(RpcClientError::Serde);
+			.map_err(RpcClientError::SerdeJson);
 
-		result
-			.send(result_str)
-			.map_err(|e| Box::new(RpcClientError::Send(format!("{:?}", e))).into())
+		result.send(result_str).map_err(|e| Box::new(e).into())
 	}
 }
 
@@ -115,15 +113,15 @@ impl HandleMessage for SubscriptionHandler {
 
 		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value =
-			serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+			serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(e))?;
 
 		match value["id"].as_str() {
 			Some(_idstr) => {
 				warn!("Expected subscription, but received an id response instead: {:?}", value);
 			},
 			None => {
-				let answer = serde_json::to_string(&value["params"]["result"])
-					.map_err(|e| Box::new(RpcClientError::Serde(e)))?;
+				let answer =
+					serde_json::to_string(&value["params"]["result"]).map_err(|e| Box::new(e))?;
 
 				if let Err(e) = result.send(answer) {
 					// This may happen if the receiver has unsubscribed.

@@ -19,29 +19,21 @@ use alloc::{boxed::Box, string::String};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum Error {
-	#[error("Serde json error: {0}")]
-	Serde(serde_json::error::Error),
-	#[error("mpsc send Error: {0}")]
-	Send(String),
-	#[error("Could not convert to valid Url: {0}")]
-	Url(String),
-	#[error("ChannelReceiveError, sender is disconnected: {0}")]
-	ChannelDisconnected(String),
-	#[error("Failure during thread creation: {0}")]
+	SerdeJson(serde_json::error::Error),
+	MpscSend(String),
+	InvalidUrl(String),
+	RecvError(String),
 	Io(String),
-	#[error("Exceeded maximum amount of connections")]
-	ConnectionAttemptsExceeded,
-	#[error("Websocket Connection was closed unexpectedly")]
+	MaxConnectionAttemptsExceeded,
 	ConnectionClosed,
-	#[error(transparent)]
-	Client(#[from] Box<dyn core::error::Error + Send + Sync + 'static>),
+	Client(Box<dyn core::error::Error + Send + Sync + 'static>),
 }
 
 impl From<serde_json::error::Error> for Error {
 	fn from(error: serde_json::error::Error) -> Self {
-		Self::Serde(error)
+		Self::SerdeJson(error)
 	}
 }
 
@@ -68,13 +60,13 @@ mod std_only {
 
 	impl From<SendError<String>> for Error {
 		fn from(error: SendError<String>) -> Self {
-			Self::Send(error.0)
+			Self::MpscSend(error.0)
 		}
 	}
 
 	impl From<RecvError> for Error {
 		fn from(error: RecvError) -> Self {
-			Self::ChannelDisconnected(format!("{:?}", error))
+			Self::RecvError(format!("{:?}", error))
 		}
 	}
 
@@ -86,7 +78,7 @@ mod std_only {
 
 	impl From<url::ParseError> for Error {
 		fn from(error: url::ParseError) -> Self {
-			Self::Io(format!("{:?}", error))
+			Self::InvalidUrl(format!("{:?}", error))
 		}
 	}
 }
