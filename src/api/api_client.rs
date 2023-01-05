@@ -153,12 +153,13 @@ where
 		&self.client
 	}
 
-	/// Set the extrinscs param builder.
+	/// Set the additional params.
 	pub fn set_additional_params(&mut self, extrinsic_params: Params::AdditionalParams) {
 		self.additional_extrinsic_params = Some(extrinsic_params);
 	}
 
-	/// Get the extrinsic params, built with the set or if none, the default Params Builder.
+	/// Get the extrinsic params with the set additional params. If no additional params are set,
+	/// the default is taken.
 	pub fn extrinsic_params(&self, nonce: Runtime::Index) -> Params {
 		let additional_extrinsic_params =
 			self.additional_extrinsic_params.clone().unwrap_or_default();
@@ -299,8 +300,8 @@ mod tests {
 			create_mock_api(genesis_hash, runtime_version.clone(), metadata, Default::default());
 
 		// Information for Era for mortal transactions.
-		let builder = PolkadotAdditionalParams::new();
-		api.set_additional_params(builder);
+		let additional_params = PolkadotAdditionalParams::new();
+		api.set_additional_params(additional_params);
 
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
