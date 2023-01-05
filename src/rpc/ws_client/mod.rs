@@ -20,21 +20,19 @@ pub use ac_node_api::{events::EventDetails, StaticEvent};
 pub use client::WsRpcClient;
 use log::*;
 use std::{fmt::Debug, sync::mpsc::Sender as ThreadOut};
-use ws::{CloseCode, Handler, Handshake, Message, Sender};
+use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
 
 pub mod client;
 pub mod subscription;
 
 pub type RpcMessage = crate::rpc::Result<String>;
-pub(crate) type WsResult<T> = core::result::Result<T, ws::Error>;
 
 #[allow(clippy::result_large_err)]
 pub(crate) trait HandleMessage {
 	type ThreadMessage;
-	type Result;
 	type Context;
 
-	fn handle_message(&self, context: &mut Self::Context) -> Self::Result;
+	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()>;
 }
 
 // Clippy says request is never used, even though it is..
@@ -57,7 +55,6 @@ pub(crate) struct RpcClient<MessageHandler, ThreadMessage> {
 impl<MessageHandler: HandleMessage> Handler
 	for RpcClient<MessageHandler, MessageHandler::ThreadMessage>
 where
-	MessageHandler::Error: Into<ws::Error>,
 	MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 {
 	fn on_open(&mut self, _: Handshake) -> WsResult<()> {
@@ -74,10 +71,7 @@ where
 			msg,
 		}
 		.into();
-		self.message_handler
-			.handle_message(&mut context)
-			.map_err(|e| e.into())
-			.map(|_| ())
+		self.message_handler.handle_message(&mut context)
 	}
 }
 
@@ -87,9 +81,8 @@ pub(crate) struct RequestHandler;
 impl HandleMessage for RequestHandler {
 	type ThreadMessage = RpcMessage;
 	type Context = MessageContext<Self::ThreadMessage>;
-	type Result = WsResult<()>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> Self::Result {
+	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
@@ -114,9 +107,8 @@ pub(crate) struct SubscriptionHandler {}
 impl HandleMessage for SubscriptionHandler {
 	type ThreadMessage = String;
 	type Context = MessageContext<Self::ThreadMessage>;
-	type Result = WsResult<()>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> Self::Result {
+	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
