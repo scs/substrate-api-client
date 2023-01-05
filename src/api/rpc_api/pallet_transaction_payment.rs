@@ -13,26 +13,27 @@
 use crate::{
 	api::{Api, Error, Result},
 	rpc::Request,
-	utils::ToHexString,
 	ExtrinsicParams,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{BalancesConfig, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo};
-use alloc::vec::Vec;
+use ac_primitives::{
+	BalancesConfig, Bytes, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo,
+};
 use core::str::FromStr;
+
 /// Interface to common calls of the substrate transaction payment pallet.
 pub trait GetTransactionPayment<Hash> {
 	type Balance;
 
 	fn get_fee_details(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		at_block: Option<Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>>;
 
 	fn get_payment_info(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		at_block: Option<Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
@@ -49,13 +50,12 @@ where
 
 	fn get_fee_details(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>> {
-		let details: Option<FeeDetails<NumberOrHex>> = self.client().request(
-			"payment_queryFeeDetails",
-			rpc_params![encoded_extrinsic.to_hex(), at_block],
-		)?;
+		let details: Option<FeeDetails<NumberOrHex>> = self
+			.client()
+			.request("payment_queryFeeDetails", rpc_params![encoded_extrinsic, at_block])?;
 
 		let details = match details {
 			Some(details) => Some(convert_fee_details(details)?),
@@ -66,12 +66,12 @@ where
 
 	fn get_payment_info(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>> {
 		let res = self
 			.client()
-			.request("payment_queryInfo", rpc_params![encoded_extrinsic.to_hex(), at_block])?;
+			.request("payment_queryInfo", rpc_params![encoded_extrinsic, at_block])?;
 		Ok(res)
 	}
 }
