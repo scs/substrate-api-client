@@ -25,21 +25,16 @@ use ws::{CloseCode, Handler, Handshake, Message, Sender};
 pub mod client;
 pub mod subscription;
 
-type RpcResult<T> = Result<T, RpcClientError>;
-
-pub type RpcMessage = RpcResult<String>;
+pub type RpcMessage = crate::rpc::Result<String>;
+pub(crate) type WsResult<T> = core::result::Result<T, ws::Error>;
 
 #[allow(clippy::result_large_err)]
 pub(crate) trait HandleMessage {
 	type ThreadMessage;
-	type Error;
-	type Context;
 	type Result;
+	type Context;
 
-	fn handle_message(
-		&self,
-		context: &mut Self::Context,
-	) -> core::result::Result<Self::Result, Self::Error>;
+	fn handle_message(&self, context: &mut Self::Context) -> Self::Result;
 }
 
 // Clippy says request is never used, even though it is..
@@ -65,13 +60,13 @@ where
 	MessageHandler::Error: Into<ws::Error>,
 	MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 {
-	fn on_open(&mut self, _: Handshake) -> Result<(), ws::Error> {
+	fn on_open(&mut self, _: Handshake) -> WsResult<()> {
 		info!("sending request: {}", self.request);
 		self.out.send(self.request.clone())?;
 		Ok(())
 	}
 
-	fn on_message(&mut self, msg: Message) -> Result<(), ws::Error> {
+	fn on_message(&mut self, msg: Message) -> WsResult<()> {
 		let mut context: MessageHandler::Context = MessageContext {
 			out: self.out.clone(),
 			request: self.request.clone(),
@@ -91,11 +86,10 @@ pub(crate) struct RequestHandler;
 
 impl HandleMessage for RequestHandler {
 	type ThreadMessage = RpcMessage;
-	type Error = ws::Error;
 	type Context = MessageContext<Self::ThreadMessage>;
-	type Result = ();
+	type Result = WsResult<()>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
+	fn handle_message(&self, context: &mut Self::Context) -> Self::Result {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
@@ -119,11 +113,10 @@ pub(crate) struct SubscriptionHandler {}
 
 impl HandleMessage for SubscriptionHandler {
 	type ThreadMessage = String;
-	type Error = ws::Error;
 	type Context = MessageContext<Self::ThreadMessage>;
-	type Result = ();
+	type Result = WsResult<()>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> Result<Self::Result, Self::Error> {
+	fn handle_message(&self, context: &mut Self::Context) -> Self::Result {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
