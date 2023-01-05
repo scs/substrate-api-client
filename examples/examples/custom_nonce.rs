@@ -21,7 +21,7 @@ use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetHeader, PolkadotAdditionalParams,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAdditionalParams, GetHeader,
 	SubmitAndWatch, XtStatus,
 };
 
@@ -41,7 +41,7 @@ async fn main() {
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
 	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
-	let tx_params = PolkadotAdditionalParams::new()
+	let tx_params = GenericAdditionalParams::new()
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
 

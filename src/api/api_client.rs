@@ -266,8 +266,8 @@ where
 mod tests {
 	use super::*;
 	use crate::{
-		rpc::mocks::RpcClientMock, utils::ToHexString, PlainTipExtrinsicParams,
-		PolkadotAdditionalParams,
+		rpc::mocks::RpcClientMock, utils::ToHexString, GenericAdditionalParams,
+		PlainTipExtrinsicParams,
 	};
 	use kitchensink_runtime::Runtime;
 	use sp_core::{sr25519::Pair, H256};
@@ -300,7 +300,7 @@ mod tests {
 			create_mock_api(genesis_hash, runtime_version.clone(), metadata, Default::default());
 
 		// Information for Era for mortal transactions.
-		let additional_params = PolkadotAdditionalParams::new();
+		let additional_params = GenericAdditionalParams::new();
 		api.set_additional_params(additional_params);
 
 		let nonce = 6;

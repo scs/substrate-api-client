@@ -29,18 +29,15 @@ pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees.
-pub type AssetTipExtrinsicParams<Runtime> = PolkadotExtrinsicParams<
-	AssetTip<AssetBalanceFor<Runtime>>,
-	IndexFor<Runtime>,
-	HashFor<Runtime>,
->;
+pub type AssetTipExtrinsicParams<Runtime> =
+	GenericExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees.
 pub type PlainTipExtrinsicParams<Runtime> =
-	PolkadotExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
+	GenericExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 
-/// SignedExtra that is compatible with the polkadot node.
+/// SignedExtra that is compatible with a default Substrate / Polkadot node.
 // Unlike the SignedExtra on the node side, which seemingly contains a lot more parameters
 // see: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
 // The SignedExtra on the client side mirrors the actual values contained. E.g.
@@ -51,14 +48,14 @@ pub type PlainTipExtrinsicParams<Runtime> =
 // https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_mortality.rs#L36
 // and needs to be defined here. Be sure the order matches the one on the node side.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct PolkadotSignedExtra<Tip, Index> {
+pub struct GenericSignedExtra<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
 }
 
-impl<Tip, Index> PolkadotSignedExtra<Tip, Index> {
+impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		Self { era, nonce, tip }
 	}
@@ -73,7 +70,7 @@ impl<Tip, Index> PolkadotSignedExtra<Tip, Index> {
 // defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
 // must mirror these return values.
 // Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
-pub type PolkadotAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in substrate extrinsics.
@@ -114,7 +111,7 @@ pub trait ExtrinsicParams<Index, Hash> {
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct PolkadotExtrinsicParams<Tip, Index, Hash> {
+pub struct GenericExtrinsicParams<Tip, Index, Hash> {
 	era: Era,
 	nonce: Index,
 	tip: Tip,
@@ -124,17 +121,17 @@ pub struct PolkadotExtrinsicParams<Tip, Index, Hash> {
 	mortality_checkpoint: Hash,
 }
 
-/// Representation of the Polkadot (and default Substrate) node additional params,
+/// Representation of the default Substrate / Polkadot node additional params,
 /// needed for constructing an extrinsic with the trait `ExtrinsicParams`.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct PolkadotAdditionalParams<Tip, Hash> {
+pub struct GenericAdditionalParams<Tip, Hash> {
 	era: Era,
 	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
 }
 
-impl<Tip: Default, Hash> PolkadotAdditionalParams<Tip, Hash> {
-	/// Instantiate the default set of [`PolkadotAdditionalParams`]
+impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
+	/// Instantiate the default set of [`GenericAdditionalParams`]
 	pub fn new() -> Self {
 		Self::default()
 	}
@@ -158,23 +155,23 @@ impl<Tip: Default, Hash> PolkadotAdditionalParams<Tip, Hash> {
 	}
 }
 
-impl<Tip: Default, Hash> Default for PolkadotAdditionalParams<Tip, Hash> {
+impl<Tip: Default, Hash> Default for GenericAdditionalParams<Tip, Hash> {
 	fn default() -> Self {
 		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
 	}
 }
 
-impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for PolkadotExtrinsicParams<Tip, Index, Hash>
+impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for GenericExtrinsicParams<Tip, Index, Hash>
 where
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
 	Index: Copy + Default + Encode,
 	Hash: HashTrait + Encode + Copy,
-	PolkadotSignedExtra<Tip, Index>: Encode,
+	GenericSignedExtra<Tip, Index>: Encode,
 {
-	type AdditionalParams = PolkadotAdditionalParams<Tip, Hash>;
-	type SignedExtra = PolkadotSignedExtra<Tip, Index>;
-	type AdditionalSigned = PolkadotAdditionalSigned<Hash>;
+	type AdditionalParams = GenericAdditionalParams<Tip, Hash>;
+	type SignedExtra = GenericSignedExtra<Tip, Index>;
+	type AdditionalSigned = GenericAdditionalSigned<Hash>;
 
 	fn new(
 		spec_version: u32,
@@ -183,7 +180,7 @@ where
 		genesis_hash: Hash,
 		additional_params: Self::AdditionalParams,
 	) -> Self {
-		PolkadotExtrinsicParams {
+		GenericExtrinsicParams {
 			era: additional_params.era,
 			tip: additional_params.tip,
 			spec_version,
