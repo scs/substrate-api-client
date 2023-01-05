@@ -243,7 +243,7 @@ where
 	fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
 		let genesis: Option<Runtime::Hash> =
 			client.request("chain_getBlockHash", rpc_params![Some(0)])?;
-		genesis.ok_or(Error::Genesis)
+		genesis.ok_or(Error::FetchGenesisHash)
 	}
 
 	/// Get runtime version from node via websocket query.

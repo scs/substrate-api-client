@@ -85,7 +85,6 @@ impl WsRpcClient {
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
-		MessageHandler::Error: Into<ws::Error>,
 		MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 	{
 		let mut socket = ws::Builder::new().build(move |out| RpcClient {
@@ -116,7 +115,6 @@ impl WsRpcClient {
 	where
 		MessageHandler: HandleMessage + Clone + Send + 'static,
 		MessageHandler::ThreadMessage: Send + Sync + Debug,
-		MessageHandler::Error: Into<ws::Error>,
 		MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 	{
 		let (result_in, result_out) = channel();
