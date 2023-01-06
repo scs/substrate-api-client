@@ -18,8 +18,8 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, Result, StaticEvent,
-	SubmitAndWatch, SubscribeEvents, SubscribeFrameSystem, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, StaticEvent,
+	SubmitAndWatchUntilSuccess,
 };
 
 #[derive(Decode)]
@@ -59,25 +59,23 @@ async fn main() {
 	println!("Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n", alice, bob);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
-	// Send and watch extrinsic until Ready.
-	let _tx_hash = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::Ready).unwrap();
+	// Send and watch extrinsic until InBlock.
+	let result = api.submit_and_watch_extrinsic_until_success(xt.encode(), false);
 	println!("[+] Transaction got included into the TxPool.");
 
 	// Subscribe to system events. We expect the transfer to fail as Alice wants to transfer all her balance.
 	// Therefore, she will not have enough money to pay the fees.
-	// let mut subscription = api.subscribe_system_events().unwrap();
-	// let args: Result<TransferEventArgs> = api.wait_for_event(&mut subscription);
-	// match args {
-	// 	Ok(_transfer) => {
-	// 		panic!("Exptected the call to fail.");
-	// 	},
-	// 	Err(e) => {
-	// 		println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
-	// 		let string_error = format!("{:?}", e);
-	// 		assert!(string_error.contains("pallet: \"Balances\""));
-	// 		assert!(string_error.contains("error: \"InsufficientBalance\""));
-	// 	},
-	// };
+	match result {
+		Ok(_report) => {
+			panic!("Exptected the call to fail.");
+		},
+		Err(e) => {
+			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
+			let string_error = format!("{:?}", e);
+			assert!(string_error.contains("pallet: \"Balances\""));
+			assert!(string_error.contains("error: \"InsufficientBalance\""));
+		},
+	};
 
 	// Verify that Bob's free Balance hasn't changed.
 	let new_balance_of_bob = api.get_account_data(&bob).unwrap().unwrap().free;
