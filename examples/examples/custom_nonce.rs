@@ -20,8 +20,8 @@ use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GenericAdditionalParams, GetHeader,
-	SubmitAndWatch, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Error, GenericAdditionalParams, GetHeader,
+	SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
 #[tokio::main]
@@ -58,11 +58,12 @@ async fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	match api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock) {
-		Err(error) => {
-			println!("Retrieved error {:?}", error);
-			assert!(format!("{:?}", error).contains("Future"));
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
+	println!("Returned Result {:?}", result);
+	match result {
+		Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)) => {
+			// All good, we expected a Future Error.
 		},
-		_ => panic!("Expected an error upon a future extrinsic"),
+		_ => panic!("Expected a future error"),
 	}
 }
