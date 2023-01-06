@@ -13,8 +13,11 @@
 
 pub use self::{
 	author::*, chain::*, frame_system::*, pallet_balances::*, pallet_transaction_payment::*,
-	state::*, subscribe_events::*,
+	state::*,
 };
+
+#[cfg(feature = "std")]
+pub use self::subscribe_events::*;
 
 pub mod author;
 pub mod chain;

@@ -21,10 +21,7 @@ use ac_node_api::{Events, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
 use log::*;
 use serde::de::DeserializeOwned;
-use std::{
-	marker::Sync,
-	sync::mpsc::{Receiver, Sender},
-};
+use std::{marker::Sync, sync::mpsc::Sender};
 
 pub trait SubscribeEvents<Client, Hash>
 where
