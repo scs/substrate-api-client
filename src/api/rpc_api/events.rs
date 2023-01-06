@@ -74,59 +74,6 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
-where
-	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Hash: FromHexString,
-{
-	/// Retrieve block details from node and search for the position of the given extrinsic.
-	fn retrieve_extrinsic_index_from_block(
-		&self,
-		block_hash: Runtime::Hash,
-		extrinsic_hash: Runtime::Hash,
-	) -> Result<u32> {
-		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
-		let xt_index = block
-			.extrinsics()
-			.iter()
-			.position(|xt| {
-				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
-				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
-				extrinsic_hash == xt_hash
-			})
-			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
-		Ok(xt_index as u32)
-	}
-
-	/// Filter events and return the ones associated to the given extrinsic index.
-	fn filter_extrinsic_events(
-		&self,
-		events: Events<Runtime::Hash>,
-		extrinsic_index: u32,
-	) -> Result<Vec<EventDetails>> {
-		let extrinsic_event_results = events.iter().filter(|ev| {
-			ev.as_ref()
-				.map_or(true, |ev| ev.phase() == Phase::ApplyExtrinsic(extrinsic_index))
-		});
-		let mut extrinsic_events = Vec::new();
-		for event_details in extrinsic_event_results {
-			let event_details = event_details?;
-			debug!(
-				"associated event_details {:?} {:?}",
-				event_details.pallet_name(),
-				event_details.variant_name()
-			);
-			extrinsic_events.push(event_details);
-		}
-		Ok(extrinsic_events)
-	}
-}
-
 #[cfg(feature = "std")]
 pub use std_only::*;
 
@@ -196,6 +143,59 @@ mod std_only {
 
 			Ok(())
 		}
+	}
+}
+
+impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+where
+	Client: Request,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime: FrameSystemConfig + GetRuntimeBlockType,
+	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
+	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Hash: FromHexString,
+{
+	/// Retrieve block details from node and search for the position of the given extrinsic.
+	fn retrieve_extrinsic_index_from_block(
+		&self,
+		block_hash: Runtime::Hash,
+		extrinsic_hash: Runtime::Hash,
+	) -> Result<u32> {
+		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
+		let xt_index = block
+			.extrinsics()
+			.iter()
+			.position(|xt| {
+				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
+				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
+				extrinsic_hash == xt_hash
+			})
+			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
+		Ok(xt_index as u32)
+	}
+
+	/// Filter events and return the ones associated to the given extrinsic index.
+	fn filter_extrinsic_events(
+		&self,
+		events: Events<Runtime::Hash>,
+		extrinsic_index: u32,
+	) -> Result<Vec<EventDetails>> {
+		let extrinsic_event_results = events.iter().filter(|ev| {
+			ev.as_ref()
+				.map_or(true, |ev| ev.phase() == Phase::ApplyExtrinsic(extrinsic_index))
+		});
+		let mut extrinsic_events = Vec::new();
+		for event_details in extrinsic_event_results {
+			let event_details = event_details?;
+			debug!(
+				"associated event_details {:?} {:?}",
+				event_details.pallet_name(),
+				event_details.variant_name()
+			);
+			extrinsic_events.push(event_details);
+		}
+		Ok(extrinsic_events)
 	}
 }
 
