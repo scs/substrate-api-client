@@ -50,7 +50,7 @@ impl Metadata {
 			}
 		}
 
-		println!("{}", string);
+		println!("{string}");
 	}
 
 	pub fn print_pallets(&self) {
@@ -113,7 +113,7 @@ impl PalletMetadata {
 	pub fn print_calls(&self) {
 		println!("----------------- Calls for Pallet: {} -----------------\n", self.name);
 		for (name, index) in &self.call_indexes {
-			println!("Name: {}, index {}", name, index);
+			println!("Name: {name}, index {index}");
 		}
 		println!();
 	}
