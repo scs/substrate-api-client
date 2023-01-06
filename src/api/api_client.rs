@@ -93,7 +93,7 @@ where
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
-	extrinsic_params_builder: Option<Params::OtherParams>,
+	additional_extrinsic_params: Option<Params::AdditionalParams>,
 }
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
@@ -114,7 +114,7 @@ where
 			metadata,
 			runtime_version,
 			client,
-			extrinsic_params_builder: None,
+			additional_extrinsic_params: None,
 		}
 	}
 
@@ -153,20 +153,22 @@ where
 		&self.client
 	}
 
-	/// Set the extrinscs param builder.
-	pub fn set_extrinsic_params_builder(&mut self, extrinsic_params: Params::OtherParams) {
-		self.extrinsic_params_builder = Some(extrinsic_params);
+	/// Set the additional params.
+	pub fn set_additional_params(&mut self, extrinsic_params: Params::AdditionalParams) {
+		self.additional_extrinsic_params = Some(extrinsic_params);
 	}
 
-	/// Get the extrinsic params, built with the set or if none, the default Params Builder.
+	/// Get the extrinsic params with the set additional params. If no additional params are set,
+	/// the default is taken.
 	pub fn extrinsic_params(&self, nonce: Runtime::Index) -> Params {
-		let extrinsic_params_builder = self.extrinsic_params_builder.clone().unwrap_or_default();
+		let additional_extrinsic_params =
+			self.additional_extrinsic_params.clone().unwrap_or_default();
 		<Params as ExtrinsicParams<Runtime::Index, Runtime::Hash>>::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
 			self.genesis_hash,
-			extrinsic_params_builder,
+			additional_extrinsic_params,
 		)
 	}
 }
@@ -264,8 +266,8 @@ where
 mod tests {
 	use super::*;
 	use crate::{
-		rpc::mocks::RpcClientMock, utils::ToHexString, PlainTipExtrinsicParams,
-		PlainTipExtrinsicParamsBuilder,
+		rpc::mocks::RpcClientMock, utils::ToHexString, GenericAdditionalParams,
+		PlainTipExtrinsicParams,
 	};
 	use kitchensink_runtime::Runtime;
 	use sp_core::{sr25519::Pair, H256};
@@ -298,8 +300,8 @@ mod tests {
 			create_mock_api(genesis_hash, runtime_version.clone(), metadata, Default::default());
 
 		// Information for Era for mortal transactions.
-		let builder = PlainTipExtrinsicParamsBuilder::<Runtime>::new();
-		api.set_extrinsic_params_builder(builder);
+		let additional_params = GenericAdditionalParams::new();
+		api.set_additional_params(additional_params);
 
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);

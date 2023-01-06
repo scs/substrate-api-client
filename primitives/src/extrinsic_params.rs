@@ -16,7 +16,7 @@
 */
 
 use codec::{Decode, Encode};
-use core::{hash::Hash as HashTrait, marker::PhantomData};
+use core::hash::Hash as HashTrait;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -27,83 +27,91 @@ pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;
 pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
 pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
-/// Default SignedExtra.
-/// Simple generic extra mirroring the SignedExtra currently used in extrinsics.
+/// A struct representing the signed extra and additional parameters required
+/// to construct a transaction and pay in asset fees.
+pub type AssetTipExtrinsicParams<Runtime> =
+	GenericExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
+
+/// A struct representing the signed extra and additional parameters required
+/// to construct a transaction and pay in token fees.
+pub type PlainTipExtrinsicParams<Runtime> =
+	GenericExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
+
+/// SignedExtra that is compatible with a default Substrate / Polkadot node.
+// Unlike the SignedExtra on the node side, which seemingly contains a lot more parameters
+// see: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
+// The SignedExtra on the client side mirrors the actual values contained. E.g.
+// CheckNonZeroSender does not hold any value inside (see link below)
+// https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L33
+// and is therefore not represented on this side of the SignedExtra.
+// The Era however is actually defined in the CheckMortality part:
+// https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_mortality.rs#L36
+// and needs to be defined here. Be sure the order matches the one on the node side.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateDefaultSignedExtra<Tip, Index> {
+pub struct GenericSignedExtra<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
 }
 
-impl<Tip, Index> SubstrateDefaultSignedExtra<Tip, Index> {
+impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		Self { era, nonce, tip }
 	}
 }
 
-/// Default AdditionalSigned fields of the respective SignedExtra fields.
-/// The Order is (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-pub type SubstrateDefaultAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+/// Default AdditionalSigned fields of a Polkadot/Substrate node.
+/// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+// The order and types can must match the one defined in the runtime.
+// Example: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
+// The `AdditionalSigned` is the tuple returned from the call SignedExtra::additional_signed().
+// Each member defined in the `SignedExtra` on the node side implements the trait `SignedExtension`, which
+// defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
+// must mirror these return values.
+// Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
+pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
-/// "additional" parameters that are signed and used in transactions.
-/// see [`BaseExtrinsicParams`] for an implementation that is compatible with
-/// a Polkadot node.
+/// "additional" parameters that are signed and used in substrate extrinsics.
 pub trait ExtrinsicParams<Index, Hash> {
-	/// These parameters can be provided to the constructor along with
-	/// some default parameters in order to help construct your [`ExtrinsicParams`] object.
-	type OtherParams: Default + Clone;
+	/// These params represent optional / additional params which are most likely
+	/// subject to change. This way, the trait does not need to be adapted if one of
+	/// these params is updated.
+	type AdditionalParams: Default + Clone;
 
-	/// SignedExtra format of the node.
+	/// Extra mirroring the `SignedExtra` defined on the node side.
+	/// These parameters are sent along with the extrinsic and are taken into account
+	/// when signing the extrinsic.
+	/// It represents the inner values of the SignedExtra, PhantomData is ignored.
 	type SignedExtra: Copy + Encode;
 
-	/// Additional Signed format of the node
+	/// AdditionalSigned format of the node, which is returned upon the call `additional_signed`.
+	/// These parameters are not sent along with the extrinsic, but are taken into account
+	/// when signing it, meaning the client and node must agree on their values.
 	type AdditionalSigned: Encode;
 
-	/// Construct a new instance of our [`ExtrinsicParams`]
+	/// Construct a new instance.
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::OtherParams,
+		additional_params: Self::AdditionalParams,
 	) -> Self;
 
-	/// These are the parameters which are sent along with the transaction,
-	/// as well as taken into account when signing the transaction.
+	/// Construct the signed extra needed for constructing an extrinsic.
 	fn signed_extra(&self) -> Self::SignedExtra;
 
-	/// These parameters are not sent along with the transaction, but are
-	/// taken into account when signing it, meaning the client and node must agree
-	/// on their values.
+	/// Construct any additional data that should be in the signed payload of the extrinsic.
 	fn additional_signed(&self) -> Self::AdditionalSigned;
 }
-
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in asset fees
-pub type AssetTipExtrinsicParams<Runtime> =
-	BaseExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-/// A builder which leads to [`AssetTipExtrinsicParams`] being constructed.
-/// This is what you provide to methods like `sign_and_submit()`.
-pub type AssetTipExtrinsicParamsBuilder<Runtime> =
-	BaseExtrinsicParamsBuilder<AssetTip<AssetBalanceFor<Runtime>>, HashFor<Runtime>>;
-
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in token fees
-pub type PlainTipExtrinsicParams<Runtime> =
-	BaseExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-/// A builder which leads to [`PlainTipExtrinsicParams`] being constructed.
-/// This is what you provide to methods like `sign_and_submit()`.
-pub type PlainTipExtrinsicParamsBuilder<Runtime> =
-	BaseExtrinsicParamsBuilder<PlainTip<BalanceFor<Runtime>>, HashFor<Runtime>>;
 
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParams<Tip, Index, Hash> {
+pub struct GenericExtrinsicParams<Tip, Index, Hash> {
 	era: Era,
 	nonce: Index,
 	tip: Tip,
@@ -111,27 +119,26 @@ pub struct BaseExtrinsicParams<Tip, Index, Hash> {
 	transaction_version: u32,
 	genesis_hash: Hash,
 	mortality_checkpoint: Hash,
-	marker: PhantomData<()>,
 }
 
-/// This builder allows you to provide the parameters that can be configured in order to
-/// construct a [`BaseExtrinsicParams`] value.
+/// Representation of the default Substrate / Polkadot node additional params,
+/// needed for constructing an extrinsic with the trait `ExtrinsicParams`.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct BaseExtrinsicParamsBuilder<Tip, Hash> {
+pub struct GenericAdditionalParams<Tip, Hash> {
 	era: Era,
 	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
 }
 
-impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
-	/// Instantiate the default set of [`BaseExtrinsicParamsBuilder`]
+impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
+	/// Instantiate the default set of [`GenericAdditionalParams`]
 	pub fn new() -> Self {
 		Self::default()
 	}
 
-	/// Set the [`Era`], which defines how long the transaction will be valid for
+	/// Set the [`Era`], which defines how long the extrinsic will be valid for
 	/// (it can be either immortal, or it can be mortal and expire after a certain amount
-	/// of time). The second argument is the block hash after which the transaction
+	/// of time). The second argument is the block hash after which the extrinsic
 	/// becomes valid, and must align with the era phase (see the [`Era::Mortal`] docs
 	/// for more detail on that).
 	pub fn era(mut self, era: Era, checkpoint: Hash) -> Self {
@@ -141,47 +148,46 @@ impl<Tip: Default, Hash> BaseExtrinsicParamsBuilder<Tip, Hash> {
 	}
 
 	/// Set the tip you'd like to give to the block author
-	/// for this transaction.
+	/// for this extrinsic.
 	pub fn tip(mut self, tip: impl Into<Tip>) -> Self {
 		self.tip = tip.into();
 		self
 	}
 }
 
-impl<Tip: Default, Hash> Default for BaseExtrinsicParamsBuilder<Tip, Hash> {
+impl<Tip: Default, Hash> Default for GenericAdditionalParams<Tip, Hash> {
 	fn default() -> Self {
 		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
 	}
 }
 
-impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for BaseExtrinsicParams<Tip, Index, Hash>
+impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for GenericExtrinsicParams<Tip, Index, Hash>
 where
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
 	Index: Copy + Default + Encode,
 	Hash: HashTrait + Encode + Copy,
-	SubstrateDefaultSignedExtra<Tip, Index>: Encode,
+	GenericSignedExtra<Tip, Index>: Encode,
 {
-	type OtherParams = BaseExtrinsicParamsBuilder<Tip, Hash>;
-	type SignedExtra = SubstrateDefaultSignedExtra<Tip, Index>;
-	type AdditionalSigned = SubstrateDefaultAdditionalSigned<Hash>;
+	type AdditionalParams = GenericAdditionalParams<Tip, Hash>;
+	type SignedExtra = GenericSignedExtra<Tip, Index>;
+	type AdditionalSigned = GenericAdditionalSigned<Hash>;
 
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
 		nonce: Index,
 		genesis_hash: Hash,
-		other_params: Self::OtherParams,
+		additional_params: Self::AdditionalParams,
 	) -> Self {
-		BaseExtrinsicParams {
-			era: other_params.era,
-			tip: other_params.tip,
+		GenericExtrinsicParams {
+			era: additional_params.era,
+			tip: additional_params.tip,
 			spec_version,
 			transaction_version,
 			genesis_hash,
-			mortality_checkpoint: other_params.mortality_checkpoint.unwrap_or(genesis_hash),
+			mortality_checkpoint: additional_params.mortality_checkpoint.unwrap_or(genesis_hash),
 			nonce,
-			marker: Default::default(),
 		}
 	}
 
@@ -232,7 +238,7 @@ where
 	}
 }
 
-/// A tip payment.
+/// Default tip payment for a substrate node using the balance pallet.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
 pub struct PlainTip<Balance> {
 	#[codec(compact)]
@@ -258,7 +264,7 @@ impl From<PlainTip<u128>> for u128 {
 	}
 }
 
-/// A tip payment made in the form of a specific asset.
+/// Default tip payment for substrate nodes that use the asset payment pallet.
 #[derive(Copy, Clone, Debug, Default, Decode, Encode, Eq, PartialEq)]
 pub struct AssetTip<Balance> {
 	#[codec(compact)]

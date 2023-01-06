@@ -17,8 +17,6 @@
 
 //! Primitives for substrate extrinsics.
 
-extern crate alloc;
-
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
@@ -146,8 +144,7 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{BaseExtrinsicParams, ExtrinsicParams, PlainTipExtrinsicParamsBuilder};
-	use node_template_runtime::Runtime;
+	use crate::{ExtrinsicParams, GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
 	use sp_core::{Pair, H256 as Hash};
 	use sp_runtime::{generic::Era, testing::sr25519, MultiSignature};
 
@@ -158,10 +155,11 @@ mod tests {
 		let signature = pair.sign(msg);
 		let multi_sig = MultiSignature::from(signature);
 		let account: AccountId = pair.public().into();
-		let tx_params = PlainTipExtrinsicParamsBuilder::<Runtime>::new()
+		let tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
 			.era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
-		let default_extra = BaseExtrinsicParams::new(0, 0, 0u32, Hash::from([0u8; 32]), tx_params);
+		let default_extra =
+			GenericExtrinsicParams::new(0, 0, 0u32, Hash::from([0u8; 32]), tx_params);
 		let xt = UncheckedExtrinsicV4::new_signed(
 			vec![1, 1, 1],
 			account.into(),
