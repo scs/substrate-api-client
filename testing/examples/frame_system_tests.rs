@@ -77,7 +77,5 @@ async fn main() {
 	// Subscribe
 	let mut event_subscription = api.subscribe_system_events().unwrap();
 	let _event: ExtrinsicSuccess = api.wait_for_event(&mut event_subscription).unwrap();
-	let _event_details =
-		api.wait_for_event_details::<ExtrinsicSuccess>(&mut event_subscription).unwrap();
-	println!("Success: Wait for event Details");
+	println!("Success: wait for event");
 }
