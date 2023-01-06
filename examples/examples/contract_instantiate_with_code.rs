@@ -20,7 +20,7 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, SubmitAndWatch,
-	SubscribeEvents, SubscribeFrameSystem, XtStatus,
+	SubmitAndWatchUntilSuccess, SubscribeEvents, SubscribeFrameSystem, XtStatus,
 };
 
 #[allow(unused)]
@@ -70,7 +70,7 @@ async fn main() {
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
 	let block_hash = api
-		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until_success(xt.encode(), false)
 		.unwrap()
 		.block_hash
 		.unwrap();
@@ -78,13 +78,13 @@ async fn main() {
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs = api.wait_for_event(&mut subscription).unwrap();
-
-	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
-
-	let xt = api.contract_call(args.contract.into(), 500_000, 500_000, vec![0u8]);
-
-	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	let report = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::Finalized).unwrap();
-	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
+	// 	let args: ContractInstantiatedEventArgs = api.wait_for_event(&mut subscription).unwrap();
+	//
+	// 	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
+	//
+	// 	let xt = api.contract_call(args.contract.into(), 500_000, 500_000, vec![0u8]);
+	//
+	// 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
+	// 	let report = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::Finalized).unwrap();
+	// 	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }

@@ -22,4 +22,5 @@ pub mod frame_system;
 pub mod pallet_balances;
 pub mod pallet_transaction_payment;
 pub mod state;
+#[cfg(feature = "std")]
 pub mod subscribe_events;

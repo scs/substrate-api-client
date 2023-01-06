@@ -19,13 +19,14 @@ use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
+use std::{sync::mpsc::channel, thread};
 use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, StaticEvent,
 	SubscribeEvents, SubscribeFrameSystem, SystemApi,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
-#[derive(Decode)]
+#[derive(Decode, Debug)]
 struct ExtrinsicSuccess {
 	_dispatch_info: DispatchInfo,
 }
@@ -74,8 +75,18 @@ async fn main() {
 	let system_local_listen_addresses = api.get_system_local_listen_addresses().unwrap();
 	println!("System local listen addresses: {:?}", system_local_listen_addresses);
 
-	// Subscribe
-	let mut event_subscription = api.subscribe_system_events().unwrap();
-	let _event: ExtrinsicSuccess = api.wait_for_event(&mut event_subscription).unwrap();
-	println!("Success: wait for event");
+	// Subscribe to system events.
+	let _event_subscription = api.subscribe_system_events().unwrap();
+
+	// Subscribe to system events in a never ending loop. Could be useful wherever a specific event should trigger something.
+	let (sender, receiver) = channel();
+	let api2 = api.clone();
+	thread::spawn(move || {
+		api2.subscribe_for_event_type::<ExtrinsicSuccess>(sender).unwrap();
+	});
+	// Wait for event callbacks from the node, which are received via subscription.
+	for _ in 0..5 {
+		let event_update = receiver.recv();
+		println!("Received event update: {event_update:?}");
+	}
 }

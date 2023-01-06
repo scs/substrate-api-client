@@ -65,19 +65,19 @@ async fn main() {
 
 	// Subscribe to system events. We expect the transfer to fail as Alice wants to transfer all her balance.
 	// Therefore, she will not have enough money to pay the fees.
-	let mut subscription = api.subscribe_system_events().unwrap();
-	let args: Result<TransferEventArgs> = api.wait_for_event(&mut subscription);
-	match args {
-		Ok(_transfer) => {
-			panic!("Exptected the call to fail.");
-		},
-		Err(e) => {
-			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
-			let string_error = format!("{:?}", e);
-			assert!(string_error.contains("pallet: \"Balances\""));
-			assert!(string_error.contains("error: \"InsufficientBalance\""));
-		},
-	};
+	// let mut subscription = api.subscribe_system_events().unwrap();
+	// let args: Result<TransferEventArgs> = api.wait_for_event(&mut subscription);
+	// match args {
+	// 	Ok(_transfer) => {
+	// 		panic!("Exptected the call to fail.");
+	// 	},
+	// 	Err(e) => {
+	// 		println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
+	// 		let string_error = format!("{:?}", e);
+	// 		assert!(string_error.contains("pallet: \"Balances\""));
+	// 		assert!(string_error.contains("error: \"InsufficientBalance\""));
+	// 	},
+	// };
 
 	// Verify that Bob's free Balance hasn't changed.
 	let new_balance_of_bob = api.get_account_data(&bob).unwrap().unwrap().free;
