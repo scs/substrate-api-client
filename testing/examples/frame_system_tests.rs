@@ -21,8 +21,8 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use std::{sync::mpsc::channel, thread};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, StaticEvent,
-	SubscribeEvents, SubscribeFrameSystem, SystemApi,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, FetchEvents, GetAccountInformation,
+	GetBlock, StaticEvent, SubscribeEvents, SubscribeFrameSystem, SystemApi,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
@@ -89,4 +89,8 @@ async fn main() {
 		let event_update = receiver.recv();
 		println!("Received event update: {event_update:?}");
 	}
+
+	let block_hash = api.get_block_hash(None).unwrap().unwrap();
+	let events = api.fetch_events_from_block(block_hash).unwrap();
+	assert!(!events.is_empty());
 }
