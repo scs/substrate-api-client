@@ -22,7 +22,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::EventDetails;
 use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig};
-use alloc::{format, string::ToString, vec::Vec};
+use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
