@@ -66,19 +66,19 @@ mod std_only {
 
 	impl From<RecvError> for Error {
 		fn from(error: RecvError) -> Self {
-			Self::RecvError(format!("{:?}", error))
+			Self::RecvError(format!("{error:?}"))
 		}
 	}
 
 	impl From<std::io::Error> for Error {
 		fn from(error: std::io::Error) -> Self {
-			Self::Io(format!("{:?}", error))
+			Self::Io(format!("{error:?}"))
 		}
 	}
 
 	impl From<url::ParseError> for Error {
 		fn from(error: url::ParseError) -> Self {
-			Self::InvalidUrl(format!("{:?}", error))
+			Self::InvalidUrl(format!("{error:?}"))
 		}
 	}
 }
