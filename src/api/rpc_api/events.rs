@@ -14,10 +14,10 @@
 use crate::{
 	api::{Api, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils, FromHexString, GetBlock, GetStorage, Phase,
+	utils, FromHexString, GetBlock, GetStorage, Phase, SubscribeFrameSystem,
 };
 use ac_node_api::{EventDetails, Events, StaticEvent};
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
 use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
@@ -71,76 +71,68 @@ where
 	}
 }
 
-// FIXME: This should rather be implemented directly on the
-// Subscription return value, rather than the api. Or directly
-// subcribe. Should be looked at in #288
-// https://github.com/scs/substrate-api-client/issues/288#issuecomment-1346221653
-pub trait SubscribeEvents<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
-	fn wait_for_event<Ev: StaticEvent>(
-		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
-	) -> Result<Ev>;
-
-	fn wait_for_event_details<Ev: StaticEvent>(
-		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
-	) -> Result<EventDetails>;
-}
-
-impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
-where
-	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-{
-	fn wait_for_event<Ev: StaticEvent>(
-		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
-	) -> Result<Ev> {
-		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
-		maybe_event_details
-			.as_event()?
-			.ok_or(Error::Other("Could not find the specific event".into()))
+#[cfg(feature = "std")]
+pub use std_only::*;
+#[cfg(feature = "std")]
+mod std_only {
+	use super::*;
+	use std::{marker::Sync, sync::mpsc::Sender};
+	pub trait SubscribeEvents<Client, Hash>
+	where
+		Client: Subscribe,
+		Hash: DeserializeOwned,
+	{
+		/// Listens for a specific event type and only returns if an undecodeable
+		/// Event is received or the event has been found.
+		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
+			&self,
+			sender: Sender<Ev>,
+		) -> Result<()>;
 	}
 
-	fn wait_for_event_details<Ev: StaticEvent>(
-		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
-	) -> Result<EventDetails> {
-		while let Some(change_set) = subscription.next() {
-			let event_bytes = change_set?.changes[0].1.as_ref().unwrap().0.clone();
-			let events = Events::<Runtime::Hash>::new(
-				self.metadata().clone(),
-				Default::default(),
-				event_bytes,
-			);
-			for maybe_event_details in events.iter() {
-				let event_details = maybe_event_details?;
+	#[cfg(feature = "std")]
+	impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
+		for Api<Signer, Client, Params, Runtime>
+	where
+		Client: Subscribe,
+		Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+		Runtime: FrameSystemConfig,
+	{
+		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
+			&self,
+			sender: Sender<Ev>,
+		) -> Result<()> {
+			let mut subscription = self.subscribe_system_events()?;
 
-				// Check for failed xt and return as Dispatch Error in case we find one.
-				// Careful - this reports the first one encountered. This event may belong to another extrinsic
-				// than the one that is being waited for.
-				event_details.check_if_failed()?;
-
-				let event_metadata = event_details.event_metadata();
-				trace!(
-					"Found extrinsic: {:?}, {:?}",
-					event_metadata.pallet(),
-					event_metadata.event()
-				);
-				if event_metadata.pallet() == Ev::PALLET && event_metadata.event() == Ev::EVENT {
-					return Ok(event_details)
-				} else {
-					trace!("Not the event we are looking for, skipping.")
+			while let Some(Ok(change_set)) = subscription.next() {
+				// We only subscribed to one key, so always take the first value of the change set.
+				if let Some(storage_data) = &change_set.changes[0].1 {
+					let events = Events::<Runtime::Hash>::new(
+						self.metadata().clone(),
+						Default::default(),
+						storage_data.0.clone(),
+					);
+					for event_details in events.iter().flatten() {
+						match event_details.as_event::<Ev>() {
+							Ok(Some(event)) => {
+								sender.send(event).map_err(|e| Error::Other(Box::new(e)))?;
+							},
+							Ok(None) => {
+								trace!(
+									"Found extrinsic: {:?}, {:?}",
+									event_details.event_metadata().pallet(),
+									event_details.event_metadata().event()
+								);
+								trace!("Not the event we are looking for, skipping.");
+							},
+							Err(_) => error!("Could not decode event details."),
+						}
+					}
 				}
 			}
+
+			Ok(())
 		}
-		Err(Error::NoStream)
 	}
 }
 
