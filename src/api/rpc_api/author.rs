@@ -21,7 +21,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
-use alloc::{vec::Vec};
+use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
