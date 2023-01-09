@@ -235,7 +235,6 @@ impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime
 where
 	Client: Subscribe + Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
