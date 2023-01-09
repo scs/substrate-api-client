@@ -82,8 +82,9 @@ mod std_only {
 		Client: Subscribe,
 		Hash: DeserializeOwned,
 	{
-		/// Listens for a specific event type and only returns if an undecodeable
-		/// Event is received or the event has been found.
+		/// Listens for a specific event type and notifies updates via channel.
+		/// This function is an endless loop and only returns if the subscription has failed or
+		/// no new notifications are received. Which may happen if the node connection is down.
 		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
 			&self,
 			sender: Sender<Ev>,
