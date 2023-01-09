@@ -22,7 +22,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::EventDetails;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
-use alloc::{format, string::ToString, vec::Vec};
+use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
@@ -208,24 +208,22 @@ where
 
 		while let Some(transaction_status) = subscription.next() {
 			let transaction_status = transaction_status?;
-			if transaction_status.is_supported() {
-				if transaction_status.reached_status(watch_until) {
+			match transaction_status.is_expected() {
+				Ok(_) =>
+					if transaction_status.reached_status(watch_until) {
+						subscription.unsubscribe()?;
+						let block_hash = transaction_status.get_maybe_block_hash();
+						return Ok(ExtrinsicReport::new(
+							tx_hash,
+							block_hash.copied(),
+							transaction_status,
+							None,
+						))
+					},
+				Err(e) => {
 					subscription.unsubscribe()?;
-					let block_hash = transaction_status.get_maybe_block_hash();
-					return Ok(ExtrinsicReport::new(
-						tx_hash,
-						block_hash.copied(),
-						transaction_status,
-						None,
-					))
-				}
-			} else {
-				subscription.unsubscribe()?;
-				let error = Error::Extrinsic(format!(
-					"Unsupported transaction status: {transaction_status:?}, stopping watch process."
-
-				));
-				return Err(error)
+					return Err(e)
+				},
 			}
 		}
 		Err(Error::NoStream)
@@ -237,7 +235,6 @@ impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime
 where
 	Client: Subscribe + Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
@@ -267,7 +264,7 @@ where
 		let mut report =
 			self.submit_and_watch_opaque_extrinsic_until(encoded_extrinsic, xt_status)?;
 
-		let block_hash = report.block_hash.ok_or(Error::NoBlockHash)?;
+		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_index =
 			self.retrieve_extrinsic_index_from_block(block_hash, report.extrinsic_hash)?;
 		let block_events = self.fetch_events_from_block(block_hash)?;
@@ -293,7 +290,7 @@ where
 		block_hash: Runtime::Hash,
 		extrinsic_hash: Runtime::Hash,
 	) -> Result<u32> {
-		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
+		let block = self.get_block(Some(block_hash))?.ok_or(Error::BlockNotFound)?;
 		let xt_index = block
 			.extrinsics()
 			.iter()
@@ -302,7 +299,7 @@ where
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
-			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
+			.ok_or(Error::ExtrinsicNotFound)?;
 		Ok(xt_index as u32)
 	}
 
@@ -311,7 +308,7 @@ where
 		let key = utils::storage_key("System", "Events");
 		let event_bytes = self
 			.get_opaque_storage_by_key_hash(key, Some(block_hash))?
-			.ok_or(Error::NoBlock)?;
+			.ok_or(Error::BlockNotFound)?;
 		let events =
 			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 		Ok(events)
