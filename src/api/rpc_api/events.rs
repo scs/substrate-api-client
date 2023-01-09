@@ -18,7 +18,7 @@ use crate::{
 };
 use ac_node_api::{EventDetails, Events, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
-use alloc::{string::ToString, vec::Vec};
+use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
@@ -54,7 +54,7 @@ where
 		let key = utils::storage_key("System", "Events");
 		let event_bytes = self
 			.get_opaque_storage_by_key_hash(key, Some(block_hash))?
-			.ok_or(Error::NoBlock)?;
+			.ok_or(Error::BlockNotFound)?;
 		let events =
 			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 		Ok(events)
@@ -161,7 +161,7 @@ where
 		block_hash: Runtime::Hash,
 		extrinsic_hash: Runtime::Hash,
 	) -> Result<u32> {
-		let block = self.get_block(Some(block_hash))?.ok_or(Error::NoBlock)?;
+		let block = self.get_block(Some(block_hash))?.ok_or(Error::BlockNotFound)?;
 		let xt_index = block
 			.extrinsics()
 			.iter()
@@ -170,7 +170,7 @@ where
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
-			.ok_or(Error::Extrinsic("Could not find extrinsic hash".to_string()))?;
+			.ok_or(Error::ExtrinsicNotFound)?;
 		Ok(xt_index as u32)
 	}
 
