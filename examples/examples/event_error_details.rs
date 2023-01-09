@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-use codec::{Decode, Encode};
+use codec::Decode;
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
@@ -60,7 +60,7 @@ async fn main() {
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
 	// Send and watch extrinsic until Ready.
-	let _tx_hash = api.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::Ready).unwrap();
+	let _tx_hash = api.submit_and_watch_extrinsic_until(xt, XtStatus::Ready).unwrap();
 	println!("[+] Transaction got included into the TxPool.");
 
 	// Subscribe to system events. We expect the transfer to fail as Alice wants to transfer all her balance.

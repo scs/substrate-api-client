@@ -15,7 +15,6 @@
 
 //! Example to show how to get the account identity display name from the identity pallet.
 
-use codec::Encode;
 use frame_support::traits::Currency;
 use kitchensink_runtime::Runtime as KitchensinkRuntime;
 use pallet_identity::{Data, IdentityInfo, Registration};
@@ -65,7 +64,7 @@ async fn main() {
 
 	// Send and watch extrinsic until InBlock.
 	let _block_hash = api
-		.submit_and_watch_extrinsic_until(xt.encode(), XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()
 		.block_hash
 		.unwrap();
