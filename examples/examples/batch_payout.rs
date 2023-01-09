@@ -99,7 +99,7 @@ async fn main() {
 		if payout_calls_len > 0 {
 			let batching = api.batch(payout_calls);
 			let results_hash = api
-				.submit_and_watch_extrinsic_until(batching.encode(), XtStatus::InBlock)
+				.submit_and_watch_extrinsic_until(batching, XtStatus::InBlock)
 				.unwrap()
 				.block_hash
 				.unwrap();
