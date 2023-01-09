@@ -37,12 +37,14 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an encodable extrinsic to the substrate node.
 	/// Returns the extrinsic hash.
-	fn submit_extrinsic<Call, SignedExtra>(
+	fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 	) -> Result<Self::Hash>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode;
 
 	/// Submit an encoded, opaque extrsinic to the substrate node.
@@ -58,12 +60,14 @@ where
 {
 	type Hash = Runtime::Hash;
 
-	fn submit_extrinsic<Call, SignedExtra>(
+	fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 	) -> Result<Self::Hash>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode,
 	{
 		self.submit_opaque_extrinsic(extrinsic.encode().into())
@@ -84,12 +88,14 @@ where
 {
 	/// Submit an extrinsic an return a Subscription
 	/// to watch the extrinsic progress.
-	fn submit_and_watch_extrinsic<Call, SignedExtra>(
+	fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 	) -> Result<TransactionSubscriptionFor<Client, Hash>>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode;
 
 	/// Submit an encoded, opaque extrinsic an return a Subscription to
@@ -107,13 +113,15 @@ where
 	///   hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
 	/// This method is blocking.
-	fn submit_and_watch_extrinsic_until<Call, SignedExtra>(
+	fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Hash>>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode;
 
 	/// Submit an encoded, opaque extrinsic and watch it until the desired status
@@ -146,13 +154,15 @@ where
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic
 	/// This method is blocking.
-	fn submit_and_watch_extrinsic_until_success<Call, SignedExtra>(
+	fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Hash>>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode;
 
 	/// Submit an encoded, opaque extrinsic and watch it until
@@ -180,12 +190,14 @@ where
 	Runtime: FrameSystemConfig,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
-	fn submit_and_watch_extrinsic<Call, SignedExtra>(
+	fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode,
 	{
 		self.submit_and_watch_opaque_extrinsic(extrinsic.encode().into())
@@ -203,13 +215,15 @@ where
 			.map_err(|e| e.into())
 	}
 
-	fn submit_and_watch_extrinsic_until<Call, SignedExtra>(
+	fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Runtime::Hash>>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode,
 	{
 		self.submit_and_watch_opaque_extrinsic_until(extrinsic.encode().into(), watch_until)
@@ -257,13 +271,15 @@ where
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
-	fn submit_and_watch_extrinsic_until_success<Call, SignedExtra>(
+	fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Runtime::Hash>>
 	where
+		Address: Encode,
 		Call: Encode,
+		Signature: Encode,
 		SignedExtra: Encode,
 	{
 		self.submit_and_watch_opaque_extrinsic_until_success(
