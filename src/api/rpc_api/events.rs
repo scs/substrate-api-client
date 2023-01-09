@@ -44,7 +44,6 @@ impl<Signer, Client, Params, Runtime> FetchEvents<Client, Runtime::Hash>
 where
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
@@ -149,7 +148,6 @@ impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
