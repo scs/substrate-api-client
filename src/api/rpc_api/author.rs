@@ -222,8 +222,8 @@ where
 			} else {
 				subscription.unsubscribe()?;
 				let error = Error::Extrinsic(format!(
-					"Unsupported transaction status: {:?}, stopping watch process.",
-					transaction_status
+					"Unsupported transaction status: {transaction_status:?}, stopping watch process."
+
 				));
 				return Err(error)
 			}

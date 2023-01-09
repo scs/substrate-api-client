@@ -546,7 +546,6 @@ impl KeystoreInner {
 		let mut public_keys: Vec<Vec<u8>> = self
 			.additional
 			.keys()
-			.into_iter()
 			.filter_map(|k| if k.0 == id { Some(k.1.clone()) } else { None })
 			.collect();
 
