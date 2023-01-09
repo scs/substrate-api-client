@@ -67,6 +67,18 @@ pub enum XtStatus {
 	Finalized = 6,
 }
 
+/// TxStatus that is not expected during the watch process. Will be returned
+/// as unexpected error if encountered due to the potential danger of endless loops.
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+pub enum UnexpectedTxStatus {
+	Future,
+	Retracted,
+	FinalityTimeout,
+	Usurped,
+	Dropped,
+	Invalid,
+}
+
 /// Possible transaction status events.
 // Copied from `sc-transaction-pool`
 // (https://github.com/paritytech/substrate/blob/dddfed3d9260cf03244f15ba3db4edf9af7467e9/client/transaction-pool/api/src/lib.rs)
@@ -114,15 +126,24 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 		}
 	}
 
-	pub fn is_supported(&self) -> bool {
-		matches!(
-			self,
+	pub fn is_expected(&self) -> Result<()> {
+		match self {
 			TransactionStatus::Ready
-				| TransactionStatus::Broadcast(_)
-				| TransactionStatus::InBlock(_)
-				| TransactionStatus::FinalityTimeout(_)
-				| TransactionStatus::Finalized(_)
-		)
+			| TransactionStatus::Broadcast(_)
+			| TransactionStatus::InBlock(_)
+			| TransactionStatus::Finalized(_) => Ok(()),
+			TransactionStatus::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
+			TransactionStatus::Retracted(_) =>
+				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Retracted)),
+			TransactionStatus::FinalityTimeout(_) =>
+				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::FinalityTimeout)),
+			TransactionStatus::Usurped(_) =>
+				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped)),
+			TransactionStatus::Dropped =>
+				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Dropped)),
+			TransactionStatus::Invalid =>
+				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Invalid)),
+		}
 	}
 
 	/// Returns true if the input status has been reached (or overreached)
@@ -184,20 +205,20 @@ mod tests {
 	}
 
 	#[test]
-	fn test_transaction_status_is_supported() {
+	fn test_transaction_status_is_expected() {
 		// Supported.
-		assert!(TransactionStatus::Ready.is_supported());
-		assert!(TransactionStatus::Broadcast(vec![]).is_supported());
-		assert!(TransactionStatus::InBlock(H256::random()).is_supported());
-		assert!(TransactionStatus::FinalityTimeout(H256::random()).is_supported());
-		assert!(TransactionStatus::Finalized(H256::random()).is_supported());
+		assert!(TransactionStatus::Ready.is_expected().is_ok());
+		assert!(TransactionStatus::Broadcast(vec![]).is_expected().is_ok());
+		assert!(TransactionStatus::InBlock(H256::random()).is_expected().is_ok());
+		assert!(TransactionStatus::Finalized(H256::random()).is_expected().is_ok());
 
 		// Not supported.
-		assert!(!TransactionStatus::Future.is_supported());
-		assert!(!TransactionStatus::Retracted(H256::random()).is_supported());
-		assert!(!TransactionStatus::Usurped(H256::random()).is_supported());
-		assert!(!TransactionStatus::Dropped.is_supported());
-		assert!(!TransactionStatus::Invalid.is_supported());
+		assert!(TransactionStatus::Future.is_expected().is_err());
+		assert!(TransactionStatus::Retracted(H256::random()).is_expected().is_err());
+		assert!(TransactionStatus::FinalityTimeout(H256::random()).is_expected().is_err());
+		assert!(TransactionStatus::Usurped(H256::random()).is_expected().is_err());
+		assert!(TransactionStatus::Dropped.is_expected().is_err());
+		assert!(TransactionStatus::Invalid.is_expected().is_err());
 	}
 
 	#[test]
