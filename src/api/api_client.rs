@@ -14,7 +14,6 @@
 use crate::{
 	api::error::{Error, Result},
 	rpc::Request,
-	utils::FromHexString,
 	GetAccountInformation,
 };
 use ac_compose_macros::rpc_params;
@@ -35,7 +34,7 @@ use sp_runtime::MultiSignature;
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, FromHexString, rpc::Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
@@ -178,7 +177,6 @@ where
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
-	Runtime::Hash: FromHexString,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
 	pub fn new(client: Client) -> Result<Self> {
@@ -239,7 +237,6 @@ where
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
-	Runtime::Hash: FromHexString,
 {
 	/// Get the genesis hash from node via websocket query.
 	fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
@@ -265,10 +262,7 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{
-		rpc::mocks::RpcClientMock, utils::ToHexString, GenericAdditionalParams,
-		PlainTipExtrinsicParams,
-	};
+	use crate::{rpc::mocks::RpcClientMock, GenericAdditionalParams, PlainTipExtrinsicParams};
 	use kitchensink_runtime::Runtime;
 	use sp_core::{sr25519::Pair, H256};
 	use std::{
@@ -321,9 +315,9 @@ mod tests {
 	fn api_runtime_update_works() {
 		let runtime_version = RuntimeVersion { spec_version: 10, ..Default::default() };
 		// Update metadata
-		let encoded_metadata = fs::read("./ksm_metadata_v14.bin").unwrap();
+		let encoded_metadata: Bytes = fs::read("./ksm_metadata_v14.bin").unwrap().into();
 		let metadata: RuntimeMetadataPrefixed =
-			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
+			Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap();
 		let metadata = Metadata::try_from(metadata).unwrap();
 
 		let mut changed_metadata = metadata.clone();
@@ -338,10 +332,7 @@ mod tests {
 				"state_getRuntimeVersion".to_owned(),
 				serde_json::to_string(&runtime_version).unwrap(),
 			),
-			(
-				"state_getMetadata".to_owned(),
-				serde_json::to_string(&encoded_metadata.to_hex()).unwrap(),
-			),
+			("state_getMetadata".to_owned(), serde_json::to_string(&encoded_metadata).unwrap()),
 		]);
 		let mut api =
 			create_mock_api(Default::default(), Default::default(), changed_metadata, data);

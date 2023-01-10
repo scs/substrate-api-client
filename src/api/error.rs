@@ -15,30 +15,45 @@
 
 */
 
-use crate::{api::XtStatus, rpc::Error as RpcClientError};
+use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError};
 use ac_node_api::{
+	error::DispatchError,
 	metadata::{InvalidMetadataError, MetadataError},
-	DispatchError,
 };
-use alloc::{boxed::Box, string::String};
+use alloc::boxed::Box;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, derive_more::From)]
 pub enum Error {
+	/// Could not fetch the genesis hash from node.
 	FetchGenesisHash,
+	/// Expected a signer, but none is assigned.
 	NoSigner,
+	/// Rpc Client Error.
 	RpcClient(RpcClientError),
+	/// Metadata Error.
 	Metadata(MetadataError),
+	/// Invalid Metadata Error.
 	InvalidMetadata(InvalidMetadataError),
+	/// Node Api Error.
 	NodeApi(ac_node_api::error::Error),
-	StorageValueDecode(codec::Error),
-	UnsupportedXtStatus(XtStatus),
+	/// Encode / Decode Error.
+	Codec(codec::Error),
+	/// Could not convert NumberOrHex with try_from.
 	TryFromIntError,
+	/// Node Api Dispatch Error.
 	Dispatch(DispatchError),
-	Extrinsic(String),
+	/// Encountered unexpected tx status during watch process.
+	UnexpectedTxStatus(UnexpectedTxStatus),
+	/// Could not send update because the Stream has been closed unexpectedly.
 	NoStream,
-	NoBlockHash,
-	NoBlock,
+	/// Could not find the expected extrinsic.
+	ExtrinsicNotFound,
+	/// Could not find the expected block hash.
+	BlockHashNotFound,
+	/// Could not find the expected block.
+	BlockNotFound,
+	/// Any custom Error.
 	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
 }

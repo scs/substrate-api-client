@@ -21,7 +21,6 @@ use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
 pub use decoder::*;
-pub use error::*;
 pub use events::*;
 pub use metadata::*;
 pub use storage::*;
