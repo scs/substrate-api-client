@@ -16,7 +16,6 @@
 use crate::{
 	api::{Api, GetStorage, Result},
 	rpc::{Request, Subscribe},
-	utils,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{
@@ -182,7 +181,7 @@ where
 		&self,
 	) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
 		debug!("subscribing to events");
-		let key = utils::storage_key("System", "Events");
+		let key = crate::storage_key("System", "Events");
 		self.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
 			.map_err(|e| e.into())
