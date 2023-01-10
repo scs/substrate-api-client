@@ -22,11 +22,19 @@ use kitchensink_runtime::{AccountId, BalancesCall, Runtime, RuntimeCall, Signatu
 use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, SignExtrinsic,
-	SubmitExtrinsic,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner,
+	SignExtrinsic, SubmitExtrinsic,
 };
 
-type MyExtrinsicSigner = ExtrinsicSigner<Pair, Signature, Runtime>;
+// Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
+// This way, the types don't have to be reassigned with every usage of this type and make
+// the code better readable.
+type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+
+// To access the ExtrinsicAddress type of the Signer, we need to this via the trait `SignExtrinsic`.
+// For better code readability, we define a simple type here and, at the same time, assign the
+// AccountId type of the `SignExtrinsic` trait.
+type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
 #[tokio::main]
 async fn main() {
@@ -38,10 +46,9 @@ async fn main() {
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(MyExtrinsicSigner::new(signer));
+	api.set_signer(ExtrinsicSigner::new(signer));
 
-	let recipient: <MyExtrinsicSigner as SignExtrinsic<AccountId>>::ExtrinsicAddress =
-		AccountKeyring::Bob.to_account_id().into();
+	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
 	// We use a manual nonce input here, because otherwise the api retrieves the nonce via getter and needs
 	// to wait for the response of the node (and the actual execution of the previous extrinsic).
 	// But because we want to spam the node with extrinsic, we simple monotonically increase the nonce, without

@@ -21,11 +21,20 @@ use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, AssetTipExtrinsicParams, EventDetails, ExtrinsicSigner, SignExtrinsic, SubmitAndWatch,
-	SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
+	Api, AssetTipExtrinsicParams, EventDetails, ExtrinsicSigner as GenericExtrinsicSigner,
+	SignExtrinsic, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus,
+	XtStatus,
 };
 
-type MyExtrinsicSigner = ExtrinsicSigner<Pair, Signature, Runtime>;
+// Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
+// This way, the types don't have to be reassigned with every usage of this type and make
+// the code better readable.
+type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+
+// To access the ExtrinsicAddress type of the ExtrinsicSigner, we need to access the trait `SignExtrinsic`.
+// As this is very verbose, we define a simple type here and, at the same time, assign the
+// AccountId type of the `SignExtrinsic` trait.
+type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
 #[tokio::main]
 async fn main() {
@@ -33,10 +42,9 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(MyExtrinsicSigner::new(alice_pair));
+	api.set_signer(ExtrinsicSigner::new(alice_pair));
 
-	let bob: <MyExtrinsicSigner as SignExtrinsic<AccountId>>::ExtrinsicAddress =
-		AccountKeyring::Bob.to_account_id().into();
+	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
 
 	// Submit extrinisc.
 	let xt0 = api.balance_transfer(bob.clone().into(), 1000);
