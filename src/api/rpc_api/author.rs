@@ -83,7 +83,7 @@ where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	/// Submit an extrinsic an return a websocket Subscription
+	/// Submit an extrinsic an return a Subscription
 	/// to watch the extrinsic progress.
 	fn submit_and_watch_extrinsic<Call, SignedExtra>(
 		&self,
@@ -93,16 +93,21 @@ where
 		Call: Encode,
 		SignedExtra: Encode;
 
-	/// Submit an encoded, opaque extrinsic an return a websocket Subscription to
+	/// Submit an encoded, opaque extrinsic an return a Subscription to
 	/// watch the extrinsic progress.
 	fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: Vec<u8>,
 	) -> Result<TransactionSubscriptionFor<Client, Hash>>;
 
-	/// Submit an extrinsic and watch in until the desired status
+	/// Submit an extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
-	// This method is blocking.
+	/// Upon success, a report containing the following information is returned:
+	/// - extrinsic hash
+	/// - if watched until at least `InBlock`:
+	///   hash of the block the extrinsic was included in
+	/// - last known extrinsic (transaction) status
+	/// This method is blocking.
 	fn submit_and_watch_extrinsic_until<Call, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
@@ -112,9 +117,14 @@ where
 		Call: Encode,
 		SignedExtra: Encode;
 
-	/// Submit an encoded, opaque extrinsic and watch in until the desired status
+	/// Submit an encoded, opaque extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
-	// This method is blocking.
+	/// Upon success, a report containing the following information is returned:
+	/// - extrinsic hash
+	/// - if watched until at least `InBlock`:
+	///   hash of the block the extrinsic was included in
+	/// - last known extrinsic (transaction) status
+	/// This method is blocking.
 	fn submit_and_watch_opaque_extrinsic_until(
 		&self,
 		encoded_extrinsic: Vec<u8>,
@@ -130,8 +140,13 @@ where
 	/// Submit an extrinsic and watch it until
 	/// - wait_for_finalized = false => InBlock
 	/// - wait_for_finalized = true => Finalized
-	/// and check if the extrinsic has been successful or not.
-	// This method is blocking.
+	/// Returns and error if the extrinsic was not successfully executed.
+	/// If successful it was successful, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - hash of the block the extrinsic was included in
+	/// - last known extrinsic (transaction) status
+	/// - associated events of the extrinsic
+	/// This method is blocking.
 	fn submit_and_watch_extrinsic_until_success<Call, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Call, SignedExtra>,
@@ -144,8 +159,13 @@ where
 	/// Submit an encoded, opaque extrinsic and watch it until
 	/// - wait_for_finalized = false => InBlock
 	/// - wait_for_finalized = true => Finalized
-	/// and check if the extrinsic has been successful or not.
-	// This method is blocking.
+	/// Returns and error if the extrinsic was not successfully executed.
+	/// If successful it was successful, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - hash of the block the extrinsic was included in
+	/// - last known extrinsic (transaction) status
+	/// - associated events of the extrinsic
+	/// This method is blocking.
 	fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
 		encoded_extrinsic: Vec<u8>,

@@ -63,7 +63,7 @@ async fn main() {
 	let result = api.submit_and_watch_extrinsic_until_success(xt, false);
 	println!("[+] Transaction got included into the TxPool.");
 
-	// Subscribe to system events. We expect the transfer to fail as Alice wants to transfer all her balance.
+	// We expect the transfer to fail as Alice wants to transfer all her balance.
 	// Therefore, she will not have enough money to pay the fees.
 	match result {
 		Ok(_report) => {
