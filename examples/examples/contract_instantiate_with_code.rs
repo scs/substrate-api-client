@@ -20,7 +20,7 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, SubmitAndWatch,
-	SubscribeEvents, SubscribeFrameSystem, XtStatus,
+	SubmitAndWatchUntilSuccess, XtStatus,
 };
 
 #[allow(unused)]
@@ -58,8 +58,6 @@ async fn main() {
 "#;
 	let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
-	let mut subscription = api.subscribe_system_events().expect("cannot subscribe to events");
-
 	let xt = api.contract_instantiate_with_code(
 		1_000_000_000_000_000,
 		500_000,
@@ -69,20 +67,24 @@ async fn main() {
 	);
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
-	let block_hash = api
-		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
-		.unwrap()
-		.block_hash
-		.unwrap();
-	println!("[+] Extrinsic is in Block. Hash: {:?}\n", block_hash);
+	let report = api.submit_and_watch_extrinsic_until_success(xt, false).unwrap();
+	println!("[+] Extrinsic is in Block. Hash: {:?}\n", report.block_hash.unwrap());
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let args: ContractInstantiatedEventArgs = api.wait_for_event(&mut subscription).unwrap();
+	let assosciated_contract_events = report.events.unwrap();
 
-	println!("[+] Event was received. Contract deployed at: {:?}\n", args.contract);
+	let contract_instantiated_events: Vec<ContractInstantiatedEventArgs> =
+		assosciated_contract_events
+			.iter()
+			.filter_map(|event| event.as_event().unwrap())
+			.collect();
+	// We only expect one instantiated event
+	assert_eq!(contract_instantiated_events.len(), 1);
+	let contract = contract_instantiated_events[0].contract.clone();
+	println!("[+] Event was received. Contract deployed at: {contract:?}\n");
 
-	let xt = api.contract_call(args.contract.into(), 500_000, 500_000, vec![0u8]);
+	let xt = api.contract_call(contract.into(), 500_000, 500_000, vec![0u8]);
 
 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).unwrap();

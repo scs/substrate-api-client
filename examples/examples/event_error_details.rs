@@ -1,16 +1,16 @@
 /*
-Copyright 2019 Supercomputing Systems AG
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+	Copyright 2019 Supercomputing Systems AG
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+		http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 */
 
 use codec::Decode;
@@ -18,8 +18,8 @@ use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, Result, StaticEvent,
-	SubmitAndWatch, SubscribeEvents, SubscribeFrameSystem, XtStatus,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetAccountInformation, StaticEvent,
+	SubmitAndWatchUntilSuccess,
 };
 
 #[derive(Decode)]
@@ -59,16 +59,14 @@ async fn main() {
 	println!("Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n", alice, bob);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
-	// Send and watch extrinsic until Ready.
-	let _tx_hash = api.submit_and_watch_extrinsic_until(xt, XtStatus::Ready).unwrap();
+	// Send and watch extrinsic until InBlock.
+	let result = api.submit_and_watch_extrinsic_until_success(xt, false);
 	println!("[+] Transaction got included into the TxPool.");
 
-	// Subscribe to system events. We expect the transfer to fail as Alice wants to transfer all her balance.
+	// We expect the transfer to fail as Alice wants to transfer all her balance.
 	// Therefore, she will not have enough money to pay the fees.
-	let mut subscription = api.subscribe_system_events().unwrap();
-	let args: Result<TransferEventArgs> = api.wait_for_event(&mut subscription);
-	match args {
-		Ok(_transfer) => {
+	match result {
+		Ok(_report) => {
 			panic!("Exptected the call to fail.");
 		},
 		Err(e) => {
