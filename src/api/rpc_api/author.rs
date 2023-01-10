@@ -140,7 +140,7 @@ where
 	/// - wait_for_finalized = false => InBlock
 	/// - wait_for_finalized = true => Finalized
 	/// Returns and error if the extrinsic was not successfully executed.
-	/// If successful it was successful, a report containing the following is returned:
+	/// If it was successful, a report containing the following is returned:
 	/// - extrinsic hash
 	/// - hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
@@ -159,7 +159,7 @@ where
 	/// - wait_for_finalized = false => InBlock
 	/// - wait_for_finalized = true => Finalized
 	/// Returns and error if the extrinsic was not successfully executed.
-	/// If successful it was successful, a report containing the following is returned:
+	/// If it was successful, a report containing the following is returned:
 	/// - extrinsic hash
 	/// - hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
