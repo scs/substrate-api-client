@@ -37,6 +37,9 @@ async fn main() {
 	let encoded_xt = api.balance_transfer(GenericAddress::Id(bob), 1000000000000).encode();
 
 	// Tests
-	let _fee_details = api.get_fee_details(encoded_xt.clone(), Some(block_hash)).unwrap().unwrap();
-	let _payment_info = api.get_payment_info(encoded_xt, Some(block_hash)).unwrap().unwrap();
+	let _fee_details = api
+		.get_fee_details(encoded_xt.clone().into(), Some(block_hash))
+		.unwrap()
+		.unwrap();
+	let _payment_info = api.get_payment_info(encoded_xt.into(), Some(block_hash)).unwrap().unwrap();
 }

@@ -16,12 +16,12 @@
 use crate::{
 	api::{Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils, Api, Events, ExtrinsicReport, FromHexString, GetBlock, GetStorage, Phase, ToHexString,
-	TransactionStatus, UncheckedExtrinsicV4, XtStatus,
+	Api, Events, ExtrinsicReport, GetBlock, GetStorage, Phase, TransactionStatus,
+	UncheckedExtrinsicV4, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::EventDetails;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
+use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig};
 use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
@@ -47,7 +47,7 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an encoded, opaque extrsinic to the substrate node.
 	/// Returns the extrinsic hash.
-	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Vec<u8>) -> Result<Self::Hash>;
+	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash>;
 }
 
 impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
@@ -66,14 +66,13 @@ where
 		Call: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_opaque_extrinsic(extrinsic.encode())
+		self.submit_opaque_extrinsic(extrinsic.encode().into())
 	}
 
-	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Vec<u8>) -> Result<Self::Hash> {
-		let hex_encoded_xt = encoded_extrinsic.to_hex();
+	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash> {
+		let hex_encoded_xt = rpc_params![encoded_extrinsic];
 		debug!("sending extrinsic: {:?}", hex_encoded_xt);
-		let xt_hash =
-			self.client().request("author_submitExtrinsic", rpc_params![hex_encoded_xt])?;
+		let xt_hash = self.client().request("author_submitExtrinsic", hex_encoded_xt)?;
 		Ok(xt_hash)
 	}
 }
@@ -97,7 +96,7 @@ where
 	/// watch the extrinsic progress.
 	fn submit_and_watch_opaque_extrinsic(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 	) -> Result<TransactionSubscriptionFor<Client, Hash>>;
 
 	/// Submit an extrinsic and watch in until the desired status
@@ -117,7 +116,7 @@ where
 	// This method is blocking.
 	fn submit_and_watch_opaque_extrinsic_until(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Hash>>;
 }
@@ -148,7 +147,7 @@ where
 	// This method is blocking.
 	fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Hash>>;
 }
@@ -160,7 +159,6 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Hash: FromHexString,
 {
 	fn submit_and_watch_extrinsic<Call, SignedExtra>(
 		&self,
@@ -170,16 +168,16 @@ where
 		Call: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_and_watch_opaque_extrinsic(extrinsic.encode())
+		self.submit_and_watch_opaque_extrinsic(extrinsic.encode().into())
 	}
 	fn submit_and_watch_opaque_extrinsic(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
-				rpc_params![encoded_extrinsic.to_hex()],
+				rpc_params![encoded_extrinsic],
 				"author_unsubmitAndWatchExtrinsic",
 			)
 			.map_err(|e| e.into())
@@ -194,15 +192,15 @@ where
 		Call: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_and_watch_opaque_extrinsic_until(extrinsic.encode(), watch_until)
+		self.submit_and_watch_opaque_extrinsic_until(extrinsic.encode().into(), watch_until)
 	}
 
 	fn submit_and_watch_opaque_extrinsic_until(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Runtime::Hash>> {
-		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic);
+		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic.0);
 		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic)?;
 
@@ -238,7 +236,6 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Hash: FromHexString,
 {
 	fn submit_and_watch_extrinsic_until_success<Call, SignedExtra>(
 		&self,
@@ -249,12 +246,15 @@ where
 		Call: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_and_watch_opaque_extrinsic_until_success(extrinsic.encode(), wait_for_finalized)
+		self.submit_and_watch_opaque_extrinsic_until_success(
+			extrinsic.encode().into(),
+			wait_for_finalized,
+		)
 	}
 
 	fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
-		encoded_extrinsic: Vec<u8>,
+		encoded_extrinsic: Bytes,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Runtime::Hash>> {
 		let xt_status = match wait_for_finalized {
@@ -282,7 +282,6 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Hash: FromHexString,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
 	fn retrieve_extrinsic_index_from_block(
@@ -305,7 +304,7 @@ where
 
 	/// Fetch all block events from node for the given block hash.
 	fn fetch_events_from_block(&self, block_hash: Runtime::Hash) -> Result<Events<Runtime::Hash>> {
-		let key = utils::storage_key("System", "Events");
+		let key = crate::storage_key("System", "Events");
 		let event_bytes = self
 			.get_opaque_storage_by_key_hash(key, Some(block_hash))?
 			.ok_or(Error::BlockNotFound)?;
@@ -344,7 +343,7 @@ mod tests {
 	use super::*;
 	use crate::{rpc::mocks::RpcClientMock, AssetTipExtrinsicParams, StorageData};
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::{FrameSystemConfig, RuntimeVersion, SignedBlock};
+	use ac_primitives::{Bytes, FrameSystemConfig, RuntimeVersion, SignedBlock};
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, UncheckedExtrinsic};
@@ -478,20 +477,15 @@ mod tests {
 			RuntimeCall::Balances(BalancesCall::transfer { dest: bob.clone(), value: 2000 });
 		let call3 = RuntimeCall::Balances(BalancesCall::transfer { dest: bob, value: 1000 });
 
-		let xt1 = UncheckedExtrinsic::new_unsigned(call1).encode();
-		let xt2 = UncheckedExtrinsic::new_unsigned(call2).encode();
-		let xt3 = UncheckedExtrinsic::new_unsigned(call3).encode();
+		let xt1: Bytes = UncheckedExtrinsic::new_unsigned(call1).encode().into();
+		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
+		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt1);
-		let xt_hash2 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt2);
-		let xt_hash3 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt3);
+		let xt_hash1 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt1.0);
+		let xt_hash2 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt2.0);
+		let xt_hash3 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt3.0);
 
-		// We have to create a Block with hex encoded extrinsic for serialization. Otherwise the deserialization will fail.
-		// e.g. UncheckedExtrinsic.serialize and UncheckedExtrinsic::deserialize does not work.
-		let block = Block {
-			header: default_header(),
-			extrinsics: vec![xt1.to_hex(), xt2.to_hex(), xt3.to_hex()],
-		};
+		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };
 		let data = HashMap::<String, String>::from([(
 			"chain_getBlock".to_owned(),
