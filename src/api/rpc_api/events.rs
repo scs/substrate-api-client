@@ -14,7 +14,7 @@
 use crate::{
 	api::{Api, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	utils, FromHexString, GetBlock, GetStorage, Phase,
+	GetBlock, GetStorage, Phase,
 };
 use ac_node_api::{EventDetails, Events, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
@@ -47,10 +47,9 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Hash: FromHexString,
 {
 	fn fetch_events_from_block(&self, block_hash: Runtime::Hash) -> Result<Events<Runtime::Hash>> {
-		let key = utils::storage_key("System", "Events");
+		let key = crate::storage_key("System", "Events");
 		let event_bytes = self
 			.get_opaque_storage_by_key_hash(key, Some(block_hash))?
 			.ok_or(Error::BlockNotFound)?;
@@ -151,7 +150,6 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Hash: FromHexString,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
 	fn retrieve_extrinsic_index_from_block(
@@ -199,9 +197,9 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{rpc::mocks::RpcClientMock, AssetTipExtrinsicParams, StorageData, ToHexString};
+	use crate::{rpc::mocks::RpcClientMock, AssetTipExtrinsicParams, StorageData};
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::{FrameSystemConfig, RuntimeVersion, SignedBlock};
+	use ac_primitives::{Bytes, FrameSystemConfig, RuntimeVersion, SignedBlock};
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, UncheckedExtrinsic};
@@ -335,20 +333,15 @@ mod tests {
 			RuntimeCall::Balances(BalancesCall::transfer { dest: bob.clone(), value: 2000 });
 		let call3 = RuntimeCall::Balances(BalancesCall::transfer { dest: bob, value: 1000 });
 
-		let xt1 = UncheckedExtrinsic::new_unsigned(call1).encode();
-		let xt2 = UncheckedExtrinsic::new_unsigned(call2).encode();
-		let xt3 = UncheckedExtrinsic::new_unsigned(call3).encode();
+		let xt1: Bytes = UncheckedExtrinsic::new_unsigned(call1).encode().into();
+		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
+		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt1);
-		let xt_hash2 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt2);
-		let xt_hash3 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt3);
+		let xt_hash1 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt1.0);
+		let xt_hash2 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt2.0);
+		let xt_hash3 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt3.0);
 
-		// We have to create a Block with hex encoded extrinsic for serialization. Otherwise the deserialization will fail.
-		// e.g. UncheckedExtrinsic.serialize and UncheckedExtrinsic::deserialize does not work.
-		let block = Block {
-			header: default_header(),
-			extrinsics: vec![xt1.to_hex(), xt2.to_hex(), xt3.to_hex()],
-		};
+		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };
 		let data = HashMap::<String, String>::from([(
 			"chain_getBlock".to_owned(),
