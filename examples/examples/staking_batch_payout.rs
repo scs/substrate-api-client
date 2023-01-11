@@ -61,6 +61,7 @@ async fn main() {
 		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
 	println!("{:?}", active_era);
 	let current_era_index = active_era.index;
+
 	// Test if payout staker extrinsic works. Careful: In CI, this extrinsic will fail to be executed, because
 	// one can not payout the current era (= 0 on the freshly started node). But this is okay, because we know if this
 	// error is returned from the node, the extrinsic has been created correctly.
