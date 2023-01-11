@@ -18,68 +18,81 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
+use super::{AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, SignExtrinsic,
-	UncheckedExtrinsicV4,
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
 
-pub const CONTRACTS_MODULE: &str = "Contracts";
-pub const CONTRACTS_PUT_CODE: &str = "put_code";
-pub const CONTRACTS_INSTANTIATE: &str = "instantiate";
-pub const CONTRACTS_INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
-pub const CONTRACTS_CALL: &str = "call";
+pub const MODULE: &str = "Contracts";
+pub const PUT_CODE: &str = "put_code";
+pub const INSTANTIATE: &str = "instantiate";
+pub const INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
+pub const CALL: &str = "call";
 
-type Gas = u64;
-type Data = Vec<u8>;
-type Code = Vec<u8>;
-type Salt = Vec<u8>;
+pub type PutCodeCall<Gas, Data> = (CallIndex, Compact<Gas>, Data);
+pub type InstantiateCall<Currency, Gas, Hash, Data> =
+	(CallIndex, Compact<Currency>, Compact<Gas>, Hash, Data);
+pub type InstantiateWithCodeCall<Currency, Gas, Code, Data, Salt> =
+	(CallIndex, Compact<Currency>, Compact<Gas>, Code, Data, Salt);
+pub type CallCall<Address, Currency, Gas, Data> =
+	(CallIndex, Address, Compact<Currency>, Compact<Gas>, Data);
 
-type GasLimit = Compact<Gas>;
-type Endowment<Currency> = Compact<Currency>;
-type Value<Currency> = Compact<Currency>;
+pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
+	type Gas;
+	type Currency;
+	type Hash;
+	type Data;
+	type Salt;
 
-pub type ContractPutCodeFn = (CallIndex, GasLimit, Data);
-pub type ContractInstantiateFn<Currency, Hash> =
-	(CallIndex, Endowment<Currency>, GasLimit, Hash, Data);
-pub type ContractInstantiateWithCodeFn<Currency> =
-	(CallIndex, Endowment<Currency>, GasLimit, Code, Data, Salt);
-pub type ContractCallFn<Address, Currency> = (CallIndex, Address, Value<Currency>, GasLimit, Data);
+	fn contract_put_code(
+		&self,
+		gas_limit: Self::Gas,
+		code: Self::Data,
+	) -> ExtrinsicFor<Self, PutCodeCall<Self::Gas, Self::Data>>;
 
-pub type ContractPutCodeXt<Address, Signature, SignedExtra> =
-	UncheckedExtrinsicV4<Address, ContractPutCodeFn, Signature, SignedExtra>;
-pub type ContractInstantiateXt<Address, Signature, SignedExtra, Currency, Hash> =
-	UncheckedExtrinsicV4<Address, ContractInstantiateFn<Currency, Hash>, Signature, SignedExtra>;
-pub type ContractInstantiateWithCodeXt<Address, Signature, SignedExtra, Currency> =
-	UncheckedExtrinsicV4<Address, ContractInstantiateWithCodeFn<Currency>, Signature, SignedExtra>;
-pub type ContractCallXt<Address, Signature, SignedExtra, Currency> =
-	UncheckedExtrinsicV4<Address, ContractCallFn<Address, Currency>, Signature, SignedExtra>;
+	fn contract_instantiate(
+		&self,
+		endowment: Self::Currency,
+		gas_limit: Self::Gas,
+		code_hash: Self::Hash,
+		data: Self::Data,
+	) -> ExtrinsicFor<Self, InstantiateCall<Self::Currency, Self::Gas, Self::Hash, Self::Data>>;
+
+	fn contract_instantiate_with_code(
+		&self,
+		endowment: Self::Currency,
+		gas_limit: Self::Gas,
+		code: Self::Data,
+		data: Self::Data,
+		salt: Self::Salt,
+	) -> ExtrinsicFor<
+		Self,
+		InstantiateWithCodeCall<Self::Currency, Self::Gas, Self::Data, Self::Data, Self::Salt>,
+	>;
+
+	fn contract_call(
+		&self,
+		dest: Self::Address,
+		value: Self::Currency,
+		gas_limit: Self::Gas,
+		data: Self::Data,
+	) -> ExtrinsicFor<Self, CallCall<Self::Address, Self::Currency, Self::Gas, Self::Data>>;
+}
 
 #[cfg(feature = "std")]
 type BalanceOf<T> = <<T as ContractsConfig>::Currency as frame_support::traits::Currency<
 	<T as FrameSystemConfig>::AccountId,
 >>::Balance;
-type ExtrinsicAddressOf<Signer, AccountId> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-type SignatureOf<Signer, AccountId> = <Signer as SignExtrinsic<AccountId>>::Signature;
-type HashOf<Runtime> = <Runtime as FrameSystemConfig>::Hash;
-type AccountIdOf<Runtime> = <Runtime as FrameSystemConfig>::AccountId;
 
 #[cfg(feature = "std")]
-type ContractInstantiateXtOf<Signer, SignedExtra, Runtime> = ContractInstantiateXt<
-	ExtrinsicAddressOf<Signer, AccountIdOf<Runtime>>,
-	SignatureOf<Signer, AccountIdOf<Runtime>>,
-	SignedExtra,
-	BalanceOf<Runtime>,
-	HashOf<Runtime>,
->;
-
-#[cfg(feature = "std")]
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> CreateContractsExtrinsic
+	for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
@@ -90,25 +103,31 @@ where
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,
 {
-	pub fn contract_put_code(
+	type Gas = u64;
+	type Currency = BalanceOf<Runtime>;
+	type Hash = Runtime::Hash;
+	type Data = Vec<u8>;
+	type Salt = Vec<u8>;
+
+	fn contract_put_code(
 		&self,
-		gas_limit: Gas,
-		code: Data,
-	) -> ContractPutCodeXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
-		compose_extrinsic!(self, CONTRACTS_MODULE, CONTRACTS_PUT_CODE, Compact(gas_limit), code)
+		gas_limit: Self::Gas,
+		code: Self::Data,
+	) -> ExtrinsicFor<Self, PutCodeCall<Self::Gas, Self::Data>> {
+		compose_extrinsic!(self, MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
-	pub fn contract_instantiate(
+	fn contract_instantiate(
 		&self,
-		endowment: BalanceOf<Runtime>,
-		gas_limit: Gas,
-		code_hash: Runtime::Hash,
-		data: Data,
-	) -> ContractInstantiateXtOf<Signer, Params::SignedExtra, Runtime> {
+		endowment: Self::Currency,
+		gas_limit: Self::Gas,
+		code_hash: Self::Hash,
+		data: Self::Data,
+	) -> ExtrinsicFor<Self, InstantiateCall<Self::Currency, Self::Gas, Self::Hash, Self::Data>> {
 		compose_extrinsic!(
 			self,
-			CONTRACTS_MODULE,
-			CONTRACTS_INSTANTIATE,
+			MODULE,
+			INSTANTIATE,
 			Compact(endowment),
 			Compact(gas_limit),
 			code_hash,
@@ -116,23 +135,21 @@ where
 		)
 	}
 
-	pub fn contract_instantiate_with_code(
+	fn contract_instantiate_with_code(
 		&self,
-		endowment: BalanceOf<Runtime>,
-		gas_limit: Gas,
-		code: Data,
-		data: Data,
-		salt: Data,
-	) -> ContractInstantiateWithCodeXt<
-		Signer::ExtrinsicAddress,
-		Signer::Signature,
-		Params::SignedExtra,
-		BalanceOf<Runtime>,
+		endowment: Self::Currency,
+		gas_limit: Self::Gas,
+		code: Self::Data,
+		data: Self::Data,
+		salt: Self::Salt,
+	) -> ExtrinsicFor<
+		Self,
+		InstantiateWithCodeCall<Self::Currency, Self::Gas, Self::Data, Self::Data, Self::Salt>,
 	> {
 		compose_extrinsic!(
 			self,
-			CONTRACTS_MODULE,
-			CONTRACTS_INSTANTIATE_WITH_CODE,
+			MODULE,
+			INSTANTIATE_WITH_CODE,
 			Compact(endowment),
 			Compact(gas_limit),
 			code,
@@ -141,26 +158,13 @@ where
 		)
 	}
 
-	pub fn contract_call(
+	fn contract_call(
 		&self,
-		dest: Signer::ExtrinsicAddress,
-		value: BalanceOf<Runtime>,
-		gas_limit: Gas,
-		data: Data,
-	) -> ContractCallXt<
-		Signer::ExtrinsicAddress,
-		Signer::Signature,
-		Params::SignedExtra,
-		BalanceOf<Runtime>,
-	> {
-		compose_extrinsic!(
-			self,
-			CONTRACTS_MODULE,
-			CONTRACTS_CALL,
-			dest,
-			Compact(value),
-			Compact(gas_limit),
-			data
-		)
+		dest: Self::Address,
+		value: Self::Currency,
+		gas_limit: Self::Gas,
+		data: Self::Data,
+	) -> ExtrinsicFor<Self, CallCall<Self::Address, Self::Currency, Self::Gas, Self::Data>> {
+		compose_extrinsic!(self, MODULE, CALL, dest, Compact(value), Compact(gas_limit), data)
 	}
 }
