@@ -122,6 +122,7 @@ jobs:
           get_blocks,
           get_storage,
           print_metadata,
+          staking_batch_payout,
           sudo,
           transfer_with_tungstenite_client,
           transfer_with_ws_client,
