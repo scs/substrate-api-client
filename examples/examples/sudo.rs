@@ -27,12 +27,12 @@ use substrate_api_client::{
 };
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
-// This way, the types don't have to be reassigned with every usage of this type and make
+// This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
 type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
 
-// To access the ExtrinsicAddress type of the ExtrinsicSigner, we need to access the trait `SignExtrinsic`.
-// As this is very verbose, we define a simple type here and, at the same time, assign the
+// To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
+// For better code readability, we define a simple type here and, at the same time, assign the
 // AccountId type of the `SignExtrinsic` trait.
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
