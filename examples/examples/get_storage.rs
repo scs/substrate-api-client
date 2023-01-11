@@ -16,9 +16,11 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use frame_system::AccountInfo as GenericAccountInfo;
-use kitchensink_runtime::Runtime;
+use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, GetStorage, PlainTipExtrinsicParams};
+use substrate_api_client::{
+	rpc::JsonrpseeClient, Api, ExtrinsicSigner, GetStorage, PlainTipExtrinsicParams,
+};
 
 type IndexFor<T> = <T as frame_system::Config>::Index;
 type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
@@ -54,7 +56,7 @@ async fn main() {
 
 	// get Alice's AccountNonce with api.get_nonce()
 	let signer = AccountKeyring::Alice.pair();
-	api.set_signer(signer);
+	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
 	// Get an vector of storage keys, numbering up to the given max keys and that start with the (optionally) given storage key prefix.

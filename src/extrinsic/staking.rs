@@ -21,13 +21,12 @@ use super::common::*;
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	BalancesConfig, CallIndex, ExtrinsicParams, GenericAddress, RewardDestination, StakingConfig,
+	BalancesConfig, CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig,
 	UncheckedExtrinsicV4,
 };
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
-use sp_core::Pair;
-use sp_runtime::{traits::GetRuntimeBlockType, AccountId32, MultiSignature, MultiSigner};
+use sp_runtime::traits::GetRuntimeBlockType;
 
 const STAKING_MODULE: &str = "Staking";
 const STAKING_BOND: &str = "bond";
@@ -45,57 +44,58 @@ const FORCE_NO_ERA: &str = "force_no_era";
 const STAKING_SET_PAYEE: &str = "set_payee";
 const SET_VALIDATOR_COUNT: &str = "set_validator_count";
 
-pub type StakingBondFn<Balance> =
-	(CallIndex, GenericAddress, Compact<Balance>, RewardDestination<GenericAddress>);
+pub type StakingBondFn<Address, Balance> =
+	(CallIndex, Address, Compact<Balance>, RewardDestination<Address>);
 pub type StakingBondExtraFn<Balance> = (CallIndex, Compact<Balance>);
 pub type StakingUnbondFn<Balance> = (CallIndex, Compact<Balance>);
 pub type StakingRebondFn<Balance> = (CallIndex, Compact<Balance>);
 pub type StakingWithdrawUnbondedFn = (CallIndex, u32);
-pub type StakingNominateFn = (CallIndex, Vec<GenericAddress>);
+pub type StakingNominateFn<Address> = (CallIndex, Vec<Address>);
 pub type StakingChillFn = CallIndex;
-pub type StakingSetControllerFn = (CallIndex, GenericAddress);
-pub type StakingPayoutStakersFn = (CallIndex, PayoutStakers);
+pub type StakingSetControllerFn<Address> = (CallIndex, Address);
+pub type StakingPayoutStakersFn<AccountId> = (CallIndex, PayoutStakers<AccountId>);
 pub type StakingForceNewEraFn = (CallIndex, ForceEra);
 pub type StakingForceNewEraAlwaysFn = (CallIndex, ForceEra);
 pub type StakingForceNoEraFn = (CallIndex, ForceEra);
-pub type StakingSetPayeeFn = (CallIndex, GenericAddress);
+pub type StakingSetPayeeFn<Address> = (CallIndex, Address);
 pub type StakingSetValidatorCountFn = (CallIndex, u32);
 
-pub type StakingBondXt<SignedExtra, Balance> =
-	UncheckedExtrinsicV4<StakingBondFn<Balance>, SignedExtra>;
-pub type StakingBondExtraXt<SignedExtra, Balance> =
-	UncheckedExtrinsicV4<StakingBondExtraFn<Balance>, SignedExtra>;
-pub type StakingUnbondXt<SignedExtra, Balance> =
-	UncheckedExtrinsicV4<StakingUnbondFn<Balance>, SignedExtra>;
-pub type StakingRebondXt<SignedExtra, Balance> =
-	UncheckedExtrinsicV4<StakingRebondFn<Balance>, SignedExtra>;
-pub type StakingWithdrawUnbondedXt<SignedExtra> =
-	UncheckedExtrinsicV4<StakingWithdrawUnbondedFn, SignedExtra>;
-pub type StakingNominateXt<SignedExtra> = UncheckedExtrinsicV4<StakingNominateFn, SignedExtra>;
-pub type StakingChillXt<SignedExtra> = UncheckedExtrinsicV4<StakingChillFn, SignedExtra>;
-pub type StakingSetControllerXt<SignedExtra> =
-	UncheckedExtrinsicV4<StakingSetControllerFn, SignedExtra>;
-pub type StakingPayoutStakersXt<SignedExtra> =
-	UncheckedExtrinsicV4<StakingPayoutStakersFn, SignedExtra>;
-pub type StakingForceNewEraXt<SignedExtra> =
-	UncheckedExtrinsicV4<StakingForceNewEraFn, SignedExtra>;
-pub type StakingForceNewEraAlwaysXt<SignedExtra> =
-	UncheckedExtrinsicV4<StakingForceNewEraAlwaysFn, SignedExtra>;
-pub type StakingForceNoEraXt<SignedExtra> = UncheckedExtrinsicV4<StakingForceNoEraFn, SignedExtra>;
-pub type StakingSetPayeeXt<SignedExtra> = UncheckedExtrinsicV4<StakingSetPayeeFn, SignedExtra>;
-pub type StakingSetValidatorCountXt<SignedExtra> =
-	UncheckedExtrinsicV4<StakingSetValidatorCountFn, SignedExtra>;
+pub type StakingBondXt<Address, Signature, SignedExtra, Balance> =
+	UncheckedExtrinsicV4<Address, StakingBondFn<Address, Balance>, Signature, SignedExtra>;
+pub type StakingBondExtraXt<Address, Signature, SignedExtra, Balance> =
+	UncheckedExtrinsicV4<Address, StakingBondExtraFn<Balance>, Signature, SignedExtra>;
+pub type StakingUnbondXt<Address, Signature, SignedExtra, Balance> =
+	UncheckedExtrinsicV4<Address, StakingUnbondFn<Balance>, Signature, SignedExtra>;
+pub type StakingRebondXt<Address, Signature, SignedExtra, Balance> =
+	UncheckedExtrinsicV4<Address, StakingRebondFn<Balance>, Signature, SignedExtra>;
+pub type StakingWithdrawUnbondedXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingWithdrawUnbondedFn, Signature, SignedExtra>;
+pub type StakingNominateXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingNominateFn<Address>, Signature, SignedExtra>;
+pub type StakingChillXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingChillFn, Signature, SignedExtra>;
+pub type StakingSetControllerXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingSetControllerFn<Address>, Signature, SignedExtra>;
+pub type StakingPayoutStakersXt<Address, Signature, SignedExtra, AccountId> =
+	UncheckedExtrinsicV4<Address, StakingPayoutStakersFn<AccountId>, Signature, SignedExtra>;
+pub type StakingForceNewEraXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingForceNewEraFn, Signature, SignedExtra>;
+pub type StakingForceNewEraAlwaysXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingForceNewEraAlwaysFn, Signature, SignedExtra>;
+pub type StakingForceNoEraXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingForceNoEraFn, Signature, SignedExtra>;
+pub type StakingSetPayeeXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingSetPayeeFn<Address>, Signature, SignedExtra>;
+pub type StakingSetValidatorCountXt<Address, Signature, SignedExtra> =
+	UncheckedExtrinsicV4<Address, StakingSetValidatorCountFn, Signature, SignedExtra>;
 
 // https://polkadot.js.org/docs/substrate/extrinsics#staking
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
+	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: GetRuntimeBlockType + BalancesConfig + StakingConfig,
-	Runtime::AccountId: From<Signer::Public>,
 	Compact<Runtime::CurrencyBalance>: Encode,
 	Runtime::Header: DeserializeOwned,
 	Runtime::RuntimeBlock: DeserializeOwned,
@@ -103,10 +103,15 @@ where
 	/// Bond `value` amount to `controller`
 	pub fn staking_bond(
 		&self,
-		controller: GenericAddress,
+		controller: Signer::ExtrinsicAddress,
 		value: Runtime::CurrencyBalance,
-		payee: RewardDestination<GenericAddress>,
-	) -> StakingBondXt<Params::SignedExtra, Runtime::CurrencyBalance> {
+		payee: RewardDestination<Signer::ExtrinsicAddress>,
+	) -> StakingBondXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		Runtime::CurrencyBalance,
+	> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND, controller, Compact(value), payee)
 	}
 
@@ -114,7 +119,12 @@ where
 	pub fn staking_bond_extra(
 		&self,
 		value: Runtime::CurrencyBalance,
-	) -> StakingBondExtraXt<Params::SignedExtra, Runtime::CurrencyBalance> {
+	) -> StakingBondExtraXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		Runtime::CurrencyBalance,
+	> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_BOND_EXTRA, Compact(value))
 	}
 
@@ -124,7 +134,12 @@ where
 	pub fn staking_unbond(
 		&self,
 		value: Runtime::CurrencyBalance,
-	) -> StakingUnbondXt<Params::SignedExtra, Runtime::CurrencyBalance> {
+	) -> StakingUnbondXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		Runtime::CurrencyBalance,
+	> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_UNBOND, Compact(value))
 	}
 
@@ -132,7 +147,12 @@ where
 	pub fn staking_rebond(
 		&self,
 		value: Runtime::CurrencyBalance,
-	) -> StakingRebondXt<Params::SignedExtra, Runtime::CurrencyBalance> {
+	) -> StakingRebondXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		Runtime::CurrencyBalance,
+	> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_REBOND, Compact(value))
 	}
 
@@ -142,7 +162,8 @@ where
 	pub fn staking_withdraw_unbonded(
 		&self,
 		num_slashing_spans: u32,
-	) -> StakingWithdrawUnbondedXt<Params::SignedExtra> {
+	) -> StakingWithdrawUnbondedXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra>
+	{
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_WITHDRAW_UNBONDED, num_slashing_spans)
 	}
 
@@ -150,13 +171,15 @@ where
 	/// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
 	pub fn staking_nominate(
 		&self,
-		targets: Vec<GenericAddress>,
-	) -> StakingNominateXt<Params::SignedExtra> {
+		targets: Vec<Signer::ExtrinsicAddress>,
+	) -> StakingNominateXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_NOMINATE, targets)
 	}
 
 	/// Stop nominating por validating. Effects take place in the next era
-	pub fn staking_chill(&self) -> StakingChillXt<Params::SignedExtra> {
+	pub fn staking_chill(
+		&self,
+	) -> StakingChillXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_CHILL)
 	}
 
@@ -165,37 +188,54 @@ where
 	/// Must be Signed by the stash, not the controller.
 	pub fn staking_set_controller(
 		&self,
-		controller: GenericAddress,
-	) -> StakingSetControllerXt<Params::SignedExtra> {
+		controller: Signer::ExtrinsicAddress,
+	) -> StakingSetControllerXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_CONTROLLER, controller)
 	}
+
 	/// Return the payout call for the given era
 	pub fn payout_stakers(
 		&self,
 		era: u32,
-		account: AccountId32,
-	) -> StakingPayoutStakersXt<Params::SignedExtra> {
+		account: Runtime::AccountId,
+	) -> StakingPayoutStakersXt<
+		Signer::ExtrinsicAddress,
+		Signer::Signature,
+		Params::SignedExtra,
+		Runtime::AccountId,
+	> {
 		let value = PayoutStakers { validator_stash: account, era };
 		compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
 	}
 
 	/// For New Era at the end of Next Session.
-	pub fn force_new_era(&self) -> StakingForceNewEraXt<Params::SignedExtra> {
+	pub fn force_new_era(
+		&self,
+	) -> StakingForceNewEraXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
 		compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA, ForceEra {})
 	}
 
 	/// Force there to be a new era at the end of sessions indefinitely.
-	pub fn force_new_era_always(&self) -> StakingForceNewEraAlwaysXt<Params::SignedExtra> {
+	pub fn force_new_era_always(
+		&self,
+	) -> StakingForceNewEraAlwaysXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra>
+	{
 		compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA_ALWAYS, ForceEra {})
 	}
 
 	/// Force there to be no new eras indefinitely.
-	pub fn force_no_era(&self) -> StakingForceNewEraAlwaysXt<Params::SignedExtra> {
+	pub fn force_no_era(
+		&self,
+	) -> StakingForceNewEraAlwaysXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra>
+	{
 		compose_extrinsic!(self, STAKING_MODULE, FORCE_NO_ERA, ForceEra {})
 	}
 
 	/// Re-set the payment target for a controller.
-	pub fn set_payee(&self, payee: GenericAddress) -> StakingSetControllerXt<Params::SignedExtra> {
+	pub fn set_payee(
+		&self,
+		payee: Signer::ExtrinsicAddress,
+	) -> StakingSetControllerXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra> {
 		compose_extrinsic!(self, STAKING_MODULE, STAKING_SET_PAYEE, payee)
 	}
 
@@ -203,7 +243,8 @@ where
 	pub fn set_validator_count(
 		&self,
 		count: u32,
-	) -> StakingSetValidatorCountXt<Params::SignedExtra> {
+	) -> StakingSetValidatorCountXt<Signer::ExtrinsicAddress, Signer::Signature, Params::SignedExtra>
+	{
 		compose_extrinsic!(self, STAKING_MODULE, SET_VALIDATOR_COUNT, count)
 	}
 }

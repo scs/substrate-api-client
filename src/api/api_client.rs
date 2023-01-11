@@ -18,13 +18,11 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
-use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion};
+use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion, SignExtrinsic};
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
-use sp_core::Pair;
-use sp_runtime::MultiSignature;
 
 /// Api to talk with substrate-nodes
 ///
@@ -209,23 +207,21 @@ where
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
+	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	/// Get the public part of the api signer account.
-	pub fn signer_account(&self) -> Option<Runtime::AccountId> {
+	pub fn signer_account(&self) -> Option<&Runtime::AccountId> {
 		let pair = self.signer.as_ref()?;
-		Some(pair.public().into())
+		Some(pair.public_account_id())
 	}
 
 	/// Get nonce of self signer account.
 	pub fn get_nonce(&self) -> Result<Runtime::Index> {
 		let account = self.signer_account().ok_or(Error::NoSigner)?;
-		self.get_account_info(&account)
+		self.get_account_info(account)
 			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
 }

@@ -16,13 +16,13 @@
 //! Example to show how to get the account identity display name from the identity pallet.
 
 use frame_support::traits::Currency;
-use kitchensink_runtime::Runtime as KitchensinkRuntime;
+use kitchensink_runtime::{Runtime as KitchensinkRuntime, Signature};
 use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetStorage,
-	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
+	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner,
+	GetStorage, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
@@ -43,7 +43,7 @@ async fn main() {
 	let mut api =
 		Api::<_, _, AssetTipExtrinsicParams<KitchensinkRuntime>, KitchensinkRuntime>::new(client)
 			.unwrap();
-	api.set_signer(signer.clone());
+	api.set_signer(ExtrinsicSigner::<_, Signature, KitchensinkRuntime>::new(signer.clone()));
 
 	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {
@@ -58,7 +58,7 @@ async fn main() {
 		twitter: Data::None,
 	};
 
-	let xt: UncheckedExtrinsicV4<_, _> =
+	let xt: UncheckedExtrinsicV4<_, _, _, _> =
 		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone()));
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 

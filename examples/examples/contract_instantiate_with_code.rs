@@ -16,11 +16,11 @@
 //! This example is community maintained and not CI tested, therefore it may not work as is.
 
 use codec::Decode;
-use kitchensink_runtime::Runtime;
+use kitchensink_runtime::{AccountId, Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, AccountId, Api, PlainTipExtrinsicParams, StaticEvent, SubmitAndWatch,
-	SubmitAndWatchUntilSuccess, XtStatus,
+	rpc::JsonrpseeClient, Api, ExtrinsicSigner, PlainTipExtrinsicParams, StaticEvent,
+	SubmitAndWatch, SubmitAndWatchUntilSuccess, SubscribeEvents, SubscribeFrameSystem, XtStatus,
 };
 
 #[allow(unused)]
@@ -45,7 +45,7 @@ async fn main() {
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(signer);
+	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 

@@ -12,13 +12,14 @@
 */
 
 use codec::{Decode, Encode};
-use kitchensink_runtime::Runtime;
+use kitchensink_runtime::{Runtime, Signature};
 use pallet_staking::{ActiveEraInfo, Exposure};
 use serde_json::Value;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, GetStorage, PlainTipExtrinsicParams, SubmitAndWatch, XtStatus,
+	rpc::JsonrpseeClient, Api, ExtrinsicSigner, GetStorage, PlainTipExtrinsicParams,
+	SubmitAndWatch, XtStatus,
 };
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;
@@ -47,7 +48,7 @@ async fn main() {
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(alice);
+	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice));
 
 	// Give a valid validator account address, given one is westend chain validator account.
 	let account =
@@ -118,7 +119,7 @@ async fn main() {
 pub fn get_last_reward(
 	account: &AccountId32,
 	api: &substrate_api_client::Api<
-		sp_core::sr25519::Pair,
+		ExtrinsicSigner<sp_core::sr25519::Pair, Signature, Runtime>,
 		JsonrpseeClient,
 		PlainTipExtrinsicParams<Runtime>,
 		Runtime,
