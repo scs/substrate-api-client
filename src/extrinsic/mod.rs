@@ -17,6 +17,8 @@
 
 //! Offers some predefined extrinsics for common runtime modules.
 
+pub use balances::CreateBalancesExtrinsic;
+
 pub mod balances;
 pub mod common;
 pub mod contracts;

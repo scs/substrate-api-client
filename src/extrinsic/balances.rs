@@ -25,59 +25,75 @@ use ac_primitives::{
 use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::GetRuntimeBlockType;
 
-pub const BALANCES_MODULE: &str = "Balances";
-pub const BALANCES_TRANSFER: &str = "transfer";
-pub const BALANCES_SET_BALANCE: &str = "set_balance";
+pub const MODULE: &str = "Balances";
+pub const TRANSFER: &str = "transfer";
+pub const SET_BALANCE: &str = "set_balance";
 
-pub type BalanceTransferFn<Address, Balance> = (CallIndex, Address, Compact<Balance>);
-pub type BalanceSetBalanceFn<Address, Balance> =
+pub type BalanceTransferCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
+pub type BalanceSetBalanceCall<Address, Balance> =
 	(CallIndex, Address, Compact<Balance>, Compact<Balance>);
 
-pub type BalanceTransferXt<Address, Balance, Signature, SignedExtra> =
-	UncheckedExtrinsicV4<Address, BalanceTransferFn<Address, Balance>, Signature, SignedExtra>;
-pub type BalanceSetBalanceXt<Address, Balance, Signature, SignedExtra> =
-	UncheckedExtrinsicV4<Address, BalanceSetBalanceFn<Address, Balance>, Signature, SignedExtra>;
+type AddressFor<Module> = <Module as CreateBalancesExtrinsic>::Address;
+type SignatureFor<Module> = <Module as CreateBalancesExtrinsic>::Signature;
+type SignedExtraFor<Module> = <Module as CreateBalancesExtrinsic>::SignedExtra;
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+type ExtrinsicFor<Module, Call> =
+	UncheckedExtrinsicV4<AddressFor<Module>, Call, SignatureFor<Module>, SignedExtraFor<Module>>;
+
+pub trait CreateBalancesExtrinsic {
+	type Balance;
+	type Address;
+	type Signature;
+	type SignedExtra;
+
+	fn balance_transfer(
+		&self,
+		to: Self::Address,
+		amount: Self::Balance,
+	) -> ExtrinsicFor<Self, BalanceTransferCall<Self::Address, Self::Balance>>;
+
+	fn balance_set_balance(
+		&self,
+		who: Self::Address,
+		free_balance: Self::Balance,
+		reserved_balance: Self::Balance,
+	) -> ExtrinsicFor<Self, BalanceSetBalanceCall<Self::Address, Self::Balance>>;
+}
+
+impl<Signer, Client, Params, Runtime> CreateBalancesExtrinsic
+	for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
-	Runtime: GetRuntimeBlockType + BalancesConfig,
+	Runtime: BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Compact<Runtime::Balance>: Encode,
 	Runtime::Header: DeserializeOwned,
-	Runtime::RuntimeBlock: DeserializeOwned,
 {
-	pub fn balance_transfer(
+	type Balance = Runtime::Balance;
+	type Address = Signer::ExtrinsicAddress;
+	type Signature = Signer::Signature;
+	type SignedExtra = Params::SignedExtra;
+
+	fn balance_transfer(
 		&self,
-		to: Signer::ExtrinsicAddress,
-		amount: Runtime::Balance,
-	) -> BalanceTransferXt<
-		Signer::ExtrinsicAddress,
-		Runtime::Balance,
-		Signer::Signature,
-		Params::SignedExtra,
-	> {
-		compose_extrinsic!(self, BALANCES_MODULE, BALANCES_TRANSFER, to, Compact(amount))
+		to: Self::Address,
+		amount: Self::Balance,
+	) -> ExtrinsicFor<Self, BalanceTransferCall<Self::Address, Self::Balance>> {
+		compose_extrinsic!(self, MODULE, TRANSFER, to, Compact(amount))
 	}
 
-	pub fn balance_set_balance(
+	fn balance_set_balance(
 		&self,
-		who: Signer::ExtrinsicAddress,
-		free_balance: Runtime::Balance,
-		reserved_balance: Runtime::Balance,
-	) -> BalanceSetBalanceXt<
-		Signer::ExtrinsicAddress,
-		Runtime::Balance,
-		Signer::Signature,
-		Params::SignedExtra,
-	> {
+		who: Self::Address,
+		free_balance: Self::Balance,
+		reserved_balance: Self::Balance,
+	) -> ExtrinsicFor<Self, BalanceSetBalanceCall<Self::Address, Self::Balance>> {
 		compose_extrinsic!(
 			self,
-			BALANCES_MODULE,
-			BALANCES_SET_BALANCE,
+			MODULE,
+			SET_BALANCE,
 			who,
 			Compact(free_balance),
 			Compact(reserved_balance)
