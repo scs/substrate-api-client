@@ -19,26 +19,22 @@
 
 use crate::Api;
 use ac_compose_macros::compose_extrinsic_offline;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4};
 use codec::Encode;
-use sp_core::Pair;
-use sp_runtime::{MultiSignature, MultiSigner};
 
 impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
-	MultiSigner: From<Signer::Public>,
+	Signer: SignExtrinsic<Runtime::AccountId>,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
 {
 	/// Wrapper around the `compose_extrinsic_offline!` macro to be less verbose.
 	pub fn compose_extrinsic_offline<Call: Encode + Clone>(
 		&self,
 		call: Call,
 		nonce: Runtime::Index,
-	) -> UncheckedExtrinsicV4<Call, Params::SignedExtra> {
+	) -> UncheckedExtrinsicV4<Signer::ExtrinsicAddress, Call, Signer::Signature, Params::SignedExtra>
+	{
 		match self.signer() {
 			Some(signer) => compose_extrinsic_offline!(signer, call, self.extrinsic_params(nonce)),
 			None => UncheckedExtrinsicV4 { signature: None, function: call },

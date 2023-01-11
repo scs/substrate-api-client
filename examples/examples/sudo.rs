@@ -17,12 +17,24 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use codec::Compact;
-use kitchensink_runtime::Runtime;
+use kitchensink_runtime::{AccountId, Runtime, Signature};
+use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	compose_call, compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	GenericAddress, GetAccountInformation, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
+	ExtrinsicSigner as GenericExtrinsicSigner, GetAccountInformation, SignExtrinsic,
+	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
+
+// Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
+// This way, the types don't have to be reassigned with every usage of this type and makes
+// the code better readable.
+type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+
+// To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
+// For better code readability, we define a simple type here and, at the same time, assign the
+// AccountId type of the `SignExtrinsic` trait.
+type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
 #[tokio::main]
 async fn main() {
@@ -32,7 +44,7 @@ async fn main() {
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(sudoer);
+	api.set_signer(ExtrinsicSigner::new(sudoer));
 
 	// Set the recipient of newly issued funds.
 	let recipient = AccountKeyring::Bob.to_account_id();
@@ -42,17 +54,19 @@ async fn main() {
 	println!("[+] Recipients's Free Balance is now {}\n", recipient_balance);
 
 	// Compose a call that should only be executable via Sudo.
+	let recipients_extrinsic_address: ExtrinsicAddressOf<ExtrinsicSigner> =
+		recipient.clone().into();
 	let new_balance = recipient_balance + 100;
 	let call = compose_call!(
 		api.metadata(),
 		"Balances",
 		"set_balance",
-		GenericAddress::Id(recipient.clone()),
+		recipients_extrinsic_address,
 		Compact(new_balance),
 		Compact(new_balance)
 	);
 
-	let xt: UncheckedExtrinsicV4<_, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
+	let xt: UncheckedExtrinsicV4<_, _, _, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api

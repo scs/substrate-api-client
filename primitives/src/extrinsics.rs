@@ -20,41 +20,46 @@
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
-use sp_runtime::MultiSignature;
 
-pub use sp_runtime::{AccountId32 as AccountId, MultiAddress};
-
-pub type AccountIndex = u64;
-
-pub type GenericAddress = sp_runtime::MultiAddress<AccountId, u32>;
-
+/// Call Index used a prefix of every extrinsic call.
 pub type CallIndex = [u8; 2];
+
+/// Current version of the [`UncheckedExtrinsic`] encoded format.
+const V4: u8 = 4;
 
 /// Mirrors the currently used Extrinsic format (V4) from substrate. Has less traits and methods though.
 /// The SingedExtra used does not need to implement SingedExtension here.
+// see https://github.com/paritytech/substrate/blob/7d233c2446b5a60662400a0a4bcfb78bb3b79ff7/primitives/runtime/src/generic/unchecked_extrinsic.rs
 #[derive(Clone, Eq, PartialEq)]
-pub struct UncheckedExtrinsicV4<Call, SignedExtra> {
-	pub signature: Option<(GenericAddress, MultiSignature, SignedExtra)>,
+pub struct UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra> {
+	pub signature: Option<(Address, Signature, SignedExtra)>,
 	pub function: Call,
 }
 
-impl<Call, SignedExtra> UncheckedExtrinsicV4<Call, SignedExtra>
-where
-	Call: Encode,
-	SignedExtra: Encode,
+impl<Address, Call, Signature, SignedExtra>
+	UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 {
+	/// New instance of a signed extrinsic.
 	pub fn new_signed(
 		function: Call,
-		signed: GenericAddress,
-		signature: MultiSignature,
+		signed: Address,
+		signature: Signature,
 		extra: SignedExtra,
 	) -> Self {
 		UncheckedExtrinsicV4 { signature: Some((signed, signature, extra)), function }
 	}
+
+	/// New instance of an unsigned extrinsic.
+	pub fn new_unsigned(function: Call) -> Self {
+		Self { signature: None, function }
+	}
 }
 
-impl<Call, SignedExtra> fmt::Debug for UncheckedExtrinsicV4<Call, SignedExtra>
+impl<Address, Call, Signature, SignedExtra> fmt::Debug
+	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 where
+	Address: fmt::Debug,
+	Signature: fmt::Debug,
 	Call: fmt::Debug,
 	SignedExtra: fmt::Debug,
 {
@@ -68,10 +73,11 @@ where
 	}
 }
 
-const V4: u8 = 4;
-
-impl<Call, SignedExtra> Encode for UncheckedExtrinsicV4<Call, SignedExtra>
+impl<Address, Call, Signature, SignedExtra> Encode
+	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 where
+	Address: Encode,
+	Signature: Encode,
 	Call: Encode,
 	SignedExtra: Encode,
 {
@@ -91,10 +97,13 @@ where
 	}
 }
 
-impl<Call, SignedExtra> Decode for UncheckedExtrinsicV4<Call, SignedExtra>
+impl<Address, Call, Signature, SignedExtra> Decode
+	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 where
-	Call: Decode + Encode,
-	SignedExtra: Decode + Encode,
+	Address: Decode,
+	Signature: Decode,
+	Call: Decode,
+	SignedExtra: Decode,
 {
 	fn decode<I: Input>(input: &mut I) -> Result<Self, Error> {
 		// This is a little more complicated than usual since the binary format must be compatible
@@ -146,7 +155,7 @@ mod tests {
 	use super::*;
 	use crate::{ExtrinsicParams, GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
 	use sp_core::{Pair, H256 as Hash};
-	use sp_runtime::{generic::Era, testing::sr25519, MultiSignature};
+	use sp_runtime::{generic::Era, testing::sr25519, AccountId32, MultiSignature};
 
 	#[test]
 	fn encode_decode_roundtrip_works() {
@@ -154,7 +163,7 @@ mod tests {
 		let (pair, _) = sr25519::Pair::generate();
 		let signature = pair.sign(msg);
 		let multi_sig = MultiSignature::from(signature);
-		let account: AccountId = pair.public().into();
+		let account: AccountId32 = pair.public().into();
 		let tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
 			.era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
@@ -162,7 +171,7 @@ mod tests {
 			GenericExtrinsicParams::new(0, 0, 0u32, Hash::from([0u8; 32]), tx_params);
 		let xt = UncheckedExtrinsicV4::new_signed(
 			vec![1, 1, 1],
-			account.into(),
+			account,
 			multi_sig,
 			default_extra.signed_extra(),
 		);

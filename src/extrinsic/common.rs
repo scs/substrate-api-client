@@ -19,11 +19,10 @@
 
 use alloc::vec::Vec;
 use codec::{Decode, Encode};
-use sp_runtime::AccountId32;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
-pub struct PayoutStakers {
-	pub validator_stash: AccountId32,
+pub struct PayoutStakers<AccountId> {
+	pub validator_stash: AccountId,
 	pub era: u32,
 }
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]

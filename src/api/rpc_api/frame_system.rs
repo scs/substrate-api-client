@@ -19,13 +19,11 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{
-	AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageChangeSet, StorageKey,
+	AccountInfo, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, StorageChangeSet, StorageKey,
 };
 use alloc::{string::String, vec, vec::Vec};
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_core::Pair;
-use sp_runtime::MultiSignature;
 
 pub trait GetAccountInformation<AccountId> {
 	type Index;
@@ -42,8 +40,7 @@ pub trait GetAccountInformation<AccountId> {
 impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
 	for Api<Signer, Client, Params, Runtime>
 where
-	Signer: Pair,
-	MultiSignature: From<Signer::Signature>,
+	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,

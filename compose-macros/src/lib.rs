@@ -64,10 +64,8 @@ macro_rules! compose_extrinsic_offline {
 	($signer: expr,
     $call: expr,
     $params: expr) => {{
-		use $crate::{
-			primitives::{ExtrinsicParams, GenericAddress, SignedPayload, UncheckedExtrinsicV4},
-			sp_core::{crypto::Pair, Public},
-			sp_runtime::{generic::Era, traits::IdentifyAccount, MultiSigner},
+		use $crate::primitives::{
+			ExtrinsicParams, SignExtrinsic, SignedPayload, UncheckedExtrinsicV4,
 		};
 
 		let extra = $params.signed_extra();
@@ -76,14 +74,7 @@ macro_rules! compose_extrinsic_offline {
 
 		let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
-		let multi_signer: MultiSigner = $signer.public().into();
-
-		UncheckedExtrinsicV4::new_signed(
-			$call,
-			GenericAddress::from(multi_signer.into_account()),
-			signature.into(),
-			extra,
-		)
+		UncheckedExtrinsicV4::new_signed($call, $signer.extrinsic_address(), signature, extra)
 	}};
 }
 
@@ -102,11 +93,8 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            #[allow(unused_imports)] // For when extrinsic does not use Compact
-            use $crate::codec::Compact;
             use $crate::log::debug;
             use $crate::primitives::UncheckedExtrinsicV4;
-            use $crate::sp_runtime::generic::Era;
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
             let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
@@ -117,10 +105,7 @@ macro_rules! compose_extrinsic {
                     $api.extrinsic_params($api.get_nonce().unwrap())
                 )
             } else {
-                UncheckedExtrinsicV4 {
-                    signature: None,
-                    function: call.clone(),
-                }
+                UncheckedExtrinsicV4::new_unsigned(call.clone())
             }
 		}
     };
