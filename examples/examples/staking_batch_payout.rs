@@ -17,7 +17,7 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, ExtrinsicSigner, GetStorage, PlainTipExtrinsicParams,
+	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetStorage,
 	SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
 };
 
@@ -48,7 +48,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice));
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
