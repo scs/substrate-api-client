@@ -11,7 +11,7 @@
    limitations under the License.
 */
 
-//! Interface to common frame system pallet information.
+//! Interface to common author rpc functions and helpers thereof.
 
 use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
