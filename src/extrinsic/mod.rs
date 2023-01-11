@@ -26,3 +26,30 @@ pub mod offline_extrinsic;
 #[cfg(feature = "staking-xt")]
 pub mod staking;
 pub mod utility;
+
+use crate::Api;
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4};
+
+type AddressFor<Module> = <Module as AssignExtrinsicTypes>::Address;
+type SignatureFor<Module> = <Module as AssignExtrinsicTypes>::Signature;
+type SignedExtraFor<Module> = <Module as AssignExtrinsicTypes>::SignedExtra;
+
+type ExtrinsicFor<Module, Call> =
+	UncheckedExtrinsicV4<AddressFor<Module>, Call, SignatureFor<Module>, SignedExtraFor<Module>>;
+
+pub trait AssignExtrinsicTypes {
+	type Address;
+	type Signature;
+	type SignedExtra;
+}
+
+impl<Signer, Client, Params, Runtime> AssignExtrinsicTypes for Api<Signer, Client, Params, Runtime>
+where
+	Signer: SignExtrinsic<Runtime::AccountId>,
+	Runtime: FrameSystemConfig,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+{
+	type Address = Signer::ExtrinsicAddress;
+	type Signature = Signer::Signature;
+	type SignedExtra = Params::SignedExtra;
+}
