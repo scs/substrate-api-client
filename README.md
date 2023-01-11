@@ -51,7 +51,7 @@ Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
 The following examples can be found in the [examples](/examples/examples) folder:
 
-* [batch_payout](/src/examples/examples/staking_payout.rs): Batch reward payout for validator.
+* [staking_batch_payout](/src/examples/examples/staking_batch_payout.rs): Batch reward payout for validator.
 * [benchmark_bulk_xt](/examples/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
 * [compose_extrinsic_offline](/examples/examples/compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
 * [custom_nonce](/examples/examples/custom_nonce.rs): Compose an with a custom nonce.
