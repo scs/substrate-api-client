@@ -16,6 +16,7 @@
 */
 
 //! Extrinsics for `pallet-balances`.
+//! https://polkadot.js.org/docs/substrate/extrinsics/#balances
 
 use super::{AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{api::Api, rpc::Request};
@@ -38,12 +39,14 @@ pub type SetBalanceCall<Address, Balance> =
 pub trait CreateBalancesExtrinsic: AssignExtrinsicTypes {
 	type Balance;
 
+	/// Transfer some liquid free balance to another account.
 	fn balance_transfer(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> ExtrinsicFor<Self, TransferCall<Self::Address, Self::Balance>>;
 
+	///  Set the balances of a given account.
 	fn balance_set_balance(
 		&self,
 		who: Self::Address,

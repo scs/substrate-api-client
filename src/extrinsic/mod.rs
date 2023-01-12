@@ -37,9 +37,13 @@ pub type AddressFor<Module> = <Module as AssignExtrinsicTypes>::Address;
 pub type SignatureFor<Module> = <Module as AssignExtrinsicTypes>::Signature;
 pub type SignedExtraFor<Module> = <Module as AssignExtrinsicTypes>::SignedExtra;
 
-type ExtrinsicFor<Module, Call> =
+/// Type to summarize and simplify the extrinsic return value. It defines all the types in
+/// UncheckedExtrinsicV4 except for the Call, which differs for every extrinsic.
+pub type ExtrinsicFor<Module, Call> =
 	UncheckedExtrinsicV4<AddressFor<Module>, Call, SignatureFor<Module>, SignedExtraFor<Module>>;
 
+/// Helper trait to assign the types used in every extrinsic.
+/// This helps to avoid repeated reassignments in the extrinsic creation traits.
 pub trait AssignExtrinsicTypes {
 	type Address;
 	type Signature;
