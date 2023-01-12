@@ -20,14 +20,6 @@
 use alloc::vec::Vec;
 use codec::{Decode, Encode};
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug)]
-pub struct PayoutStakers<AccountId> {
-	pub validator_stash: AccountId,
-	pub era: u32,
-}
-#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
-pub struct ForceEra {}
-
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
 pub struct Batch<Call> {
 	pub calls: Vec<Call>,
