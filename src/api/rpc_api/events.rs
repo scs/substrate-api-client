@@ -14,10 +14,11 @@
 use crate::{
 	api::{Api, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	GetBlock, GetStorage, Phase, SubscribeFrameSystem,
+	GetBlock, GetStorage, Phase,
 };
+use ac_compose_macros::rpc_params;
 use ac_node_api::{EventDetails, Events, StaticEvent};
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig};
+use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
 use alloc::vec::Vec;
 use codec::Encode;
 use log::*;
@@ -70,20 +71,44 @@ where
 	}
 }
 
+pub trait SubscribeEvents<Client, Hash>
+where
+	Client: Subscribe,
+	Hash: DeserializeOwned,
+{
+	fn subscribe_events(&self) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
+}
+
+impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
+	for Api<Signer, Client, Params, Runtime>
+where
+	Client: Subscribe,
+	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	Runtime: FrameSystemConfig,
+{
+	fn subscribe_events(&self) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+		debug!("subscribing to events");
+		let key = crate::storage_key("System", "Events");
+		self.client()
+			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.map_err(|e| e.into())
+	}
+}
+
 #[cfg(feature = "std")]
 pub use std_only::*;
 #[cfg(feature = "std")]
 mod std_only {
 	use super::*;
 	use std::{marker::Sync, sync::mpsc::Sender};
-	pub trait SubscribeEvents<Client, Hash>
+	pub trait SubscribeEventType<Client, Hash>
 	where
 		Client: Subscribe,
 		Hash: DeserializeOwned,
 	{
 		/// Listens for a specific event type and notifies updates via channel.
 		/// This function is an endless loop and only returns if the subscription has failed or
-		/// no new notifications are received. This may happen if the node connection is down.
+		/// no new notifications are received. This may happen if the node connection is lost.
 		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
 			&self,
 			sender: Sender<Ev>,
@@ -91,7 +116,7 @@ mod std_only {
 	}
 
 	#[cfg(feature = "std")]
-	impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
+	impl<Signer, Client, Params, Runtime> SubscribeEventType<Client, Runtime::Hash>
 		for Api<Signer, Client, Params, Runtime>
 	where
 		Client: Subscribe,
@@ -102,7 +127,7 @@ mod std_only {
 			&self,
 			sender: Sender<Ev>,
 		) -> Result<()> {
-			let mut subscription = self.subscribe_system_events()?;
+			let mut subscription = self.subscribe_events()?;
 
 			while let Some(Ok(change_set)) = subscription.next() {
 				// We only subscribed to one key, so always take the first value of the change set.

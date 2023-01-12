@@ -15,15 +15,12 @@
 
 use crate::{
 	api::{Api, GetStorage, Result},
-	rpc::{Request, Subscribe},
+	rpc::Request,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{
-	AccountInfo, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, StorageChangeSet, StorageKey,
-};
-use alloc::{string::String, vec, vec::Vec};
+use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, StorageKey};
+use alloc::{string::String, vec::Vec};
 use log::*;
-use serde::de::DeserializeOwned;
 
 pub trait GetAccountInformation<AccountId> {
 	type Index;
@@ -156,31 +153,5 @@ where
 	fn get_system_local_listen_addresses(&self) -> Result<Vec<String>> {
 		let res = self.client().request("system_localListenAddresses", rpc_params![])?;
 		Ok(res)
-	}
-}
-
-pub trait SubscribeFrameSystem<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
-	fn subscribe_system_events(&self) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
-}
-
-impl<Signer, Client, Params, Runtime> SubscribeFrameSystem<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
-where
-	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-{
-	fn subscribe_system_events(
-		&self,
-	) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
-		debug!("subscribing to events");
-		let key = crate::storage_key("System", "Events");
-		self.client()
-			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
-			.map_err(|e| e.into())
 	}
 }
