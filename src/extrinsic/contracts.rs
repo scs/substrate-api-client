@@ -21,11 +21,11 @@
 
 // FIXME: This module is currently outdated. See https://github.com/scs/substrate-api-client/issues/435.
 
-use super::{AddressFor, AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, SignExtrinsic,
+	UncheckedExtrinsicV4,
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
@@ -44,6 +44,7 @@ pub type DataFor<M> = <M as CreateContractsExtrinsic>::Data;
 pub type CodeFor<M> = <M as CreateContractsExtrinsic>::Code;
 pub type SaltFor<M> = <M as CreateContractsExtrinsic>::Salt;
 pub type HashFor<M> = <M as CreateContractsExtrinsic>::Hash;
+pub type AddressFor<M> = <M as CreateContractsExtrinsic>::Address;
 
 /// Call for putting code in a contract.
 pub type PutCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
@@ -59,19 +60,21 @@ pub type InstantiateWithCodeFor<M> =
 /// Call for calling a function inside a contract.
 pub type ContractCallFor<M> = (CallIndex, AddressFor<M>, ValueFor<M>, GasLimitFor<M>, DataFor<M>);
 
-pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
+pub trait CreateContractsExtrinsic {
 	type Gas;
 	type Currency;
 	type Hash;
 	type Code;
 	type Data;
 	type Salt;
+	type Address;
+	type Extrinsic<Call>;
 
 	fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
-	) -> ExtrinsicFor<Self, PutCodeFor<Self>>;
+	) -> Self::Extrinsic<PutCodeFor<Self>>;
 
 	fn contract_instantiate(
 		&self,
@@ -79,7 +82,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		gas_limit: Self::Gas,
 		code_hash: Self::Hash,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, InstantiateWithHashFor<Self>>;
+	) -> Self::Extrinsic<InstantiateWithHashFor<Self>>;
 
 	fn contract_instantiate_with_code(
 		&self,
@@ -88,7 +91,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		code: Self::Code,
 		data: Self::Data,
 		salt: Self::Salt,
-	) -> ExtrinsicFor<Self, InstantiateWithCodeFor<Self>>;
+	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>>;
 
 	fn contract_call(
 		&self,
@@ -96,7 +99,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		value: Self::Currency,
 		gas_limit: Self::Gas,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, ContractCallFor<Self>>;
+	) -> Self::Extrinsic<ContractCallFor<Self>>;
 }
 
 #[cfg(feature = "std")]
@@ -121,12 +124,15 @@ where
 	type Code = Vec<u8>;
 	type Data = Vec<u8>;
 	type Salt = Vec<u8>;
+	type Address = Signer::ExtrinsicAddress;
+	type Extrinsic<Call> =
+		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
 
 	fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
-	) -> ExtrinsicFor<Self, PutCodeFor<Self>> {
+	) -> Self::Extrinsic<PutCodeFor<Self>> {
 		compose_extrinsic!(self, MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
@@ -136,7 +142,7 @@ where
 		gas_limit: Self::Gas,
 		code_hash: Self::Hash,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, InstantiateWithHashFor<Self>> {
+	) -> Self::Extrinsic<InstantiateWithHashFor<Self>> {
 		compose_extrinsic!(
 			self,
 			MODULE,
@@ -155,7 +161,7 @@ where
 		code: Self::Code,
 		data: Self::Data,
 		salt: Self::Salt,
-	) -> ExtrinsicFor<Self, InstantiateWithCodeFor<Self>> {
+	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>> {
 		compose_extrinsic!(
 			self,
 			MODULE,
@@ -174,7 +180,7 @@ where
 		value: Self::Currency,
 		gas_limit: Self::Gas,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, ContractCallFor<Self>> {
+	) -> Self::Extrinsic<ContractCallFor<Self>> {
 		compose_extrinsic!(self, MODULE, CALL, dest, Compact(value), Compact(gas_limit), data)
 	}
 }

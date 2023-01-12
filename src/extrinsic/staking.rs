@@ -18,10 +18,12 @@
 //! Extrinsics for `pallet-staking`.
 //! https://polkadot.js.org/docs/substrate/extrinsics#staking
 
-use super::{AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig};
+use ac_primitives::{
+	CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig,
+	UncheckedExtrinsicV4,
+};
 use codec::{Compact, Decode, Encode};
 
 const MODULE: &str = "Staking";
@@ -62,10 +64,12 @@ pub type ForceNoEraCall = CallIndex;
 pub type SetPayeeCall<Address> = (CallIndex, Address);
 pub type SetValidatorCountCall = (CallIndex, u32);
 
-pub trait CreateStakingExtrinsic: AssignExtrinsicTypes {
+pub trait CreateStakingExtrinsic {
 	type Balance;
 	type RewardDestination;
 	type AccountId;
+	type Address;
+	type Extrinsic<Call>;
 
 	/// Bond `value` amount to `controller`.
 	fn staking_bond(
@@ -73,23 +77,21 @@ pub trait CreateStakingExtrinsic: AssignExtrinsicTypes {
 		controller: Self::Address,
 		value: Self::Balance,
 		payee: Self::RewardDestination,
-	) -> ExtrinsicFor<Self, BondCall<Self::Address, Self::Balance>>;
+	) -> Self::Extrinsic<BondCall<Self::Address, Self::Balance>>;
 
 	/// Bonds extra funds from the stash's free balance to the balance for staking.
 	fn staking_bond_extra(
 		&self,
 		value: Self::Balance,
-	) -> ExtrinsicFor<Self, BondExtraCall<Self::Balance>>;
+	) -> Self::Extrinsic<BondExtraCall<Self::Balance>>;
 
 	/// Unbond `value` portion of the stash.
 	/// If `value` is less than the minimum required, then the entire amount is unbound.
 	/// Must be signed by the controller of the stash.
-	fn staking_unbond(&self, value: Self::Balance)
-		-> ExtrinsicFor<Self, UnbondCall<Self::Balance>>;
+	fn staking_unbond(&self, value: Self::Balance) -> Self::Extrinsic<UnbondCall<Self::Balance>>;
 
 	/// Rebond `value` portion of the current amount that is in the process of unbonding.
-	fn staking_rebond(&self, value: Self::Balance)
-		-> ExtrinsicFor<Self, RebondCall<Self::Balance>>;
+	fn staking_rebond(&self, value: Self::Balance) -> Self::Extrinsic<RebondCall<Self::Balance>>;
 
 	/// Free the balance of the stash so the stash account can do whatever it wants.
 	/// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
@@ -97,17 +99,17 @@ pub trait CreateStakingExtrinsic: AssignExtrinsicTypes {
 	fn staking_withdraw_unbonded(
 		&self,
 		num_slashing_spans: u32,
-	) -> ExtrinsicFor<Self, WithdrawUnbondedCall>;
+	) -> Self::Extrinsic<WithdrawUnbondedCall>;
 
 	/// Nominate `targets` as validators.
 	/// Must be signed by the controller of the stash and called when EraElectionStatus is Closed.
 	fn staking_nominate(
 		&self,
 		targets: Vec<Self::Address>,
-	) -> ExtrinsicFor<Self, NominateCall<Self::Address>>;
+	) -> Self::Extrinsic<NominateCall<Self::Address>>;
 
 	/// Stop nominating por validating. Effects take place in the next era
-	fn staking_chill(&self) -> ExtrinsicFor<Self, ChillCall>;
+	fn staking_chill(&self) -> Self::Extrinsic<ChillCall>;
 
 	/// (Re-)set the controller of the stash
 	/// Effects will be felt at the beginning of the next era.
@@ -115,29 +117,29 @@ pub trait CreateStakingExtrinsic: AssignExtrinsicTypes {
 	fn staking_set_controller(
 		&self,
 		controller: Self::Address,
-	) -> ExtrinsicFor<Self, SetControllerCall<Self::Address>>;
+	) -> Self::Extrinsic<SetControllerCall<Self::Address>>;
 
 	/// Return the payout call for the given era
 	fn payout_stakers(
 		&self,
 		era: u32,
 		account: Self::AccountId,
-	) -> ExtrinsicFor<Self, PayoutStakersCall<Self::AccountId>>;
+	) -> Self::Extrinsic<PayoutStakersCall<Self::AccountId>>;
 
 	/// For New Era at the end of Next Session.
-	fn force_new_era(&self) -> ExtrinsicFor<Self, ForceNewEraCall>;
+	fn force_new_era(&self) -> Self::Extrinsic<ForceNewEraCall>;
 
 	/// Force there to be a new era at the end of sessions indefinitely.
-	fn force_new_era_always(&self) -> ExtrinsicFor<Self, ForceNewEraAlwaysCall>;
+	fn force_new_era_always(&self) -> Self::Extrinsic<ForceNewEraAlwaysCall>;
 
 	/// Force there to be no new eras indefinitely.
-	fn force_no_era(&self) -> ExtrinsicFor<Self, ForceNewEraAlwaysCall>;
+	fn force_no_era(&self) -> Self::Extrinsic<ForceNewEraAlwaysCall>;
 
 	/// Re-set the payment target for a controller.
-	fn set_payee(&self, payee: Self::Address) -> ExtrinsicFor<Self, SetPayeeCall<Self::Address>>;
+	fn set_payee(&self, payee: Self::Address) -> Self::Extrinsic<SetPayeeCall<Self::Address>>;
 
 	/// Sets the number of validators.
-	fn set_validator_count(&self, count: u32) -> ExtrinsicFor<Self, SetValidatorCountCall>;
+	fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall>;
 }
 
 impl<Signer, Client, Params, Runtime> CreateStakingExtrinsic
@@ -152,59 +154,56 @@ where
 	type Balance = Runtime::CurrencyBalance;
 	type RewardDestination = RewardDestination<Self::Address>;
 	type AccountId = Runtime::AccountId;
+	type Address = Signer::ExtrinsicAddress;
+	type Extrinsic<Call> =
+		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
 
 	fn staking_bond(
 		&self,
 		controller: Self::Address,
 		value: Self::Balance,
 		payee: Self::RewardDestination,
-	) -> ExtrinsicFor<Self, BondCall<Self::Address, Self::Balance>> {
+	) -> Self::Extrinsic<BondCall<Self::Address, Self::Balance>> {
 		compose_extrinsic!(self, MODULE, BOND, controller, Compact(value), payee)
 	}
 
 	fn staking_bond_extra(
 		&self,
 		value: Self::Balance,
-	) -> ExtrinsicFor<Self, BondExtraCall<Self::Balance>> {
+	) -> Self::Extrinsic<BondExtraCall<Self::Balance>> {
 		compose_extrinsic!(self, MODULE, BOND_EXTRA, Compact(value))
 	}
 
-	fn staking_unbond(
-		&self,
-		value: Self::Balance,
-	) -> ExtrinsicFor<Self, UnbondCall<Self::Balance>> {
+	fn staking_unbond(&self, value: Self::Balance) -> Self::Extrinsic<UnbondCall<Self::Balance>> {
 		compose_extrinsic!(self, MODULE, UNBOND, Compact(value))
 	}
 
-	fn staking_rebond(
-		&self,
-		value: Self::Balance,
-	) -> ExtrinsicFor<Self, RebondCall<Self::Balance>> {
+	fn staking_rebond(&self, value: Self::Balance) -> Self::Extrinsic<RebondCall<Self::Balance>> {
 		compose_extrinsic!(self, MODULE, REBOND, Compact(value))
 	}
 
 	fn staking_withdraw_unbonded(
 		&self,
 		num_slashing_spans: u32,
-	) -> ExtrinsicFor<Self, WithdrawUnbondedCall> {
+	) -> Self::Extrinsic<WithdrawUnbondedCall> {
 		compose_extrinsic!(self, MODULE, WITHDRAW_UNBONDED, num_slashing_spans)
 	}
 
 	fn staking_nominate(
 		&self,
 		targets: Vec<Self::Address>,
-	) -> ExtrinsicFor<Self, NominateCall<Self::Address>> {
+	) -> Self::Extrinsic<NominateCall<Self::Address>> {
 		compose_extrinsic!(self, MODULE, NOMINATE, targets)
 	}
 
-	fn staking_chill(&self) -> ExtrinsicFor<Self, ChillCall> {
+	fn staking_chill(&self) -> Self::Extrinsic<ChillCall> {
 		compose_extrinsic!(self, MODULE, CHILL)
 	}
 
 	fn staking_set_controller(
 		&self,
 		controller: Self::Address,
-	) -> ExtrinsicFor<Self, SetControllerCall<Self::Address>> {
+	) -> Self::Extrinsic<SetControllerCall<Self::Address>> {
 		compose_extrinsic!(self, MODULE, SET_CONTROLLER, controller)
 	}
 
@@ -212,28 +211,28 @@ where
 		&self,
 		era: u32,
 		account: Self::AccountId,
-	) -> ExtrinsicFor<Self, PayoutStakersCall<Self::AccountId>> {
+	) -> Self::Extrinsic<PayoutStakersCall<Self::AccountId>> {
 		let value = PayoutStakers { validator_stash: account, era };
 		compose_extrinsic!(self, MODULE, PAYOUT_STAKERS, value)
 	}
 
-	fn force_new_era(&self) -> ExtrinsicFor<Self, ForceNewEraCall> {
+	fn force_new_era(&self) -> Self::Extrinsic<ForceNewEraCall> {
 		compose_extrinsic!(self, MODULE, FORCE_NEW_ERA)
 	}
 
-	fn force_new_era_always(&self) -> ExtrinsicFor<Self, ForceNewEraAlwaysCall> {
+	fn force_new_era_always(&self) -> Self::Extrinsic<ForceNewEraAlwaysCall> {
 		compose_extrinsic!(self, MODULE, FORCE_NEW_ERA_ALWAYS)
 	}
 
-	fn force_no_era(&self) -> ExtrinsicFor<Self, ForceNewEraAlwaysCall> {
+	fn force_no_era(&self) -> Self::Extrinsic<ForceNewEraAlwaysCall> {
 		compose_extrinsic!(self, MODULE, FORCE_NO_ERA)
 	}
 
-	fn set_payee(&self, payee: Self::Address) -> ExtrinsicFor<Self, SetPayeeCall<Self::Address>> {
+	fn set_payee(&self, payee: Self::Address) -> Self::Extrinsic<SetPayeeCall<Self::Address>> {
 		compose_extrinsic!(self, MODULE, SET_PAYEE, payee)
 	}
 
-	fn set_validator_count(&self, count: u32) -> ExtrinsicFor<Self, SetValidatorCountCall> {
+	fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall> {
 		compose_extrinsic!(self, MODULE, SET_VALIDATOR_COUNT, count)
 	}
 }

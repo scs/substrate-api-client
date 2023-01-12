@@ -18,10 +18,11 @@
 //! Extrinsics for `pallet-balances`.
 //! https://polkadot.js.org/docs/substrate/extrinsics/#balances
 
-use super::{AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{BalancesConfig, CallIndex, ExtrinsicParams, SignExtrinsic};
+use ac_primitives::{
+	BalancesConfig, CallIndex, ExtrinsicParams, SignExtrinsic, UncheckedExtrinsicV4,
+};
 use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 
@@ -36,15 +37,17 @@ pub type TransferCall<Address, Balance> = (CallIndex, Address, Compact<Balance>)
 pub type SetBalanceCall<Address, Balance> =
 	(CallIndex, Address, Compact<Balance>, Compact<Balance>);
 
-pub trait CreateBalancesExtrinsic: AssignExtrinsicTypes {
+pub trait CreateBalancesExtrinsic {
 	type Balance;
+	type Address;
+	type Extrinsic<Call>;
 
 	/// Transfer some liquid free balance to another account.
 	fn balance_transfer(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
-	) -> ExtrinsicFor<Self, TransferCall<Self::Address, Self::Balance>>;
+	) -> Self::Extrinsic<TransferCall<Self::Address, Self::Balance>>;
 
 	///  Set the balances of a given account.
 	fn balance_set_balance(
@@ -52,7 +55,7 @@ pub trait CreateBalancesExtrinsic: AssignExtrinsicTypes {
 		who: Self::Address,
 		free_balance: Self::Balance,
 		reserved_balance: Self::Balance,
-	) -> ExtrinsicFor<Self, SetBalanceCall<Self::Address, Self::Balance>>;
+	) -> Self::Extrinsic<SetBalanceCall<Self::Address, Self::Balance>>;
 }
 
 impl<Signer, Client, Params, Runtime> CreateBalancesExtrinsic
@@ -65,12 +68,15 @@ where
 	Compact<Runtime::Balance>: Encode,
 {
 	type Balance = Runtime::Balance;
+	type Address = Signer::ExtrinsicAddress;
+	type Extrinsic<Call> =
+		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
 
 	fn balance_transfer(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
-	) -> ExtrinsicFor<Self, TransferCall<Self::Address, Self::Balance>> {
+	) -> Self::Extrinsic<TransferCall<Self::Address, Self::Balance>> {
 		compose_extrinsic!(self, MODULE, TRANSFER, to, Compact(amount))
 	}
 
@@ -79,7 +85,7 @@ where
 		who: Self::Address,
 		free_balance: Self::Balance,
 		reserved_balance: Self::Balance,
-	) -> ExtrinsicFor<Self, SetBalanceCall<Self::Address, Self::Balance>> {
+	) -> Self::Extrinsic<SetBalanceCall<Self::Address, Self::Balance>> {
 		compose_extrinsic!(
 			self,
 			MODULE,

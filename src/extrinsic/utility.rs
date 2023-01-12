@@ -18,10 +18,11 @@
 //! Extrinsics for `pallet-utility`.
 //! https://polkadot.js.org/docs/substrate/extrinsics/#utility
 
-use super::{AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{CallIndex, ExtrinsicParams, FrameSystemConfig, SignExtrinsic};
+use ac_primitives::{
+	CallIndex, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4,
+};
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
@@ -36,15 +37,17 @@ pub struct Batch<Call> {
 
 pub type BatchCall<Call> = (CallIndex, Batch<Call>);
 
-pub trait CreateUtilityExtrinsic: AssignExtrinsicTypes {
+pub trait CreateUtilityExtrinsic {
+	type Extrinsic<Call>;
+
 	// Send a batch of dispatch calls.
-	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> ExtrinsicFor<Self, BatchCall<Call>>;
+	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>>;
 
 	// Send a batch of dispatch calls. Unlike batch, it allows errors and won't interrupt.
 	fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> ExtrinsicFor<Self, BatchCall<Call>>;
+	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
 impl<Signer, Client, Params, Runtime> CreateUtilityExtrinsic
@@ -55,7 +58,14 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 {
-	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> ExtrinsicFor<Self, BatchCall<Call>> {
+	type Extrinsic<Call> = UncheckedExtrinsicV4<
+		Signer::ExtrinsicAddress,
+		Call,
+		Signer::Signature,
+		Params::SignedExtra,
+	>;
+
+	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
 		compose_extrinsic!(self, MODULE, BATCH, calls)
 	}
@@ -63,7 +73,7 @@ where
 	fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> ExtrinsicFor<Self, BatchCall<Call>> {
+	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
 		compose_extrinsic!(self, MODULE, FORCE_BATCH, calls)
 	}
