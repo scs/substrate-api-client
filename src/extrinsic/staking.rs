@@ -21,12 +21,8 @@
 use super::{AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
-use ac_primitives::{
-	BalancesConfig, CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig,
-};
+use ac_primitives::{CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig};
 use codec::{Compact, Decode, Encode};
-use serde::de::DeserializeOwned;
-use sp_runtime::traits::GetRuntimeBlockType;
 
 const MODULE: &str = "Staking";
 const BOND: &str = "bond";
@@ -150,10 +146,8 @@ where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: GetRuntimeBlockType + BalancesConfig + StakingConfig,
+	Runtime: StakingConfig,
 	Compact<Runtime::CurrencyBalance>: Encode,
-	Runtime::Header: DeserializeOwned,
-	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	type Balance = Runtime::CurrencyBalance;
 	type RewardDestination = RewardDestination<Self::Address>;
