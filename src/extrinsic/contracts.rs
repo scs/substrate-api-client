@@ -31,7 +31,7 @@ use alloc::vec::Vec;
 use codec::{Compact, Encode};
 use sp_runtime::traits::GetRuntimeBlockType;
 
-pub const MODULE: &str = "Contracts";
+pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const PUT_CODE: &str = "put_code";
 pub const INSTANTIATE: &str = "instantiate";
 pub const INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
@@ -133,7 +133,7 @@ where
 		gas_limit: Self::Gas,
 		code: Self::Code,
 	) -> Self::Extrinsic<PutCodeFor<Self>> {
-		compose_extrinsic!(self, MODULE, PUT_CODE, Compact(gas_limit), code)
+		compose_extrinsic!(self, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
 	fn contract_instantiate(
@@ -145,7 +145,7 @@ where
 	) -> Self::Extrinsic<InstantiateWithHashFor<Self>> {
 		compose_extrinsic!(
 			self,
-			MODULE,
+			CONTRACTS_MODULE,
 			INSTANTIATE,
 			Compact(endowment),
 			Compact(gas_limit),
@@ -164,7 +164,7 @@ where
 	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>> {
 		compose_extrinsic!(
 			self,
-			MODULE,
+			CONTRACTS_MODULE,
 			INSTANTIATE_WITH_CODE,
 			Compact(endowment),
 			Compact(gas_limit),
@@ -181,6 +181,14 @@ where
 		gas_limit: Self::Gas,
 		data: Self::Data,
 	) -> Self::Extrinsic<ContractCallFor<Self>> {
-		compose_extrinsic!(self, MODULE, CALL, dest, Compact(value), Compact(gas_limit), data)
+		compose_extrinsic!(
+			self,
+			CONTRACTS_MODULE,
+			CALL,
+			dest,
+			Compact(value),
+			Compact(gas_limit),
+			data
+		)
 	}
 }

@@ -26,7 +26,7 @@ use ac_primitives::{
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
-const MODULE: &str = "Utility";
+const UTILITY_MODULE: &str = "Utility";
 const BATCH: &str = "batch";
 const FORCE_BATCH: &str = "force_batch";
 
@@ -67,7 +67,7 @@ where
 
 	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		compose_extrinsic!(self, MODULE, BATCH, calls)
+		compose_extrinsic!(self, UTILITY_MODULE, BATCH, calls)
 	}
 
 	fn force_batch<Call: Encode + Clone>(
@@ -75,6 +75,6 @@ where
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		compose_extrinsic!(self, MODULE, FORCE_BATCH, calls)
+		compose_extrinsic!(self, UTILITY_MODULE, FORCE_BATCH, calls)
 	}
 }

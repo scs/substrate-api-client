@@ -26,7 +26,7 @@ use ac_primitives::{
 use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 
-pub const MODULE: &str = "Balances";
+pub const BALANCES_MODULE: &str = "Balances";
 pub const TRANSFER: &str = "transfer";
 pub const SET_BALANCE: &str = "set_balance";
 
@@ -77,7 +77,7 @@ where
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> Self::Extrinsic<TransferCall<Self::Address, Self::Balance>> {
-		compose_extrinsic!(self, MODULE, TRANSFER, to, Compact(amount))
+		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER, to, Compact(amount))
 	}
 
 	fn balance_set_balance(
@@ -88,7 +88,7 @@ where
 	) -> Self::Extrinsic<SetBalanceCall<Self::Address, Self::Balance>> {
 		compose_extrinsic!(
 			self,
-			MODULE,
+			BALANCES_MODULE,
 			SET_BALANCE,
 			who,
 			Compact(free_balance),
