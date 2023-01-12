@@ -12,14 +12,14 @@
 */
 
 pub use self::{
-	author::*, chain::*, frame_system::*, pallet_balances::*, pallet_transaction_payment::*,
-	state::*, subscribe_events::*,
+	author::*, chain::*, events::*, frame_system::*, pallet_balances::*,
+	pallet_transaction_payment::*, state::*,
 };
 
 pub mod author;
 pub mod chain;
+pub mod events;
 pub mod frame_system;
 pub mod pallet_balances;
 pub mod pallet_transaction_payment;
 pub mod state;
-pub mod subscribe_events;
