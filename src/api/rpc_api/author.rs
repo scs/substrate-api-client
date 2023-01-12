@@ -301,7 +301,7 @@ where
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash)?;
 		// Ensure that the extrins has been successful. If not, return an error.
-		for event in extrinsic_events.clone() {
+		for event in &extrinsic_events {
 			event.check_if_failed()?;
 		}
 		report.events = Some(extrinsic_events);
