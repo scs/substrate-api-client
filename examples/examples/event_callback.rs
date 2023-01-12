@@ -16,6 +16,7 @@
 //! Very simple example that shows how to subscribe to events.
 
 use codec::Decode;
+use frame_support::dispatch::DispatchInfo;
 use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::H256 as Hash;
@@ -37,6 +38,13 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
+	println!("Subscribe to a single event type");
+	let (sender, receiver) = channel();
+	let api2 = api.clone();
+	thread::spawn(move || {
+		api2.subscribe_for_event_type::<ExtrinsicSuccess>(sender).unwrap();
+	});
+
 	println!("Subscribe to events");
 	let mut subscription = api.subscribe_system_events().unwrap();
 
@@ -50,9 +58,9 @@ async fn main() {
 		for evr in &events {
 			println!("decoded: {:?} {:?}", evr.phase, evr.event);
 			match &evr.event {
-				RuntimeEvent::Balances(be) => {
-					println!(">>>>>>>>>> balances event: {:?}", be);
-					match &be {
+				RuntimeEvent::Balances(balances_event) => {
+					println!(">>>>>>>>>> balances event: {:?}", balances_event);
+					match &balances_event {
 						pallet_balances::Event::Transfer { from, to, amount } => {
 							println!("Transactor: {:?}", from);
 							println!("Destination: {:?}", to);
@@ -64,8 +72,23 @@ async fn main() {
 						},
 					}
 				},
+				RuntimeEvent::System(system_event) => {
+					println!(">>>>>>>>>> system event: {:?}", system_event);
+					match &system_event {
+						frame_system::Event::ExtrinsicSuccess { dispatch_info: DispatchInfo } => {
+							println!("DispatchInfo: {:?}", dispatch_info);
+							return
+						},
+						_ => {
+							debug!("ignoring unsupported system event");
+						},
+					}
+				},
 				_ => debug!("ignoring unsupported module event: {:?}", evr.event),
 			}
 		}
 	}
+
+	// After we finished whatever we wanted, unusubscribe from the subscription:
+	subscription.unsubscribe();
 }

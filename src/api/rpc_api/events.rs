@@ -11,6 +11,8 @@
    limitations under the License.
 */
 
+use core::marker::PhantomData;
+
 use crate::{
 	api::{Api, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
@@ -20,7 +22,7 @@ use ac_compose_macros::rpc_params;
 use ac_node_api::{EventDetails, Events, StaticEvent};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
 use alloc::vec::Vec;
-use codec::Encode;
+use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
@@ -68,6 +70,36 @@ where
 			self.retrieve_extrinsic_index_from_block(block_hash, extrinsic_hash)?;
 		let block_events = self.fetch_events_from_block(block_hash)?;
 		self.filter_extrinsic_events(block_events, extrinsic_index)
+	}
+}
+
+pub struct EventSubcription<Subscription, Hash> {
+	pub subscription: Subscription,
+	_phantom: PhantomData<Hash>,
+}
+
+impl<Subscription, Hash> EventSubcription<Subscription, Hash>
+where
+	Hash: DeserializeOwned,
+	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
+{
+	fn next<EventRecord: Decode>(&mut self) -> Option<Result<Vec<EventRecord>>> {
+		let change_set = match self.subscription.next()? {
+			Ok(set) => set,
+			Err(e) => return Some(Err(e).map_err(Error::RpcClient)),
+		};
+		// Since we subscribed to only the events key, we can simply take the first value of the
+		// changes in the set. Also, we don't care about the key but only the data, so take
+		// the second value in the tuple of two.
+		let storage_data = change_set.changes[0].1?;
+		// Decode to the expected EventRecord type:
+		let events = Decode::decode(&mut storage_data.0.as_slice()).map_err(Error::Codec);
+		Some(events)
+	}
+
+	fn unsubscribe(self) -> Result<()> {
+		self.subscription.unsubscribe()?;
+		Ok(())
 	}
 }
 
