@@ -23,7 +23,6 @@ pub use ac_compose_macros::*;
 pub use ac_node_api::*;
 pub use ac_primitives::*;
 pub use api::*;
-pub use extrinsic::CreateBalancesExtrinsic;
 
 pub mod api;
 pub mod extrinsic;
