@@ -34,27 +34,27 @@ pub const INSTANTIATE: &str = "instantiate";
 pub const INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
 pub const CALL: &str = "call";
 
-type GasLimitFor<M> = Compact<<M as CreateContractsExtrinsic>::Gas>;
-type ValueFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
-type EndowmentFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
-type DataFor<M> = <M as CreateContractsExtrinsic>::Data;
-type CodeFor<M> = <M as CreateContractsExtrinsic>::Data;
-type SaltFor<M> = <M as CreateContractsExtrinsic>::Salt;
-type HashFor<M> = <M as CreateContractsExtrinsic>::Hash;
+pub type GasLimitFor<M> = Compact<<M as CreateContractsExtrinsic>::Gas>;
+pub type ValueFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
+pub type EndowmentFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
+pub type DataFor<M> = <M as CreateContractsExtrinsic>::Data;
+pub type CodeFor<M> = <M as CreateContractsExtrinsic>::Data;
+pub type SaltFor<M> = <M as CreateContractsExtrinsic>::Salt;
+pub type HashFor<M> = <M as CreateContractsExtrinsic>::Hash;
 
 /// Call for putting code in a contract.
-type PutCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
+pub type PutCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
 
 /// Call for instantiating a contract with the code hash.
-type InstantiateWithHashFor<M> =
+pub type InstantiateWithHashFor<M> =
 	(CallIndex, EndowmentFor<M>, GasLimitFor<M>, HashFor<M>, DataFor<M>);
 
 /// Call for instantiating a contract with code and salt.
-type InstantiateWithCodeFor<M> =
+pub type InstantiateWithCodeFor<M> =
 	(CallIndex, EndowmentFor<M>, GasLimitFor<M>, CodeFor<M>, DataFor<M>, SaltFor<M>);
 
 /// Call for calling a function inside a contract.
-type ContractCallFor<M> = (CallIndex, AddressFor<M>, ValueFor<M>, GasLimitFor<M>, DataFor<M>);
+pub type ContractCallFor<M> = (CallIndex, AddressFor<M>, ValueFor<M>, GasLimitFor<M>, DataFor<M>);
 
 pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 	type Gas;
