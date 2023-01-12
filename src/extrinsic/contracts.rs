@@ -17,6 +17,9 @@
 
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
+//! https://polkadot.js.org/docs/substrate/extrinsics/#contracts
+
+// FIXME: This module is currently outdated. See https://github.com/scs/substrate-api-client/issues/435.
 
 use super::{AddressFor, AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{api::Api, rpc::Request};
