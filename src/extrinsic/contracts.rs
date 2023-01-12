@@ -24,12 +24,11 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	BalancesConfig, CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, SignExtrinsic,
+	CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
-use sp_runtime::traits::GetRuntimeBlockType;
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
 pub const PUT_CODE: &str = "put_code";
@@ -114,7 +113,7 @@ where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: GetRuntimeBlockType + ContractsConfig + BalancesConfig,
+	Runtime: ContractsConfig,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,
 	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
 {
