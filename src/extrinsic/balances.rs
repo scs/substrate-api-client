@@ -28,7 +28,10 @@ pub const MODULE: &str = "Balances";
 pub const TRANSFER: &str = "transfer";
 pub const SET_BALANCE: &str = "set_balance";
 
+/// Call for a balance transfer.
 pub type TransferCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
+
+/// Call to the balance of an account.
 pub type SetBalanceCall<Address, Balance> =
 	(CallIndex, Address, Compact<Balance>, Compact<Balance>);
 
