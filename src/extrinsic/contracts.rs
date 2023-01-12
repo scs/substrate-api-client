@@ -38,7 +38,7 @@ pub type GasLimitFor<M> = Compact<<M as CreateContractsExtrinsic>::Gas>;
 pub type ValueFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
 pub type EndowmentFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
 pub type DataFor<M> = <M as CreateContractsExtrinsic>::Data;
-pub type CodeFor<M> = <M as CreateContractsExtrinsic>::Data;
+pub type CodeFor<M> = <M as CreateContractsExtrinsic>::Code;
 pub type SaltFor<M> = <M as CreateContractsExtrinsic>::Salt;
 pub type HashFor<M> = <M as CreateContractsExtrinsic>::Hash;
 
@@ -60,13 +60,14 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 	type Gas;
 	type Currency;
 	type Hash;
+	type Code;
 	type Data;
 	type Salt;
 
 	fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
-		code: Self::Data,
+		code: Self::Code,
 	) -> ExtrinsicFor<Self, PutCodeFor<Self>>;
 
 	fn contract_instantiate(
@@ -81,7 +82,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		&self,
 		endowment: Self::Currency,
 		gas_limit: Self::Gas,
-		code: Self::Data,
+		code: Self::Code,
 		data: Self::Data,
 		salt: Self::Salt,
 	) -> ExtrinsicFor<Self, InstantiateWithCodeFor<Self>>;
@@ -114,13 +115,14 @@ where
 	type Gas = u64;
 	type Currency = BalanceOf<Runtime>;
 	type Hash = Runtime::Hash;
+	type Code = Vec<u8>;
 	type Data = Vec<u8>;
 	type Salt = Vec<u8>;
 
 	fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
-		code: Self::Data,
+		code: Self::Code,
 	) -> ExtrinsicFor<Self, PutCodeFor<Self>> {
 		compose_extrinsic!(self, MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
@@ -147,7 +149,7 @@ where
 		&self,
 		endowment: Self::Currency,
 		gas_limit: Self::Gas,
-		code: Self::Data,
+		code: Self::Code,
 		data: Self::Data,
 		salt: Self::Salt,
 	) -> ExtrinsicFor<Self, InstantiateWithCodeFor<Self>> {
