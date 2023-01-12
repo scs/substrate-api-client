@@ -26,7 +26,6 @@ use ac_primitives::{
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
-use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
 
 pub const MODULE: &str = "Contracts";
@@ -100,8 +99,6 @@ where
 	Runtime: GetRuntimeBlockType + ContractsConfig + BalancesConfig,
 	Compact<BalanceOf<Runtime>>: Encode + Clone,
 	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
-	Runtime::Header: DeserializeOwned,
-	Runtime::RuntimeBlock: DeserializeOwned,
 {
 	type Gas = u64;
 	type Currency = BalanceOf<Runtime>;
