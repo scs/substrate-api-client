@@ -30,9 +30,9 @@ pub mod utility;
 use crate::Api;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4};
 
-type AddressFor<Module> = <Module as AssignExtrinsicTypes>::Address;
-type SignatureFor<Module> = <Module as AssignExtrinsicTypes>::Signature;
-type SignedExtraFor<Module> = <Module as AssignExtrinsicTypes>::SignedExtra;
+pub type AddressFor<Module> = <Module as AssignExtrinsicTypes>::Address;
+pub type SignatureFor<Module> = <Module as AssignExtrinsicTypes>::Signature;
+pub type SignedExtraFor<Module> = <Module as AssignExtrinsicTypes>::SignedExtra;
 
 type ExtrinsicFor<Module, Call> =
 	UncheckedExtrinsicV4<AddressFor<Module>, Call, SignatureFor<Module>, SignedExtraFor<Module>>;

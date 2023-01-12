@@ -18,7 +18,7 @@
 //! Extrinsics for `pallet-contract`.
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 
-use super::{AssignExtrinsicTypes, ExtrinsicFor};
+use super::{AddressFor, AssignExtrinsicTypes, ExtrinsicFor};
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
@@ -34,13 +34,27 @@ pub const INSTANTIATE: &str = "instantiate";
 pub const INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
 pub const CALL: &str = "call";
 
-pub type PutCodeCall<Gas, Data> = (CallIndex, Compact<Gas>, Data);
-pub type InstantiateCall<Currency, Gas, Hash, Data> =
-	(CallIndex, Compact<Currency>, Compact<Gas>, Hash, Data);
-pub type InstantiateWithCodeCall<Currency, Gas, Code, Data, Salt> =
-	(CallIndex, Compact<Currency>, Compact<Gas>, Code, Data, Salt);
-pub type CallCall<Address, Currency, Gas, Data> =
-	(CallIndex, Address, Compact<Currency>, Compact<Gas>, Data);
+type GasLimitFor<M> = Compact<<M as CreateContractsExtrinsic>::Gas>;
+type ValueFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
+type EndowmentFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
+type DataFor<M> = <M as CreateContractsExtrinsic>::Data;
+type CodeFor<M> = <M as CreateContractsExtrinsic>::Data;
+type SaltFor<M> = <M as CreateContractsExtrinsic>::Salt;
+type HashFor<M> = <M as CreateContractsExtrinsic>::Hash;
+
+/// Call for putting code in a contract.
+type PutCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
+
+/// Call for instantiating a contract with the code hash.
+type InstantiateWithHashFor<M> =
+	(CallIndex, EndowmentFor<M>, GasLimitFor<M>, HashFor<M>, DataFor<M>);
+
+/// Call for instantiating a contract with code and salt.
+type InstantiateWithCodeFor<M> =
+	(CallIndex, EndowmentFor<M>, GasLimitFor<M>, CodeFor<M>, DataFor<M>, SaltFor<M>);
+
+/// Call for calling a function inside a contract.
+type ContractCallFor<M> = (CallIndex, AddressFor<M>, ValueFor<M>, GasLimitFor<M>, DataFor<M>);
 
 pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 	type Gas;
@@ -53,7 +67,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Data,
-	) -> ExtrinsicFor<Self, PutCodeCall<Self::Gas, Self::Data>>;
+	) -> ExtrinsicFor<Self, PutCodeFor<Self>>;
 
 	fn contract_instantiate(
 		&self,
@@ -61,7 +75,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		gas_limit: Self::Gas,
 		code_hash: Self::Hash,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, InstantiateCall<Self::Currency, Self::Gas, Self::Hash, Self::Data>>;
+	) -> ExtrinsicFor<Self, InstantiateWithHashFor<Self>>;
 
 	fn contract_instantiate_with_code(
 		&self,
@@ -70,10 +84,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		code: Self::Data,
 		data: Self::Data,
 		salt: Self::Salt,
-	) -> ExtrinsicFor<
-		Self,
-		InstantiateWithCodeCall<Self::Currency, Self::Gas, Self::Data, Self::Data, Self::Salt>,
-	>;
+	) -> ExtrinsicFor<Self, InstantiateWithCodeFor<Self>>;
 
 	fn contract_call(
 		&self,
@@ -81,7 +92,7 @@ pub trait CreateContractsExtrinsic: AssignExtrinsicTypes {
 		value: Self::Currency,
 		gas_limit: Self::Gas,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, CallCall<Self::Address, Self::Currency, Self::Gas, Self::Data>>;
+	) -> ExtrinsicFor<Self, ContractCallFor<Self>>;
 }
 
 #[cfg(feature = "std")]
@@ -110,7 +121,7 @@ where
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Data,
-	) -> ExtrinsicFor<Self, PutCodeCall<Self::Gas, Self::Data>> {
+	) -> ExtrinsicFor<Self, PutCodeFor<Self>> {
 		compose_extrinsic!(self, MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
@@ -120,7 +131,7 @@ where
 		gas_limit: Self::Gas,
 		code_hash: Self::Hash,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, InstantiateCall<Self::Currency, Self::Gas, Self::Hash, Self::Data>> {
+	) -> ExtrinsicFor<Self, InstantiateWithHashFor<Self>> {
 		compose_extrinsic!(
 			self,
 			MODULE,
@@ -139,10 +150,7 @@ where
 		code: Self::Data,
 		data: Self::Data,
 		salt: Self::Salt,
-	) -> ExtrinsicFor<
-		Self,
-		InstantiateWithCodeCall<Self::Currency, Self::Gas, Self::Data, Self::Data, Self::Salt>,
-	> {
+	) -> ExtrinsicFor<Self, InstantiateWithCodeFor<Self>> {
 		compose_extrinsic!(
 			self,
 			MODULE,
@@ -161,7 +169,7 @@ where
 		value: Self::Currency,
 		gas_limit: Self::Gas,
 		data: Self::Data,
-	) -> ExtrinsicFor<Self, CallCall<Self::Address, Self::Currency, Self::Gas, Self::Data>> {
+	) -> ExtrinsicFor<Self, ContractCallFor<Self>> {
 		compose_extrinsic!(self, MODULE, CALL, dest, Compact(value), Compact(gas_limit), data)
 	}
 }
