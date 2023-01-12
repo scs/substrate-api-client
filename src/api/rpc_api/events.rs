@@ -83,7 +83,7 @@ mod std_only {
 	{
 		/// Listens for a specific event type and notifies updates via channel.
 		/// This function is an endless loop and only returns if the subscription has failed or
-		/// no new notifications are received. Which may happen if the node connection is down.
+		/// no new notifications are received. This may happen if the node connection is down.
 		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
 			&self,
 			sender: Sender<Ev>,
