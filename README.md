@@ -161,6 +161,81 @@ pub trait HandleSubscription<Notification: DeserializeOwned> {
 	fn unsubscribe(self) -> Result<()>;
 }
 ```
+Refering to the `std` example of [tungstenite_client](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client/subscription.rs), the `HandleSubscription` impl could like the following. A simple channel receiver, waiting for the sender used by the ws-client to send something:
+```rust
+pub struct TungsteniteSubscriptionWrapper<Notification> {
+	receiver: Receiver<String>,
+	_phantom: PhantomData<Notification>,
+}
+
+impl<Notification> TungsteniteSubscriptionWrapper<Notification> {
+	pub fn new(receiver: Receiver<String>) -> Self {
+		Self { receiver, _phantom: Default::default() }
+	}
+}
+
+impl<Notification: DeserializeOwned> HandleSubscription<Notification>
+	for TungsteniteSubscriptionWrapper<Notification>
+{
+	fn next(&mut self) -> Option<Result<Notification>> {
+		let notification = match self.receiver.recv() {
+			Ok(notif) => notif,
+			// Sender was disconnected, therefore no further messages are to be expected.
+			Err(_e) => return None,
+		};
+		Some(serde_json::from_str(&notification).map_err(|e| e.into()))
+	}
+
+	fn unsubscribe(self) -> Result<()> {
+		// We close ungracefully: Simply drop the receiver. This will turn
+		// into an error on the sender side, terminating the websocket polling loop.
+		Ok(())
+	}
+}
+```
+Now, if a websocket client is available in your `no_std` environment, the implementation of `Subscribe` could look like:
+```rust
+impl Subscribe for TungsteniteRpcClient {
+	type Subscription<Notification> = TungsteniteSubscriptionWrapper<Notification> where Notification: DeserializeOwned;
+
+	fn subscribe<Notification: DeserializeOwned>(
+		&self,
+		sub: &str,
+		params: RpcParams,
+		_unsub: &str,
+	) -> Result<Self::Subscription<Notification>> {
+		let json_req = to_json_req(sub, params)?;
+		let (result_in, receiver) = channel();
+		self.start_rpc_client_thread(json_req, result_in)?;
+		let subscription = TungsteniteSubscriptionWrapper::new(receiver);
+		Ok(subscription)
+	}
+}
+
+impl TungsteniteRpcClient {
+    fn start_rpc_client_thread(
+		&self,
+		json_req: String,
+		result_in: ThreadOut<String>,
+	) -> Result<()> {
+		let url = self.url.clone();
+		thread::spawn(move || {
+			let (mut socket, response) = connect(url)?;
+	debug!("Connected to the server. Response HTTP code: {}", response.status());
+
+	// Subscribe to server
+	socket.write_message(Message::Text(json_req))?;
+
+	loop {
+		let msg = read_until_text_message(&mut socket)?;
+		send_message_to_client(result_in.clone(), msg.as_str())?;
+	}
+		});
+		Ok(())
+	}
+}
+```
+Keep in mind, this is a very simple example, and not something that is future and error proof. A production ready example can be taken by the [jsonrpsee](https://github.com/paritytech/jsonrpsee) client implementation
 
 ## Alternatives
 
