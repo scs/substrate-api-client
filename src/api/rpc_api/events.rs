@@ -83,6 +83,10 @@ where
 	Hash: DeserializeOwned,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
+	fn new(subscription: Subscription) -> Self {
+		Self { subscription, _phantom: Default::default() }
+	}
+
 	fn next<EventRecord: Decode>(&mut self) -> Option<Result<Vec<EventRecord>>> {
 		let change_set = match self.subscription.next()? {
 			Ok(set) => set,
@@ -91,7 +95,7 @@ where
 		// Since we subscribed to only the events key, we can simply take the first value of the
 		// changes in the set. Also, we don't care about the key but only the data, so take
 		// the second value in the tuple of two.
-		let storage_data = change_set.changes[0].1?;
+		let storage_data = change_set.changes[0].1.as_ref()?;
 		// Decode to the expected EventRecord type:
 		let events = Decode::decode(&mut storage_data.0.as_slice()).map_err(Error::Codec);
 		Some(events)
@@ -103,12 +107,24 @@ where
 	}
 }
 
+impl<Subscription, Hash> From<Subscription> for EventSubcription<Subscription, Hash>
+where
+	Hash: DeserializeOwned,
+	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
+{
+	fn from(subscription: Subscription) -> Self {
+		EventSubcription::new(subscription)
+	}
+}
+
 pub trait SubscribeEvents<Client, Hash>
 where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	fn subscribe_events(&self) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
+	fn subscribe_events(
+		&self,
+	) -> Result<EventSubcription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
@@ -118,78 +134,17 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 {
-	fn subscribe_events(&self) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+	fn subscribe_events(
+		&self,
+	) -> Result<
+		EventSubcription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
+	> {
 		debug!("subscribing to events");
 		let key = crate::storage_key("System", "Events");
 		self.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.map(|sub| sub.into())
 			.map_err(|e| e.into())
-	}
-}
-
-#[cfg(feature = "std")]
-pub use std_only::*;
-#[cfg(feature = "std")]
-mod std_only {
-	use super::*;
-	use std::{marker::Sync, sync::mpsc::Sender};
-	pub trait SubscribeEventType<Client, Hash>
-	where
-		Client: Subscribe,
-		Hash: DeserializeOwned,
-	{
-		/// Listens for a specific event type and notifies updates via channel.
-		/// This function is an endless loop and only returns if the subscription has failed or
-		/// no new notifications are received. This may happen if the node connection is lost.
-		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
-			&self,
-			sender: Sender<Ev>,
-		) -> Result<()>;
-	}
-
-	#[cfg(feature = "std")]
-	impl<Signer, Client, Params, Runtime> SubscribeEventType<Client, Runtime::Hash>
-		for Api<Signer, Client, Params, Runtime>
-	where
-		Client: Subscribe,
-		Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-		Runtime: FrameSystemConfig,
-	{
-		fn subscribe_for_event_type<Ev: StaticEvent + Sync + Send + 'static>(
-			&self,
-			sender: Sender<Ev>,
-		) -> Result<()> {
-			let mut subscription = self.subscribe_events()?;
-
-			while let Some(Ok(change_set)) = subscription.next() {
-				// We only subscribed to one key, so always take the first value of the change set.
-				if let Some(storage_data) = &change_set.changes[0].1 {
-					let events = Events::<Runtime::Hash>::new(
-						self.metadata().clone(),
-						Default::default(),
-						storage_data.0.clone(),
-					);
-					for event_details in events.iter().flatten() {
-						match event_details.as_event::<Ev>() {
-							Ok(Some(event)) => {
-								sender.send(event).map_err(|e| Error::Other(Box::new(e)))?;
-							},
-							Ok(None) => {
-								trace!(
-									"Found extrinsic: {:?}, {:?}",
-									event_details.event_metadata().pallet(),
-									event_details.event_metadata().event()
-								);
-								trace!("Not the event we are looking for, skipping.");
-							},
-							Err(_) => error!("Could not decode event details."),
-						}
-					}
-				}
-			}
-
-			Ok(())
-		}
 	}
 }
 
