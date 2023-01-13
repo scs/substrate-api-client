@@ -147,7 +147,6 @@ where
 	) -> Result<
 		EventSubscription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
 	> {
-		debug!("subscribing to events");
 		let key = crate::storage_key("System", "Events");
 		let subscription = self
 			.client()
