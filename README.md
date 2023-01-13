@@ -221,21 +221,21 @@ impl TungsteniteRpcClient {
 		let url = self.url.clone();
 		thread::spawn(move || {
 			let (mut socket, response) = connect(url)?;
-	debug!("Connected to the server. Response HTTP code: {}", response.status());
+			debug!("Connected to the server. Response HTTP code: {}", response.status());
 
-	// Subscribe to server
-	socket.write_message(Message::Text(json_req))?;
+			// Subscribe to server
+			socket.write_message(Message::Text(json_req))?;
 
-	loop {
-		let msg = read_until_text_message(&mut socket)?;
-		send_message_to_client(result_in.clone(), msg.as_str())?;
-	}
+			loop {
+				let msg = read_until_text_message(&mut socket)?;
+				send_message_to_client(result_in.clone(), msg.as_str())?;
+			}
 		});
 		Ok(())
 	}
 }
 ```
-Keep in mind, this is a very simple example, and not something that is future and error proof. A production ready example can be taken by the [jsonrpsee](https://github.com/paritytech/jsonrpsee) client implementation
+Keep in mind, this is a very simple example, and something that is not future nor error proof. A more complex example can be taken seen in the [jsonrpsee](https://github.com/paritytech/jsonrpsee) client implementation
 
 ## Alternatives
 
