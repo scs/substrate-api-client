@@ -68,6 +68,17 @@ The following examples can be found in the [examples](/examples/examples) folder
 * [transfer_with_tungstenite_client](/examples/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
+## No_std build
+Everything, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) is `no_std` compatible. Some selected features are also std-only. So if `std` is available, it is recommended to use in std-mode.
+
+### Import
+To import the api-client in `no_std` make sure the default features are turned off and `disable_target_static_assertions` is enabled:
+```toml
+# In the Cargo.toml import the api-client as following:
+substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git", default-features = false, features = ["disable_target_static_assertions"] }
+
+```
+
 ## Alternatives
 
 Parity offers a Rust client with similar functionality: https://github.com/paritytech/subxt
