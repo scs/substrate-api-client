@@ -19,7 +19,7 @@ use crate::{
 	GetBlock, GetStorage, Phase,
 };
 use ac_compose_macros::rpc_params;
-use ac_node_api::{EventDetails, Events, StaticEvent};
+use ac_node_api::{EventDetails, EventRecord, Events};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
 use alloc::vec::Vec;
 use codec::{Decode, Encode};
@@ -83,11 +83,13 @@ where
 	Hash: DeserializeOwned,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
-	fn new(subscription: Subscription) -> Self {
+	pub fn new(subscription: Subscription) -> Self {
 		Self { subscription, _phantom: Default::default() }
 	}
 
-	fn next<EventRecord: Decode>(&mut self) -> Option<Result<Vec<EventRecord>>> {
+	pub fn next_event<RuntimeEvent: Decode, Topic: Decode>(
+		&mut self,
+	) -> Option<Result<Vec<EventRecord<RuntimeEvent, Topic>>>> {
 		let change_set = match self.subscription.next()? {
 			Ok(set) => set,
 			Err(e) => return Some(Err(e).map_err(Error::RpcClient)),
@@ -101,7 +103,7 @@ where
 		Some(events)
 	}
 
-	fn unsubscribe(self) -> Result<()> {
+	pub fn unsubscribe(self) -> Result<()> {
 		self.subscription.unsubscribe()?;
 		Ok(())
 	}
