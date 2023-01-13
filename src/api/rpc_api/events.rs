@@ -97,7 +97,7 @@ where
 	) -> Option<Result<Vec<EventRecord<RuntimeEvent, Topic>>>> {
 		let change_set = match self.subscription.next()? {
 			Ok(set) => set,
-			Err(e) => return Some(Err(e).map_err(Error::RpcClient)),
+			Err(e) => return Some(Err(Error::RpcClient(e))),
 		};
 		// Since we subscribed to only the events key, we can simply take the first value of the
 		// changes in the set. Also, we don't care about the key but only the data, so take
