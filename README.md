@@ -71,6 +71,7 @@ The following examples can be found in the [examples](/examples/examples) folder
 ## No_std Build
 Everything, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) is `no_std` compatible. Some selected features are also std-only.
 Therefore, if `std` is available, it is recommended to use in std-mode.
+Many features, such as extrinsic creation (see the [macros](https://github.com/scs/substrate-api-client/blob/master/compose-macros/src/lib.rs)), metadata and event types (see the [node-api](https://github.com/scs/substrate-api-client/tree/master/node-api/src) and [primitives](https://github.com/scs/substrate-api-client/tree/master/primitives/src)) are available right away. However, to directly connect to a Substrate node, a RPC client is necessary. In the following, it is explained how this may be achieved.
 
 ### Import
 To import the api-client in `no_std` make sure the default features are turned off and `disable_target_static_assertions` is enabled:
@@ -79,8 +80,86 @@ To import the api-client in `no_std` make sure the default features are turned o
 substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git", default-features = false, features = ["disable_target_static_assertions"] }
 
 ```
+### RPC Client
+#### Request
+Depending on the usage, there are two traits that the Rpc Client may need to implemented:
+For simple requests that are fire-answer-and-forget the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is used:
+```rust
+/// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
+pub trait Request {
+	/// Sends a RPC request to the substrate node and returns the answer as string.
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
+}
+```
+By implementing this trait with a custom RPC client, the basic functionalities of the `Api` can already be used.
+Currently, there is no `no_std` example available that shows the full implementation of the `Request` trait, but the [`tungstenite_client`](https://github.com/scs/substrate-api-client/tree/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client) is a relatively simple `std` example:
 
+```rust
+impl Request for TungsteniteRpcClient {
+	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+		let json_req = to_json_req(method, params)?;
+		let response = self.direct_rpc_request(json_req)?;
+		let deserialized_value: R = serde_json::from_str(&response)?;
+		Ok(deserialized_value)
+	}
+}
 
+impl TungsteniteRpcClient {
+	fn direct_rpc_request(&self, json_req: String) -> Result<String> {
+		let (mut socket, response) = attempt_connection_until(&self.url, self.max_attempts)?;
+		debug!("Connected to the server. Response HTTP code: {}", response.status());
+
+		// Send request to server.
+		socket.write_message(Message::Text(json_req))?;
+
+		let msg = read_until_text_message(&mut socket)?;
+
+		debug!("Got get_request_msg {}", msg);
+		let result_str =
+			serde_json::from_str(msg.as_str()).map(|v: Value| v["result"].to_string())?;
+		Ok(result_str)
+	}
+}
+```
+If a websocket library is available in your `no_std` environment, then your implementation may look similiar.
+
+#### Subscription
+ A little more complex is the second trait [`Subscribe`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L50-L62), which does not only send a subscription request to the node, it also keeps listening and updating accordingly.
+Two traits need to be implemented for this feature.
+The `Subscribe` trait itself:
+```rust
+/// Trait to be implemented by the ws-client for subscribing to the substrate node.
+pub trait Subscribe {
+	type Subscription<Notification>: HandleSubscription<Notification>
+	where
+		Notification: DeserializeOwned;
+
+	fn subscribe<Notification: DeserializeOwned>(
+		&self,
+		sub: &str,
+		params: RpcParams,
+		unsub: &str,
+	) -> Result<Self::Subscription<Notification>>;
+}
+```
+and the [`HandleSubscription`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L64-L78) trait, which is used by the returned `Subscription`:
+```rust
+/// Trait to use the full functionality of jsonrpseee Subscription type
+/// without actually enforcing it.
+pub trait HandleSubscription<Notification: DeserializeOwned> {
+	/// Returns the next notification from the stream.
+	/// This may return `None` if the subscription has been terminated,
+	/// which may happen if the channel becomes full or is dropped.
+	///
+	/// **Note:** This has an identical signature to the [`StreamExt::next`]
+	/// method (and delegates to that). Import [`StreamExt`] if you'd like
+	/// access to other stream combinator methods.
+	fn next(&mut self) -> Option<Result<Notification>>;
+
+	/// Unsubscribe and consume the subscription.
+	fn unsubscribe(self) -> Result<()>;
+}
+```
 
 ## Alternatives
 
