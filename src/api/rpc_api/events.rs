@@ -75,12 +75,12 @@ where
 
 /// Wrapper around a Event `StorageChangeSet` subscription.
 /// Simplifies the event retrieval from the subscription.
-pub struct EventSubcription<Subscription, Hash> {
+pub struct EventSubscription<Subscription, Hash> {
 	pub subscription: Subscription,
 	_phantom: PhantomData<Hash>,
 }
 
-impl<Subscription, Hash> EventSubcription<Subscription, Hash>
+impl<Subscription, Hash> EventSubscription<Subscription, Hash>
 where
 	Hash: DeserializeOwned,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
@@ -114,13 +114,13 @@ where
 	}
 }
 
-impl<Subscription, Hash> From<Subscription> for EventSubcription<Subscription, Hash>
+impl<Subscription, Hash> From<Subscription> for EventSubscription<Subscription, Hash>
 where
 	Hash: DeserializeOwned,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
 	fn from(subscription: Subscription) -> Self {
-		EventSubcription::new(subscription)
+		EventSubscription::new(subscription)
 	}
 }
 
@@ -132,7 +132,7 @@ where
 	/// Subscribe to events.
 	fn subscribe_events(
 		&self,
-	) -> Result<EventSubcription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
+	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
@@ -145,7 +145,7 @@ where
 	fn subscribe_events(
 		&self,
 	) -> Result<
-		EventSubcription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
+		EventSubscription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
 	> {
 		debug!("subscribing to events");
 		let key = crate::storage_key("System", "Events");
