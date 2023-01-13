@@ -68,7 +68,7 @@ The following examples can be found in the [examples](/examples/examples) folder
 * [transfer_with_tungstenite_client](/examples/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
-## No_std Build
+## `no_std` Build
 Everything, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) is `no_std` compatible. Some selected features are also std-only.
 Therefore, if `std` is available, it is recommended to use in std-mode.
 Many features, such as extrinsic creation (see the [macros](https://github.com/scs/substrate-api-client/blob/master/compose-macros/src/lib.rs)), metadata and event types (see the [node-api](https://github.com/scs/substrate-api-client/tree/master/node-api/src) and [primitives](https://github.com/scs/substrate-api-client/tree/master/primitives/src)) are available right away. However, to directly connect to a Substrate node, a RPC client is necessary. In the following, it is explained how this may be achieved.
