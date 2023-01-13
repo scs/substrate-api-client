@@ -73,6 +73,8 @@ where
 	}
 }
 
+/// Wrapper around a Event `StorageChangeSet` subscription.
+/// Simplifies the event retrieval from the subscription.
 pub struct EventSubcription<Subscription, Hash> {
 	pub subscription: Subscription,
 	_phantom: PhantomData<Hash>,
@@ -83,10 +85,13 @@ where
 	Hash: DeserializeOwned,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
+	/// Create a new wrapper around the subscription.
 	pub fn new(subscription: Subscription) -> Self {
 		Self { subscription, _phantom: Default::default() }
 	}
 
+	/// Wait for the next value from the internal subscription.
+	/// Upon encounter, it retrieves and decodes the expected `EventRecord`.
 	pub fn next_event<RuntimeEvent: Decode, Topic: Decode>(
 		&mut self,
 	) -> Option<Result<Vec<EventRecord<RuntimeEvent, Topic>>>> {
@@ -103,6 +108,7 @@ where
 		Some(events)
 	}
 
+	/// Unsubscribe from the internal subscription.
 	pub fn unsubscribe(self) -> Result<()> {
 		self.subscription.unsubscribe()?;
 		Ok(())
@@ -124,6 +130,7 @@ where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
+	/// Subscribe to events.
 	fn subscribe_events(
 		&self,
 	) -> Result<EventSubcription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
@@ -143,10 +150,11 @@ where
 	> {
 		debug!("subscribing to events");
 		let key = crate::storage_key("System", "Events");
-		self.client()
+		let subscription = self
+			.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
-			.map(|sub| sub.into())
-			.map_err(|e| e.into())
+			.map(|sub| sub.into())?;
+		Ok(subscription)
 	}
 }
 
