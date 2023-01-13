@@ -21,7 +21,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::{EventDetails, EventRecord, Events};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
-use alloc::vec::Vec;
+use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
