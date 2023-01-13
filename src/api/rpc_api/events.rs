@@ -110,8 +110,7 @@ where
 
 	/// Unsubscribe from the internal subscription.
 	pub fn unsubscribe(self) -> Result<()> {
-		self.subscription.unsubscribe()?;
-		Ok(())
+		self.subscription.unsubscribe().map_err(|e| e.into())
 	}
 }
 
