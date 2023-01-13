@@ -81,9 +81,10 @@ substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git"
 
 ```
 ### RPC Client
+Depending on the usage, there are two traits that the Rpc Client may need to implemented. `Request` and `Subscribe`:
 #### Request
-Depending on the usage, there are two traits that the Rpc Client may need to implemented:
-For simple requests that are fire-answer-and-forget the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is used:
+
+For simple requests that (request and one answer) the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is used:
 ```rust
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
@@ -91,8 +92,8 @@ pub trait Request {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
 }
 ```
-By implementing this trait with a custom RPC client, the basic functionalities of the `Api` can already be used.
-Currently, there is no `no_std` example available that shows the full implementation of the `Request` trait, but the [`tungstenite_client`](https://github.com/scs/substrate-api-client/tree/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client) is a relatively simple `std` example:
+By implementing this trait with a custom RPC client, most basic functionalities of the `Api` can already be used.
+Currently, there is no `no_std` example available that shows the full implementation of the `Request` trait. But the [`tungstenite_client`](https://github.com/scs/substrate-api-client/tree/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client) is a relatively simple `std` example:
 
 ```rust
 impl Request for TungsteniteRpcClient {
@@ -121,7 +122,7 @@ impl TungsteniteRpcClient {
 	}
 }
 ```
-If a websocket library is available in your `no_std` environment, then your implementation may look similiar.
+If a websocket library is available in your `no_std` environment, then your implementation may look similar.
 
 #### Subscription
  A little more complex is the second trait [`Subscribe`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L50-L62), which does not only send a subscription request to the node, it also keeps listening and updating accordingly.
