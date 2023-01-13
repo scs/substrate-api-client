@@ -39,10 +39,12 @@ git clone https://github.com/scs/substrate-api-client.git
 cd substrate-api-client
 cargo run -p ac-examples --example get_storage
 ```
-or download the already built binaries from Github Actions: https://github.com/scs/substrate-api-client/actions and run them without any building:
+or download the already built binaries from [GitHub Actions](https://github.com/scs/substrate-api-client/actions) and run them without any previous building:
 
 ```bash
+# Add execution rights to the chosen example.
 chmod +x <example>
+# And run it.
 ./<example>
 ```
 
