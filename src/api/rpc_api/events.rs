@@ -103,7 +103,6 @@ where
 		// changes in the set. Also, we don't care about the key but only the data, so take
 		// the second value in the tuple of two.
 		let storage_data = change_set.changes[0].1.as_ref()?;
-		// Decode to the expected EventRecord type.
 		let events = Decode::decode(&mut storage_data.0.as_slice()).map_err(Error::Codec);
 		Some(events)
 	}
