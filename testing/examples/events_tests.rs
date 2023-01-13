@@ -78,43 +78,6 @@ async fn main() {
 				_ => panic!("Unexpected event"),
 			}
 		}
-
-		// let events = Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(
-		// 	&mut event_bytes.as_slice(),
-		// )
-		// .unwrap();
-		// for evr in &events {
-		// 	println!("decoded: {:?} {:?}", evr.phase, evr.event);
-		// 	match &evr.event {
-		// 		RuntimeEvent::Balances(balances_event) => {
-		// 			println!(">>>>>>>>>> balances event: {:?}", balances_event);
-		// 			match &balances_event {
-		// 				pallet_balances::Event::Transfer { from, to, amount } => {
-		// 					println!("Transactor: {:?}", from);
-		// 					println!("Destination: {:?}", to);
-		// 					println!("Value: {:?}", amount);
-		// 					return
-		// 				},
-		// 				_ => {
-		// 					debug!("ignoring unsupported balances event");
-		// 				},
-		// 			}
-		// 		},
-		// 		RuntimeEvent::System(system_event) => {
-		// 			println!(">>>>>>>>>> system event: {:?}", system_event);
-		// 			match &system_event {
-		// 				frame_system::Event::ExtrinsicSuccess { dispatch_info: DispatchInfo } => {
-		// 					println!("DispatchInfo: {:?}", dispatch_info);
-		// 					return
-		// 				},
-		// 				_ => {
-		// 					debug!("ignoring unsupported system event");
-		// 				},
-		// 			}
-		// 		},
-		// 		_ => debug!("ignoring unsupported module event: {:?}", evr.event),
-		// 	}
-		// }
 	}
 }
 
