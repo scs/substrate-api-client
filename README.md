@@ -68,10 +68,9 @@ The following examples can be found in the [examples](/examples/examples) folder
 * [transfer_with_tungstenite_client](/examples/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
-## `no_std` Build
-Everything, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) is `no_std` compatible. Some selected features are also std-only.
-Therefore, if `std` is available, it is recommended to use in std-mode.
-Many features, such as extrinsic creation (see the [macros](https://github.com/scs/substrate-api-client/blob/master/compose-macros/src/lib.rs)), metadata and event types (see the [node-api](https://github.com/scs/substrate-api-client/tree/master/node-api/src) and [primitives](https://github.com/scs/substrate-api-client/tree/master/primitives/src)) are available right away. However, to directly connect to a Substrate node, a RPC client is necessary. In the following, it is explained how this may be achieved.
+## `no_std` build
+Almost everything, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and some selected features are `no_std` compatible.
+Many helpful features, such as extrinsic and call creation (see the [macros](https://github.com/scs/substrate-api-client/blob/master/compose-macros/src/lib.rs)), metadata and event types (see the [node-api](https://github.com/scs/substrate-api-client/tree/master/node-api/src) and [primitives](https://github.com/scs/substrate-api-client/tree/master/primitives/src)) are available in a `no_std` environment. However, to directly connect to a Substrate node, a RPC client is necessary. Because websocket connection features are often hardware dependent, a generic `no_std` RPC client implementation is hardly possible. So for most cases, a self-implemented RPC client is required. To make this as simple as possible, the interface between the `Api`, which provides all the features, and the RPC client, providing the node connection, is kept very basic. Check out the detailed explanation in following.
 
 ### Import
 To import the api-client in `no_std` make sure the default features are turned off and `disable_target_static_assertions` is enabled:
