@@ -69,8 +69,8 @@ The following examples can be found in the [examples](/examples/examples) folder
 * [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
 ## `no_std` build
-Almost everything, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and some selected features, are `no_std` compatible.
-Many helpful features, such as extrinsic and call creation (see the [macros](https://github.com/scs/substrate-api-client/blob/master/compose-macros/src/lib.rs)), metadata and event types (see the [node-api](https://github.com/scs/substrate-api-client/tree/master/node-api/src) and [primitives](https://github.com/scs/substrate-api-client/tree/master/primitives/src)) are available in a `no_std` environment right away. However, to directly connect to a Substrate node, a RPC client is necessary. Because websocket connection features are often hardware dependent, a generic `no_std` RPC client implementation is hardly possible. So for most cases, a self-implemented RPC client is required. To make this as simple as possible, the interface between the `Api`, which provides all the features, and the RPC client, providing the node connection, is kept very basic. Check out the detailed explanation in following.
+Almost everything in the api-client, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and a few additional features, is `no_std` compatible.
+Many helpful features, such as extrinsic and call creation (see the [macros](https://github.com/scs/substrate-api-client/blob/master/compose-macros/src/lib.rs)), metadata and event types (see the [node-api](https://github.com/scs/substrate-api-client/tree/master/node-api/src) and [primitives](https://github.com/scs/substrate-api-client/tree/master/primitives/src)) are available in `no_std` right away. However, to directly connect to a Substrate node a RPC client is necessary. Because websocket connection features are often hardware dependent, a generic `no_std` RPC client implementation is hardly possible. So for most use cases a self-implemented RPC client is required. To make this as simple as possible, the interface between the `Api`, which provides all the features, and the RPC client, providing the node connection, is kept very basic. Check out the following explanations for more info.
 
 ### Import
 To import the api-client in `no_std` make sure the default features are turned off and `disable_target_static_assertions` is enabled:
@@ -80,11 +80,11 @@ substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git"
 
 ```
 ### RPC Client
-Depending on the usage, there are two traits that the RPC Client may need to implement.
+Depending on the usage, there are two traits that the RPC Client needs to implement.
 
 #### Request
 
-For simple requests that (send one request and receive one answer) the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is used:
+For simple requests (send one request and receive one answer) the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is required:
 ```rust
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
@@ -93,7 +93,7 @@ pub trait Request {
 }
 ```
 By implementing this trait with a custom RPC client, most basic functionalities of the `Api` can already be used.
-Currently, there is no `no_std` example available that shows the full implementation of the `Request` trait. But the [`tungstenite_client`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client/client.rs#L41-L64) provides a relatively simple `std` example. If a websocket library is available in your `no_std` environment, then your implementation may look similar.
+Currently, there is no `no_std` example available. But the [`tungstenite_client`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client/client.rs#L41-L64) provides a relatively simple `std` example. If a websocket library is available in your `no_std` environment, then your implementation may look similar.
 
 #### Subscription
  A little more complex is the second trait [`Subscribe`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L50-L62), which does not only send a subscription request to the node, it also keeps listening and updating accordingly.
@@ -114,7 +114,7 @@ pub trait Subscribe {
 	) -> Result<Self::Subscription<Notification>>;
 }
 ```
-and the [`HandleSubscription`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L64-L78) trait, which is used by the returned `subscribe` function:
+and the [`HandleSubscription`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L64-L78) trait, which is returned by the `subscribe` function:
 ```rust
 /// Trait to use the full functionality of jsonrpseee Subscription type
 /// without actually enforcing it.
