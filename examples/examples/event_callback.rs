@@ -74,7 +74,5 @@ async fn main() {
 
 	// After we finished whatever we wanted, unusubscribe from the subscription,
 	// to ensure, that the node does not keep sending us events.
-	// This is not mandatory. If the subscription goes out of scope, it should
-	// automatically unsubscribe from  the node.
 	subscription.unsubscribe().unwrap();
 }
