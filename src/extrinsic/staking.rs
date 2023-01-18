@@ -64,7 +64,7 @@ pub type ForceNoEraCall = CallIndex;
 pub type SetPayeeCall<Address> = (CallIndex, Address);
 pub type SetValidatorCountCall = (CallIndex, u32);
 
-pub trait CreateStakingExtrinsic {
+pub trait StakingExtrinsics {
 	type Balance;
 	type RewardDestination;
 	type AccountId;
@@ -142,8 +142,7 @@ pub trait CreateStakingExtrinsic {
 	fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall>;
 }
 
-impl<Signer, Client, Params, Runtime> CreateStakingExtrinsic
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> StakingExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,

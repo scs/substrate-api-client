@@ -22,7 +22,7 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	extrinsic::CreateBalancesExtrinsic, rpc::TungsteniteRpcClient, Api, AssetTipExtrinsicParams,
+	extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient, Api, AssetTipExtrinsicParams,
 	ExtrinsicSigner, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 

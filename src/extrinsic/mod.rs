@@ -17,11 +17,11 @@
 
 //! Offers some predefined extrinsics for common runtime modules.
 
-pub use balances::CreateBalancesExtrinsic;
-pub use contracts::CreateContractsExtrinsic;
+pub use balances::BalancesExtrinsics;
+pub use contracts::ContractsExtrinsics;
 #[cfg(feature = "staking-xt")]
-pub use staking::CreateStakingExtrinsic;
-pub use utility::CreateUtilityExtrinsic;
+pub use staking::StakingExtrinsics;
+pub use utility::UtilityExtrinsics;
 
 pub mod balances;
 pub mod contracts;

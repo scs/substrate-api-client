@@ -37,7 +37,7 @@ pub struct Batch<Call> {
 
 pub type BatchCall<Call> = (CallIndex, Batch<Call>);
 
-pub trait CreateUtilityExtrinsic {
+pub trait UtilityExtrinsics {
 	type Extrinsic<Call>;
 
 	// Send a batch of dispatch calls.
@@ -50,8 +50,7 @@ pub trait CreateUtilityExtrinsic {
 	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
-impl<Signer, Client, Params, Runtime> CreateUtilityExtrinsic
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> UtilityExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,

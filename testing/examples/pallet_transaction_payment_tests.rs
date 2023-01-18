@@ -19,7 +19,7 @@ use codec::Encode;
 use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	extrinsic::CreateBalancesExtrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
 	ExtrinsicSigner, GetBlock, GetTransactionPayment,
 };
 

@@ -17,7 +17,7 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	extrinsic::{CreateStakingExtrinsic, CreateUtilityExtrinsic},
+	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
 	Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetStorage, SubmitAndWatch,
 	SubmitAndWatchUntilSuccess, XtStatus,

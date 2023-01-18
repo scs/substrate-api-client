@@ -36,14 +36,14 @@ pub const INSTANTIATE: &str = "instantiate";
 pub const INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
 pub const CALL: &str = "call";
 
-pub type GasLimitFor<M> = Compact<<M as CreateContractsExtrinsic>::Gas>;
-pub type ValueFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
-pub type EndowmentFor<M> = Compact<<M as CreateContractsExtrinsic>::Currency>;
-pub type DataFor<M> = <M as CreateContractsExtrinsic>::Data;
-pub type CodeFor<M> = <M as CreateContractsExtrinsic>::Code;
-pub type SaltFor<M> = <M as CreateContractsExtrinsic>::Salt;
-pub type HashFor<M> = <M as CreateContractsExtrinsic>::Hash;
-pub type AddressFor<M> = <M as CreateContractsExtrinsic>::Address;
+pub type GasLimitFor<M> = Compact<<M as ContractsExtrinsics>::Gas>;
+pub type ValueFor<M> = Compact<<M as ContractsExtrinsics>::Currency>;
+pub type EndowmentFor<M> = Compact<<M as ContractsExtrinsics>::Currency>;
+pub type DataFor<M> = <M as ContractsExtrinsics>::Data;
+pub type CodeFor<M> = <M as ContractsExtrinsics>::Code;
+pub type SaltFor<M> = <M as ContractsExtrinsics>::Salt;
+pub type HashFor<M> = <M as ContractsExtrinsics>::Hash;
+pub type AddressFor<M> = <M as ContractsExtrinsics>::Address;
 
 /// Call for putting code in a contract.
 pub type PutCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
@@ -59,7 +59,7 @@ pub type InstantiateWithCodeFor<M> =
 /// Call for calling a function inside a contract.
 pub type ContractCallFor<M> = (CallIndex, AddressFor<M>, ValueFor<M>, GasLimitFor<M>, DataFor<M>);
 
-pub trait CreateContractsExtrinsic {
+pub trait ContractsExtrinsics {
 	type Gas;
 	type Currency;
 	type Hash;
@@ -107,8 +107,7 @@ type BalanceOf<T> = <<T as ContractsConfig>::Currency as frame_support::traits::
 >>::Balance;
 
 #[cfg(feature = "std")]
-impl<Signer, Client, Params, Runtime> CreateContractsExtrinsic
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> ContractsExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,

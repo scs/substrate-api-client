@@ -20,7 +20,7 @@ use frame_support::dispatch::DispatchInfo;
 use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	extrinsic::CreateBalancesExtrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
 	EventDetails, ExtrinsicSigner, FetchEvents, GetBlock, StaticEvent, SubmitAndWatch, XtStatus,
 };
 

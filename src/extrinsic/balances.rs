@@ -37,7 +37,7 @@ pub type TransferCall<Address, Balance> = (CallIndex, Address, Compact<Balance>)
 pub type SetBalanceCall<Address, Balance> =
 	(CallIndex, Address, Compact<Balance>, Compact<Balance>);
 
-pub trait CreateBalancesExtrinsic {
+pub trait BalancesExtrinsics {
 	type Balance;
 	type Address;
 	type Extrinsic<Call>;
@@ -58,8 +58,7 @@ pub trait CreateBalancesExtrinsic {
 	) -> Self::Extrinsic<SetBalanceCall<Self::Address, Self::Balance>>;
 }
 
-impl<Signer, Client, Params, Runtime> CreateBalancesExtrinsic
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> BalancesExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
