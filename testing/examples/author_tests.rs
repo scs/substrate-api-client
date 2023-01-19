@@ -20,6 +20,7 @@ use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
+	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, AssetTipExtrinsicParams, EventDetails, ExtrinsicSigner as GenericExtrinsicSigner,
 	SignExtrinsic, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus,

@@ -16,45 +16,64 @@
 */
 
 //! Extrinsics for `pallet-utility`.
+//! https://polkadot.js.org/docs/substrate/extrinsics/#utility
 
-use super::common::Batch;
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	BalancesConfig, CallIndex, ExtrinsicParams, SignExtrinsic, UncheckedExtrinsicV4,
+	CallIndex, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4,
 };
 use alloc::{borrow::ToOwned, vec::Vec};
-use codec::Encode;
-use sp_runtime::traits::GetRuntimeBlockType;
+use codec::{Decode, Encode};
 
 const UTILITY_MODULE: &str = "Utility";
-const UTILITY_BATCH: &str = "batch";
-const UTILITY_FORCE_BATCH: &str = "force_batch";
+const BATCH: &str = "batch";
+const FORCE_BATCH: &str = "force_batch";
 
-pub type UtilityBatchFn<Call> = (CallIndex, Batch<Call>);
-pub type UtilityBatchXt<Address, Call, Signature, SignedExtra> =
-	UncheckedExtrinsicV4<Address, UtilityBatchFn<Call>, Signature, SignedExtra>;
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug)]
+pub struct Batch<Call> {
+	pub calls: Vec<Call>,
+}
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+pub type BatchCall<Call> = (CallIndex, Batch<Call>);
+
+pub trait UtilityExtrinsics {
+	type Extrinsic<Call>;
+
+	// Send a batch of dispatch calls.
+	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>>;
+
+	// Send a batch of dispatch calls. Unlike batch, it allows errors and won't interrupt.
+	fn force_batch<Call: Encode + Clone>(
+		&self,
+		calls: Vec<Call>,
+	) -> Self::Extrinsic<BatchCall<Call>>;
+}
+
+impl<Signer, Client, Params, Runtime> UtilityExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: GetRuntimeBlockType + BalancesConfig,
+	Runtime: FrameSystemConfig,
 {
-	pub fn batch<Call: Encode + Clone>(
-		&self,
-		calls: Vec<Call>,
-	) -> UtilityBatchXt<Signer::ExtrinsicAddress, Call, Signer::Signature, Params::SignedExtra> {
+	type Extrinsic<Call> = UncheckedExtrinsicV4<
+		Signer::ExtrinsicAddress,
+		Call,
+		Signer::Signature,
+		Params::SignedExtra,
+	>;
+
+	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		compose_extrinsic!(self, UTILITY_MODULE, UTILITY_BATCH, calls)
+		compose_extrinsic!(self, UTILITY_MODULE, BATCH, calls)
 	}
 
-	pub fn force_batch<Call: Encode + Clone>(
+	fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> UtilityBatchXt<Signer::ExtrinsicAddress, Call, Signer::Signature, Params::SignedExtra> {
+	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		compose_extrinsic!(self, UTILITY_MODULE, UTILITY_FORCE_BATCH, calls)
+		compose_extrinsic!(self, UTILITY_MODULE, FORCE_BATCH, calls)
 	}
 }

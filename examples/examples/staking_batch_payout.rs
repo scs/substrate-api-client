@@ -17,8 +17,10 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetStorage,
-	SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
+	rpc::JsonrpseeClient,
+	Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetStorage, SubmitAndWatch,
+	SubmitAndWatchUntilSuccess, XtStatus,
 };
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;

@@ -18,8 +18,8 @@ use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetAccountInformation,
-	StaticEvent, SubmitAndWatchUntilSuccess,
+	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	ExtrinsicSigner, GetAccountInformation, StaticEvent, SubmitAndWatchUntilSuccess,
 };
 
 #[derive(Decode)]

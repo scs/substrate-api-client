@@ -17,8 +17,13 @@
 
 //! Offers some predefined extrinsics for common runtime modules.
 
+pub use balances::BalancesExtrinsics;
+pub use contracts::ContractsExtrinsics;
+#[cfg(feature = "staking-xt")]
+pub use staking::StakingExtrinsics;
+pub use utility::UtilityExtrinsics;
+
 pub mod balances;
-pub mod common;
 pub mod contracts;
 pub mod offline_extrinsic;
 #[cfg(feature = "staking-xt")]

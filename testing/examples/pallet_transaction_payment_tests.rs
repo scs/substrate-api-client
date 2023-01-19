@@ -19,8 +19,8 @@ use codec::Encode;
 use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetBlock,
-	GetTransactionPayment,
+	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	ExtrinsicSigner, GetBlock, GetTransactionPayment,
 };
 
 #[tokio::main]
