@@ -13,21 +13,16 @@
 	limitations under the License.
 */
 
-//! Very simple example that shows how to subscribe to events.
+//! Example that shows how to subscribe to events and do some action
+//! upon encounterign them.
 
-use codec::Decode;
-use kitchensink_runtime::Runtime;
 use log::debug;
 use sp_core::H256 as Hash;
-use substrate_api_client::{
-	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, PlainTipExtrinsicParams, SubscribeFrameSystem,
-};
+use substrate_api_client::{rpc::JsonrpseeClient, Api, PlainTipExtrinsicParams, SubscribeEvents};
 
-// This module depends on node_runtime.
-// To avoid dependency collisions, node_runtime has been removed from the substrate-api-client library.
+// This module depends on the specific node runtime.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
-use kitchensink_runtime::RuntimeEvent;
+use kitchensink_runtime::{Runtime, RuntimeEvent};
 
 #[tokio::main]
 async fn main() {
@@ -38,21 +33,17 @@ async fn main() {
 	let api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	println!("Subscribe to events");
-	let mut subscription = api.subscribe_system_events().unwrap();
+	let mut subscription = api.subscribe_events().unwrap();
 
 	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
-		let event_bytes = subscription.next().unwrap().unwrap().changes[0].1.clone().unwrap().0;
-		let events = Vec::<frame_system::EventRecord<RuntimeEvent, Hash>>::decode(
-			&mut event_bytes.as_slice(),
-		)
-		.unwrap();
-		for evr in &events {
-			println!("decoded: {:?} {:?}", evr.phase, evr.event);
-			match &evr.event {
-				RuntimeEvent::Balances(be) => {
-					println!(">>>>>>>>>> balances event: {:?}", be);
-					match &be {
+		let event_records = subscription.next_event::<RuntimeEvent, Hash>().unwrap().unwrap();
+		for event_record in &event_records {
+			println!("decoded: {:?} {:?}", event_record.phase, event_record.event);
+			match &event_record.event {
+				RuntimeEvent::Balances(balances_event) => {
+					println!(">>>>>>>>>> balances event: {:?}", balances_event);
+					match &balances_event {
 						pallet_balances::Event::Transfer { from, to, amount } => {
 							println!("Transactor: {:?}", from);
 							println!("Destination: {:?}", to);
@@ -64,8 +55,24 @@ async fn main() {
 						},
 					}
 				},
-				_ => debug!("ignoring unsupported module event: {:?}", evr.event),
+				RuntimeEvent::System(system_event) => {
+					println!(">>>>>>>>>> system event: {:?}", system_event);
+					match &system_event {
+						frame_system::Event::ExtrinsicSuccess { dispatch_info } => {
+							println!("DispatchInfo: {:?}", dispatch_info);
+							return
+						},
+						_ => {
+							debug!("ignoring unsupported system event");
+						},
+					}
+				},
+				_ => debug!("ignoring unsupported module event: {:?}", event_record.event),
 			}
 		}
 	}
+
+	// After we finished whatever we wanted, unusubscribe from the subscription,
+	// to ensure, that the node does not keep sending us events.
+	subscription.unsubscribe().unwrap();
 }

@@ -21,11 +21,11 @@ use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner, GetAccountInformation,
-	StaticEvent, SubscribeEvents, SubscribeFrameSystem, SystemApi,
+	StaticEvent, SystemApi,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
-#[derive(Decode)]
+#[derive(Decode, Debug)]
 struct ExtrinsicSuccess {
 	_dispatch_info: DispatchInfo,
 }
@@ -51,33 +51,26 @@ async fn main() {
 
 	// System Api
 	let system_name = api.get_system_name().unwrap();
-	println!("System name: {}", system_name);
+	println!("System name: {system_name}");
 
 	let system_version = api.get_system_version().unwrap();
-	println!("System version: {}", system_version);
+	println!("System version: {system_version}");
 
 	let system_chain = api.get_system_chain().unwrap();
-	println!("System chain: {}", system_chain);
+	println!("System chain: {system_chain}");
 
 	let system_chain_type = api.get_system_chain_type().unwrap();
-	println!("System chain type: {:?}", system_chain_type);
+	println!("System chain type: {system_chain_type:?}");
 
 	let system_properties = api.get_system_properties().unwrap();
-	println!("System properties: {:?}", system_properties);
+	println!("System properties: {system_properties:?}");
 
 	let system_health = api.get_system_health().unwrap();
-	println!("System health: {}", system_health);
+	println!("System health: {system_health}");
 
 	let system_local_peer_id = api.get_system_local_peer_id().unwrap();
-	println!("System local peer id: {:?}", system_local_peer_id);
+	println!("System local peer id: {system_local_peer_id:?}");
 
 	let system_local_listen_addresses = api.get_system_local_listen_addresses().unwrap();
-	println!("System local listen addresses: {:?}", system_local_listen_addresses);
-
-	// Subscribe
-	let mut event_subscription = api.subscribe_system_events().unwrap();
-	let _event: ExtrinsicSuccess = api.wait_for_event(&mut event_subscription).unwrap();
-	let _event_details =
-		api.wait_for_event_details::<ExtrinsicSuccess>(&mut event_subscription).unwrap();
-	println!("Success: Wait for event Details");
+	println!("System local listen addresses: {system_local_listen_addresses:?}");
 }

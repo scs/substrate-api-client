@@ -17,11 +17,12 @@
 
 use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
-use kitchensink_runtime::{Runtime, Signature};
+use kitchensink_runtime::{Runtime, RuntimeEvent, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	EventDetails, ExtrinsicSigner, FetchEvents, GetBlock, StaticEvent, SubmitAndWatch, XtStatus,
+	EventDetails, ExtrinsicSigner, FetchEvents, FrameSystemConfig, GetBlock, StaticEvent,
+	SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
@@ -60,6 +61,24 @@ async fn main() {
 		.fetch_events_for_extrinsic(report.extrinsic_hash, report.block_hash.unwrap())
 		.unwrap();
 	assert_assosciated_events_match_expected(extrinisc_events);
+
+	// Subscribe to system events.
+	let mut event_subscription = api.subscribe_events().unwrap();
+
+	// Wait for event callbacks from the node, which are received via subscription.
+	for _ in 0..5 {
+		let event_records = event_subscription
+			.next_event::<RuntimeEvent, <Runtime as FrameSystemConfig>::Hash>()
+			.unwrap()
+			.unwrap();
+		for event_record in &event_records {
+			println!("got event: {:?} {:?}", event_record.phase, event_record.event);
+			match &event_record.event {
+				RuntimeEvent::System(_) => println!("Got System event, all good"),
+				_ => panic!("Unexpected event"),
+			}
+		}
+	}
 }
 
 fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {

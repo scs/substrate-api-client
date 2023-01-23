@@ -70,6 +70,7 @@ pub trait StaticEvent: Decode {
 }
 
 /// A phase of a block's execution.
+// https://github.com/paritytech/substrate/blob/2bfc1dd66ef32cf8beb90007dfb544a9d28f1b2f/frame/system/src/lib.rs#L698-L708
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
 pub enum Phase {
 	/// Applying an extrinsic.
@@ -78,4 +79,16 @@ pub enum Phase {
 	Finalization,
 	/// Initializing the block.
 	Initialization,
+}
+
+/// Record of an event happening.
+// https://github.com/paritytech/substrate/blob/2bfc1dd66ef32cf8beb90007dfb544a9d28f1b2f/frame/system/src/lib.rs#L716-L726
+#[derive(Encode, Decode, PartialEq, Eq, Clone)]
+pub struct EventRecord<E, T> {
+	/// The phase of the block it happened in.
+	pub phase: Phase,
+	/// The event itself.
+	pub event: E,
+	/// The list of the topics this event has.
+	pub topics: Vec<T>,
 }

@@ -16,10 +16,12 @@ use crate::{
 	rpc::{HandleSubscription, Request, Subscribe},
 	GetBlock, GetStorage, Phase,
 };
-use ac_node_api::{EventDetails, Events, StaticEvent};
+use ac_compose_macros::rpc_params;
+use ac_node_api::{EventDetails, EventRecord, Events};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
-use alloc::vec::Vec;
-use codec::Encode;
+use alloc::{vec, vec::Vec};
+use codec::{Decode, Encode};
+use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
@@ -70,24 +72,65 @@ where
 	}
 }
 
-// FIXME: This should rather be implemented directly on the
-// Subscription return value, rather than the api. Or directly
-// subcribe. Should be looked at in #288
-// https://github.com/scs/substrate-api-client/issues/288#issuecomment-1346221653
+/// Wrapper around a Event `StorageChangeSet` subscription.
+/// Simplifies the event retrieval from the subscription.
+pub struct EventSubscription<Subscription, Hash> {
+	pub subscription: Subscription,
+	_phantom: PhantomData<Hash>,
+}
+
+impl<Subscription, Hash> EventSubscription<Subscription, Hash>
+where
+	Hash: DeserializeOwned,
+	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
+{
+	/// Create a new wrapper around the subscription.
+	pub fn new(subscription: Subscription) -> Self {
+		Self { subscription, _phantom: Default::default() }
+	}
+
+	/// Wait for the next value from the internal subscription.
+	/// Upon encounter, it retrieves and decodes the expected `EventRecord`.
+	pub fn next_event<RuntimeEvent: Decode, Topic: Decode>(
+		&mut self,
+	) -> Option<Result<Vec<EventRecord<RuntimeEvent, Topic>>>> {
+		let change_set = match self.subscription.next()? {
+			Ok(set) => set,
+			Err(e) => return Some(Err(Error::RpcClient(e))),
+		};
+		// Since we subscribed to only the events key, we can simply take the first value of the
+		// changes in the set. Also, we don't care about the key but only the data, so take
+		// the second value in the tuple of two.
+		let storage_data = change_set.changes[0].1.as_ref()?;
+		let events = Decode::decode(&mut storage_data.0.as_slice()).map_err(Error::Codec);
+		Some(events)
+	}
+
+	/// Unsubscribe from the internal subscription.
+	pub fn unsubscribe(self) -> Result<()> {
+		self.subscription.unsubscribe().map_err(|e| e.into())
+	}
+}
+
+impl<Subscription, Hash> From<Subscription> for EventSubscription<Subscription, Hash>
+where
+	Hash: DeserializeOwned,
+	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
+{
+	fn from(subscription: Subscription) -> Self {
+		EventSubscription::new(subscription)
+	}
+}
+
 pub trait SubscribeEvents<Client, Hash>
 where
 	Client: Subscribe,
 	Hash: DeserializeOwned,
 {
-	fn wait_for_event<Ev: StaticEvent>(
+	/// Subscribe to events.
+	fn subscribe_events(
 		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
-	) -> Result<Ev>;
-
-	fn wait_for_event_details<Ev: StaticEvent>(
-		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Hash>>,
-	) -> Result<EventDetails>;
+	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
 impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
@@ -97,49 +140,17 @@ where
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 {
-	fn wait_for_event<Ev: StaticEvent>(
+	fn subscribe_events(
 		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
-	) -> Result<Ev> {
-		let maybe_event_details = self.wait_for_event_details::<Ev>(subscription)?;
-		maybe_event_details
-			.as_event()?
-			.ok_or(Error::Other("Could not find the specific event".into()))
-	}
-
-	fn wait_for_event_details<Ev: StaticEvent>(
-		&self,
-		subscription: &mut Client::Subscription<StorageChangeSet<Runtime::Hash>>,
-	) -> Result<EventDetails> {
-		while let Some(change_set) = subscription.next() {
-			let event_bytes = change_set?.changes[0].1.as_ref().unwrap().0.clone();
-			let events = Events::<Runtime::Hash>::new(
-				self.metadata().clone(),
-				Default::default(),
-				event_bytes,
-			);
-			for maybe_event_details in events.iter() {
-				let event_details = maybe_event_details?;
-
-				// Check for failed xt and return as Dispatch Error in case we find one.
-				// Careful - this reports the first one encountered. This event may belong to another extrinsic
-				// than the one that is being waited for.
-				event_details.check_if_failed()?;
-
-				let event_metadata = event_details.event_metadata();
-				trace!(
-					"Found extrinsic: {:?}, {:?}",
-					event_metadata.pallet(),
-					event_metadata.event()
-				);
-				if event_metadata.pallet() == Ev::PALLET && event_metadata.event() == Ev::EVENT {
-					return Ok(event_details)
-				} else {
-					trace!("Not the event we are looking for, skipping.")
-				}
-			}
-		}
-		Err(Error::NoStream)
+	) -> Result<
+		EventSubscription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
+	> {
+		let key = crate::storage_key("System", "Events");
+		let subscription = self
+			.client()
+			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.map(|sub| sub.into())?;
+		Ok(subscription)
 	}
 }
 
