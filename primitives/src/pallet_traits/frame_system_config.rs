@@ -19,7 +19,7 @@ use core::fmt::Debug;
 use scale_info::TypeInfo;
 use sp_runtime::traits::{
 	self, AtLeast32Bit, AtLeast32BitUnsigned, Bounded, CheckEqual, Dispatchable, Get, Hash,
-	MaybeMallocSizeOf, MaybeSerializeDeserialize, Member, SimpleBitOps, StaticLookup,
+	MaybeSerializeDeserialize, Member, SimpleBitOps, StaticLookup,
 };
 
 /// Simplifed Frame system Config trait. Needed because substrate pallets compile to wasm
@@ -39,7 +39,6 @@ pub trait FrameSystemConfig {
 		+ Copy
 		+ sp_std::hash::Hash
 		+ sp_std::str::FromStr
-		+ MaybeMallocSizeOf
 		+ MaxEncodedLen
 		+ TypeInfo;
 	type Hash: MaybeSerializeDeserialize
@@ -52,7 +51,6 @@ pub trait FrameSystemConfig {
 		+ sp_std::hash::Hash
 		+ AsRef<[u8]>
 		+ AsMut<[u8]>
-		+ MaybeMallocSizeOf
 		+ MaxEncodedLen;
 	type Hashing: Hash<Output = Self::Hash> + TypeInfo;
 	type AccountId: Member + MaybeSerializeDeserialize + Debug + Ord + MaxEncodedLen;
