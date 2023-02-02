@@ -38,7 +38,8 @@ use crate::{
 };
 use ac_node_api::metadata::{Metadata, MetadataError};
 use ac_primitives::{
-	AccountInfo, BalancesConfig, ExtrinsicParams, FeeDetails, InclusionFee, RuntimeDispatchInfo,
+	AccountInfo, BalancesConfig, ExtrinsicParams, FeeDetails, FrameSystemConfig, InclusionFee,
+	RuntimeDispatchInfo,
 };
 use codec::{Decode, Encode};
 use core::{
@@ -114,9 +115,7 @@ pub struct Api<Signer, Client, Params, Runtime>
 where
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
-	Runtime::Hash: FromHexString,
-	Runtime::Balance: TryFrom<NumberOrHex>,
+	Runtime: FrameSystemConfig,
 {
 	signer: Option<Signer>,
 	genesis_hash: Runtime::Hash,
@@ -132,10 +131,9 @@ where
 	MultiSigner: From<Signer::Public>,
 	Client: RpcClient,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: BalancesConfig,
+	Runtime: FrameSystemConfig,
 	Runtime::Hash: FromHexString,
 	Runtime::Index: From<u32>,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
 	/// Set the api signer account.
 	pub fn set_signer(&mut self, signer: Signer) {
