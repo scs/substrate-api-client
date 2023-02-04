@@ -9,7 +9,7 @@ codec = { package = "parity-scale-codec", version = "3.2", features = ['derive']
 env_logger = "0.10.0"
 log = { version = "0.4.14" }
 serde_json = { version = "1.0.79" }
-tokio = { version = "1.23", features = ["rt-multi-thread", "macros", "time"] }
+tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 wabt = "0.10.0"
 
 # Substrate dependencies
