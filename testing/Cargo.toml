@@ -10,7 +10,7 @@ codec = { package = "parity-scale-codec", version = "3.0.0", features = [
     'derive',
 ] }
 serde_json = { version = "1.0.79" }
-tokio = { version = "1.23", features = ["rt-multi-thread", "macros", "time"] }
+tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 wabt = "0.10.0"
 
 # Substrate dependencies
