@@ -71,7 +71,7 @@ async fn main() {
 		println!("Retrieving value for key {:?}", storage_key);
 		// We're expecting account info as return value because we fetch added a prefix of "System" + "Account".
 		let storage_data: AccountInfo =
-			api.get_storage_by_key_hash(storage_key.clone(), None).unwrap().unwrap();
+			api.get_storage_by_storage_key(storage_key.clone(), None).unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}
 }

@@ -150,7 +150,7 @@ pub fn get_last_reward_received_for(
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();
 
 	let claimed_rewards: Vec<u32> =
-		match api.get_storage_by_key_hash::<StakingLedger>(ledger_storage_key, None) {
+		match api.get_storage_by_storage_key::<StakingLedger>(ledger_storage_key, None) {
 			Ok(Some(ledger)) => ledger.claimed_rewards,
 			_ => Vec::new(),
 		};

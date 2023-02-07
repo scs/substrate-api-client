@@ -56,7 +56,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
-	fn get_storage_by_key_hash<V: Decode>(
+	fn get_storage_by_storage_key<V: Decode>(
 		&self,
 		key: StorageKey,
 		at_block: Option<Hash>,
@@ -73,7 +73,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Vec<StorageKey>>;
 
-	fn get_opaque_storage_by_key_hash(
+	fn get_opaque_storage_by_storage_key(
 		&self,
 		key: StorageKey,
 		at_block: Option<Hash>,
@@ -129,7 +129,7 @@ where
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_value_key(storage_prefix, storage_key_name)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key_hash(storagekey, at_block)
+		self.get_storage_by_storage_key(storagekey, at_block)
 	}
 
 	fn get_storage_map<K: Encode, V: Decode>(
@@ -143,7 +143,7 @@ where
 			self.metadata()
 				.storage_map_key::<K>(storage_prefix, storage_key_name, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key_hash(storagekey, at_block)
+		self.get_storage_by_storage_key(storagekey, at_block)
 	}
 
 	fn get_storage_map_key_prefix(
@@ -171,15 +171,15 @@ where
 			second,
 		)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key_hash(storagekey, at_block)
+		self.get_storage_by_storage_key(storagekey, at_block)
 	}
 
-	fn get_storage_by_key_hash<V: Decode>(
+	fn get_storage_by_storage_key<V: Decode>(
 		&self,
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let s = self.get_opaque_storage_by_key_hash(key, at_block)?;
+		let s = self.get_opaque_storage_by_storage_key(key, at_block)?;
 		match s {
 			Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
 			None => Ok(None),
@@ -199,7 +199,7 @@ where
 		Ok(storage)
 	}
 
-	fn get_opaque_storage_by_key_hash(
+	fn get_opaque_storage_by_storage_key(
 		&self,
 		key: StorageKey,
 		at_block: Option<Runtime::Hash>,
