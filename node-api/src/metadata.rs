@@ -455,50 +455,51 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 impl Metadata {
 	pub fn storage_value_key(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 	) -> Result<StorageKey, MetadataError> {
 		Ok(self
-			.pallet(storage_prefix)?
-			.storage(storage_key_name)?
-			.get_value(storage_prefix)?
+			.pallet(pallet)?
+			.storage(key)?
+			.get_value(pallet)?
 			.key())
 	}
 
 	pub fn storage_map_key<K: Encode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 		map_key: K,
 	) -> Result<StorageKey, MetadataError> {
 		Ok(self
-			.pallet(storage_prefix)?
-			.storage(storage_key_name)?
-			.get_map::<K>(storage_prefix)?
+			.pallet(pallet)?
+			.storage(key)?
+			.get_map::<K>(pallet)?
 			.key(map_key))
 	}
 
 	pub fn storage_map_key_prefix(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 	) -> Result<StorageKey, MetadataError> {
-		self.pallet(storage_prefix)?
-			.storage(storage_key_name)?
-			.get_map_prefix(storage_prefix)
+		self.pallet(pallet)?
+			.storage(key)?
+			.get_map_prefix(pallet)
 	}
 
+	/// `first` and `second` are the keys for the double map.
 	pub fn storage_double_map_key<K: Encode, Q: Encode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
-		first: K,
-		second: Q,
+		pallet: &'static str,
+		key: &'static str,
+		first_double_map_key: K,
+		second_double_map_key: Q,
 	) -> Result<StorageKey, MetadataError> {
 		Ok(self
-			.pallet(storage_prefix)?
-			.storage(storage_key_name)?
-			.get_double_map::<K, Q>(storage_prefix)?
-			.key(first, second))
+			.pallet(pallet)?
+			.storage(key)?
+			.get_double_map::<K, Q>(pallet)?
+			.key(first_double_map_key, second_double_map_key))
 	}
 }
