@@ -41,7 +41,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
-	fn get_storage_map_key_prefix(
+	fn get_storage_key_prefix(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -144,12 +144,14 @@ where
 		self.get_storage_by_storage_key(storagekey, at_block)
 	}
 
-	fn get_storage_map_key_prefix(
+	fn get_storage_key_prefix(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
 	) -> Result<StorageKey> {
-		self.metadata().storage_map_key_prefix(pallet, storage_item).map_err(|e| e.into())
+		self.metadata()
+			.storage_map_key_prefix(pallet, storage_item)
+			.map_err(|e| e.into())
 	}
 
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(

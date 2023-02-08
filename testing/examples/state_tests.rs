@@ -60,7 +60,7 @@ async fn main() {
 		.unwrap();
 
 	// Ensure the prefix matches the actual storage key:
-	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
+	let storage_key_prefix = api.get_storage_key_prefix("System", "Account").unwrap();
 	let storage_key = api.metadata().storage_map_key("System", "Account", &alice).unwrap();
 
 	let prefix_len = storage_key_prefix.0.len();

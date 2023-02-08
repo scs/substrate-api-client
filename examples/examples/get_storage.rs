@@ -51,7 +51,7 @@ async fn main() {
 	println!("[+] AccountInfo for Alice is {:?}", result);
 
 	// get StorageMap key prefix
-	let result = api.get_storage_map_key_prefix("System", "Account").unwrap();
+	let result = api.get_storage_key_prefix("System", "Account").unwrap();
 	println!("[+] key prefix for System Account map is {:?}", result);
 
 	// get Alice's AccountNonce with api.get_nonce()
@@ -60,7 +60,7 @@ async fn main() {
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
 	// Get an vector of storage keys, numbering up to the given max keys and that start with the (optionally) given storage key prefix.
-	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
+	let storage_key_prefix = api.get_storage_key_prefix("System", "Account").unwrap();
 	let max_keys = 3;
 	let storage_keys = api
 		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
