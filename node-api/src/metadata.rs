@@ -456,39 +456,38 @@ impl Metadata {
 	pub fn storage_value_key(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 	) -> Result<StorageKey, MetadataError> {
-		Ok(self.pallet(pallet)?.storage(key)?.get_value(pallet)?.key())
+		Ok(self.pallet(pallet)?.storage(storage_item)?.get_value(pallet)?.key())
 	}
 
 	pub fn storage_map_key<K: Encode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		map_key: K,
 	) -> Result<StorageKey, MetadataError> {
-		Ok(self.pallet(pallet)?.storage(key)?.get_map::<K>(pallet)?.key(map_key))
+		Ok(self.pallet(pallet)?.storage(storage_item)?.get_map::<K>(pallet)?.key(map_key))
 	}
 
 	pub fn storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 	) -> Result<StorageKey, MetadataError> {
-		self.pallet(pallet)?.storage(key)?.get_map_prefix(pallet)
+		self.pallet(pallet)?.storage(storage_item)?.get_map_prefix(pallet)
 	}
 
-	/// `first` and `second` are the keys for the double map.
 	pub fn storage_double_map_key<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
 	) -> Result<StorageKey, MetadataError> {
 		Ok(self
 			.pallet(pallet)?
-			.storage(key)?
+			.storage(storage_item)?
 			.get_double_map::<K, Q>(pallet)?
 			.key(first_double_map_key, second_double_map_key))
 	}
