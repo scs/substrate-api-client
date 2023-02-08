@@ -56,7 +56,7 @@ where
 		)?;
 
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_storage_key(storagekey, None)
+		self.get_storage_by_key(storagekey, None)
 	}
 
 	fn get_account_data(

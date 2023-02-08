@@ -56,7 +56,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
-	fn get_storage_by_storage_key<V: Decode>(
+	fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
@@ -73,7 +73,7 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Vec<StorageKey>>;
 
-	fn get_opaque_storage_by_storage_key(
+	fn get_opaque_storage(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
@@ -129,7 +129,7 @@ where
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_storage_key(storagekey, at_block)
+		self.get_storage_by_key(storagekey, at_block)
 	}
 
 	fn get_storage_map<K: Encode, V: Decode>(
@@ -141,7 +141,7 @@ where
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_storage_key(storagekey, at_block)
+		self.get_storage_by_key(storagekey, at_block)
 	}
 
 	fn get_storage_key_prefix(
@@ -169,15 +169,15 @@ where
 			second_double_map_key,
 		)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_storage_key(storagekey, at_block)
+		self.get_storage_by_key(storagekey, at_block)
 	}
 
-	fn get_storage_by_storage_key<V: Decode>(
+	fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let s = self.get_opaque_storage_by_storage_key(storage_key, at_block)?;
+		let s = self.get_opaque_storage(storage_key, at_block)?;
 		match s {
 			Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
 			None => Ok(None),
@@ -186,18 +186,19 @@ where
 
 	fn get_storage_keys_paged(
 		&self,
-		prefix: Option<StorageKey>,
+		storage_key_prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Vec<StorageKey>> {
-		let storage = self
-			.client()
-			.request("state_getKeysPaged", rpc_params![prefix, count, start_key, at_block])?;
+		let storage = self.client().request(
+			"state_getKeysPaged",
+			rpc_params![storage_key_prefix, count, start_key, at_block],
+		)?;
 		Ok(storage)
 	}
 
-	fn get_opaque_storage_by_storage_key(
+	fn get_opaque_storage(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,

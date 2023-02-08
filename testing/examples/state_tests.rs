@@ -67,11 +67,8 @@ async fn main() {
 	assert_eq!(storage_key_prefix.0, storage_key.0[..prefix_len]);
 
 	let _account_data: AccountData =
-		api.get_storage_by_storage_key(storage_key.clone(), None).unwrap().unwrap();
-	let account_data_opaque = api
-		.get_opaque_storage_by_storage_key(storage_key.clone(), None)
-		.unwrap()
-		.unwrap();
+		api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
+	let account_data_opaque = api.get_opaque_storage(storage_key.clone(), None).unwrap().unwrap();
 	let _account_data = AccountData::decode(&mut account_data_opaque.as_slice()).unwrap();
 	let _value_proof =
 		api.get_storage_value_proof("Balances", "TotalIssuance", None).unwrap().unwrap();
