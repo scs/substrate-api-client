@@ -29,14 +29,14 @@ pub trait GetStorage<Hash> {
 	fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
 	fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		map_key: K,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
@@ -44,13 +44,13 @@ pub trait GetStorage<Hash> {
 	fn get_storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 	) -> Result<StorageKey>;
 
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
 		at_block: Option<Hash>,
@@ -82,14 +82,14 @@ pub trait GetStorage<Hash> {
 	fn get_storage_value_proof(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
 	fn get_storage_map_proof<K: Encode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		map_key: K,
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
@@ -97,7 +97,7 @@ pub trait GetStorage<Hash> {
 	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
 		at_block: Option<Hash>,
@@ -124,10 +124,10 @@ where
 	fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let storagekey = self.metadata().storage_value_key(pallet, key)?;
+		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_by_storage_key(storagekey, at_block)
 	}
@@ -135,11 +135,11 @@ where
 	fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		map_key: K,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let storagekey = self.metadata().storage_map_key::<K>(pallet, key, map_key)?;
+		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_by_storage_key(storagekey, at_block)
 	}
@@ -147,22 +147,22 @@ where
 	fn get_storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 	) -> Result<StorageKey> {
-		self.metadata().storage_map_key_prefix(pallet, key).map_err(|e| e.into())
+		self.metadata().storage_map_key_prefix(pallet, storage_item).map_err(|e| e.into())
 	}
 
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_double_map_key::<K, Q>(
 			pallet,
-			key,
+			storage_item,
 			first_double_map_key,
 			second_double_map_key,
 		)?;
@@ -208,10 +208,10 @@ where
 	fn get_storage_value_proof(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
-		let storagekey = self.metadata().storage_value_key(pallet, key)?;
+		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
@@ -219,11 +219,11 @@ where
 	fn get_storage_map_proof<K: Encode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		map_key: K,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
-		let storagekey = self.metadata().storage_map_key::<K>(pallet, key, map_key)?;
+		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
@@ -231,14 +231,14 @@ where
 	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
-		key: &'static str,
+		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let storage_key = self.metadata().storage_double_map_key::<K, Q>(
 			pallet,
-			key,
+			storage_item,
 			first_double_map_key,
 			second_double_map_key,
 		)?;
