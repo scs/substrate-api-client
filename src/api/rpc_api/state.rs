@@ -28,37 +28,37 @@ use serde::de::DeserializeOwned;
 pub trait GetStorage<Hash> {
 	fn get_storage_value<V: Decode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
 	fn get_storage_map<K: Encode, V: Decode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 		map_key: K,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
 	fn get_storage_map_key_prefix(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 	) -> Result<StorageKey>;
 
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
-		first: K,
-		second: Q,
+		pallet: &'static str,
+		key: &'static str,
+		first_double_map_key: K,
+		second_double_map_key: Q,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
 	fn get_storage_by_storage_key<V: Decode>(
 		&self,
-		key: StorageKey,
+		storage_key: StorageKey,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
@@ -67,7 +67,7 @@ pub trait GetStorage<Hash> {
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	fn get_storage_keys_paged(
 		&self,
-		prefix: Option<StorageKey>,
+		storage_key: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
 		at_block: Option<Hash>,
@@ -75,31 +75,31 @@ pub trait GetStorage<Hash> {
 
 	fn get_opaque_storage_by_storage_key(
 		&self,
-		key: StorageKey,
+		storage_key: StorageKey,
 		at_block: Option<Hash>,
 	) -> Result<Option<Vec<u8>>>;
 
 	fn get_storage_value_proof(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
 	fn get_storage_map_proof<K: Encode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
+		pallet: &'static str,
+		key: &'static str,
 		map_key: K,
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
 	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
-		storage_prefix: &'static str,
-		storage_key_name: &'static str,
-		first: K,
-		second: Q,
+		pallet: &'static str,
+		key: &'static str,
+		first_double_map_key: K,
+		second_double_map_key: Q,
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
@@ -139,9 +139,7 @@ where
 		map_key: K,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let storagekey =
-			self.metadata()
-				.storage_map_key::<K>(pallet, key, map_key)?;
+		let storagekey = self.metadata().storage_map_key::<K>(pallet, key, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_by_storage_key(storagekey, at_block)
 	}
@@ -151,9 +149,7 @@ where
 		pallet: &'static str,
 		key: &'static str,
 	) -> Result<StorageKey> {
-		self.metadata()
-			.storage_map_key_prefix(pallet, key)
-			.map_err(|e| e.into())
+		self.metadata().storage_map_key_prefix(pallet, key).map_err(|e| e.into())
 	}
 
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
@@ -227,9 +223,7 @@ where
 		map_key: K,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
-		let storagekey =
-			self.metadata()
-				.storage_map_key::<K>(pallet, key, map_key)?;
+		let storagekey = self.metadata().storage_map_key::<K>(pallet, key, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
 	}
@@ -257,7 +251,9 @@ where
 		storage_keys: Vec<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
-		let proof = self.client().request("state_getReadProof", rpc_params![storage_keys, at_block])?;
+		let proof = self
+			.client()
+			.request("state_getReadProof", rpc_params![storage_keys, at_block])?;
 		Ok(proof)
 	}
 
