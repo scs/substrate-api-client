@@ -36,7 +36,7 @@ async fn main() {
 	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 
 	// get some plain storage value
-	let result: u128 = api.get_storage_value("Balances", "TotalIssuance", None).unwrap().unwrap();
+	let result: u128 = api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();
 	println!("[+] TotalIssuance is {}", result);
 
 	let proof = api.get_storage_value_proof("Balances", "TotalIssuance", None).unwrap();

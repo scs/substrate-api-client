@@ -26,7 +26,7 @@ use serde::de::DeserializeOwned;
 
 /// Generic interface to substrate storage.
 pub trait GetStorage<Hash> {
-	fn get_storage_value<V: Decode>(
+	fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
 		key: &'static str,
@@ -67,7 +67,7 @@ pub trait GetStorage<Hash> {
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	fn get_storage_keys_paged(
 		&self,
-		storage_key: Option<StorageKey>,
+		prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
 		at_block: Option<Hash>,
@@ -121,7 +121,7 @@ where
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	fn get_storage_value<V: Decode>(
+	fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
 		key: &'static str,
@@ -184,14 +184,14 @@ where
 
 	fn get_storage_keys_paged(
 		&self,
-		storage_key: Option<StorageKey>,
+		prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Vec<StorageKey>> {
 		let storage = self
 			.client()
-			.request("state_getKeysPaged", rpc_params![storage_key, count, start_key, at_block])?;
+			.request("state_getKeysPaged", rpc_params![prefix, count, start_key, at_block])?;
 		Ok(storage)
 	}
 

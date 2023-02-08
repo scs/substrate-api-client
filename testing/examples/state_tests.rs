@@ -49,11 +49,9 @@ async fn main() {
 
 	// Tests
 	let _total_issuance: Balance =
-		api.get_storage_value("Balances", "TotalIssuance", None).unwrap().unwrap();
-	let _total_issuance: Balance = api
-		.get_storage_value("Balances", "TotalIssuance", Some(block_hash))
-		.unwrap()
-		.unwrap();
+		api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();
+	let _total_issuance: Balance =
+		api.get_storage("Balances", "TotalIssuance", Some(block_hash)).unwrap().unwrap();
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).unwrap().unwrap();
 	let _era_stakers: ErasStakers = api
