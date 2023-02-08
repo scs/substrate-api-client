@@ -26,6 +26,9 @@ use serde::de::DeserializeOwned;
 
 /// Generic interface to substrate storage.
 pub trait GetStorage<Hash> {
+	/// Retrieve the storage value.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
@@ -33,6 +36,9 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
+	/// Retrieve the storage value from a map for the given `map_key`.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
@@ -47,6 +53,9 @@ pub trait GetStorage<Hash> {
 		storage_item: &'static str,
 	) -> Result<StorageKey>;
 
+	/// Retrieve the storage value from a double map for the given keys: `first_double_map_key` and `second_double_map_key`.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
@@ -56,15 +65,20 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
+	/// Retrieve the storage value from the given `storage_key`.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
-	/// Returns the keys with prefix with pagination support.
+	/// Retrieve the keys with prefix with pagination support.
 	/// Up to `count` keys will be returned.
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_keys_paged(
 		&self,
 		prefix: Option<StorageKey>,
@@ -73,12 +87,18 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Vec<StorageKey>>;
 
+	/// Retrieve the raw storage for the given `storage_key`.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_opaque_storage(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
 	) -> Result<Option<Vec<u8>>>;
 
+	/// Retrieve the storage proof of the corresponding storage value.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_value_proof(
 		&self,
 		pallet: &'static str,
@@ -86,6 +106,9 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
+	/// Retrieve the storage proof of the corresponding storage map value.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_map_proof<K: Encode>(
 		&self,
 		pallet: &'static str,
@@ -94,6 +117,9 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
+	/// Retrieve the storage proof of the corresponding storage double map value.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
@@ -103,6 +129,9 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
+	/// Retrieve the proof of the corresponding storage entries.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
 	fn get_storage_proof_by_keys(
 		&self,
 		keys: Vec<StorageKey>,
