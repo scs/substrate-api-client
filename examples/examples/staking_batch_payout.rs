@@ -59,8 +59,7 @@ async fn main() {
 	let validator_stash =
 		AccountId32::from_ss58check("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY").unwrap();
 
-	let active_era: ActiveEraInfo =
-		api.get_storage_value("Staking", "ActiveEra", None).unwrap().unwrap();
+	let active_era: ActiveEraInfo = api.get_storage("Staking", "ActiveEra", None).unwrap().unwrap();
 	println!("{:?}", active_era);
 	let current_era_index = active_era.index;
 
@@ -150,7 +149,7 @@ pub fn get_last_reward_received_for(
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();
 
 	let claimed_rewards: Vec<u32> =
-		match api.get_storage_by_key_hash::<StakingLedger>(ledger_storage_key, None) {
+		match api.get_storage_by_key::<StakingLedger>(ledger_storage_key, None) {
 			Ok(Some(ledger)) => ledger.claimed_rewards,
 			_ => Vec::new(),
 		};

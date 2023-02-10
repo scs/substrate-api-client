@@ -49,11 +49,9 @@ async fn main() {
 
 	// Tests
 	let _total_issuance: Balance =
-		api.get_storage_value("Balances", "TotalIssuance", None).unwrap().unwrap();
-	let _total_issuance: Balance = api
-		.get_storage_value("Balances", "TotalIssuance", Some(block_hash))
-		.unwrap()
-		.unwrap();
+		api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();
+	let _total_issuance: Balance =
+		api.get_storage("Balances", "TotalIssuance", Some(block_hash)).unwrap().unwrap();
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).unwrap().unwrap();
 	let _era_stakers: ErasStakers = api
@@ -69,9 +67,9 @@ async fn main() {
 	assert_eq!(storage_key_prefix.0, storage_key.0[..prefix_len]);
 
 	let _account_data: AccountData =
-		api.get_storage_by_key_hash(storage_key.clone(), None).unwrap().unwrap();
+		api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
 	let account_data_opaque =
-		api.get_opaque_storage_by_key_hash(storage_key.clone(), None).unwrap().unwrap();
+		api.get_opaque_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
 	let _account_data = AccountData::decode(&mut account_data_opaque.as_slice()).unwrap();
 	let _value_proof =
 		api.get_storage_value_proof("Balances", "TotalIssuance", None).unwrap().unwrap();
