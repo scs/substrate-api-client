@@ -47,7 +47,8 @@ pub trait GetStorage<Hash> {
 		at_block: Option<Hash>,
 	) -> Result<Option<V>>;
 
-	fn get_storage_key_prefix(
+	/// Retrieve the key prefix for a storage map. This is the prefix needed for get_storage_keys_paged().
+	fn get_storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -90,7 +91,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the raw storage for the given `storage_key`.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_opaque_storage(
+	fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
@@ -173,7 +174,7 @@ where
 		self.get_storage_by_key(storagekey, at_block)
 	}
 
-	fn get_storage_key_prefix(
+	fn get_storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -206,7 +207,7 @@ where
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let s = self.get_opaque_storage(storage_key, at_block)?;
+		let s = self.get_opaque_storage_by_key(storage_key, at_block)?;
 		match s {
 			Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
 			None => Ok(None),
@@ -227,7 +228,7 @@ where
 		Ok(storage)
 	}
 
-	fn get_opaque_storage(
+	fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,

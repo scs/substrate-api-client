@@ -60,7 +60,7 @@ async fn main() {
 		.unwrap();
 
 	// Ensure the prefix matches the actual storage key:
-	let storage_key_prefix = api.get_storage_key_prefix("System", "Account").unwrap();
+	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
 	let storage_key = api.metadata().storage_map_key("System", "Account", &alice).unwrap();
 
 	let prefix_len = storage_key_prefix.0.len();
@@ -68,7 +68,8 @@ async fn main() {
 
 	let _account_data: AccountData =
 		api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
-	let account_data_opaque = api.get_opaque_storage(storage_key.clone(), None).unwrap().unwrap();
+	let account_data_opaque =
+		api.get_opaque_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
 	let _account_data = AccountData::decode(&mut account_data_opaque.as_slice()).unwrap();
 	let _value_proof =
 		api.get_storage_value_proof("Balances", "TotalIssuance", None).unwrap().unwrap();

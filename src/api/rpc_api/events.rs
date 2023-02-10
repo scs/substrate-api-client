@@ -52,8 +52,9 @@ where
 {
 	fn fetch_events_from_block(&self, block_hash: Runtime::Hash) -> Result<Events<Runtime::Hash>> {
 		let key = crate::storage_key("System", "Events");
-		let event_bytes =
-			self.get_opaque_storage(key, Some(block_hash))?.ok_or(Error::BlockNotFound)?;
+		let event_bytes = self
+			.get_opaque_storage_by_key(key, Some(block_hash))?
+			.ok_or(Error::BlockNotFound)?;
 		let events =
 			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 		Ok(events)
