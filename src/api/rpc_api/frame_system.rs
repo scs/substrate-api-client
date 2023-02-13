@@ -18,7 +18,7 @@ use crate::{
 	rpc::Request,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, StorageKey};
+use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageKey};
 use alloc::{string::String, vec::Vec};
 use log::*;
 
@@ -37,7 +37,6 @@ pub trait GetAccountInformation<AccountId> {
 impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
 	for Api<Signer, Client, Params, Runtime>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
