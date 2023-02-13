@@ -116,11 +116,11 @@ mod tests {
 		)
 		.unwrap();
 
-		let es_from =
-			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::from(alice.clone());
+		let es_converted: ExtrinsicSigner<sr25519::Pair, sr25519::Signature, Runtime> =
+			alice.clone().into();
 		let es_new =
 			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::new(alice.clone());
 
-		assert_eq!(es_from.signer.public(), es_new.signer.public());
+		assert_eq!(es_converted.signer.public(), es_new.signer.public());
 	}
 }
