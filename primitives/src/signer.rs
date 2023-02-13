@@ -105,7 +105,7 @@ where
 #[cfg(test)]
 mod tests {
 	use crate::ExtrinsicSigner;
-	use kitchensink_runtime::Runtime;
+	use node_template_runtime::Runtime;
 	use sp_core::{sr25519, Pair};
 
 	#[test]
@@ -116,8 +116,7 @@ mod tests {
 		)
 		.unwrap();
 
-		let es_converted: ExtrinsicSigner<sr25519::Pair, sr25519::Signature, Runtime> =
-			alice.clone().into();
+		let es_converted: ExtrinsicSigner<_, _, Runtime> = alice.clone().into();
 		let es_new =
 			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::new(alice.clone());
 

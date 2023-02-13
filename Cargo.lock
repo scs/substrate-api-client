@@ -75,7 +75,6 @@ dependencies = [
  "frame-system",
  "hex",
  "impl-serde",
- "kitchensink-runtime",
  "node-template-runtime",
  "pallet-assets",
  "pallet-balances",

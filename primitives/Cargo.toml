@@ -29,7 +29,6 @@ pallet-staking = { optional = true, git = "https://github.com/paritytech/substra
 
 [dev-dependencies]
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
