@@ -90,3 +90,36 @@ where
 		self.extrinsic_address.clone()
 	}
 }
+
+impl<Signer, Runtime> From<Signer> for ExtrinsicSigner<Signer, Signer::Signature, Runtime>
+where
+	Signer: Pair,
+	Runtime: FrameSystemConfig,
+	Runtime::AccountId: From<Signer::Public>,
+{
+	fn from(value: Signer) -> Self {
+		ExtrinsicSigner::<Signer, Signer::Signature, Runtime>::new(value)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::ExtrinsicSigner;
+	use node_template_runtime::Runtime;
+	use sp_core::{sr25519, Pair};
+
+	#[test]
+	fn test_extrinsic_signer_from_sr25519_pair() {
+		let alice: sr25519::Pair = Pair::from_string(
+			"0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
+			None,
+		)
+		.unwrap();
+
+		let es_converted: ExtrinsicSigner<_, _, Runtime> = alice.clone().into();
+		let es_new =
+			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::new(alice.clone());
+
+		assert_eq!(es_converted.signer.public(), es_new.signer.public());
+	}
+}
