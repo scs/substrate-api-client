@@ -52,6 +52,9 @@ node-template-runtime = { git = "https://github.com/paritytech/substrate.git", b
 sp-keyring = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.27" }
 clap = { version = "2.33", features = ["yaml"] }
 wabt = "0.10.0"
+jsonrpsee = { version = "0.16", features = ["async-client", "client-ws-transport", "jsonrpsee-types"] }
+tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
+impl-serde = { version = "0.4", default-features = false }
 
 
 [features]
