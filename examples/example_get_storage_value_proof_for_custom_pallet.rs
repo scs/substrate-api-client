@@ -22,7 +22,6 @@ use substrate_api_client::PlainTipExtrinsicParams;
 
 use ac_node_api::Metadata;
 use codec::{Decode, Encode};
-use impl_serde::serialize::{from_hex, FromHexError};
 use jsonrpsee::{
     client_transport::ws::{Uri, WsTransportClientBuilder},
     core::client::{ClientBuilder, ClientT},
@@ -37,6 +36,8 @@ use sp_core::RuntimeDebug;
 #[tokio::main]
 async fn main() {
     env_logger::init();
+
+    // get storage proof from api client
     let url = get_node_url_from_cli();
 
     let client = WsRpcClient::new(&url);
@@ -49,6 +50,7 @@ async fn main() {
         .unwrap();
     println!("[+] StorageValueProof: {:?}", proof);
 
+    // get storage proof from jsonrpseeclient
     let metadata = api.get_metadata().map(Metadata::try_from).unwrap().unwrap();
     let storage_key = metadata
         .storage_value_key("OCEX", "IngressMessages")
