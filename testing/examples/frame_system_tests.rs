@@ -48,10 +48,13 @@ async fn main() {
 	// GetAccountInformation
 	let _account_info = api.get_account_info(&alice).unwrap().unwrap();
 	let _account_data = api.get_account_data(&alice).unwrap().unwrap();
+
 	// Empty account information
-	let ferdie = AccountKeyring::Two.to_account_id();
-	assert!(api.get_account_info(&ferdie).unwrap().is_none());
-	assert!(api.get_account_data(&ferdie).unwrap().is_none());
+	let inexistent_account = AccountKeyring::Two.to_account_id();
+	let maybe_account_info = api.get_account_info(&inexistent_account).unwrap();
+	assert!(maybe_account_info.is_none());
+	let maybe_account_data = api.get_account_data(&inexistent_account).unwrap();
+	assert!(maybe_account_data.is_none());
 
 	// System Api
 	let system_name = api.get_system_name().unwrap();
