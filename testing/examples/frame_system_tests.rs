@@ -49,7 +49,7 @@ async fn main() {
 	let _account_info = api.get_account_info(&alice).unwrap().unwrap();
 	let _account_data = api.get_account_data(&alice).unwrap().unwrap();
 	// Empty account information
-	let ferdie = AccountKeyring::Ferdie.to_account_id();
+	let ferdie = AccountKeyring::Two.to_account_id();
 	assert!(api.get_account_info(&ferdie).unwrap().is_none());
 	assert!(api.get_account_data(&ferdie).unwrap().is_none());
 
