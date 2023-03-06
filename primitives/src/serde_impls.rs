@@ -77,6 +77,12 @@ impl From<sp_core::Bytes> for Bytes {
 )]
 pub struct StorageKey(#[serde(with = "impl_serde::serialize")] pub Vec<u8>);
 
+impl From<Vec<u8>> for StorageKey {
+	fn from(s: Vec<u8>) -> Self {
+		StorageKey(s)
+	}
+}
+
 impl AsRef<[u8]> for StorageKey {
 	fn as_ref(&self) -> &[u8] {
 		self.0.as_ref()
