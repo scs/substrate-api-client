@@ -18,14 +18,13 @@ use crate::{
 use ac_primitives::BalancesConfig;
 
 /// Interface to common calls of the substrate balances pallet.
-pub trait GetBalance<Hash> {
+pub trait GetBalance {
 	type Balance;
 
 	fn get_existential_deposit(&self) -> Result<Self::Balance>;
 }
 
-impl<Signer, Client, Params, Runtime> GetBalance<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetBalance for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: BalancesConfig,
