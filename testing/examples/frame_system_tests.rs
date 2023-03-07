@@ -49,6 +49,13 @@ async fn main() {
 	let _account_info = api.get_account_info(&alice).unwrap().unwrap();
 	let _account_data = api.get_account_data(&alice).unwrap().unwrap();
 
+	// Empty account information
+	let inexistent_account = AccountKeyring::Two.to_account_id();
+	let maybe_account_info = api.get_account_info(&inexistent_account).unwrap();
+	assert!(maybe_account_info.is_none());
+	let maybe_account_data = api.get_account_data(&inexistent_account).unwrap();
+	assert!(maybe_account_data.is_none());
+
 	// System Api
 	let system_name = api.get_system_name().unwrap();
 	println!("System name: {system_name}");
