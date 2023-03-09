@@ -19,7 +19,9 @@ use frame_system::AccountInfo as GenericAccountInfo;
 use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, ExtrinsicSigner, GetStorage, PlainTipExtrinsicParams,
+	ac_primitives::{ExtrinsicSigner, PlainTipExtrinsicParams},
+	rpc::JsonrpseeClient,
+	Api, GetStorage,
 };
 
 type IndexFor<T> = <T as frame_system::Config>::Index;

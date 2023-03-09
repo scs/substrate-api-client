@@ -20,8 +20,9 @@ use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, Signature};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, Error, ExtrinsicSigner,
-	GenericAdditionalParams, GetHeader, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
+	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams},
+	rpc::JsonrpseeClient,
+	Api, Error, GetHeader, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
 #[tokio::main]

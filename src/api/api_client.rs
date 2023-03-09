@@ -32,7 +32,7 @@ use log::{debug, info};
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, ac_primitives::PlainTipExtrinsicParams, rpc::Result as RpcResult
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
@@ -258,7 +258,10 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{rpc::mocks::RpcClientMock, GenericAdditionalParams, PlainTipExtrinsicParams};
+	use crate::{
+		ac_primitives::{GenericAdditionalParams, PlainTipExtrinsicParams},
+		rpc::mocks::RpcClientMock,
+	};
 	use kitchensink_runtime::Runtime;
 	use sp_core::{sr25519::Pair, H256};
 	use std::{

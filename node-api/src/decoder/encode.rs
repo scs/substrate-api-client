@@ -629,7 +629,7 @@ mod test {
 
 	#[test]
 	fn can_encode_primitive_arrs_to_array() {
-		use crate::Primitive;
+		use crate::decoder::Primitive;
 
 		assert_can_encode_to_type(Value::primitive(Primitive::U256([12u8; 32])), [12u8; 32]);
 		assert_can_encode_to_type(Value::primitive(Primitive::I256([12u8; 32])), [12u8; 32]);
@@ -637,7 +637,7 @@ mod test {
 
 	#[test]
 	fn can_encode_primitive_arrs_to_vecs() {
-		use crate::Primitive;
+		use crate::decoder::Primitive;
 
 		assert_can_encode_to_type(Value::primitive(Primitive::U256([12u8; 32])), vec![12u8; 32]);
 		assert_can_encode_to_type(Value::primitive(Primitive::I256([12u8; 32])), vec![12u8; 32]);

@@ -13,9 +13,8 @@
 use crate::{
 	api::{Api, GetStorage, Result},
 	rpc::Request,
-	ExtrinsicParams,
 };
-use ac_primitives::BalancesConfig;
+use ac_primitives::{BalancesConfig, ExtrinsicParams};
 
 /// Interface to common calls of the substrate balances pallet.
 pub trait GetBalance {

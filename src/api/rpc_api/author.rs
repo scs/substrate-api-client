@@ -16,10 +16,10 @@
 use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	Api, ExtrinsicReport, TransactionStatus, UncheckedExtrinsicV4, XtStatus,
+	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig};
+use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;

@@ -21,8 +21,18 @@ use alloc::vec::Vec;
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
 
+pub use extrinsic_params::{
+	AssetTip, AssetTipExtrinsicParams, ExtrinsicParams, GenericAdditionalParams,
+	GenericAdditionalSigned, GenericExtrinsicParams, GenericSignedExtra, PlainTip,
+	PlainTipExtrinsicParams, SignedPayload,
+};
+pub use signer::{ExtrinsicSigner, SignExtrinsic};
+
 /// Call Index used a prefix of every extrinsic call.
 pub type CallIndex = [u8; 2];
+
+pub mod extrinsic_params;
+pub mod signer;
 
 /// Current version of the [`UncheckedExtrinsic`] encoded format.
 const V4: u8 = 4;
@@ -153,7 +163,9 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{ExtrinsicParams, GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
+	use extrinsic_params::{
+		ExtrinsicParams, GenericAdditionalParams, GenericExtrinsicParams, PlainTip,
+	};
 	use sp_core::{Pair, H256 as Hash};
 	use sp_runtime::{generic::Era, testing::sr25519, AccountId32, MultiSignature};
 

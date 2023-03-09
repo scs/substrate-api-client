@@ -22,8 +22,8 @@ use sp_runtime::{
 	traits::{BlakeTwo256, Hash},
 };
 
-pub type BalanceFor<Runtime> = <Runtime as crate::BalancesConfig>::Balance;
-pub type AssetBalanceFor<Runtime> = <Runtime as crate::AssetsConfig>::Balance;
+pub type BalanceFor<Runtime> = <Runtime as crate::pallet_traits::BalancesConfig>::Balance;
+pub type AssetBalanceFor<Runtime> = <Runtime as crate::pallet_traits::AssetsConfig>::Balance;
 pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
 pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
 
