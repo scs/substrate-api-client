@@ -18,7 +18,6 @@
 //! Local keystore implementation. This file is from substrate but was copied here to have
 //! access to the private stuff.
 
-use async_trait::async_trait;
 use parking_lot::RwLock;
 use sp_application_crypto::{ecdsa, ed25519, sr25519, AppKey, AppPair, AppPublic, IsWrappedBy};
 use sp_core::{
@@ -33,7 +32,7 @@ use sp_keystore::{
 	Error as TraitError, Keystore, KeystorePtr,
 };
 use std::{
-	collections::{HashMap, HashSet},
+	collections::HashMap,
 	fs::{self, File},
 	io::Write,
 	path::PathBuf,
