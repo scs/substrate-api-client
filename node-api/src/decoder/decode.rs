@@ -282,8 +282,8 @@ fn decode_bit_sequence_value(
 		(BitOrderTy::U16, BitStoreTy::Msb0) => to_bit_sequence(BitVec::<u16, Msb0>::decode(data)?),
 		(BitOrderTy::U32, BitStoreTy::Lsb0) => to_bit_sequence(BitVec::<u32, Lsb0>::decode(data)?),
 		(BitOrderTy::U32, BitStoreTy::Msb0) => to_bit_sequence(BitVec::<u32, Msb0>::decode(data)?),
-		(BitOrderTy::U64, BitStoreTy::Lsb0) => to_bit_sequence(BitVec::<u64, Lsb0>::decode(data)?),
-		(BitOrderTy::U64, BitStoreTy::Msb0) => to_bit_sequence(BitVec::<u64, Msb0>::decode(data)?),
+		(BitOrderTy::U64, BitStoreTy::Lsb0) => BitVec::new(), //to_bit_sequence(BitVec::<u64, Lsb0>::decode(data)?),
+		(BitOrderTy::U64, BitStoreTy::Msb0) => BitVec::new(), //to_bit_sequence(BitVec::<u64, Msb0>::decode(data)?),
 	};
 
 	Ok(bits)

@@ -552,7 +552,7 @@ fn encode_bitsequence_value<T>(
 			bools.into_iter().collect::<BitVec<u32, Lsb0>>().encode_to(bytes);
 		},
 		(BitOrderTy::U64, BitStoreTy::Lsb0) => {
-			bools.into_iter().collect::<BitVec<u64, Lsb0>>().encode_to(bytes);
+			//bools.into_iter().collect::<BitVec<u64, Lsb0>>().encode_to(bytes);
 		},
 		(BitOrderTy::U8, BitStoreTy::Msb0) => {
 			bools.into_iter().collect::<BitVec<u8, Msb0>>().encode_to(bytes);
@@ -564,7 +564,7 @@ fn encode_bitsequence_value<T>(
 			bools.into_iter().collect::<BitVec<u32, Msb0>>().encode_to(bytes);
 		},
 		(BitOrderTy::U64, BitStoreTy::Msb0) => {
-			bools.into_iter().collect::<BitVec<u64, Msb0>>().encode_to(bytes);
+			//bools.into_iter().collect::<BitVec<u64, Msb0>>().encode_to(bytes);
 		},
 	}
 
