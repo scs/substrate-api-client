@@ -14,19 +14,19 @@ tokio = { version = "1.16", features = ["rt-multi-thread", "macros", "time"] }
 wabt = "0.10.0"
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
+frame-support = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
 sp-core = { features = [
     "full_crypto",
-], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
+], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
 
 # local deps
 substrate-api-client = { path = "..", features = [
