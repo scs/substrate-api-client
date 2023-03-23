@@ -27,8 +27,8 @@ use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 
 pub const BALANCES_MODULE: &str = "Balances";
-pub const TRANSFER: &str = "transfer";
-pub const SET_BALANCE: &str = "set_balance";
+pub const TRANSFER: &str = "transfer_allow_death";
+pub const SET_BALANCE: &str = "force_set_balance";
 
 /// Call for a balance transfer.
 pub type TransferCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
