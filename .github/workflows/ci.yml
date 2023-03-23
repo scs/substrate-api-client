@@ -104,9 +104,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run latest node
+      - name: Run compatible substrate node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:3.0.0-dev-1837f423b49 --dev --ws-external --rpc-external &
 
       - name: Wait until node has started
         run: sleep 20s
