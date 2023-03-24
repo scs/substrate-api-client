@@ -646,16 +646,6 @@ mod test {
 		assert_can_encode_to_type(Value::primitive(Primitive::I256([12u8; 32])), vec![12u8; 32]);
 	}
 
-	/*#[test]
-	fn can_encode_primitive_arrs_to_bitvec() {
-		use crate::Primitive;
-
-		assert_can_encode_to_type(
-			Value::primitive(Primitive::U256([12u8; 32])),
-			&bitvec![u8, Msb0;], //bits![u16, Msb0; 0; 40],
-		);
-	}*/
-
 	#[test]
 	fn can_encode_arrays() {
 		let value = Value::unnamed_composite(vec![
