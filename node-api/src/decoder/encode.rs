@@ -576,7 +576,6 @@ fn encode_bitsequence_value<T>(
 #[cfg(test)]
 mod test {
 	use super::*;
-	use bitvec::{bits, bitvec};
 
 	/// Given a type definition, return the PortableType and PortableRegistry
 	/// that our decode functions expect.
