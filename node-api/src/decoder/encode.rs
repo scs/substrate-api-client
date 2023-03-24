@@ -551,8 +551,9 @@ fn encode_bitsequence_value<T>(
 		(BitOrderTy::U32, BitStoreTy::Lsb0) => {
 			bools.into_iter().collect::<BitVec<u32, Lsb0>>().encode_to(bytes);
 		},
+		#[cfg(target_pointer_width = "64")]
 		(BitOrderTy::U64, BitStoreTy::Lsb0) => {
-			//bools.into_iter().collect::<BitVec<u64, Lsb0>>().encode_to(bytes);
+			bools.into_iter().collect::<BitVec<u64, Lsb0>>().encode_to(bytes);
 		},
 		(BitOrderTy::U8, BitStoreTy::Msb0) => {
 			bools.into_iter().collect::<BitVec<u8, Msb0>>().encode_to(bytes);
@@ -563,8 +564,9 @@ fn encode_bitsequence_value<T>(
 		(BitOrderTy::U32, BitStoreTy::Msb0) => {
 			bools.into_iter().collect::<BitVec<u32, Msb0>>().encode_to(bytes);
 		},
+		#[cfg(target_pointer_width = "64")]
 		(BitOrderTy::U64, BitStoreTy::Msb0) => {
-			//bools.into_iter().collect::<BitVec<u64, Msb0>>().encode_to(bytes);
+			bools.into_iter().collect::<BitVec<u64, Msb0>>().encode_to(bytes);
 		},
 	}
 
@@ -574,6 +576,7 @@ fn encode_bitsequence_value<T>(
 #[cfg(test)]
 mod test {
 	use super::*;
+	use bitvec::{bits, bitvec};
 
 	/// Given a type definition, return the PortableType and PortableRegistry
 	/// that our decode functions expect.
@@ -642,6 +645,16 @@ mod test {
 		assert_can_encode_to_type(Value::primitive(Primitive::U256([12u8; 32])), vec![12u8; 32]);
 		assert_can_encode_to_type(Value::primitive(Primitive::I256([12u8; 32])), vec![12u8; 32]);
 	}
+
+	/*#[test]
+	fn can_encode_primitive_arrs_to_bitvec() {
+		use crate::Primitive;
+
+		assert_can_encode_to_type(
+			Value::primitive(Primitive::U256([12u8; 32])),
+			&bitvec![u8, Msb0;], //bits![u16, Msb0; 0; 40],
+		);
+	}*/
 
 	#[test]
 	fn can_encode_arrays() {
