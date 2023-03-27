@@ -1,6 +1,6 @@
 # Developer Section
 
-## Automatic release generation
+## Automatic Release generation
 
 A new draft release gets generated upon a new tag with a name matching `v[0-9]+.[0-9]+.[0-9]+*` (E.g. v1.2.3 and v1.2.3-rc1)
 See the workflow: https://github.com/scs/substrate-api-client/blob/master/.github/workflows/draft-release.yml
