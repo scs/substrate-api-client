@@ -55,7 +55,7 @@ async fn main() {
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 
 	// Generate a transfer extrinsic.
-	let xt = api.balance_transfer(MultiAddress::Id(bob.clone()), balance_of_alice);
+	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.clone()), balance_of_alice);
 	println!("Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n", alice, bob);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
@@ -72,8 +72,10 @@ async fn main() {
 		Err(e) => {
 			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
 			let string_error = format!("{:?}", e);
-			assert!(string_error.contains("pallet: \"Balances\""));
-			assert!(string_error.contains("error: \"InsufficientBalance\""));
+			// We expect a TokenError::FundsUnavailable error. See :
+			//https://github.com/paritytech/substrate/blob/b42a687c9050cbe04849c45b0c5ccadb82c84948/frame/support/src/traits/tokens/fungible/mod.rs#L177
+			assert!(string_error.contains("Other"));
+			assert!(string_error.contains("[7, 0, 194, 110, 3, 65, 37, 56, 0, 0]")); //Fixme This is for now not decoded. See issue: #488
 		},
 	};
 

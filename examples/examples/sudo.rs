@@ -60,9 +60,8 @@ async fn main() {
 	let call = compose_call!(
 		api.metadata(),
 		"Balances",
-		"set_balance",
+		"force_set_balance",
 		recipients_extrinsic_address,
-		Compact(new_balance),
 		Compact(new_balance)
 	);
 
