@@ -15,31 +15,31 @@
 
 */
 
+use ac_primitives::RpcParams;
+use alloc::string::{String, ToString};
+use serde::de::DeserializeOwned;
+
 #[cfg(feature = "ws-client")]
-pub use ws_client::*;
+pub use ws_client::WsRpcClient;
 #[cfg(feature = "ws-client")]
 pub mod ws_client;
 
 #[cfg(feature = "tungstenite-client")]
-pub use tungstenite_client::*;
+pub use tungstenite_client::TungsteniteRpcClient;
 #[cfg(feature = "tungstenite-client")]
 pub mod tungstenite_client;
 
 #[cfg(feature = "jsonrpsee-client")]
-pub use jsonrpsee_client::*;
+pub use jsonrpsee_client::JsonrpseeClient;
 #[cfg(feature = "jsonrpsee-client")]
 pub mod jsonrpsee_client;
 
 pub mod error;
 
-pub use error::*;
+pub use error::{Error, Result};
 
 #[cfg(test)]
 pub mod mocks;
-
-use ac_primitives::RpcParams;
-use alloc::string::{String, ToString};
-use serde::de::DeserializeOwned;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {

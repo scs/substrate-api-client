@@ -21,8 +21,10 @@ use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner,
-	GetStorage, SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
+	ac_compose_macros::compose_extrinsic,
+	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, UncheckedExtrinsicV4},
+	rpc::JsonrpseeClient,
+	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
 
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<

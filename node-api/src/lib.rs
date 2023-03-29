@@ -20,10 +20,9 @@ extern crate alloc;
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
-pub use decoder::*;
-pub use events::*;
-pub use metadata::*;
-pub use storage::*;
+pub use decoder::{DecodeError, EncodeError};
+pub use events::{EventDetails, Events};
+pub use metadata::{Metadata, MetadataError};
 
 pub mod decoder;
 pub mod error;

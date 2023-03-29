@@ -15,6 +15,16 @@ mod decode;
 mod encode;
 mod value;
 
+use crate::alloc::vec::Vec;
+use core::{fmt::Display, hash::Hash};
+use derive_more::From;
+
+pub use bit_sequence::BitSequenceError;
+pub use decode::{decode_value_as_type, DecodeError};
+pub use encode::{encode_value_as_type, EncodeError};
+pub use scale_info::PortableRegistry;
+pub use value::*;
+
 /// The portable version of [`scale_info::Type`]
 type ScaleType = scale_info::Type<scale_info::form::PortableForm>;
 
@@ -23,16 +33,6 @@ type ScaleTypeId = scale_info::interner::UntrackedSymbol<core::any::TypeId>; // 
 
 /// The portable version of [`scale_info::TypeDef`]
 type ScaleTypeDef = scale_info::TypeDef<scale_info::form::PortableForm>;
-
-pub use bit_sequence::BitSequenceError;
-pub use decode::{decode_value_as_type, DecodeError};
-pub use encode::{encode_value_as_type, EncodeError};
-pub use scale_info::PortableRegistry;
-pub use value::*;
-
-use crate::alloc::vec::Vec;
-use core::{fmt::Display, hash::Hash};
-use derive_more::From;
 
 /// This represents the ID of a type found in the metadata. A scale info type representation can
 /// be converted into this, and we get this back directly when decoding types into Values.
@@ -86,7 +86,7 @@ impl From<&TypeId> for TypeId {
 /// #     (id.id(), portable_registry)
 /// # }
 /// # let (type_id, registry) = make_type::<Foo>();
-/// use ac_node_api::Value;
+/// use ac_node_api::decoder::Value;
 ///
 /// // Imagine we have a `registry` (of type [`scale_info::PortableRegistry`]) containing this type,
 /// // and a `type_id` (a `u32`) pointing to it in the registry.
@@ -103,12 +103,12 @@ impl From<&TypeId> for TypeId {
 ///
 /// // Encode the Value to bytes:
 /// let mut bytes = Vec::new();
-/// ac_node_api::encode_as_type(value.clone(), type_id, &registry, &mut bytes).unwrap();
+/// ac_node_api::decoder::encode_as_type(value.clone(), type_id, &registry, &mut bytes).unwrap();
 ///
 /// // Decode the bytes back into a matching Value.
 /// // This value contains contextual information about which type was used
 /// // to decode each part of it, which we can throw away with `.remove_context()`.
-/// let new_value = ac_node_api::decode_as_type(&mut &*bytes, type_id, &registry).unwrap();
+/// let new_value = ac_node_api::decoder::decode_as_type(&mut &*bytes, type_id, &registry).unwrap();
 ///
 /// assert_eq!(value, new_value.remove_context());
 /// ```
@@ -121,17 +121,17 @@ pub fn decode_as_type<Id: Into<TypeId>>(
 	ty_id: Id,
 	types: &PortableRegistry,
 ) -> Result<value::Value<TypeId>, DecodeError> {
-	crate::decode_value_as_type(data, ty_id, types)
+	crate::decoder::decode_value_as_type(data, ty_id, types)
 }
 
 /// Attempt to encode some [`crate::Value<T>`] into SCALE bytes, by providing a pointer to the
 /// type ID that we'd like to encode it as, a type registry from which we'll look
 /// up the relevant type information, and a buffer to encode the bytes to.
 pub fn encode_as_type<T, Id: Into<TypeId>>(
-	value: crate::Value<T>,
+	value: crate::decoder::Value<T>,
 	ty_id: Id,
 	types: &PortableRegistry,
 	buf: &mut Vec<u8>,
 ) -> Result<(), EncodeError<T>> {
-	crate::encode_value_as_type(value, ty_id, types, buf)
+	crate::decoder::encode_value_as_type(value, ty_id, types, buf)
 }

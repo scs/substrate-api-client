@@ -22,8 +22,11 @@ use kitchensink_runtime::{AccountId, BalancesCall, Runtime, RuntimeCall, Signatu
 use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner,
-	SignExtrinsic, SubmitExtrinsic,
+	ac_primitives::{
+		AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+	},
+	rpc::JsonrpseeClient,
+	Api, SubmitExtrinsic,
 };
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.

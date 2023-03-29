@@ -19,8 +19,9 @@
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
 use substrate_api_client::{
+	ac_primitives::PlainTipExtrinsicParams,
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, GetBlock, GetHeader, PlainTipExtrinsicParams, SubscribeChain,
+	Api, GetBlock, GetHeader, SubscribeChain,
 };
 
 #[tokio::main]

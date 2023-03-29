@@ -20,9 +20,11 @@ use frame_support::dispatch::DispatchInfo;
 use kitchensink_runtime::{Runtime, RuntimeEvent, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
-	EventDetails, ExtrinsicSigner, FetchEvents, FrameSystemConfig, GetBlock, StaticEvent,
-	SubmitAndWatch, SubscribeEvents, XtStatus,
+	ac_node_api::{EventDetails, StaticEvent},
+	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, FrameSystemConfig},
+	extrinsic::BalancesExtrinsics,
+	rpc::JsonrpseeClient,
+	Api, FetchEvents, GetBlock, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:

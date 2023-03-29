@@ -16,16 +16,17 @@
 */
 
 use crate::rpc::Error as RpcClientError;
-pub use ac_node_api::{events::EventDetails, StaticEvent};
-pub use client::WsRpcClient;
 use log::*;
 use std::{fmt::Debug, sync::mpsc::Sender as ThreadOut};
 use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
 
-pub mod client;
-pub mod subscription;
+pub use client::WsRpcClient;
+pub use subscription::WsSubscriptionWrapper;
 
 pub type RpcMessage = crate::rpc::Result<String>;
+
+pub mod client;
+pub mod subscription;
 
 #[allow(clippy::result_large_err)]
 pub(crate) trait HandleMessage {

@@ -18,7 +18,9 @@
 
 use log::debug;
 use sp_core::H256 as Hash;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, PlainTipExtrinsicParams, SubscribeEvents};
+use substrate_api_client::{
+	ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api, SubscribeEvents,
+};
 
 // This module depends on the specific node runtime.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.

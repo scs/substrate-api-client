@@ -13,9 +13,10 @@
 use crate::{
 	api::Result,
 	rpc::{Request, Subscribe},
-	Api, MetadataError, ReadProof,
+	Api, ReadProof,
 };
 use ac_compose_macros::rpc_params;
+use ac_node_api::MetadataError;
 use ac_primitives::{
 	ExtrinsicParams, FrameSystemConfig, StorageChangeSet, StorageData, StorageKey,
 };

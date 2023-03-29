@@ -23,7 +23,6 @@
 pub use ac_primitives as primitives;
 pub use codec;
 pub use log;
-pub use rpc::*;
 pub use sp_core;
 pub use sp_runtime;
 
@@ -64,7 +63,7 @@ macro_rules! compose_extrinsic_offline {
 	($signer: expr,
     $call: expr,
     $params: expr) => {{
-		use $crate::primitives::{
+		use $crate::primitives::extrinsics::{
 			ExtrinsicParams, SignExtrinsic, SignedPayload, UncheckedExtrinsicV4,
 		};
 

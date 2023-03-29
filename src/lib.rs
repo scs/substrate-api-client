@@ -19,17 +19,17 @@
 
 extern crate alloc;
 
-pub use ac_compose_macros::*;
-pub use ac_node_api::*;
-pub use ac_primitives::*;
-pub use api::*;
+use ac_primitives::StorageKey;
+use sp_core::twox_128;
+
+pub use ac_compose_macros;
+pub use ac_node_api;
+pub use ac_primitives;
+pub use api::*; // Re-export everything
 
 pub mod api;
 pub mod extrinsic;
 pub mod rpc;
-
-use ac_primitives::StorageKey;
-use sp_core::twox_128;
 
 /// Returns the concacenated 128 bit hash of the given module and specific storage key
 /// as a full Substrate StorageKey.
