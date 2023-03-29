@@ -11,10 +11,8 @@
    limitations under the License.
 */
 
-use crate::{
-	rpc::{Request, Result},
-	RpcParams,
-};
+use crate::rpc::{Request, Result};
+use ac_primitives::RpcParams;
 use serde::de::DeserializeOwned;
 use std::{collections::HashMap, sync::RwLock};
 

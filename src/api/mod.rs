@@ -15,18 +15,22 @@
 
 */
 
-pub use api_client::*;
-pub use error::{Error, Result};
-pub use rpc_api::*;
-
-pub mod api_client;
-pub mod error;
-pub mod rpc_api;
-
 use ac_node_api::EventDetails;
 use ac_primitives::Bytes;
 use alloc::{string::String, vec::Vec};
 use serde::{Deserialize, Serialize};
+
+pub use api_client::Api;
+pub use error::{Error, Result};
+pub use rpc_api::{
+	FetchEvents, GetAccountInformation, GetBalance, GetBlock, GetHeader, GetStorage,
+	GetTransactionPayment, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic,
+	SubscribeChain, SubscribeEvents, SystemApi,
+};
+
+pub mod api_client;
+pub mod error;
+pub mod rpc_api;
 
 /// Extrinsic report returned upon a submit_and_watch request.
 /// Holds as much information as available.

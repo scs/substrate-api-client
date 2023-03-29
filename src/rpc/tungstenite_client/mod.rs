@@ -15,8 +15,8 @@
 
 */
 
-pub use client::*;
-pub use subscription::*;
+pub use client::TungsteniteRpcClient;
+pub use subscription::TungsteniteSubscriptionWrapper;
 
 pub mod client;
 pub mod subscription;

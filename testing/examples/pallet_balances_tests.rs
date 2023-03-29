@@ -17,7 +17,9 @@
 
 use kitchensink_runtime::Runtime;
 use sp_keyring::AccountKeyring;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams, GetBalance};
+use substrate_api_client::{
+	ac_primitives::AssetTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetBalance,
+};
 
 #[tokio::main]
 async fn main() {

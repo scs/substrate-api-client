@@ -18,7 +18,9 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-use substrate_api_client::{rpc::JsonrpseeClient, Api, Metadata, PlainTipExtrinsicParams};
+use substrate_api_client::{
+	ac_node_api::Metadata, ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api,
+};
 
 #[tokio::main]
 async fn main() {

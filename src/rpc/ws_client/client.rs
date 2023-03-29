@@ -16,14 +16,12 @@
 */
 
 use super::{subscription::WsSubscriptionWrapper, HandleMessage};
-use crate::{
-	rpc::{
-		to_json_req,
-		ws_client::{MessageContext, RequestHandler, RpcClient, SubscriptionHandler},
-		Request, Result, Subscribe,
-	},
-	RpcParams,
+use crate::rpc::{
+	to_json_req,
+	ws_client::{MessageContext, RequestHandler, RpcClient, SubscriptionHandler},
+	Request, Result, Subscribe,
 };
+use ac_primitives::RpcParams;
 use serde::de::DeserializeOwned;
 use std::{
 	fmt::Debug,
