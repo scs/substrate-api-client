@@ -34,7 +34,7 @@ async fn main() {
 	let bob = AccountKeyring::Bob.to_account_id();
 
 	let block_hash = api.get_block_hash(None).unwrap().unwrap();
-	let encoded_xt = api.balance_transfer(bob.into(), 1000000000000).encode();
+	let encoded_xt = api.balance_transfer_allow_death(bob.into(), 1000000000000).encode();
 
 	// Tests
 	let _fee_details = api

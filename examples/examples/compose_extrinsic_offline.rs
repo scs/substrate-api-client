@@ -57,7 +57,8 @@ async fn main() {
 
 	// Compose the extrinsic (offline).
 	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
-	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: recipient, value: 42 });
+	let call =
+		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
 	let xt = api.compose_extrinsic_offline(call, signer_nonce);
 
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);

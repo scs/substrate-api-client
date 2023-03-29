@@ -53,7 +53,8 @@ async fn main() {
 
 	// Create an extrinsic that should get included in the future pool due to a nonce that is too high.
 	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
-	let call = RuntimeCall::Balances(BalancesCall::transfer { dest: recipient, value: 42 });
+	let call =
+		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
 	let xt = api.compose_extrinsic_offline(call, signer_nonce + 1);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
