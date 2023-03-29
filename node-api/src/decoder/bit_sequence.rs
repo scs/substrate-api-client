@@ -51,6 +51,7 @@ pub fn get_bitsequence_details(
 		TypeDef::Primitive(TypeDefPrimitive::U8) => Some(BitOrderTy::U8),
 		TypeDef::Primitive(TypeDefPrimitive::U16) => Some(BitOrderTy::U16),
 		TypeDef::Primitive(TypeDefPrimitive::U32) => Some(BitOrderTy::U32),
+		#[cfg(target_pointer_width = "64")]
 		TypeDef::Primitive(TypeDefPrimitive::U64) => Some(BitOrderTy::U64),
 		_ => None,
 	}
@@ -77,5 +78,6 @@ pub enum BitOrderTy {
 	U8,
 	U16,
 	U32,
+	#[cfg(target_pointer_width = "64")]
 	U64,
 }
