@@ -14,7 +14,6 @@
 use crate::{
 	api::{Api, Result},
 	rpc::{Request, Subscribe},
-	FromHexString,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
@@ -80,7 +79,6 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::RuntimeBlock: DeserializeOwned,
-	Runtime::Hash: FromHexString,
 {
 	type Block = Runtime::RuntimeBlock;
 
