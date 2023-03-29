@@ -62,7 +62,6 @@ async fn main() {
 		"Balances",
 		"force_set_balance",
 		recipients_extrinsic_address,
-		Compact(new_balance),
 		Compact(new_balance)
 	);
 
