@@ -40,6 +40,9 @@ jobs:
                 cargo build --release -p test-no-std --features compose-macros,
                 cargo build --release -p test-no-std --features node-api,
 
+                # Test for 32 bit and wasm32-unknown-unknown compatibility
+                cargo build --target wasm32-unknown-unknown --no-default-features,
+            
                 # Clippy
                 cargo clippy --workspace --exclude test-no-std -- -D warnings,
                 cargo clippy --all-features --examples -- -D warnings,

@@ -551,6 +551,7 @@ fn encode_bitsequence_value<T>(
 		(BitOrderTy::U32, BitStoreTy::Lsb0) => {
 			bools.into_iter().collect::<BitVec<u32, Lsb0>>().encode_to(bytes);
 		},
+		#[cfg(target_pointer_width = "64")]
 		(BitOrderTy::U64, BitStoreTy::Lsb0) => {
 			bools.into_iter().collect::<BitVec<u64, Lsb0>>().encode_to(bytes);
 		},
@@ -563,6 +564,7 @@ fn encode_bitsequence_value<T>(
 		(BitOrderTy::U32, BitStoreTy::Msb0) => {
 			bools.into_iter().collect::<BitVec<u32, Msb0>>().encode_to(bytes);
 		},
+		#[cfg(target_pointer_width = "64")]
 		(BitOrderTy::U64, BitStoreTy::Msb0) => {
 			bools.into_iter().collect::<BitVec<u64, Msb0>>().encode_to(bytes);
 		},
