@@ -37,7 +37,6 @@ where
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::Header: DeserializeOwned,
-	Runtime::Hash: FromHexString,
 {
 	type Header = Runtime::Header;
 
