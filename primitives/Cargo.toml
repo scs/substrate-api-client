@@ -29,6 +29,8 @@ pallet-staking = { optional = true, git = "https://github.com/paritytech/substra
 
 [dev-dependencies]
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+
 
 [features]
 default = ["std"]
