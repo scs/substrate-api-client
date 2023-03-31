@@ -95,7 +95,7 @@ where
 pub struct StaticExtrinsicSigner<Signer, Signature> {
 	signer: Signer,
 	account_id: AccountId32,
-	extrinsic_address: MultiAddress<AccountId32, u32>,
+	extrinsic_address: MultiAddress<AccountId32, ()>,
 	_phantom: PhantomData<Signature>,
 }
 
@@ -122,7 +122,7 @@ where
 	Signature: From<Signer::Signature> + Encode + Clone,
 {
 	type Signature = Signature;
-	type ExtrinsicAddress = MultiAddress<AccountId32, u32>;
+	type ExtrinsicAddress = MultiAddress<AccountId32, ()>;
 
 	fn sign(&self, payload: &[u8]) -> Self::Signature {
 		self.signer.sign(payload).into()
