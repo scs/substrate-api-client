@@ -82,7 +82,7 @@ pub enum Phase {
 
 /// Record of an event happening.
 // https://github.com/paritytech/substrate/blob/2bfc1dd66ef32cf8beb90007dfb544a9d28f1b2f/frame/system/src/lib.rs#L716-L726
-#[derive(Encode, Decode, PartialEq, Eq, Clone)]
+#[derive(Encode, Decode, PartialEq, Eq, Clone, Debug)]
 pub struct EventRecord<E, T> {
 	/// The phase of the block it happened in.
 	pub phase: Phase,
