@@ -22,7 +22,7 @@ use sp_runtime::{
 	FixedPointOperand,
 };
 
-/// Simplifed pallet balances Config trait. Needed because substrate pallets compile to wasm
+/// Simplified pallet balances Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait BalancesConfig: crate::FrameSystemConfig {
 	/// This type enforces the (de)serialization implementation
