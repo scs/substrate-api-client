@@ -61,6 +61,11 @@ async fn main() {
 	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
+	println!(
+		"[+] Bob's Account Nonce is {}",
+		api.get_nonce_of(&AccountKeyring::Bob.to_account_id()).unwrap()
+	);
+
 	// Get an vector of storage keys, numbering up to the given max keys and that start with the (optionally) given storage key prefix.
 	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
 	let max_keys = 3;
