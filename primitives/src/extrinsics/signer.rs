@@ -175,13 +175,13 @@ mod tests {
 
 	// This test does not work. See issue #504.
 
-// 	#[test]
-// 	fn test_extrinsic_signer_clone() {
-// 		let pair = AccountKeyring::Alice.pair();
-// 		let signer = ExtrinsicSigner::<_, Signature, Runtime>::new(pair);
-//
-// 		let signer2 = signer.clone();
-// 	}
+	// 	#[test]
+	// 	fn test_extrinsic_signer_clone() {
+	// 		let pair = AccountKeyring::Alice.pair();
+	// 		let signer = ExtrinsicSigner::<_, Signature, Runtime>::new(pair);
+	//
+	// 		let signer2 = signer.clone();
+	// 	}
 
 	#[test]
 	fn test_static_extrinsic_signer_clone() {
