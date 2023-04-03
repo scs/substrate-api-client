@@ -86,6 +86,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-core",
+ "sp-keyring",
  "sp-runtime",
  "sp-staking",
  "sp-version",
