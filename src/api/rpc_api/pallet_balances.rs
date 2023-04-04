@@ -14,7 +14,7 @@ use crate::{
 	api::{Api, GetStorage, Result},
 	rpc::Request,
 };
-use ac_primitives::{BalancesConfig, ExtrinsicParams};
+use ac_primitives::config::Config;
 
 /// Interface to common calls of the substrate balances pallet.
 pub trait GetBalance {
@@ -23,13 +23,11 @@ pub trait GetBalance {
 	fn get_existential_deposit(&self) -> Result<Self::Balance>;
 }
 
-impl<Signer, Client, Params, Runtime> GetBalance for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> GetBalance for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: BalancesConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	type Balance = Runtime::Balance;
+	type Balance = T::Balance;
 
 	fn get_existential_deposit(&self) -> Result<Self::Balance> {
 		self.get_constant("Balances", "ExistentialDeposit")

@@ -27,9 +27,11 @@ pub use rpc_params::*;
 pub use serde_impls::*;
 pub use types::*;
 
+pub mod config;
 pub mod extrinsics;
 pub mod pallet_traits;
 pub mod rpc_numbers;
 pub mod rpc_params;
 pub mod serde_impls;
+pub mod substrate_config;
 pub mod types;

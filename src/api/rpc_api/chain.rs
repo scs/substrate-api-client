@@ -16,10 +16,10 @@ use crate::{
 	rpc::{Request, Subscribe},
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
+use ac_primitives::{config::Config, serde_impls::SignedBlock};
 use log::*;
-use serde::de::DeserializeOwned;
-use sp_runtime::traits::GetRuntimeBlockType;
+use serde::{de::DeserializeOwned, Serialize};
+use sp_runtime::traits::Block as BlockTrait;
 
 pub trait GetHeader<Hash> {
 	type Header;
@@ -29,23 +29,19 @@ pub trait GetHeader<Hash> {
 	fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
-impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> GetHeader<T::Hash> for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Header: DeserializeOwned,
 {
-	type Header = Runtime::Header;
+	type Header = T::Header;
 
-	fn get_finalized_head(&self) -> Result<Option<Runtime::Hash>> {
+	fn get_finalized_head(&self) -> Result<Option<T::Hash>> {
 		let finalized_block_hash =
 			self.client().request("chain_getFinalizedHead", rpc_params![])?;
 		Ok(finalized_block_hash)
 	}
 
-	fn get_header(&self, hash: Option<Runtime::Hash>) -> Result<Option<Runtime::Header>> {
+	fn get_header(&self, hash: Option<T::Hash>) -> Result<Option<T::Header>> {
 		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
 		Ok(block_hash)
 	}
@@ -71,48 +67,43 @@ pub trait GetBlock<Number, Hash> {
 		number: Option<Number>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
-
-impl<Signer, Client, Params, Runtime> GetBlock<Runtime::BlockNumber, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block>
+	GetBlock<<T::Header as crate::config::Header>::Number, T::Hash> for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::RuntimeBlock: DeserializeOwned,
+	Block: BlockTrait + DeserializeOwned,
+	<T::Header as crate::config::Header>::Number: Serialize,
 {
-	type Block = Runtime::RuntimeBlock;
+	type Block = Block;
 
 	fn get_block_hash(
 		&self,
-		number: Option<Runtime::BlockNumber>,
-	) -> Result<Option<Runtime::Hash>> {
+		number: Option<<T::Header as crate::config::Header>::Number>,
+	) -> Result<Option<T::Hash>> {
 		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
 		Ok(block_hash)
 	}
 
-	fn get_block(&self, hash: Option<Runtime::Hash>) -> Result<Option<Self::Block>> {
+	fn get_block(&self, hash: Option<T::Hash>) -> Result<Option<Block>> {
 		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	fn get_block_by_num(
 		&self,
-		number: Option<Runtime::BlockNumber>,
-	) -> Result<Option<Self::Block>> {
+		number: Option<<T::Header as crate::config::Header>::Number>,
+	) -> Result<Option<Block>> {
 		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	fn get_signed_block(
-		&self,
-		hash: Option<Runtime::Hash>,
-	) -> Result<Option<SignedBlock<Self::Block>>> {
+	fn get_signed_block(&self, hash: Option<T::Hash>) -> Result<Option<SignedBlock<Block>>> {
 		let block = self.client().request("chain_getBlock", rpc_params![hash])?;
 		Ok(block)
 	}
 
 	fn get_signed_block_by_num(
 		&self,
-		number: Option<Runtime::BlockNumber>,
-	) -> Result<Option<SignedBlock<Self::Block>>> {
+		number: Option<<T::Header as crate::config::Header>::Number>,
+	) -> Result<Option<SignedBlock<Block>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 }
@@ -126,15 +117,14 @@ where
 	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeChain<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SubscribeChain<Client, T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::Header: DeserializeOwned,
+	Block: BlockTrait + DeserializeOwned,
+	<T::Header as crate::config::Header>::Number: Serialize,
 {
-	type Header = Runtime::Header;
+	type Header = T::Header;
 
 	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>> {
 		debug!("subscribing to finalized heads");

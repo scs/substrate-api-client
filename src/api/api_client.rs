@@ -13,14 +13,15 @@
 
 use crate::{
 	api::error::{Error, Result},
+	config::Config,
 	rpc::Request,
 	GetAccountInformation,
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
-use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion, SignExtrinsic};
+use ac_primitives::{Bytes, ExtrinsicParams, RuntimeVersion, SignExtrinsic};
 use codec::Decode;
-use core::convert::TryFrom;
+use core::{convert::TryFrom, marker::PhantomData};
 use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
 
@@ -32,7 +33,7 @@ use log::{debug, info};
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, ac_primitives::PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, substrate_config::SubstrateConfig
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
@@ -76,31 +77,25 @@ use log::{debug, info};
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client);
+/// let _api = Api::<SubstrateConfig, _, _,_,_>::new(client);
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<Signer, Client, Params, Runtime>
-where
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-{
+pub struct Api<T: Config, Signer, Client, Block> {
 	signer: Option<Signer>,
-	genesis_hash: Runtime::Hash,
+	genesis_hash: T::Hash,
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
-	additional_extrinsic_params: Option<Params::AdditionalParams>,
+	additional_extrinsic_params:
+		Option<<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams>,
+	_phantom: PhantomData<Block>,
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
-where
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-{
+impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block> {
 	/// Create a new api instance without any node interaction.
 	pub fn new_offline(
-		genesis_hash: Runtime::Hash,
+		genesis_hash: T::Hash,
 		metadata: Metadata,
 		runtime_version: RuntimeVersion,
 		client: Client,
@@ -112,6 +107,7 @@ where
 			runtime_version,
 			client,
 			additional_extrinsic_params: None,
+			_phantom: Default::default(),
 		}
 	}
 
@@ -126,7 +122,7 @@ where
 	}
 
 	/// Get the cached genesis hash of the substrate node.
-	pub fn genesis_hash(&self) -> Runtime::Hash {
+	pub fn genesis_hash(&self) -> T::Hash {
 		self.genesis_hash
 	}
 
@@ -151,16 +147,19 @@ where
 	}
 
 	/// Set the additional params.
-	pub fn set_additional_params(&mut self, extrinsic_params: Params::AdditionalParams) {
-		self.additional_extrinsic_params = Some(extrinsic_params);
+	pub fn set_additional_params(
+		&mut self,
+		add_params: <<T as Config>::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams,
+	) {
+		self.additional_extrinsic_params = Some(add_params);
 	}
 
 	/// Get the extrinsic params with the set additional params. If no additional params are set,
 	/// the default is taken.
-	pub fn extrinsic_params(&self, nonce: Runtime::Index) -> Params {
+	pub fn extrinsic_params(&self, nonce: T::Index) -> T::ExtrinsicParams {
 		let additional_extrinsic_params =
 			self.additional_extrinsic_params.clone().unwrap_or_default();
-		<Params as ExtrinsicParams<Runtime::Index, Runtime::Hash>>::new(
+		T::ExtrinsicParams::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
@@ -170,11 +169,9 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
 	pub fn new(client: Client) -> Result<Self> {
@@ -205,21 +202,19 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
+	Signer: SignExtrinsic<T::AccountId>,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	/// Get the public part of the api signer account.
-	pub fn signer_account(&self) -> Option<&Runtime::AccountId> {
+	pub fn signer_account(&self) -> Option<&T::AccountId> {
 		let pair = self.signer.as_ref()?;
 		Some(pair.public_account_id())
 	}
 
 	/// Get nonce of self signer account.
-	pub fn get_nonce(&self) -> Result<Runtime::Index> {
+	pub fn get_nonce(&self) -> Result<T::Index> {
 		let account = self.signer_account().ok_or(Error::NoSigner)?;
 		self.get_account_nonce(account)
 	}
@@ -227,15 +222,13 @@ where
 
 /// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
 /// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	/// Get the genesis hash from node via websocket query.
-	fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
-		let genesis: Option<Runtime::Hash> =
+	fn get_genesis_hash(client: &Client) -> Result<T::Hash> {
+		let genesis: Option<T::Hash> =
 			client.request("chain_getBlockHash", rpc_params![Some(0)])?;
 		genesis.ok_or(Error::FetchGenesisHash)
 	}
@@ -273,7 +266,7 @@ mod tests {
 		runtime_version: RuntimeVersion,
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<Pair, RpcClientMock, PlainTipExtrinsicParams<Runtime>, Runtime> {
+	) -> Api<Config, Pair, RpcClientMock, Runtime::RuntimeBlock> {
 		let client = RpcClientMock::new(data);
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}

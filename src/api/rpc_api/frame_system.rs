@@ -18,7 +18,7 @@ use crate::{
 	rpc::Request,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageKey};
+use ac_primitives::{config::Config, serde_impls::StorageKey, types::AccountInfo};
 use alloc::{string::String, vec::Vec};
 use log::*;
 
@@ -37,21 +37,19 @@ pub trait GetAccountInformation<AccountId> {
 	fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
 }
 
-impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> GetAccountInformation<T::AccountId>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	type Index = Runtime::Index;
-	type AccountData = Runtime::AccountData;
+	type Index = T::Index;
+	type AccountData = T::AccountData;
 
 	fn get_account_info(
 		&self,
-		address: &Runtime::AccountId,
+		address: &T::AccountId,
 	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>> {
-		let storagekey: StorageKey = self.metadata().storage_map_key::<Runtime::AccountId>(
+		let storagekey: StorageKey = self.metadata().storage_map_key::<T::AccountId>(
 			"System",
 			"Account",
 			address.clone(),
@@ -61,10 +59,7 @@ where
 		self.get_storage_by_key(storagekey, None)
 	}
 
-	fn get_account_data(
-		&self,
-		address: &Runtime::AccountId,
-	) -> Result<Option<Runtime::AccountData>> {
+	fn get_account_data(&self, address: &T::AccountId) -> Result<Option<T::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 
@@ -112,15 +107,13 @@ pub trait SystemApi {
 	fn get_system_local_listen_addresses(&self) -> Result<Vec<String>>;
 }
 
-impl<Signer, Client, Params, Runtime> SystemApi for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SystemApi for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	type ChainType = ac_primitives::ChainType;
-	type Properties = ac_primitives::Properties;
-	type Health = ac_primitives::Health;
+	type ChainType = ac_primitives::types::ChainType;
+	type Properties = ac_primitives::types::Properties;
+	type Health = ac_primitives::types::Health;
 
 	fn get_system_name(&self) -> Result<String> {
 		let res = self.client().request("system_name", rpc_params![])?;

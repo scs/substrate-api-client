@@ -19,11 +19,11 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
+use ac_primitives::{Bytes, ExtrinsicParams, UncheckedExtrinsicV4, config::{Config, Hasher}};
 use codec::Encode;
 use log::*;
-use serde::de::DeserializeOwned;
-use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
+use serde::{de::DeserializeOwned, Serialize};
+use sp_runtime::traits::Block as BlockTrait;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -49,13 +49,11 @@ pub trait SubmitExtrinsic {
 	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash>;
 }
 
-impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SubmitExtrinsic for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
@@ -179,18 +177,15 @@ where
 	) -> Result<ExtrinsicReport<Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SubmitAndWatch<Client, T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
 	fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>>
+	) -> Result<TransactionSubscriptionFor<Client, T::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -202,7 +197,7 @@ where
 	fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: Bytes,
-	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>> {
+	) -> Result<TransactionSubscriptionFor<Client, T::Hash>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -216,7 +211,7 @@ where
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Runtime::Hash>>
+	) -> Result<ExtrinsicReport<T::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -230,9 +225,9 @@ where
 		&self,
 		encoded_extrinsic: Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Runtime::Hash>> {
-		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic.0);
-		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
+	) -> Result<ExtrinsicReport<T::Hash>> {
+		let tx_hash = T::Hasher::hash_of(&encoded_extrinsic.0);
+		let mut subscription: TransactionSubscriptionFor<Client, T::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic)?;
 
 		while let Some(transaction_status) = subscription.next() {
@@ -259,20 +254,18 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SubmitAndWatchUntilSuccess<Client, T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Subscribe + Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Block: BlockTrait + DeserializeOwned,
+	<T::Header as crate::config::Header>::Number: Serialize,
 {
 	fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Runtime::Hash>>
+	) -> Result<ExtrinsicReport<T::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -289,7 +282,7 @@ where
 		&self,
 		encoded_extrinsic: Bytes,
 		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Runtime::Hash>> {
+	) -> Result<ExtrinsicReport<T::Hash>> {
 		let xt_status = match wait_for_finalized {
 			true => XtStatus::Finalized,
 			false => XtStatus::InBlock,

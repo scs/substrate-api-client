@@ -17,9 +17,10 @@
 
 //! Signer used to sign extrinsic.
 
-use crate::FrameSystemConfig;
+use crate::config::Config;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
+use sp_core::Pair;
 use sp_core::{crypto::AccountId32, Pair};
 use sp_runtime::{traits::StaticLookup, MultiAddress};
 
@@ -40,26 +41,24 @@ pub trait SignExtrinsic<AccountId: Clone + Encode> {
 }
 
 #[derive(Encode, Decode, Clone, PartialEq)]
-pub struct ExtrinsicSigner<Signer, Signature, Runtime>
+pub struct ExtrinsicSigner<T: Config, Signer>
 where
 	Signer: Pair,
-	Runtime: FrameSystemConfig,
 {
 	signer: Signer,
-	account_id: Runtime::AccountId,
-	extrinsic_address: <Runtime::Lookup as StaticLookup>::Source,
-	_phantom: PhantomData<Signature>,
+	account_id: T::AccountId,
+	extrinsic_address: T::Address,
+	_phantom: PhantomData<T::Signature>,
 }
 
-impl<Signer, Signature, Runtime> ExtrinsicSigner<Signer, Signature, Runtime>
+impl<T: Config, Signer> ExtrinsicSigner<T, Signer>
 where
 	Signer: Pair,
-	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
+	T::AccountId: From<Signer::Public>,
 {
 	pub fn new(signer: Signer) -> Self {
-		let account_id: Runtime::AccountId = signer.public().into();
-		let extrinsic_address = Runtime::Lookup::unlookup(account_id.clone());
+		let account_id: T::AccountId = signer.public().into();
+		let extrinsic_address: T::Address = account_id.clone().into();
 		Self { signer, account_id, extrinsic_address, _phantom: Default::default() }
 	}
 
@@ -68,40 +67,38 @@ where
 	}
 }
 
-impl<Signer, Signature, Runtime> SignExtrinsic<Runtime::AccountId>
-	for ExtrinsicSigner<Signer, Signature, Runtime>
+impl<T: Config, Signer> SignExtrinsic<T::AccountId> for ExtrinsicSigner<T, Signer>
 where
-	Runtime: FrameSystemConfig,
 	Signer: Pair,
-	Signature: From<Signer::Signature> + Encode,
+	T::Signature: From<Signer::Signature> + Encode,
 {
-	type Signature = Signature;
-	type ExtrinsicAddress = <Runtime::Lookup as StaticLookup>::Source;
+	type Signature = T::Signature;
+	type ExtrinsicAddress = T::Address;
 
 	fn sign(&self, payload: &[u8]) -> Self::Signature {
 		self.signer.sign(payload).into()
 	}
 
-	fn public_account_id(&self) -> &Runtime::AccountId {
+	fn public_account_id(&self) -> &T::AccountId {
 		&self.account_id
 	}
 
-	fn extrinsic_address(&self) -> Self::ExtrinsicAddress {
+	fn extrinsic_address(&self) -> T::Address {
 		self.extrinsic_address.clone()
 	}
 }
 
-impl<Signer, Runtime> From<Signer> for ExtrinsicSigner<Signer, Signer::Signature, Runtime>
+impl<T: Config, Signer> From<Signer> for ExtrinsicSigner<T, Signer>
 where
 	Signer: Pair,
-	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
+	T::AccountId: From<Signer::Public>,
 {
 	fn from(value: Signer) -> Self {
-		ExtrinsicSigner::<Signer, Signer::Signature, Runtime>::new(value)
+		ExtrinsicSigner::<T, Signer>::new(value)
 	}
 }
-
+//Todo: check if still needed, because of config
+/*
 /// Extrinsic Signer implementation, that does not enforce Runtime as input.
 /// This is especially useful in no-std environments, where the runtime is not
 /// available.
@@ -150,11 +147,12 @@ where
 		self.extrinsic_address.clone()
 	}
 }
+ */
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use node_template_runtime::{Runtime, Signature};
+	use node_template_runtime::{Runtime};
 	use sp_core::{sr25519, Pair};
 	use sp_keyring::AccountKeyring;
 
@@ -172,7 +170,6 @@ mod tests {
 
 		assert_eq!(es_converted.signer.public(), es_new.signer.public());
 	}
-
 	// This test does not work. See issue #504.
 
 	// 	#[test]
@@ -183,6 +180,8 @@ mod tests {
 	// 		let signer2 = signer.clone();
 	// 	}
 
+//Todo: still needed?
+	/*
 	#[test]
 	fn test_static_extrinsic_signer_clone() {
 		let pair = AccountKeyring::Alice.pair();
@@ -190,4 +189,5 @@ mod tests {
 
 		let _signer2 = signer.clone();
 	}
+ */
 }

@@ -18,13 +18,14 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{EventDetails, EventRecord, Events, Phase};
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
+use ac_primitives::{StorageChangeSet, config::{Config, Hasher}};
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use log::*;
-use serde::de::DeserializeOwned;
-use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
+use serde::{de::DeserializeOwned, Serialize};
+use sp_runtime::traits::Block as BlockTrait;
+
 pub trait FetchEvents<Client, Hash>
 where
 	Client: Request,
@@ -41,29 +42,27 @@ where
 	) -> Result<Vec<EventDetails>>;
 }
 
-impl<Signer, Client, Params, Runtime> FetchEvents<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> FetchEvents<Client, T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Block: BlockTrait + DeserializeOwned,
+	<T::Header as crate::config::Header>::Number: Serialize,
 {
-	fn fetch_events_from_block(&self, block_hash: Runtime::Hash) -> Result<Events<Runtime::Hash>> {
+	fn fetch_events_from_block(&self, block_hash: T::Hash) -> Result<Events<T::Hash>> {
 		let key = crate::storage_key("System", "Events");
 		let event_bytes = self
 			.get_opaque_storage_by_key(key, Some(block_hash))?
 			.ok_or(Error::BlockNotFound)?;
 		let events =
-			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
+			Events::<T::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 		Ok(events)
 	}
 
 	fn fetch_events_for_extrinsic(
 		&self,
-		block_hash: Runtime::Hash,
-		extrinsic_hash: Runtime::Hash,
+		block_hash: T::Hash,
+		extrinsic_hash: T::Hash,
 	) -> Result<Vec<EventDetails>> {
 		let extrinsic_index =
 			self.retrieve_extrinsic_index_from_block(block_hash, extrinsic_hash)?;
@@ -133,18 +132,14 @@ where
 	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SubscribeEvents<Client, T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	fn subscribe_events(
 		&self,
-	) -> Result<
-		EventSubscription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
-	> {
+	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<T::Hash>>, T::Hash>> {
 		let key = crate::storage_key("System", "Events");
 		let subscription = self
 			.client()
@@ -154,26 +149,24 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Block: BlockTrait + DeserializeOwned,
+	<T::Header as crate::config::Header>::Number: Serialize,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
 	fn retrieve_extrinsic_index_from_block(
 		&self,
-		block_hash: Runtime::Hash,
-		extrinsic_hash: Runtime::Hash,
+		block_hash: T::Hash,
+		extrinsic_hash: T::Hash,
 	) -> Result<u32> {
 		let block = self.get_block(Some(block_hash))?.ok_or(Error::BlockNotFound)?;
 		let xt_index = block
 			.extrinsics()
 			.iter()
 			.position(|xt| {
-				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
+				let xt_hash = T::Hasher::hash_of(&xt.encode());
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
@@ -184,7 +177,7 @@ where
 	/// Filter events and return the ones associated to the given extrinsic index.
 	fn filter_extrinsic_events(
 		&self,
-		events: Events<Runtime::Hash>,
+		events: Events<T::Hash>,
 		extrinsic_index: u32,
 	) -> Result<Vec<EventDetails>> {
 		let extrinsic_event_results = events.iter().filter(|ev| {
@@ -230,7 +223,7 @@ mod tests {
 	fn create_mock_api(
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<Pair, RpcClientMock, AssetTipExtrinsicParams<Runtime>, Runtime> {
+	) -> Api<Config, Pair, RpcClientMock, Runtime::RuntimeBlock> {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();

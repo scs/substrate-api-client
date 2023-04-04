@@ -18,7 +18,8 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::MetadataError;
 use ac_primitives::{
-	ExtrinsicParams, FrameSystemConfig, StorageChangeSet, StorageData, StorageKey,
+	config::Config,
+	serde_impls::{StorageChangeSet, StorageData, StorageKey},
 };
 use alloc::{string::String, vec, vec::Vec};
 use codec::{Decode, Encode};
@@ -145,18 +146,15 @@ pub trait GetStorage<Hash> {
 	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str) -> Result<C>;
 }
 
-impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> GetStorage<T::Hash> for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
@@ -168,7 +166,7 @@ where
 		pallet: &'static str,
 		storage_item: &'static str,
 		map_key: K,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
@@ -191,7 +189,7 @@ where
 		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_double_map_key::<K, Q>(
 			pallet,
@@ -206,7 +204,7 @@ where
 	fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<V>> {
 		let s = self.get_opaque_storage_by_key(storage_key, at_block)?;
 		match s {
@@ -220,7 +218,7 @@ where
 		storage_key_prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Vec<StorageKey>> {
 		let storage = self.client().request(
 			"state_getKeysPaged",
@@ -232,7 +230,7 @@ where
 	fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<Vec<u8>>> {
 		let storage: Option<StorageData> =
 			self.client().request("state_getStorage", rpc_params![storage_key, at_block])?;
@@ -243,8 +241,8 @@ where
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<T::Hash>,
+	) -> Result<Option<ReadProof<T::Hash>>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
@@ -255,8 +253,8 @@ where
 		pallet: &'static str,
 		storage_item: &'static str,
 		map_key: K,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<T::Hash>,
+	) -> Result<Option<ReadProof<T::Hash>>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block)
@@ -268,8 +266,8 @@ where
 		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<T::Hash>,
+	) -> Result<Option<ReadProof<T::Hash>>> {
 		let storage_key = self.metadata().storage_double_map_key::<K, Q>(
 			pallet,
 			storage_item,
@@ -283,8 +281,8 @@ where
 	fn get_storage_proof_by_keys(
 		&self,
 		storage_keys: Vec<StorageKey>,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<T::Hash>,
+	) -> Result<Option<ReadProof<T::Hash>>> {
 		let proof = self
 			.client()
 			.request("state_getReadProof", rpc_params![storage_keys, at_block])?;
@@ -294,7 +292,7 @@ where
 	fn get_keys(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<Vec<String>>> {
 		let keys = self.client().request("state_getKeys", rpc_params![storage_key, at_block])?;
 		Ok(keys)
@@ -323,18 +321,16 @@ where
 	) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeState<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> SubscribeState<Client, T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	fn subscribe_state(
 		&self,
 		pallet: &str,
 		storage_key_name: &str,
-	) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+	) -> Result<Client::Subscription<StorageChangeSet<T::Hash>>> {
 		debug!("subscribing to events");
 		let key = crate::storage_key(pallet, storage_key_name);
 		self.client()

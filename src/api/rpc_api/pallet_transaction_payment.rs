@@ -16,8 +16,8 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{
-	BalancesConfig, Bytes, ExtrinsicParams, FeeDetails, InclusionFee, NumberOrHex,
-	RuntimeDispatchInfo,
+	Bytes, FeeDetails, InclusionFee, NumberOrHex,
+	RuntimeDispatchInfo, config::Config,
 };
 use core::str::FromStr;
 
@@ -38,20 +38,18 @@ pub trait GetTransactionPayment<Hash> {
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
-impl<Signer, Client, Params, Runtime> GetTransactionPayment<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> GetTransactionPayment<T::Hash>
+	for Api<T, Signer, Client, Block>
 where
 	Client: Request,
-	Runtime: BalancesConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	T::Balance: TryFrom<NumberOrHex> + FromStr,
 {
-	type Balance = Runtime::Balance;
+	type Balance = T::Balance;
 
 	fn get_fee_details(
 		&self,
 		encoded_extrinsic: Bytes,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>> {
 		let details: Option<FeeDetails<NumberOrHex>> = self
 			.client()
@@ -67,7 +65,7 @@ where
 	fn get_payment_info(
 		&self,
 		encoded_extrinsic: Bytes,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<T::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>> {
 		let res = self
 			.client()

@@ -21,7 +21,7 @@
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig,
+	config::Config, CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig,
 	UncheckedExtrinsicV4,
 };
 use codec::{Compact, Decode, Encode};
@@ -142,13 +142,10 @@ pub trait StakingExtrinsics {
 	fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall>;
 }
 
-impl<Signer, Client, Params, Runtime> StakingExtrinsics for Api<Signer, Client, Params, Runtime>
+impl<T: Config, Signer, Client, Block> StakingExtrinsics for Api<T, Signer, Client, Block>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: StakingConfig,
-	Compact<Runtime::CurrencyBalance>: Encode,
 {
 	type Balance = Runtime::CurrencyBalance;
 	type RewardDestination = RewardDestination<Self::Address>;
