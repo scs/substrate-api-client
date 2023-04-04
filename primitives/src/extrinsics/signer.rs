@@ -24,7 +24,7 @@ use sp_core::Pair;
 use sp_runtime::traits::StaticLookup;
 
 pub trait SignExtrinsic<AccountId: Clone + Encode> {
-	type Signature;
+	type Signature: Encode;
 	type ExtrinsicAddress: Clone + Encode;
 
 	/// Sign a given payload and return the resulting Signature.
@@ -73,7 +73,7 @@ impl<Signer, Signature, Runtime> SignExtrinsic<Runtime::AccountId>
 where
 	Runtime: FrameSystemConfig,
 	Signer: Pair,
-	Signature: From<Signer::Signature>,
+	Signature: From<Signer::Signature> + Encode,
 {
 	type Signature = Signature;
 	type ExtrinsicAddress = <Runtime::Lookup as StaticLookup>::Source;
