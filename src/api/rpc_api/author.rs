@@ -19,11 +19,10 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
+use ac_primitives::{config::Config, Bytes, Hasher, UncheckedExtrinsicV4};
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -51,13 +50,12 @@ pub trait SubmitExtrinsic {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SubmitExtrinsic for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	async fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
@@ -182,15 +180,13 @@ pub trait SubmitAndWatchUntilSuccess {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> SubmitAndWatch for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SubmitAndWatch for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
 	type Client = Client;
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	async fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
@@ -238,7 +234,7 @@ where
 		encoded_extrinsic: Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
-		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic.0);
+		let tx_hash = T::Hasher::hash_of(&encoded_extrinsic.0);
 		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic).await?;
 
@@ -267,18 +263,13 @@ where
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess
-	for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SubmitAndWatchUntilSuccess for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe + Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Header: DeserializeOwned,
 {
 	type Client = Client;
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	async fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,

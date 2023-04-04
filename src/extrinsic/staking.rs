@@ -21,7 +21,7 @@
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, StakingConfig,
+	config::Config, CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
 use codec::{Compact, Decode, Encode};
@@ -151,20 +151,22 @@ pub trait StakingExtrinsics {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> StakingExtrinsics for Api<Signer, Client, Params, Runtime>
+impl<T, Client> StakingExtrinsics for Api<T, Client>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: StakingConfig,
-	Compact<Runtime::CurrencyBalance>: Encode,
+	Compact<T::StakingBalance>: Encode,
 {
-	type Balance = Runtime::CurrencyBalance;
+	type Balance = T::StakingBalance;
 	type RewardDestination = RewardDestination<Self::Address>;
-	type AccountId = Runtime::AccountId;
-	type Address = Signer::ExtrinsicAddress;
-	type Extrinsic<Call> =
-		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
+	type AccountId = T::AccountId;
+	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
+	type Extrinsic<Call> = UncheckedExtrinsicV4<
+		Self::Address,
+		Call,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+	>;
 
 	async fn staking_bond(
 		&self,

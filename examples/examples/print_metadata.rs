@@ -16,9 +16,10 @@
 //! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
 //! debugging tool.
 
-use kitchensink_runtime::Runtime;
-use sp_core::sr25519;
-use substrate_api_client::{ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api};
+use substrate_api_client::{ac_primitives::SubstrateKitchensinkConfig, rpc::JsonrpseeClient, Api};
+
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 #[tokio::main]
 async fn main() {
@@ -26,8 +27,7 @@ async fn main() {
 
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api =
-		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 

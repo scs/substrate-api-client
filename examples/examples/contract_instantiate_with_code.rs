@@ -16,15 +16,16 @@
 //! This example is community maintained and not CI tested, therefore it may not work as is.
 
 use codec::Decode;
-use kitchensink_runtime::{AccountId, Runtime, Signature};
+use kitchensink_runtime::AccountId;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::StaticEvent,
-	ac_primitives::{ExtrinsicSigner, PlainTipExtrinsicParams},
-	extrinsic::ContractsExtrinsics,
-	rpc::JsonrpseeClient,
-	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	ac_compose_macros::primitives::SubstrateKitchensinkConfig, ac_node_api::StaticEvent,
+	ac_primitives::ExtrinsicSigner, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
+	SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
 };
+
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 #[allow(unused)]
 #[derive(Decode)]
@@ -45,10 +46,8 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<_>::new(signer));
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 

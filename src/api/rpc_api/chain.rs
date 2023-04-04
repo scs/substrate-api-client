@@ -17,11 +17,10 @@ use crate::{
 	Error,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
+use ac_primitives::{config::Config, SignedBlock};
 use alloc::vec::Vec;
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::GetRuntimeBlockType;
 
 #[maybe_async::maybe_async(?Send)]
 pub trait GetChainInfo {
@@ -73,18 +72,15 @@ pub trait GetChainInfo {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetChainInfo for Api<Signer, Client, Params, Runtime>
+impl<T, Client> GetChainInfo for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::RuntimeBlock: DeserializeOwned,
-	Runtime::Header: DeserializeOwned,
 {
-	type BlockNumber = Runtime::BlockNumber;
-	type Hash = Runtime::Hash;
-	type Header = Runtime::Header;
-	type Block = Runtime::RuntimeBlock;
+	type BlockNumber = T::BlockNumber;
+	type Hash = T::Hash;
+	type Header = T::Header;
+	type Block = T::Block;
 
 	async fn get_finalized_head(&self) -> Result<Option<Self::Hash>> {
 		let finalized_block_hash =
@@ -168,15 +164,13 @@ pub trait SubscribeChain {
 	) -> Result<<Self::Client as Subscribe>::Subscription<Self::Header>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeChain for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SubscribeChain for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-	Runtime::Header: DeserializeOwned,
 {
 	type Client = Client;
-	type Header = Runtime::Header;
+	type Header = T::Header;
 
 	fn subscribe_finalized_heads(
 		&self,
