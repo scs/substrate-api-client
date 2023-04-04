@@ -24,7 +24,7 @@ use sp_runtime::traits::{
 	SimpleBitOps, StaticLookup,
 };
 
-/// Simplifed Frame system Config trait. Needed because substrate pallets compile to wasm
+/// Simplified Frame system Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait FrameSystemConfig {
 	type BaseCallFilter;

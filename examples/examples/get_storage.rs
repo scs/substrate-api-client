@@ -21,7 +21,7 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_primitives::{ExtrinsicSigner, PlainTipExtrinsicParams},
 	rpc::JsonrpseeClient,
-	Api, GetStorage,
+	Api, GetAccountInformation, GetStorage,
 };
 
 type IndexFor<T> = <T as frame_system::Config>::Index;
@@ -60,6 +60,11 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
+
+	println!(
+		"[+] Bob's Account Nonce is {}",
+		api.get_account_nonce(&AccountKeyring::Bob.to_account_id()).unwrap()
+	);
 
 	// Get an vector of storage keys, numbering up to the given max keys and that start with the (optionally) given storage key prefix.
 	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
