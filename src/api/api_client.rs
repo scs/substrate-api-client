@@ -221,8 +221,7 @@ where
 	/// Get nonce of self signer account.
 	pub fn get_nonce(&self) -> Result<Runtime::Index> {
 		let account = self.signer_account().ok_or(Error::NoSigner)?;
-		self.get_account_info(account)
-			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
+		self.get_account_nonce(account)
 	}
 }
 

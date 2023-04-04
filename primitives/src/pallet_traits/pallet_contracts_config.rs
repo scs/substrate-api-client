@@ -17,7 +17,7 @@
 use crate::FrameSystemConfig;
 use sp_runtime::traits::Get;
 
-/// Simplifed pallet contract Config trait. Needed because substrate pallets compile to wasm
+/// Simplified pallet contract Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait ContractsConfig: FrameSystemConfig {
 	type Time;

@@ -27,7 +27,7 @@ use sp_staking::{EraIndex, SessionIndex};
 /// The balance type of this pallet.
 pub type BalanceOf<T> = <T as StakingConfig>::CurrencyBalance;
 
-/// Simplifed pallet staking Config trait. Needed because substrate pallets compile to wasm
+/// Simplified pallet staking Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait StakingConfig: FrameSystemConfig {
 	type Currency;
