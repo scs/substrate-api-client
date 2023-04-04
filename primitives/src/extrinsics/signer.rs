@@ -20,8 +20,8 @@
 use crate::FrameSystemConfig;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
-use sp_core::Pair;
-use sp_runtime::traits::StaticLookup;
+use sp_core::{crypto::AccountId32, Pair};
+use sp_runtime::{traits::StaticLookup, MultiAddress};
 
 pub trait SignExtrinsic<AccountId: Clone + Encode> {
 	type Signature: Encode;
@@ -102,11 +102,61 @@ where
 	}
 }
 
+/// Extrinsic Signer implementation, that does not enforce Runtime as input.
+/// This is especially useful in no-std environments, where the runtime is not
+/// available.
+#[derive(Encode, Decode, Clone, PartialEq)]
+pub struct StaticExtrinsicSigner<Signer, Signature> {
+	signer: Signer,
+	account_id: AccountId32,
+	extrinsic_address: MultiAddress<AccountId32, ()>,
+	_phantom: PhantomData<Signature>,
+}
+
+impl<Signer, Signature> StaticExtrinsicSigner<Signer, Signature>
+where
+	Signer: Pair,
+	Signer::Public: Into<AccountId32>,
+	Signature: From<Signer::Signature> + Encode + Clone,
+{
+	pub fn new(signer: Signer) -> Self {
+		let account_id = signer.public().into();
+		let extrinsic_address = MultiAddress::from(account_id.clone());
+		Self { signer, account_id, extrinsic_address, _phantom: Default::default() }
+	}
+
+	pub fn signer(&self) -> &Signer {
+		&self.signer
+	}
+}
+
+impl<Signer, Signature> SignExtrinsic<AccountId32> for StaticExtrinsicSigner<Signer, Signature>
+where
+	Signer: Pair,
+	Signature: From<Signer::Signature> + Encode + Clone,
+{
+	type Signature = Signature;
+	type ExtrinsicAddress = MultiAddress<AccountId32, ()>;
+
+	fn sign(&self, payload: &[u8]) -> Self::Signature {
+		self.signer.sign(payload).into()
+	}
+
+	fn public_account_id(&self) -> &AccountId32 {
+		&self.account_id
+	}
+
+	fn extrinsic_address(&self) -> Self::ExtrinsicAddress {
+		self.extrinsic_address.clone()
+	}
+}
+
 #[cfg(test)]
 mod tests {
-	use crate::ExtrinsicSigner;
-	use node_template_runtime::Runtime;
+	use super::*;
+	use node_template_runtime::{Runtime, Signature};
 	use sp_core::{sr25519, Pair};
+	use sp_keyring::AccountKeyring;
 
 	#[test]
 	fn test_extrinsic_signer_from_sr25519_pair() {
@@ -121,5 +171,23 @@ mod tests {
 			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::new(alice.clone());
 
 		assert_eq!(es_converted.signer.public(), es_new.signer.public());
+	}
+
+	// This test does not work. See issue #504.
+
+	// 	#[test]
+	// 	fn test_extrinsic_signer_clone() {
+	// 		let pair = AccountKeyring::Alice.pair();
+	// 		let signer = ExtrinsicSigner::<_, Signature, Runtime>::new(pair);
+	//
+	// 		let signer2 = signer.clone();
+	// 	}
+
+	#[test]
+	fn test_static_extrinsic_signer_clone() {
+		let pair = AccountKeyring::Alice.pair();
+		let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
+
+		let _signer2 = signer.clone();
 	}
 }
