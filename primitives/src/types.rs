@@ -197,9 +197,12 @@ impl DispatchClass {
 }
 
 /// A destination account for payment.
-#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[derive(
+	PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen, Default,
+)]
 pub enum RewardDestination<AccountId> {
 	/// Pay into the stash account, increasing the amount at stake accordingly.
+	#[default]
 	Staked,
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
@@ -209,12 +212,6 @@ pub enum RewardDestination<AccountId> {
 	Account(AccountId),
 	/// Receive no reward.
 	None,
-}
-
-impl<AccountId> Default for RewardDestination<AccountId> {
-	fn default() -> Self {
-		RewardDestination::Staked
-	}
 }
 
 /// Health struct returned by the RPC

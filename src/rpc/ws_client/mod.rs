@@ -113,16 +113,14 @@ impl HandleMessage for SubscriptionHandler {
 		let msg = &context.msg;
 
 		info!("got on_subscription_msg {}", msg);
-		let value: serde_json::Value =
-			serde_json::from_str(msg.as_text()?).map_err(|e| Box::new(e))?;
+		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
 		match value["id"].as_str() {
 			Some(_idstr) => {
 				warn!("Expected subscription, but received an id response instead: {:?}", value);
 			},
 			None => {
-				let answer =
-					serde_json::to_string(&value["params"]["result"]).map_err(|e| Box::new(e))?;
+				let answer = serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?;
 
 				if let Err(e) = result.send(answer) {
 					// This may happen if the receiver has unsubscribed.
