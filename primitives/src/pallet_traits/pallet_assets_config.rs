@@ -19,7 +19,7 @@ use scale_info::TypeInfo;
 use serde::{de::DeserializeOwned, Serialize};
 use sp_runtime::traits::{AtLeast32BitUnsigned, Get, Member};
 
-/// Simplifed pallet assets Config trait. Needed because substrate pallets compile to wasm
+/// Simplified pallet assets Config trait. Needed because substrate pallets compile to wasm
 /// in no_std mode.
 pub trait AssetsConfig: crate::FrameSystemConfig {
 	type RuntimeEvent;

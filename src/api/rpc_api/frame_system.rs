@@ -32,6 +32,9 @@ pub trait GetAccountInformation<AccountId> {
 	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>>;
 
 	fn get_account_data(&self, address: &AccountId) -> Result<Option<Self::AccountData>>;
+
+	/// Get nonce of an account.
+	fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
 }
 
 impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
@@ -63,6 +66,11 @@ where
 		address: &Runtime::AccountId,
 	) -> Result<Option<Runtime::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
+	}
+
+	fn get_account_nonce(&self, account: &Runtime::AccountId) -> Result<Runtime::Index> {
+		self.get_account_info(account)
+			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
 }
 
