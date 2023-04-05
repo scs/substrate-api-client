@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "ac-compose-macros"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "ac-primitives",
  "log",
@@ -26,7 +26,7 @@ dependencies = [
 
 [[package]]
 name = "ac-examples"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "env_logger",
  "frame-support",
@@ -49,7 +49,7 @@ dependencies = [
 
 [[package]]
 name = "ac-node-api"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "ac-primitives",
  "bitvec",
@@ -70,7 +70,7 @@ dependencies = [
 
 [[package]]
 name = "ac-primitives"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "frame-system",
  "hex",
@@ -94,7 +94,7 @@ dependencies = [
 
 [[package]]
 name = "ac-testing"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5295,7 +5295,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-api-client"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
@@ -5335,7 +5335,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-client-keystore"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "hex",
