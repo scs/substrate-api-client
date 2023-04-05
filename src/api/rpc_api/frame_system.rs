@@ -20,6 +20,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageKey};
 use alloc::{string::String, vec::Vec};
+use futures::executor::block_on;
 use log::*;
 
 pub trait GetAccountInformation<AccountId> {
@@ -123,42 +124,42 @@ where
 	type Health = ac_primitives::Health;
 
 	fn get_system_name(&self) -> Result<String> {
-		let res = self.client().request("system_name", rpc_params![])?;
+		let res = block_on(self.client().request("system_name", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_version(&self) -> Result<String> {
-		let res = self.client().request("system_version", rpc_params![])?;
+		let res = block_on(self.client().request("system_version", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_chain(&self) -> Result<String> {
-		let res = self.client().request("system_chain", rpc_params![])?;
+		let res = block_on(self.client().request("system_chain", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_chain_type(&self) -> Result<Self::ChainType> {
-		let res = self.client().request("system_chainType", rpc_params![])?;
+		let res = block_on(self.client().request("system_chainType", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_properties(&self) -> Result<Self::Properties> {
-		let res = self.client().request("system_properties", rpc_params![])?;
+		let res = block_on(self.client().request("system_properties", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_health(&self) -> Result<Self::Health> {
-		let res = self.client().request("system_health", rpc_params![])?;
+		let res = block_on(self.client().request("system_health", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_local_peer_id(&self) -> Result<String> {
-		let res = self.client().request("system_localPeerId", rpc_params![])?;
+		let res = block_on(self.client().request("system_localPeerId", rpc_params![]))?;
 		Ok(res)
 	}
 
 	fn get_system_local_listen_addresses(&self) -> Result<Vec<String>> {
-		let res = self.client().request("system_localListenAddresses", rpc_params![])?;
+		let res = block_on(self.client().request("system_localListenAddresses", rpc_params![]))?;
 		Ok(res)
 	}
 }

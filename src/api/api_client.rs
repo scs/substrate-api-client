@@ -22,6 +22,7 @@ use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion, S
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
+use futures::executor::block_on;
 use log::{debug, info};
 
 /// Api to talk with substrate-nodes
@@ -178,25 +179,28 @@ where
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
 	pub fn new(client: Client) -> Result<Self> {
-		let genesis_hash = Self::get_genesis_hash(&client)?;
+		let genesis_hash_future = Self::get_genesis_hash(&client);
+		let metadata_future = Self::get_metadata(&client);
+		let runtime_version_future = Self::get_runtime_version(&client);
+
+		let genesis_hash = block_on(genesis_hash_future)?;
+		let metadata = block_on(metadata_future)?;
+		let runtime_version = block_on(runtime_version_future)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
-
-		let metadata = Self::get_metadata(&client)?;
 		debug!("Metadata: {:?}", metadata);
-
-		let runtime_version = Self::get_runtime_version(&client)?;
 		info!("Runtime Version: {:?}", runtime_version);
-
 		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
 
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
 	pub fn update_runtime(&mut self) -> Result<()> {
-		let metadata = Self::get_metadata(&self.client)?;
-		debug!("Metadata: {:?}", metadata);
+		let metadata_future = Self::get_metadata(&self.client);
+		let runtime_version_future = Self::get_runtime_version(&self.client);
 
-		let runtime_version = Self::get_runtime_version(&self.client)?;
+		let metadata = block_on(metadata_future)?;
+		let runtime_version = block_on(runtime_version_future)?;
+		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
 
 		self.metadata = metadata;
@@ -234,21 +238,22 @@ where
 	Runtime: FrameSystemConfig,
 {
 	/// Get the genesis hash from node via websocket query.
-	fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
+	async fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
 		let genesis: Option<Runtime::Hash> =
-			client.request("chain_getBlockHash", rpc_params![Some(0)])?;
+			client.request("chain_getBlockHash", rpc_params![Some(0)]).await?;
 		genesis.ok_or(Error::FetchGenesisHash)
 	}
 
 	/// Get runtime version from node via websocket query.
-	fn get_runtime_version(client: &Client) -> Result<RuntimeVersion> {
-		let version: RuntimeVersion = client.request("state_getRuntimeVersion", rpc_params![])?;
+	async fn get_runtime_version(client: &Client) -> Result<RuntimeVersion> {
+		let version: RuntimeVersion =
+			client.request("state_getRuntimeVersion", rpc_params![]).await?;
 		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
-	fn get_metadata(client: &Client) -> Result<Metadata> {
-		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![])?;
+	async fn get_metadata(client: &Client) -> Result<Metadata> {
+		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![]).await?;
 
 		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;
 		Metadata::try_from(metadata).map_err(|e| e.into())

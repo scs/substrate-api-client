@@ -21,6 +21,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, UncheckedExtrinsicV4};
 use codec::Encode;
+use futures::executor::block_on;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
@@ -73,7 +74,7 @@ where
 	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash> {
 		let hex_encoded_xt = rpc_params![encoded_extrinsic];
 		debug!("sending extrinsic: {:?}", hex_encoded_xt);
-		let xt_hash = self.client().request("author_submitExtrinsic", hex_encoded_xt)?;
+		let xt_hash = block_on(self.client().request("author_submitExtrinsic", hex_encoded_xt))?;
 		Ok(xt_hash)
 	}
 }

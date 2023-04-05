@@ -12,7 +12,7 @@
 */
 
 use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
-use futures::executor::block_on;
+use futures::{executor::block_on, future::TryFutureExt};
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
 	core::{
@@ -56,10 +56,10 @@ impl JsonrpseeClient {
 }
 
 impl Request for JsonrpseeClient {
-	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
 		// Support async: #278
-		block_on(self.inner.request(method, RpcParamsWrapper(params)))
-			.map_err(|e| Error::Client(Box::new(e)))
+		let future = self.inner.request(method, RpcParamsWrapper(params));
+		future.map_err(|e| Error::Client(Box::new(e))).await
 	}
 }
 

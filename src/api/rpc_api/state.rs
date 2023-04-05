@@ -22,6 +22,7 @@ use ac_primitives::{
 };
 use alloc::{string::String, vec, vec::Vec};
 use codec::{Decode, Encode};
+use futures::executor::block_on;
 use log::*;
 use serde::de::DeserializeOwned;
 
@@ -222,10 +223,10 @@ where
 		start_key: Option<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Vec<StorageKey>> {
-		let storage = self.client().request(
+		let storage = block_on(self.client().request(
 			"state_getKeysPaged",
 			rpc_params![storage_key_prefix, count, start_key, at_block],
-		)?;
+		))?;
 		Ok(storage)
 	}
 
@@ -234,8 +235,9 @@ where
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<Vec<u8>>> {
-		let storage: Option<StorageData> =
-			self.client().request("state_getStorage", rpc_params![storage_key, at_block])?;
+		let storage: Option<StorageData> = block_on(
+			self.client().request("state_getStorage", rpc_params![storage_key, at_block]),
+		)?;
 		Ok(storage.map(|storage_data| storage_data.0))
 	}
 
@@ -285,9 +287,9 @@ where
 		storage_keys: Vec<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
-		let proof = self
-			.client()
-			.request("state_getReadProof", rpc_params![storage_keys, at_block])?;
+		let proof = block_on(
+			self.client().request("state_getReadProof", rpc_params![storage_keys, at_block]),
+		)?;
 		Ok(proof)
 	}
 
@@ -296,7 +298,8 @@ where
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<Vec<String>>> {
-		let keys = self.client().request("state_getKeys", rpc_params![storage_key, at_block])?;
+		let keys =
+			block_on(self.client().request("state_getKeys", rpc_params![storage_key, at_block]))?;
 		Ok(keys)
 	}
 

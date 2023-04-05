@@ -17,6 +17,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
+use futures::executor::block_on;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
@@ -41,12 +42,12 @@ where
 
 	fn get_finalized_head(&self) -> Result<Option<Runtime::Hash>> {
 		let finalized_block_hash =
-			self.client().request("chain_getFinalizedHead", rpc_params![])?;
+			block_on(self.client().request("chain_getFinalizedHead", rpc_params![]))?;
 		Ok(finalized_block_hash)
 	}
 
 	fn get_header(&self, hash: Option<Runtime::Hash>) -> Result<Option<Runtime::Header>> {
-		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
+		let block_hash = block_on(self.client().request("chain_getHeader", rpc_params![hash]))?;
 		Ok(block_hash)
 	}
 }
@@ -86,7 +87,8 @@ where
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> Result<Option<Runtime::Hash>> {
-		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
+		let block_hash =
+			block_on(self.client().request("chain_getBlockHash", rpc_params![number]))?;
 		Ok(block_hash)
 	}
 
@@ -105,7 +107,7 @@ where
 		&self,
 		hash: Option<Runtime::Hash>,
 	) -> Result<Option<SignedBlock<Self::Block>>> {
-		let block = self.client().request("chain_getBlock", rpc_params![hash])?;
+		let block = block_on(self.client().request("chain_getBlock", rpc_params![hash]))?;
 		Ok(block)
 	}
 
