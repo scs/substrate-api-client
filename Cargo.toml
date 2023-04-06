@@ -39,12 +39,12 @@ ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
 frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 # substrate std / wasm only
-frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
@@ -53,7 +53,7 @@ ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
 ac-node-api = { path = "node-api", features = ["mocks"] }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 
 [features]

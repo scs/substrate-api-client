@@ -15,20 +15,20 @@ serde = { version = "1.0", default-features = false, features = ["derive", "allo
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate no_std
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 # substrate std / wasm only
-frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
-pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 [dev-dependencies]
-node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 [features]
 default = ["std"]
