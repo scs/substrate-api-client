@@ -247,7 +247,7 @@ pub struct SignedBlock<Block> {
 impl<Block> From<sp_runtime::generic::SignedBlock<Block>> for SignedBlock<Block> {
 	fn from(signed_block: sp_runtime::generic::SignedBlock<Block>) -> Self {
 		Self {
-			block: signed_block.block.into(),
+			block: signed_block.block,
 			justifications: signed_block.justifications.map(|justifactions| justifactions.into()),
 		}
 	}
@@ -256,7 +256,7 @@ impl<Block> From<sp_runtime::generic::SignedBlock<Block>> for SignedBlock<Block>
 impl<Block> From<SignedBlock<Block>> for sp_runtime::generic::SignedBlock<Block> {
 	fn from(signed_block: SignedBlock<Block>) -> Self {
 		Self {
-			block: signed_block.block.into(),
+			block: signed_block.block,
 			justifications: signed_block.justifications.map(|justifactions| justifactions.into()),
 		}
 	}
