@@ -27,14 +27,15 @@ use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 
 pub const BALANCES_MODULE: &str = "Balances";
-pub const TRANSFER: &str = "balance_transfer";
-pub const SET_BALANCE: &str = "force_set_balance";
+pub const TRANSFER: &str = "transfer";
+pub const SET_BALANCE: &str = "set_balance";
 
 /// Call for a balance transfer.
 pub type TransferCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
 
 /// Call to the balance of an account.
-pub type SetBalanceCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
+pub type SetBalanceCall<Address, Balance> =
+	(CallIndex, Address, Compact<Balance>, Compact<Balance>);
 
 pub trait BalancesExtrinsics {
 	type Balance;
@@ -53,6 +54,7 @@ pub trait BalancesExtrinsics {
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
+		reserved_balance: Self::Balance,
 	) -> Self::Extrinsic<SetBalanceCall<Self::Address, Self::Balance>>;
 }
 
@@ -81,7 +83,15 @@ where
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
+		reserved_balance: Self::Balance,
 	) -> Self::Extrinsic<SetBalanceCall<Self::Address, Self::Balance>> {
-		compose_extrinsic!(self, BALANCES_MODULE, SET_BALANCE, who, Compact(free_balance))
+		compose_extrinsic!(
+			self,
+			BALANCES_MODULE,
+			SET_BALANCE,
+			who,
+			Compact(free_balance),
+			Compact(reserved_balance)
+		)
 	}
 }
