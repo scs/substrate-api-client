@@ -10,11 +10,11 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 log = { version = "0.4.14", default-features = false }
 
 # substrate
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
 
 # need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "polkadot-v0.9.39" }
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "polkadot-v0.9.40" }
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
