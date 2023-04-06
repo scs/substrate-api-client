@@ -60,7 +60,7 @@ async fn main() {
 	let first_nonce = nonce;
 	while nonce < first_nonce + 500 {
 		// Compose a balance extrinsic.
-		let call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+		let call = RuntimeCall::Balances(BalancesCall::transfer {
 			dest: recipient.clone(),
 			value: 1_000_000,
 		});

@@ -58,7 +58,7 @@ async fn main() {
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 
 	// Generate a transfer extrinsic.
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.clone()), balance_of_alice);
+	let xt = api.balance_transfer(MultiAddress::Id(bob.clone()), balance_of_alice);
 	println!("Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n", alice, bob);
 	println!("[+] Composed extrinsic: {:?}\n", xt);
 
