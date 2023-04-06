@@ -17,12 +17,12 @@ serde_json = { version = "1.0.79", default-features = false, features = ["alloc"
 
 # substrate
 frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
 
 # need to add this for `no_std`
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "polkadot-v0.9.39" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "polkadot-v0.9.40" }
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.40" }
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
