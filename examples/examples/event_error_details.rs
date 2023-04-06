@@ -18,11 +18,8 @@ use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
-	ac_node_api::StaticEvent,
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
-	extrinsic::BalancesExtrinsics,
-	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatchUntilSuccess,
+	extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	ExtrinsicSigner, GetAccountInformation, StaticEvent, SubmitAndWatchUntilSuccess,
 };
 
 #[derive(Decode)]
@@ -75,10 +72,8 @@ async fn main() {
 		Err(e) => {
 			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
 			let string_error = format!("{:?}", e);
-			// We expect a TokenError::FundsUnavailable error. See :
-			//https://github.com/paritytech/substrate/blob/b42a687c9050cbe04849c45b0c5ccadb82c84948/frame/support/src/traits/tokens/fungible/mod.rs#L177
-			assert!(string_error.contains("Other"));
-			assert!(string_error.contains("[7, 0, 194, 110, 3, 65, 37, 56, 0, 0]")); //Fixme This is for now not decoded. See issue: #488
+			assert!(string_error.contains("pallet: \"Balances\""));
+			assert!(string_error.contains("error: \"InsufficientBalance\""));
 		},
 	};
 

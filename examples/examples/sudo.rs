@@ -21,13 +21,9 @@ use kitchensink_runtime::{AccountId, Runtime, Signature};
 use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{
-		AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
-		UncheckedExtrinsicV4,
-	},
-	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
+	compose_call, compose_extrinsic, rpc::JsonrpseeClient, Api, AssetTipExtrinsicParams,
+	ExtrinsicSigner as GenericExtrinsicSigner, GetAccountInformation, SignExtrinsic,
+	SubmitAndWatch, UncheckedExtrinsicV4, XtStatus,
 };
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
@@ -64,8 +60,9 @@ async fn main() {
 	let call = compose_call!(
 		api.metadata(),
 		"Balances",
-		"force_set_balance",
+		"set_balance",
 		recipients_extrinsic_address,
+		Compact(new_balance),
 		Compact(new_balance)
 	);
 
