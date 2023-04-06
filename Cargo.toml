@@ -84,4 +84,4 @@ std = [
 jsonrpsee-client = ["std", "jsonrpsee", "futures"]
 tungstenite-client = ["std", "tungstenite"]
 ws-client = ["std", "ws"]
-staking-xt = ["std"]
+staking-xt = ["std", "ac-primitives/staking-xt"]

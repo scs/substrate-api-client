@@ -50,5 +50,5 @@ std = [
     "pallet-assets",
     "pallet-balances",
     "pallet-contracts",
-    "pallet-staking",
 ]
+staking-xt = ["pallet-staking"]
