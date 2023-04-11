@@ -21,7 +21,7 @@
 //! This may be omitted, if substrate allows serde impls also in no_std: https://github.com/paritytech/substrate/issues/12994
 
 use alloc::{string::String, vec::Vec};
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use impl_serde::serialize::{from_hex, FromHexError};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
@@ -238,6 +238,7 @@ pub struct RuntimeVersion {
 	/// Use of an incorrect version is consensus breaking.
 	pub state_version: u8,
 }
+
 /// Abstraction over a substrate block and justification.
 // https://github.com/paritytech/substrate/blob/fafc8e0ba8c98bd22b47913ded414e74a0fcb67f/primitives/runtime/src/generic/block.rs
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, Serialize, Deserialize)]
@@ -295,7 +296,7 @@ impl From<Justifications> for sp_runtime::Justifications {
 	}
 }
 
-/// The old weight type.
+/// The old (deprecated) weight type.
 // https://github.com/paritytech/substrate/blob/d0540a79967cb06cd7598a4965c7c06afc788b0c/primitives/weights/src/lib.rs#L78
 #[derive(
 	Decode,
@@ -312,6 +313,82 @@ impl From<Justifications> for sp_runtime::Justifications {
 )]
 #[serde(transparent)]
 pub struct OldWeight(pub u64);
+
+/// New weight type.
+// https://github.com/paritytech/substrate/blob/7bbfe737a180e548ace7e819099dcb62cf48fa11/primitives/weights/src/weight_v2.rs#L25-L36
+#[derive(
+	Encode,
+	Decode,
+	MaxEncodedLen,
+	TypeInfo,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	Default,
+	Serialize,
+	Deserialize,
+)]
+pub struct Weight {
+	#[codec(compact)]
+	/// The weight of computational time used based on some reference hardware.
+	ref_time: u64,
+	#[codec(compact)]
+	/// The weight of storage space used by proof of validity.
+	proof_size: u64,
+}
+
+impl Weight {
+	/// Set the reference time part of the weight.
+	pub const fn set_ref_time(mut self, c: u64) -> Self {
+		self.ref_time = c;
+		self
+	}
+
+	/// Set the storage size part of the weight.
+	pub const fn set_proof_size(mut self, c: u64) -> Self {
+		self.proof_size = c;
+		self
+	}
+
+	/// Return the reference time part of the weight.
+	pub const fn ref_time(&self) -> u64 {
+		self.ref_time
+	}
+
+	/// Return the storage size part of the weight.
+	pub const fn proof_size(&self) -> u64 {
+		self.proof_size
+	}
+
+	/// Construct [`Weight`] from weight parts, namely reference time and proof size weights.
+	pub const fn from_parts(ref_time: u64, proof_size: u64) -> Self {
+		Self { ref_time, proof_size }
+	}
+
+	/// Construct [`Weight`] from the same weight for all parts.
+	pub const fn from_all(value: u64) -> Self {
+		Self { ref_time: value, proof_size: value }
+	}
+
+	/// Return a [`Weight`] where all fields are zero.
+	pub const fn zero() -> Self {
+		Self { ref_time: 0, proof_size: 0 }
+	}
+}
+
+impl From<sp_weights::Weight> for Weight {
+	fn from(weight: sp_weights::Weight) -> Self {
+		Weight::from_parts(weight.ref_time(), weight.proof_size())
+	}
+}
+
+impl From<Weight> for sp_weights::Weight {
+	fn from(weight: Weight) -> Self {
+		sp_weights::Weight::from_parts(weight.ref_time(), weight.proof_size())
+	}
+}
 
 // Copied from sp_version (only available in std in the substrate version).
 // https://github.com/paritytech/substrate/blob/1b3ddae9dec6e7653b5d6ef0179df1af831f46f0/primitives/version/src/lib.rs#L392-L393

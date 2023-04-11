@@ -90,6 +90,7 @@ dependencies = [
  "sp-runtime",
  "sp-staking",
  "sp-version",
+ "sp-weights",
 ]
 
 [[package]]

@@ -19,6 +19,7 @@ sp-core = { default-features = false, git = "https://github.com/paritytech/subst
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-weights = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # substrate std / wasm only
 frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
