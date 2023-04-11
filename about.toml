@@ -13,3 +13,7 @@ accepted = [
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true
+# Should be removed after #525 is fixed.
+workarounds = [
+    "proc-macro-warning"
+]
