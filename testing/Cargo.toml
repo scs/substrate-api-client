@@ -33,6 +33,7 @@ substrate-api-client = { path = "..", features = [
     "tungstenite-client",
     "ws-client",
     "staking-xt",
+    "contracts-xt",
 ] }
 
 [features]

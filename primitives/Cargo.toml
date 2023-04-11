@@ -49,6 +49,6 @@ std = [
     "frame-system",
     "pallet-assets",
     "pallet-balances",
-    "pallet-contracts",
-    "pallet-staking",
 ]
+staking-xt = ["std", "pallet-staking"]
+contracts-xt = ["std", "pallet-contracts"]
