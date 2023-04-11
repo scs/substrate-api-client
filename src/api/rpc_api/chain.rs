@@ -17,7 +17,6 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
-use futures::executor::block_on;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
@@ -25,9 +24,9 @@ use sp_runtime::traits::GetRuntimeBlockType;
 pub trait GetHeader<Hash> {
 	type Header;
 
-	fn get_finalized_head(&self) -> Result<Option<Hash>>;
+	async fn get_finalized_head(&self) -> Result<Option<Hash>>;
 
-	fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
+	async fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
@@ -40,14 +39,14 @@ where
 {
 	type Header = Runtime::Header;
 
-	fn get_finalized_head(&self) -> Result<Option<Runtime::Hash>> {
+	async fn get_finalized_head(&self) -> Result<Option<Runtime::Hash>> {
 		let finalized_block_hash =
-			block_on(self.client().request("chain_getFinalizedHead", rpc_params![]))?;
+			self.client().request("chain_getFinalizedHead", rpc_params![]).await?;
 		Ok(finalized_block_hash)
 	}
 
-	fn get_header(&self, hash: Option<Runtime::Hash>) -> Result<Option<Runtime::Header>> {
-		let block_hash = block_on(self.client().request("chain_getHeader", rpc_params![hash]))?;
+	async fn get_header(&self, hash: Option<Runtime::Hash>) -> Result<Option<Runtime::Header>> {
+		let block_hash = self.client().request("chain_getHeader", rpc_params![hash]).await?;
 		Ok(block_hash)
 	}
 }
@@ -55,19 +54,22 @@ where
 pub trait GetBlock<Number, Hash> {
 	type Block;
 
-	fn get_block_hash(&self, number: Option<Number>) -> Result<Option<Hash>>;
+	async fn get_block_hash(&self, number: Option<Number>) -> Result<Option<Hash>>;
 
-	fn get_block(&self, hash: Option<Hash>) -> Result<Option<Self::Block>>;
+	async fn get_block(&self, hash: Option<Hash>) -> Result<Option<Self::Block>>;
 
-	fn get_block_by_num(&self, number: Option<Number>) -> Result<Option<Self::Block>>;
+	async fn get_block_by_num(&self, number: Option<Number>) -> Result<Option<Self::Block>>;
 
 	/// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
 	/// The interval at which finality proofs are provided is set via the
 	/// the `GrandpaConfig.justification_period` in a node's service.rs.
 	/// The Justification may be None.
-	fn get_signed_block(&self, hash: Option<Hash>) -> Result<Option<SignedBlock<Self::Block>>>;
+	async fn get_signed_block(
+		&self,
+		hash: Option<Hash>,
+	) -> Result<Option<SignedBlock<Self::Block>>>;
 
-	fn get_signed_block_by_num(
+	async fn get_signed_block_by_num(
 		&self,
 		number: Option<Number>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
@@ -83,39 +85,40 @@ where
 {
 	type Block = Runtime::RuntimeBlock;
 
-	fn get_block_hash(
+	async fn get_block_hash(
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> Result<Option<Runtime::Hash>> {
-		let block_hash =
-			block_on(self.client().request("chain_getBlockHash", rpc_params![number]))?;
+		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number]).await?;
 		Ok(block_hash)
 	}
 
-	fn get_block(&self, hash: Option<Runtime::Hash>) -> Result<Option<Self::Block>> {
-		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
+	async fn get_block(&self, hash: Option<Runtime::Hash>) -> Result<Option<Self::Block>> {
+		Self::get_signed_block(self, hash).await.map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	fn get_block_by_num(
+	async fn get_block_by_num(
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> Result<Option<Self::Block>> {
-		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
+		Self::get_signed_block_by_num(self, number)
+			.await
+			.map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	fn get_signed_block(
+	async fn get_signed_block(
 		&self,
 		hash: Option<Runtime::Hash>,
 	) -> Result<Option<SignedBlock<Self::Block>>> {
-		let block = block_on(self.client().request("chain_getBlock", rpc_params![hash]))?;
+		let block = self.client().request("chain_getBlock", rpc_params![hash]).await?;
 		Ok(block)
 	}
 
-	fn get_signed_block_by_num(
+	async fn get_signed_block_by_num(
 		&self,
 		number: Option<Runtime::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>> {
-		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
+		self.get_block_hash(number).await.map(|h| self.get_signed_block(h))?.await
 	}
 }
 pub trait SubscribeChain<Client, Hash>

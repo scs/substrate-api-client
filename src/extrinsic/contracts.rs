@@ -69,13 +69,13 @@ pub trait ContractsExtrinsics {
 	type Address;
 	type Extrinsic<Call>;
 
-	fn contract_put_code(
+	async fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
 	) -> Self::Extrinsic<PutCodeFor<Self>>;
 
-	fn contract_instantiate(
+	async fn contract_instantiate(
 		&self,
 		endowment: Self::Currency,
 		gas_limit: Self::Gas,
@@ -83,7 +83,7 @@ pub trait ContractsExtrinsics {
 		data: Self::Data,
 	) -> Self::Extrinsic<InstantiateWithHashFor<Self>>;
 
-	fn contract_instantiate_with_code(
+	async fn contract_instantiate_with_code(
 		&self,
 		endowment: Self::Currency,
 		gas_limit: Self::Gas,
@@ -92,7 +92,7 @@ pub trait ContractsExtrinsics {
 		salt: Self::Salt,
 	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>>;
 
-	fn contract_call(
+	async fn contract_call(
 		&self,
 		dest: Self::Address,
 		value: Self::Currency,
@@ -126,7 +126,7 @@ where
 	type Extrinsic<Call> =
 		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
 
-	fn contract_put_code(
+	async fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
@@ -134,7 +134,7 @@ where
 		compose_extrinsic!(self, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
-	fn contract_instantiate(
+	async fn contract_instantiate(
 		&self,
 		endowment: Self::Currency,
 		gas_limit: Self::Gas,
@@ -152,7 +152,7 @@ where
 		)
 	}
 
-	fn contract_instantiate_with_code(
+	async fn contract_instantiate_with_code(
 		&self,
 		endowment: Self::Currency,
 		gas_limit: Self::Gas,
@@ -172,7 +172,7 @@ where
 		)
 	}
 
-	fn contract_call(
+	async fn contract_call(
 		&self,
 		dest: Self::Address,
 		value: Self::Currency,

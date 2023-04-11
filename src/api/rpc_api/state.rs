@@ -22,7 +22,6 @@ use ac_primitives::{
 };
 use alloc::{string::String, vec, vec::Vec};
 use codec::{Decode, Encode};
-use futures::executor::block_on;
 use log::*;
 use serde::de::DeserializeOwned;
 
@@ -31,7 +30,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage value.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage<V: Decode>(
+	async fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -41,7 +40,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage value from a map for the given `map_key`.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_map<K: Encode, V: Decode>(
+	async fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -50,7 +49,7 @@ pub trait GetStorage<Hash> {
 	) -> Result<Option<V>>;
 
 	/// Retrieve the key prefix for a storage map. This is the prefix needed for get_storage_keys_paged().
-	fn get_storage_map_key_prefix(
+	async fn get_storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -59,7 +58,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage value from a double map for the given keys: `first_double_map_key` and `second_double_map_key`.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
+	async fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -71,7 +70,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage value from the given `storage_key`.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_by_key<V: Decode>(
+	async fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
@@ -82,7 +81,7 @@ pub trait GetStorage<Hash> {
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_keys_paged(
+	async fn get_storage_keys_paged(
 		&self,
 		prefix: Option<StorageKey>,
 		count: u32,
@@ -93,7 +92,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the raw storage for the given `storage_key`.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_opaque_storage_by_key(
+	async fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Hash>,
@@ -102,7 +101,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage proof of the corresponding storage value.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_value_proof(
+	async fn get_storage_value_proof(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -112,7 +111,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage proof of the corresponding storage map value.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_map_proof<K: Encode>(
+	async fn get_storage_map_proof<K: Encode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -123,7 +122,7 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the storage proof of the corresponding storage double map value.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
+	async fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -135,15 +134,23 @@ pub trait GetStorage<Hash> {
 	/// Retrieve the proof of the corresponding storage entries.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	fn get_storage_proof_by_keys(
+	async fn get_storage_proof_by_keys(
 		&self,
 		keys: Vec<StorageKey>,
 		at_block: Option<Hash>,
 	) -> Result<Option<ReadProof<Hash>>>;
 
-	fn get_keys(&self, key: StorageKey, at_block: Option<Hash>) -> Result<Option<Vec<String>>>;
+	async fn get_keys(
+		&self,
+		key: StorageKey,
+		at_block: Option<Hash>,
+	) -> Result<Option<Vec<String>>>;
 
-	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str) -> Result<C>;
+	async fn get_constant<C: Decode>(
+		&self,
+		pallet: &'static str,
+		constant: &'static str,
+	) -> Result<C>;
 }
 
 impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
@@ -153,7 +160,7 @@ where
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	fn get_storage<V: Decode>(
+	async fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -161,10 +168,10 @@ where
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key(storagekey, at_block)
+		self.get_storage_by_key(storagekey, at_block).await
 	}
 
-	fn get_storage_map<K: Encode, V: Decode>(
+	async fn get_storage_map<K: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -173,10 +180,10 @@ where
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key(storagekey, at_block)
+		self.get_storage_by_key(storagekey, at_block).await
 	}
 
-	fn get_storage_map_key_prefix(
+	async fn get_storage_map_key_prefix(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -186,7 +193,7 @@ where
 			.map_err(|e| e.into())
 	}
 
-	fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
+	async fn get_storage_double_map<K: Encode, Q: Encode, V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -201,47 +208,51 @@ where
 			second_double_map_key,
 		)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_by_key(storagekey, at_block)
+		self.get_storage_by_key(storagekey, at_block).await
 	}
 
-	fn get_storage_by_key<V: Decode>(
+	async fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<V>> {
-		let s = self.get_opaque_storage_by_key(storage_key, at_block)?;
+		let s = self.get_opaque_storage_by_key(storage_key, at_block).await?;
 		match s {
 			Some(storage) => Ok(Some(Decode::decode(&mut storage.as_slice())?)),
 			None => Ok(None),
 		}
 	}
 
-	fn get_storage_keys_paged(
+	async fn get_storage_keys_paged(
 		&self,
 		storage_key_prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Vec<StorageKey>> {
-		let storage = block_on(self.client().request(
-			"state_getKeysPaged",
-			rpc_params![storage_key_prefix, count, start_key, at_block],
-		))?;
+		let storage = self
+			.client()
+			.request(
+				"state_getKeysPaged",
+				rpc_params![storage_key_prefix, count, start_key, at_block],
+			)
+			.await?;
 		Ok(storage)
 	}
 
-	fn get_opaque_storage_by_key(
+	async fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<Vec<u8>>> {
-		let storage: Option<StorageData> = block_on(
-			self.client().request("state_getStorage", rpc_params![storage_key, at_block]),
-		)?;
+		let storage: Option<StorageData> = self
+			.client()
+			.request("state_getStorage", rpc_params![storage_key, at_block])
+			.await?;
 		Ok(storage.map(|storage_data| storage_data.0))
 	}
 
-	fn get_storage_value_proof(
+	async fn get_storage_value_proof(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -249,10 +260,10 @@ where
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_proof_by_keys(vec![storagekey], at_block)
+		self.get_storage_proof_by_keys(vec![storagekey], at_block).await
 	}
 
-	fn get_storage_map_proof<K: Encode>(
+	async fn get_storage_map_proof<K: Encode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -261,10 +272,10 @@ where
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
-		self.get_storage_proof_by_keys(vec![storagekey], at_block)
+		self.get_storage_proof_by_keys(vec![storagekey], at_block).await
 	}
 
-	fn get_storage_double_map_proof<K: Encode, Q: Encode>(
+	async fn get_storage_double_map_proof<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
@@ -279,31 +290,38 @@ where
 			second_double_map_key,
 		)?;
 		info!("storage key is: 0x{}", hex::encode(&storage_key));
-		self.get_storage_proof_by_keys(vec![storage_key], at_block)
+		self.get_storage_proof_by_keys(vec![storage_key], at_block).await
 	}
 
-	fn get_storage_proof_by_keys(
+	async fn get_storage_proof_by_keys(
 		&self,
 		storage_keys: Vec<StorageKey>,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<ReadProof<Runtime::Hash>>> {
-		let proof = block_on(
-			self.client().request("state_getReadProof", rpc_params![storage_keys, at_block]),
-		)?;
+		let proof = self
+			.client()
+			.request("state_getReadProof", rpc_params![storage_keys, at_block])
+			.await?;
 		Ok(proof)
 	}
 
-	fn get_keys(
+	async fn get_keys(
 		&self,
 		storage_key: StorageKey,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<Vec<String>>> {
-		let keys =
-			block_on(self.client().request("state_getKeys", rpc_params![storage_key, at_block]))?;
+		let keys = self
+			.client()
+			.request("state_getKeys", rpc_params![storage_key, at_block])
+			.await?;
 		Ok(keys)
 	}
 
-	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str) -> Result<C> {
+	async fn get_constant<C: Decode>(
+		&self,
+		pallet: &'static str,
+		constant: &'static str,
+	) -> Result<C> {
 		let c = self
 			.metadata()
 			.pallet(pallet)?

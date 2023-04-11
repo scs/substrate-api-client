@@ -20,7 +20,7 @@ use ac_primitives::{BalancesConfig, ExtrinsicParams};
 pub trait GetBalance {
 	type Balance;
 
-	fn get_existential_deposit(&self) -> Result<Self::Balance>;
+	async fn get_existential_deposit(&self) -> Result<Self::Balance>;
 }
 
 impl<Signer, Client, Params, Runtime> GetBalance for Api<Signer, Client, Params, Runtime>
@@ -31,7 +31,7 @@ where
 {
 	type Balance = Runtime::Balance;
 
-	fn get_existential_deposit(&self) -> Result<Self::Balance> {
-		self.get_constant("Balances", "ExistentialDeposit")
+	async fn get_existential_deposit(&self) -> Result<Self::Balance> {
+		self.get_constant("Balances", "ExistentialDeposit").await
 	}
 }

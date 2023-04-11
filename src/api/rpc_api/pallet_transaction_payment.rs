@@ -20,19 +20,18 @@ use ac_primitives::{
 	RuntimeDispatchInfo,
 };
 use core::str::FromStr;
-use futures::executor::block_on;
 
 /// Interface to common calls of the substrate transaction payment pallet.
 pub trait GetTransactionPayment<Hash> {
 	type Balance;
 
-	fn get_fee_details(
+	async fn get_fee_details(
 		&self,
 		encoded_extrinsic: Bytes,
 		at_block: Option<Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>>;
 
-	fn get_payment_info(
+	async fn get_payment_info(
 		&self,
 		encoded_extrinsic: Bytes,
 		at_block: Option<Hash>,
@@ -49,15 +48,15 @@ where
 {
 	type Balance = Runtime::Balance;
 
-	fn get_fee_details(
+	async fn get_fee_details(
 		&self,
 		encoded_extrinsic: Bytes,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>> {
-		let details: Option<FeeDetails<NumberOrHex>> = block_on(
-			self.client()
-				.request("payment_queryFeeDetails", rpc_params![encoded_extrinsic, at_block]),
-		)?;
+		let details: Option<FeeDetails<NumberOrHex>> = self
+			.client()
+			.request("payment_queryFeeDetails", rpc_params![encoded_extrinsic, at_block])
+			.await?;
 
 		let details = match details {
 			Some(details) => Some(convert_fee_details(details)?),
@@ -66,15 +65,15 @@ where
 		Ok(details)
 	}
 
-	fn get_payment_info(
+	async fn get_payment_info(
 		&self,
 		encoded_extrinsic: Bytes,
 		at_block: Option<Runtime::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>> {
-		let res = block_on(
-			self.client()
-				.request("payment_queryInfo", rpc_params![encoded_extrinsic, at_block]),
-		)?;
+		let res = self
+			.client()
+			.request("payment_queryInfo", rpc_params![encoded_extrinsic, at_block])
+			.await?;
 		Ok(res)
 	}
 }

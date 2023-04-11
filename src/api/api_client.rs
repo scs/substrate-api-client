@@ -22,7 +22,6 @@ use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion, S
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
-use futures::executor::block_on;
 use log::{debug, info};
 
 /// Api to talk with substrate-nodes
@@ -178,14 +177,17 @@ where
 	Runtime: FrameSystemConfig,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
-	pub fn new(client: Client) -> Result<Self> {
+	pub async fn new(client: Client) -> Result<Self> {
 		let genesis_hash_future = Self::get_genesis_hash(&client);
 		let metadata_future = Self::get_metadata(&client);
 		let runtime_version_future = Self::get_runtime_version(&client);
 
-		let genesis_hash = block_on(genesis_hash_future)?;
-		let metadata = block_on(metadata_future)?;
-		let runtime_version = block_on(runtime_version_future)?;
+		let (genesis_hash, metadata, runtime_version) = futures::future::try_join3(
+			genesis_hash_future,
+			metadata_future,
+			runtime_version_future,
+		)
+		.await?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
@@ -194,12 +196,12 @@ where
 
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
-	pub fn update_runtime(&mut self) -> Result<()> {
+	pub async fn update_runtime(&mut self) -> Result<()> {
 		let metadata_future = Self::get_metadata(&self.client);
 		let runtime_version_future = Self::get_runtime_version(&self.client);
 
-		let metadata = block_on(metadata_future)?;
-		let runtime_version = block_on(runtime_version_future)?;
+		let (metadata, runtime_version) =
+			futures::future::try_join(metadata_future, runtime_version_future).await?;
 		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
 
@@ -223,9 +225,9 @@ where
 	}
 
 	/// Get nonce of self signer account.
-	pub fn get_nonce(&self) -> Result<Runtime::Index> {
+	pub async fn get_nonce(&self) -> Result<Runtime::Index> {
 		let account = self.signer_account().ok_or(Error::NoSigner)?;
-		self.get_account_nonce(account)
+		self.get_account_nonce(account).await
 	}
 }
 

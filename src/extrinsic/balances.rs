@@ -42,14 +42,14 @@ pub trait BalancesExtrinsics {
 	type Extrinsic<Call>;
 
 	/// Transfer some liquid free balance to another account.
-	fn balance_transfer_allow_death(
+	async fn balance_transfer_allow_death(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>;
 
 	///  Set the balances of a given account.
-	fn balance_force_set_balance(
+	async fn balance_force_set_balance(
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
@@ -69,7 +69,7 @@ where
 	type Extrinsic<Call> =
 		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
 
-	fn balance_transfer_allow_death(
+	async fn balance_transfer_allow_death(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
@@ -77,7 +77,7 @@ where
 		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
 	}
 
-	fn balance_force_set_balance(
+	async fn balance_force_set_balance(
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
