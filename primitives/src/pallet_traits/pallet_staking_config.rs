@@ -69,7 +69,7 @@ pub trait StakingConfig: FrameSystemConfig {
 	type WeightInfo;
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "staking-xt")]
 impl<T> StakingConfig for T
 where
 	T: pallet_staking::Config,
