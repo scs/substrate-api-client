@@ -17,11 +17,11 @@
 
 use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
-use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
 	ac_node_api::StaticEvent,
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{ExtrinsicSigner, SubstrateConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SystemApi,
 };
@@ -42,8 +42,13 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice_pair));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(ExtrinsicSigner::new(alice_pair));
 
 	let alice = AccountKeyring::Alice.to_account_id();
 

@@ -16,13 +16,14 @@
 //! Example to show how to get the account identity display name from the identity pallet.
 
 use frame_support::traits::Currency;
-use kitchensink_runtime::{Runtime as KitchensinkRuntime, Signature};
+use kitchensink_runtime::Runtime as KitchensinkRuntime;
 use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, UncheckedExtrinsicV4},
+	ac_primitives::{ExtrinsicSigner, SubstrateConfig, UncheckedExtrinsicV4},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
@@ -42,10 +43,13 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api =
-		Api::<_, _, AssetTipExtrinsicParams<KitchensinkRuntime>, KitchensinkRuntime>::new(client)
-			.unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, KitchensinkRuntime>::new(signer.clone()));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(signer.clone()));
 
 	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {

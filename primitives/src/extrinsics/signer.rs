@@ -21,8 +21,6 @@ use crate::config::Config;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use sp_core::Pair;
-use sp_core::{crypto::AccountId32, Pair};
-use sp_runtime::{traits::StaticLookup, MultiAddress};
 
 pub trait SignExtrinsic<AccountId: Clone + Encode> {
 	type Signature: Encode;
@@ -152,9 +150,8 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use node_template_runtime::{Runtime};
+	use crate::SubstrateConfig;
 	use sp_core::{sr25519, Pair};
-	use sp_keyring::AccountKeyring;
 
 	#[test]
 	fn test_extrinsic_signer_from_sr25519_pair() {
@@ -164,9 +161,8 @@ mod tests {
 		)
 		.unwrap();
 
-		let es_converted: ExtrinsicSigner<_, _, Runtime> = alice.clone().into();
-		let es_new =
-			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::new(alice.clone());
+		let es_converted: ExtrinsicSigner<SubstrateConfig, _> = alice.clone().into();
+		let es_new = ExtrinsicSigner::<SubstrateConfig, sr25519::Pair>::new(alice.clone());
 
 		assert_eq!(es_converted.signer.public(), es_new.signer.public());
 	}
@@ -180,14 +176,14 @@ mod tests {
 	// 		let signer2 = signer.clone();
 	// 	}
 
-//Todo: still needed?
+	//Todo: still needed?
 	/*
-	#[test]
-	fn test_static_extrinsic_signer_clone() {
-		let pair = AccountKeyring::Alice.pair();
-		let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
+	   #[test]
+	   fn test_static_extrinsic_signer_clone() {
+		   let pair = AccountKeyring::Alice.pair();
+		   let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
 
-		let _signer2 = signer.clone();
-	}
- */
+		   let _signer2 = signer.clone();
+	   }
+	*/
 }

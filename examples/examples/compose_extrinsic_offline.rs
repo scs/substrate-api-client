@@ -16,11 +16,11 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, Signature};
+use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
-use sp_runtime::{generic::Era, MultiAddress};
+use sp_runtime::{generic::Era, traits::GetRuntimeBlockType, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams},
+	ac_primitives::{ExtrinsicSigner, GenericAdditionalParams, SubstrateConfig},
 	rpc::JsonrpseeClient,
 	Api, GetHeader, SubmitAndWatch, XtStatus,
 };
@@ -38,8 +38,13 @@ async fn main() {
 	//
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(signer));
 
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

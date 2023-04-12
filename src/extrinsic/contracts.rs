@@ -102,9 +102,8 @@ pub trait ContractsExtrinsics {
 }
 
 #[cfg(feature = "std")]
-impl<T: Config, Signer, Client, Block> ContractsExtrinsics for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> ContractsExtrinsics for Api<T, Client, Block>
 where
-	Signer: SignExtrinsic<T::AccountId>,
 	Client: Request,
 	Compact<T::ContractBalance>: Encode + Clone,
 {
@@ -114,11 +113,11 @@ where
 	type Code = Vec<u8>;
 	type Data = Vec<u8>;
 	type Salt = Vec<u8>;
-	type Address = Signer::ExtrinsicAddress;
+	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
 	type Extrinsic<Call> = UncheckedExtrinsicV4<
 		Self::Address,
 		Call,
-		Signer::Signature,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
 		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
 	>;
 

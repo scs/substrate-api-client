@@ -15,14 +15,13 @@
 
 //! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
 
-use kitchensink_runtime::{Runtime, Signature};
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
 	sr25519,
 };
-use sp_runtime::MultiAddress;
+use sp_runtime::{traits::GetRuntimeBlockType, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{ExtrinsicSigner, SubstrateConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::TungsteniteRpcClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
@@ -41,8 +40,13 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = TungsteniteRpcClient::with_default_url(100);
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice.clone()));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(alice.clone()));
 
 	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

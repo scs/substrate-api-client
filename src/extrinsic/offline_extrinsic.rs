@@ -24,19 +24,16 @@ use ac_primitives::{
 };
 use codec::Encode;
 
-impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
-where
-	Signer: SignExtrinsic<T::AccountId>,
-{
+impl<T: Config, Client, Block> Api<T, Client, Block> {
 	/// Wrapper around the `compose_extrinsic_offline!` macro to be less verbose.
 	pub fn compose_extrinsic_offline<Call: Encode + Clone>(
 		&self,
 		call: Call,
 		nonce: T::Index,
 	) -> UncheckedExtrinsicV4<
-		Signer::ExtrinsicAddress,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress,
 		Call,
-		Signer::Signature,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
 		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
 	> {
 		match self.signer() {

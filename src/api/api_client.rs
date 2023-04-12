@@ -13,13 +13,12 @@
 
 use crate::{
 	api::error::{Error, Result},
-	config::Config,
 	rpc::Request,
 	GetAccountInformation,
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
-use ac_primitives::{Bytes, ExtrinsicParams, RuntimeVersion, SignExtrinsic};
+use ac_primitives::{Bytes, Config, ExtrinsicParams, RuntimeVersion, SignExtrinsic};
 use codec::Decode;
 use core::{convert::TryFrom, marker::PhantomData};
 use frame_metadata::RuntimeMetadataPrefixed;
@@ -33,12 +32,13 @@ use log::{debug, info};
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, substrate_config::SubstrateConfig
+///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, ac_primitives::SubstrateConfig
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
 /// use serde_json::{Value, json};
 /// use kitchensink_runtime::Runtime;
+/// use sp_runtime::traits::GetRuntimeBlockType;
 ///
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
@@ -77,12 +77,12 @@ use log::{debug, info};
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<SubstrateConfig, _, _,_,_>::new(client);
+/// let _api = Api::<SubstrateConfig, _, <kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>::new(client);
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<T: Config, Signer, Client, Block> {
-	signer: Option<Signer>,
+pub struct Api<T: Config, Client, Block> {
+	signer: Option<T::ExtrinsicSigner>,
 	genesis_hash: T::Hash,
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
@@ -92,7 +92,7 @@ pub struct Api<T: Config, Signer, Client, Block> {
 	_phantom: PhantomData<Block>,
 }
 
-impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block> {
+impl<T: Config, Client, Block> Api<T, Client, Block> {
 	/// Create a new api instance without any node interaction.
 	pub fn new_offline(
 		genesis_hash: T::Hash,
@@ -112,12 +112,12 @@ impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block> {
 	}
 
 	/// Set the api signer account.
-	pub fn set_signer(&mut self, signer: Signer) {
+	pub fn set_signer(&mut self, signer: T::ExtrinsicSigner) {
 		self.signer = Some(signer);
 	}
 
 	/// Get the private key pair of the api signer.
-	pub fn signer(&self) -> Option<&Signer> {
+	pub fn signer(&self) -> Option<&T::ExtrinsicSigner> {
 		self.signer.as_ref()
 	}
 
@@ -169,7 +169,7 @@ impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block> {
 	}
 }
 
-impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> Api<T, Client, Block>
 where
 	Client: Request,
 {
@@ -202,9 +202,8 @@ where
 	}
 }
 
-impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> Api<T, Client, Block>
 where
-	Signer: SignExtrinsic<T::AccountId>,
 	Client: Request,
 {
 	/// Get the public part of the api signer account.
@@ -222,7 +221,7 @@ where
 
 /// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
 /// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> Api<T, Client, Block>
 where
 	Client: Request,
 {
@@ -250,12 +249,12 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{
-		ac_primitives::{GenericAdditionalParams, PlainTipExtrinsicParams},
-		rpc::mocks::RpcClientMock,
+	use crate::rpc::mocks::RpcClientMock;
+	use ac_primitives::{
+		GenericAdditionalParams, GenericExtrinsicParams, PlainTip, PolkadotConfig, SubstrateConfig,
 	};
-	use kitchensink_runtime::Runtime;
-	use sp_core::{sr25519::Pair, H256};
+	use sp_core::H256;
+	use sp_runtime::traits::GetRuntimeBlockType;
 	use std::{
 		collections::{BTreeMap, HashMap},
 		fs,
@@ -266,7 +265,11 @@ mod tests {
 		runtime_version: RuntimeVersion,
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<Config, Pair, RpcClientMock, Runtime::RuntimeBlock> {
+	) -> Api<
+		PolkadotConfig,
+		RpcClientMock,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	> {
 		let client = RpcClientMock::new(data);
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}
@@ -291,7 +294,7 @@ mod tests {
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
 
-		let expected_params = PlainTipExtrinsicParams::<Runtime>::new(
+		let expected_params = GenericExtrinsicParams::<SubstrateConfig, PlainTip<u128>>::new(
 			runtime_version.spec_version,
 			runtime_version.transaction_version,
 			nonce,

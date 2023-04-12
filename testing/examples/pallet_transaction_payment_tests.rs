@@ -16,10 +16,10 @@
 //! Tests for the pallet transaction payment interface functions.
 
 use codec::Encode;
-use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{Config, SubstrateConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetBlock, GetTransactionPayment,
@@ -30,8 +30,13 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice_pair));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(<SubstrateConfig as Config>::ExtrinsicSigner::new(alice_pair));
 
 	let bob = AccountKeyring::Bob.to_account_id();
 

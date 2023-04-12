@@ -51,15 +51,14 @@ pub trait UtilityExtrinsics {
 	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
-impl<T: Config, Signer, Client, Block> UtilityExtrinsics for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> UtilityExtrinsics for Api<T, Client, Block>
 where
-	Signer: SignExtrinsic<T::AccountId>,
 	Client: Request,
 {
 	type Extrinsic<Call> = UncheckedExtrinsicV4<
-		Signer::ExtrinsicAddress,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress,
 		Call,
-		Signer::Signature,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
 		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
 	>;
 

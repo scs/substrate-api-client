@@ -16,10 +16,9 @@
 //! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
 //! debugging tool.
 
-use kitchensink_runtime::Runtime;
-use sp_core::sr25519;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_primitives::PlainTipExtrinsicParams,
+	ac_primitives::PolkadotConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetBlock, GetHeader, SubscribeChain,
 };
@@ -30,8 +29,12 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api =
-		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let api = Api::<
+		PolkadotConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
 
 	println!("Genesis block: \n {:?} \n", api.get_block_by_num(Some(0)).unwrap());
 

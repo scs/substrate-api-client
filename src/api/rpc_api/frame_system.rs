@@ -37,8 +37,7 @@ pub trait GetAccountInformation<AccountId> {
 	fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
 }
 
-impl<T: Config, Signer, Client, Block> GetAccountInformation<T::AccountId>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> GetAccountInformation<T::AccountId> for Api<T, Client, Block>
 where
 	Client: Request,
 {
@@ -63,7 +62,7 @@ where
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 
-	fn get_account_nonce(&self, account: &Runtime::AccountId) -> Result<Runtime::Index> {
+	fn get_account_nonce(&self, account: &T::AccountId) -> Result<T::Index> {
 		self.get_account_info(account)
 			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
@@ -107,7 +106,7 @@ pub trait SystemApi {
 	fn get_system_local_listen_addresses(&self) -> Result<Vec<String>>;
 }
 
-impl<T: Config, Signer, Client, Block> SystemApi for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> SystemApi for Api<T, Client, Block>
 where
 	Client: Request,
 {

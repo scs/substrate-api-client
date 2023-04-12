@@ -29,7 +29,7 @@ pub trait GetHeader<Hash> {
 	fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
-impl<T: Config, Signer, Client, Block> GetHeader<T::Hash> for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> GetHeader<T::Hash> for Api<T, Client, Block>
 where
 	Client: Request,
 {
@@ -67,18 +67,18 @@ pub trait GetBlock<Number, Hash> {
 		number: Option<Number>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
-impl<T: Config, Signer, Client, Block>
-	GetBlock<<T::Header as crate::config::Header>::Number, T::Hash> for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block>
+	GetBlock<<T::Header as ac_primitives::config::Header>::Number, T::Hash> for Api<T, Client, Block>
 where
 	Client: Request,
 	Block: BlockTrait + DeserializeOwned,
-	<T::Header as crate::config::Header>::Number: Serialize,
+	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	type Block = Block;
 
 	fn get_block_hash(
 		&self,
-		number: Option<<T::Header as crate::config::Header>::Number>,
+		number: Option<<T::Header as ac_primitives::config::Header>::Number>,
 	) -> Result<Option<T::Hash>> {
 		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
 		Ok(block_hash)
@@ -90,7 +90,7 @@ where
 
 	fn get_block_by_num(
 		&self,
-		number: Option<<T::Header as crate::config::Header>::Number>,
+		number: Option<<T::Header as ac_primitives::config::Header>::Number>,
 	) -> Result<Option<Block>> {
 		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
@@ -102,7 +102,7 @@ where
 
 	fn get_signed_block_by_num(
 		&self,
-		number: Option<<T::Header as crate::config::Header>::Number>,
+		number: Option<<T::Header as ac_primitives::config::Header>::Number>,
 	) -> Result<Option<SignedBlock<Block>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
@@ -117,12 +117,11 @@ where
 	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>>;
 }
 
-impl<T: Config, Signer, Client, Block> SubscribeChain<Client, T::Hash>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> SubscribeChain<Client, T::Hash> for Api<T, Client, Block>
 where
 	Client: Subscribe,
 	Block: BlockTrait + DeserializeOwned,
-	<T::Header as crate::config::Header>::Number: Serialize,
+	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	type Header = T::Header;
 

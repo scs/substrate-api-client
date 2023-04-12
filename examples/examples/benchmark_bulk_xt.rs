@@ -18,13 +18,12 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
-use kitchensink_runtime::{AccountId, BalancesCall, Runtime, RuntimeCall, Signature};
+use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
 use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_primitives::{
-		AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
-	},
+	ac_primitives::{ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, SubstrateConfig},
 	rpc::JsonrpseeClient,
 	Api, SubmitExtrinsic,
 };
@@ -32,7 +31,7 @@ use substrate_api_client::{
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateConfig, Pair>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
@@ -48,7 +47,12 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
 	api.set_signer(ExtrinsicSigner::new(signer));
 
 	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();

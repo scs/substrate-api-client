@@ -11,10 +11,11 @@
 //! This file is mostly subxt:
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/mod.rs
 
-use crate::extrinsic_params;
+use crate::{extrinsic_params, SignExtrinsic};
 use codec::{Decode, Encode, FullCodec};
 use core::{fmt::Debug, marker::PhantomData};
 use serde::{de::DeserializeOwned, Serialize};
+use sp_core::Pair;
 use sp_runtime::traits::{AtLeast32Bit, AtLeast32BitUnsigned, MaybeSerializeDeserialize};
 
 /// Runtime types.
@@ -39,13 +40,17 @@ pub trait Config {
 		+ PartialEq;
 
 	/// The account ID type.
-	type AccountId: Debug + Clone + Encode + MaybeSerializeDeserialize;
+	type AccountId: Debug
+		+ Clone
+		+ Encode
+		+ MaybeSerializeDeserialize
+		+ From<<Self::CryptoKey as Pair>::Public>;
 
 	/// The address type.
 	type Address: Debug + Clone + Encode + From<Self::AccountId>; //type Lookup: StaticLookup<Target = Self::AccountId>;
 
 	/// The signature type.
-	type Signature: Debug + Encode;
+	type Signature: Debug + Encode + From<<Self::CryptoKey as Pair>::Signature>;
 
 	/// The hashing system (algorithm) being used in the runtime (e.g. Blake2).
 	type Hasher: Debug + Hasher<Output = Self::Hash>;
@@ -59,6 +64,14 @@ pub trait Config {
 	/// This type defines the extrinsic extra and additional parameters.
 	type ExtrinsicParams: extrinsic_params::ExtrinsicParams<Self::Index, Self::Hash>;
 
+	/// The cryptographic PKI key pair type used to sign the extrinsic
+	type CryptoKey: Pair;
+
+	/// This extrinsic signer.
+	type ExtrinsicSigner: SignExtrinsic<Self::AccountId>;
+
+	//type Block: BlockTrait + DeserializeOwned;
+
 	/// The balance type.
 	type Balance: Debug
 		+ Decode
@@ -71,6 +84,16 @@ pub trait Config {
 
 	/// The balance type of the contract pallet.
 	type ContractBalance: Debug
+		+ Decode
+		+ Encode
+		+ AtLeast32BitUnsigned
+		+ Default
+		+ Copy
+		+ Serialize
+		+ DeserializeOwned;
+
+	/// The balance type of the staking pallet.
+	type StakingBalance: Debug
 		+ Decode
 		+ Encode
 		+ AtLeast32BitUnsigned
@@ -118,11 +141,12 @@ pub trait Header: Sized + Encode {
 /// # Example
 ///
 /// ```
-/// use subxt::config::{ SubstrateConfig, WithExtrinsicParams, polkadot::PolkadotExtrinsicParams };
+/// use ac_primitives::{ SubstrateConfig, WithExtrinsicParams, PolkadotExtrinsicParams };
 ///
 /// // This is how PolkadotConfig is implemented:
 /// type PolkadotConfig = WithExtrinsicParams<SubstrateConfig, PolkadotExtrinsicParams<SubstrateConfig>>;
 /// ```
+#[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct WithExtrinsicParams<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> {
 	_marker: PhantomData<(T, E)>,
 }
@@ -139,6 +163,10 @@ impl<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> Config
 	type Header = T::Header;
 	type AccountData = T::AccountData;
 	type ExtrinsicParams = E;
+	type CryptoKey = T::CryptoKey;
+	type ExtrinsicSigner = T::ExtrinsicSigner;
+	//type Block = T::Block;
 	type Balance = T::Balance;
 	type ContractBalance = T::ContractBalance;
+	type StakingBalance = T::StakingBalance;
 }

@@ -18,7 +18,10 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{EventDetails, EventRecord, Events, Phase};
-use ac_primitives::{StorageChangeSet, config::{Config, Hasher}};
+use ac_primitives::{
+	config::{Config, Hasher},
+	StorageChangeSet,
+};
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
@@ -42,12 +45,11 @@ where
 	) -> Result<Vec<EventDetails>>;
 }
 
-impl<T: Config, Signer, Client, Block> FetchEvents<Client, T::Hash>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> FetchEvents<Client, T::Hash> for Api<T, Client, Block>
 where
 	Client: Request,
 	Block: BlockTrait + DeserializeOwned,
-	<T::Header as crate::config::Header>::Number: Serialize,
+	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	fn fetch_events_from_block(&self, block_hash: T::Hash) -> Result<Events<T::Hash>> {
 		let key = crate::storage_key("System", "Events");
@@ -132,8 +134,7 @@ where
 	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
-impl<T: Config, Signer, Client, Block> SubscribeEvents<Client, T::Hash>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> SubscribeEvents<Client, T::Hash> for Api<T, Client, Block>
 where
 	Client: Subscribe,
 {
@@ -149,11 +150,11 @@ where
 	}
 }
 
-impl<T: Config, Signer, Client, Block> Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> Api<T, Client, Block>
 where
 	Client: Request,
 	Block: BlockTrait + DeserializeOwned,
-	<T::Header as crate::config::Header>::Number: Serialize,
+	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
 	fn retrieve_extrinsic_index_from_block(
@@ -204,14 +205,18 @@ mod tests {
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
 	use ac_primitives::{
-		AssetTipExtrinsicParams, Bytes, FrameSystemConfig, RuntimeVersion, SignedBlock, StorageData,
+		Bytes, FrameSystemConfig, PolkadotConfig, RuntimeVersion, SignedBlock, StorageData,
 	};
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
-	use sp_core::{crypto::Ss58Codec, sr25519, sr25519::Pair, H256};
-	use sp_runtime::{generic::Block, AccountId32, MultiAddress};
+	use sp_core::{crypto::Ss58Codec, sr25519, H256};
+	use sp_runtime::{
+		generic::Block,
+		traits::{GetRuntimeBlockType, Hash},
+		AccountId32, MultiAddress,
+	};
 	use std::{collections::HashMap, fs};
 
 	#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
@@ -223,7 +228,11 @@ mod tests {
 	fn create_mock_api(
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<Config, Pair, RpcClientMock, Runtime::RuntimeBlock> {
+	) -> Api<
+		PolkadotConfig,
+		RpcClientMock,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	> {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();

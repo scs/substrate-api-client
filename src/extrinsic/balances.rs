@@ -57,18 +57,17 @@ pub trait BalancesExtrinsics {
 	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>;
 }
 
-impl<T: Config, Signer, Client, Block> BalancesExtrinsics for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> BalancesExtrinsics for Api<T, Client, Block>
 where
-	Signer: SignExtrinsic<T::AccountId>,
 	Client: Request,
 	Compact<T::Balance>: Encode,
 {
 	type Balance = T::Balance;
-	type Address = Signer::ExtrinsicAddress;
+	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
 	type Extrinsic<Call> = UncheckedExtrinsicV4<
 		Self::Address,
 		Call,
-		Signer::Signature,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
 		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
 	>;
 

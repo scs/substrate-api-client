@@ -23,7 +23,7 @@ pub trait GetBalance {
 	fn get_existential_deposit(&self) -> Result<Self::Balance>;
 }
 
-impl<T: Config, Signer, Client, Block> GetBalance for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> GetBalance for Api<T, Client, Block>
 where
 	Client: Request,
 {

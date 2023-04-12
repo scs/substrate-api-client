@@ -18,13 +18,14 @@
 
 use log::debug;
 use sp_core::H256 as Hash;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api, SubscribeEvents,
+	ac_primitives::PolkadotConfig, rpc::JsonrpseeClient, Api, SubscribeEvents,
 };
 
 // This module depends on the specific node runtime.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
-use kitchensink_runtime::{Runtime, RuntimeEvent};
+use kitchensink_runtime::RuntimeEvent;
 
 #[tokio::main]
 async fn main() {
@@ -32,7 +33,12 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let api = Api::<
+		PolkadotConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
 
 	println!("Subscribe to events");
 	let mut subscription = api.subscribe_events().unwrap();

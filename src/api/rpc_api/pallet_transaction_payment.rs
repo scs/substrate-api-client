@@ -16,8 +16,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{
-	Bytes, FeeDetails, InclusionFee, NumberOrHex,
-	RuntimeDispatchInfo, config::Config,
+	config::Config, Bytes, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo,
 };
 use core::str::FromStr;
 
@@ -38,8 +37,7 @@ pub trait GetTransactionPayment<Hash> {
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
-impl<T: Config, Signer, Client, Block> GetTransactionPayment<T::Hash>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> GetTransactionPayment<T::Hash> for Api<T, Client, Block>
 where
 	Client: Request,
 	T::Balance: TryFrom<NumberOrHex> + FromStr,

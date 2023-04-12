@@ -12,12 +12,11 @@
 */
 
 use codec::{Decode, Encode};
-use kitchensink_runtime::{Runtime, Signature};
 use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
-use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
+use sp_runtime::{app_crypto::Ss58Codec, traits::GetRuntimeBlockType, AccountId32};
 use substrate_api_client::{
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{ExtrinsicSigner, SubstrateConfig},
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
@@ -50,8 +49,13 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(alice.clone()));
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
 	let validator_account = AccountKeyring::Alice.to_account_id();
@@ -140,10 +144,9 @@ pub fn get_last_reward_received_for(
 	account: &AccountId32,
 	current_era: EraIndex,
 	api: &substrate_api_client::Api<
-		ExtrinsicSigner<sp_core::sr25519::Pair, Signature, Runtime>,
+		SubstrateConfig,
 		JsonrpseeClient,
-		AssetTipExtrinsicParams<Runtime>,
-		Runtime,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>,
 ) -> Option<u32> {
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();

@@ -14,12 +14,11 @@
 */
 
 use codec::Decode;
-use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
-use sp_runtime::{AccountId32 as AccountId, MultiAddress};
+use sp_runtime::{traits::GetRuntimeBlockType, AccountId32 as AccountId, MultiAddress};
 use substrate_api_client::{
 	ac_node_api::StaticEvent,
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{ExtrinsicSigner, SubstrateConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatchUntilSuccess,
@@ -46,8 +45,13 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice_signer));
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(alice_signer));
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;

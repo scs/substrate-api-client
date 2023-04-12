@@ -15,10 +15,9 @@
 
 //! Tests for the chain rpc interface functions.
 
-use kitchensink_runtime::Runtime;
-use sp_keyring::AccountKeyring;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_primitives::AssetTipExtrinsicParams,
+	ac_primitives::SubstrateConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetBlock, GetHeader, SubscribeChain,
 };
@@ -27,9 +26,12 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(alice_pair);
+	let api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
 
 	// GetHeader
 	let finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

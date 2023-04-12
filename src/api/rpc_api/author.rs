@@ -19,7 +19,10 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{Bytes, ExtrinsicParams, UncheckedExtrinsicV4, config::{Config, Hasher}};
+use ac_primitives::{
+	config::{Config, Hasher},
+	Bytes, UncheckedExtrinsicV4,
+};
 use codec::Encode;
 use log::*;
 use serde::{de::DeserializeOwned, Serialize};
@@ -49,7 +52,7 @@ pub trait SubmitExtrinsic {
 	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash>;
 }
 
-impl<T: Config, Signer, Client, Block> SubmitExtrinsic for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> SubmitExtrinsic for Api<T, Client, Block>
 where
 	Client: Request,
 {
@@ -177,8 +180,7 @@ where
 	) -> Result<ExtrinsicReport<Hash>>;
 }
 
-impl<T: Config, Signer, Client, Block> SubmitAndWatch<Client, T::Hash>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> SubmitAndWatch<Client, T::Hash> for Api<T, Client, Block>
 where
 	Client: Subscribe,
 {
@@ -254,12 +256,11 @@ where
 	}
 }
 
-impl<T: Config, Signer, Client, Block> SubmitAndWatchUntilSuccess<Client, T::Hash>
-	for Api<T, Signer, Client, Block>
+impl<T: Config, Client, Block> SubmitAndWatchUntilSuccess<Client, T::Hash> for Api<T, Client, Block>
 where
 	Client: Subscribe + Request,
 	Block: BlockTrait + DeserializeOwned,
-	<T::Header as crate::config::Header>::Number: Serialize,
+	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,

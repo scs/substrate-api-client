@@ -17,13 +17,14 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use codec::Compact;
-use kitchensink_runtime::{AccountId, Runtime, Signature};
+use kitchensink_runtime::AccountId;
 use sp_core::sr25519::Pair;
 use sp_keyring::AccountKeyring;
+use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{
-		AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, SubstrateConfig,
 		UncheckedExtrinsicV4,
 	},
 	rpc::JsonrpseeClient,
@@ -33,7 +34,7 @@ use substrate_api_client::{
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateConfig, Pair>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
@@ -47,7 +48,12 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<
+		SubstrateConfig,
+		_,
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	>::new(client)
+	.unwrap();
 	api.set_signer(ExtrinsicSigner::new(sudoer));
 
 	// Set the recipient of newly issued funds.
