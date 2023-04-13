@@ -28,8 +28,9 @@ pub trait GetHeader<Hash> {
 	fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
-impl<T: Config, Client> GetHeader<T::Hash> for Api<T, Client>
+impl<T, Client> GetHeader<T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	type Header = T::Header;
@@ -66,9 +67,10 @@ pub trait GetBlock<Number, Hash> {
 		number: Option<Number>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
-impl<T: Config, Client> GetBlock<<T::Header as ac_primitives::config::Header>::Number, T::Hash>
+impl<T, Client> GetBlock<<T::Header as ac_primitives::config::Header>::Number, T::Hash>
 	for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
@@ -115,8 +117,9 @@ where
 	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>>;
 }
 
-impl<T: Config, Client> SubscribeChain<Client, T::Hash> for Api<T, Client>
+impl<T, Client> SubscribeChain<Client, T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {

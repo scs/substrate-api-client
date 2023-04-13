@@ -142,8 +142,9 @@ pub trait StakingExtrinsics {
 	fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall>;
 }
 
-impl<T: Config, Client> StakingExtrinsics for Api<T, Client>
+impl<T, Client> StakingExtrinsics for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 	Compact<T::StakingBalance>: Encode,
 {

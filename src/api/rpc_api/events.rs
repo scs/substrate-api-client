@@ -45,8 +45,9 @@ where
 	) -> Result<Vec<EventDetails>>;
 }
 
-impl<T: Config, Client> FetchEvents<Client, T::Hash> for Api<T, Client>
+impl<T, Client> FetchEvents<Client, T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
@@ -133,8 +134,9 @@ where
 	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
-impl<T: Config, Client> SubscribeEvents<Client, T::Hash> for Api<T, Client>
+impl<T, Client> SubscribeEvents<Client, T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
 {
 	fn subscribe_events(
@@ -149,8 +151,9 @@ where
 	}
 }
 
-impl<T: Config, Client> Api<T, Client>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {

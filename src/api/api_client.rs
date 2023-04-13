@@ -167,8 +167,9 @@ impl<T: Config, Client> Api<T, Client> {
 	}
 }
 
-impl<T: Config, Client> Api<T, Client>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
@@ -200,8 +201,9 @@ where
 	}
 }
 
-impl<T: Config, Client> Api<T, Client>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	/// Get the public part of the api signer account.
@@ -219,8 +221,9 @@ where
 
 /// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
 /// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<T: Config, Client> Api<T, Client>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	/// Get the genesis hash from node via websocket query.

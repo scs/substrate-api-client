@@ -37,8 +37,9 @@ pub trait GetTransactionPayment<Hash> {
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
-impl<T: Config, Client> GetTransactionPayment<T::Hash> for Api<T, Client>
+impl<T, Client> GetTransactionPayment<T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 	T::Balance: TryFrom<NumberOrHex> + FromStr,
 {

@@ -147,8 +147,9 @@ impl<Tip: Default, Hash> Default for GenericAdditionalParams<Tip, Hash> {
 	}
 }
 
-impl<T: Config, Tip> ExtrinsicParams<T::Index, T::Hash> for GenericExtrinsicParams<T, Tip>
+impl<T, Tip> ExtrinsicParams<T::Index, T::Hash> for GenericExtrinsicParams<T, Tip>
 where
+	T: Config,
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
 	T::Index: Copy + Default + Encode,

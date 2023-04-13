@@ -51,8 +51,9 @@ pub trait UtilityExtrinsics {
 	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
-impl<T: Config, Client> UtilityExtrinsics for Api<T, Client>
+impl<T, Client> UtilityExtrinsics for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	type Extrinsic<Call> = UncheckedExtrinsicV4<

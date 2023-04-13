@@ -37,8 +37,9 @@ pub trait GetAccountInformation<AccountId> {
 	fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
 }
 
-impl<T: Config, Client> GetAccountInformation<T::AccountId> for Api<T, Client>
+impl<T, Client> GetAccountInformation<T::AccountId> for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	type Index = T::Index;
@@ -106,8 +107,9 @@ pub trait SystemApi {
 	fn get_system_local_listen_addresses(&self) -> Result<Vec<String>>;
 }
 
-impl<T: Config, Client> SystemApi for Api<T, Client>
+impl<T, Client> SystemApi for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	type ChainType = ac_primitives::types::ChainType;

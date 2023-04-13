@@ -39,8 +39,9 @@ pub trait SignExtrinsic<AccountId: Clone + Encode> {
 }
 
 #[derive(Encode, Decode, Clone, PartialEq)]
-pub struct ExtrinsicSigner<T: Config, Signer>
+pub struct ExtrinsicSigner<T, Signer>
 where
+	T: Config,
 	Signer: Pair,
 {
 	signer: Signer,
@@ -49,8 +50,9 @@ where
 	_phantom: PhantomData<T::Signature>,
 }
 
-impl<T: Config, Signer> ExtrinsicSigner<T, Signer>
+impl<T, Signer> ExtrinsicSigner<T, Signer>
 where
+	T: Config,
 	Signer: Pair,
 	T::AccountId: From<Signer::Public>,
 {
@@ -65,8 +67,9 @@ where
 	}
 }
 
-impl<T: Config, Signer> SignExtrinsic<T::AccountId> for ExtrinsicSigner<T, Signer>
+impl<T, Signer> SignExtrinsic<T::AccountId> for ExtrinsicSigner<T, Signer>
 where
+	T: Config,
 	Signer: Pair,
 	T::Signature: From<Signer::Signature> + Encode,
 {
@@ -86,8 +89,9 @@ where
 	}
 }
 
-impl<T: Config, Signer> From<Signer> for ExtrinsicSigner<T, Signer>
+impl<T, Signer> From<Signer> for ExtrinsicSigner<T, Signer>
 where
+	T: Config,
 	Signer: Pair,
 	T::AccountId: From<Signer::Public>,
 {

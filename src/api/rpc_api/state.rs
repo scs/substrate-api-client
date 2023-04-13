@@ -146,8 +146,9 @@ pub trait GetStorage<Hash> {
 	fn get_constant<C: Decode>(&self, pallet: &'static str, constant: &'static str) -> Result<C>;
 }
 
-impl<T: Config, Client> GetStorage<T::Hash> for Api<T, Client>
+impl<T, Client> GetStorage<T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
 {
 	fn get_storage<V: Decode>(
@@ -321,8 +322,9 @@ where
 	) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
 }
 
-impl<T: Config, Client> SubscribeState<Client, T::Hash> for Api<T, Client>
+impl<T, Client> SubscribeState<Client, T::Hash> for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
 {
 	fn subscribe_state(
