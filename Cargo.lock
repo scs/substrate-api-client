@@ -18,7 +18,6 @@ version = "0.3.0"
 dependencies = [
  "ac-primitives",
  "log",
- "parity-scale-codec",
  "sp-application-crypto",
  "sp-core",
  "sp-runtime",
@@ -73,7 +72,6 @@ name = "ac-primitives"
 version = "0.6.0"
 dependencies = [
  "frame-system",
- "hex",
  "impl-serde",
  "node-template-runtime",
  "pallet-assets",

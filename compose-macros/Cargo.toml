@@ -11,7 +11,6 @@ categories = ["no-std"]
 
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 log = { version = "0.4.14", default-features = false }
 
 # substrate
@@ -27,7 +26,6 @@ ac-primitives = { path = "../primitives", default-features = false }
 [features]
 default = ["std"]
 std = [
-    "codec/std",
     "log/std",
     # substrate
     "sp-core/std",

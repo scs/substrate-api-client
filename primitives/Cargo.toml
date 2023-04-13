@@ -12,7 +12,6 @@ categories = ["no-std"]
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
-hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 impl-serde = { version = "0.4", default-features = false }
 primitive-types = { version = "0.12.1", default-features = false, features = ["serde_no_std", "scale-info"] }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
@@ -41,7 +40,6 @@ sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "ma
 default = ["std"]
 std = [
     "codec/std",
-    "hex/std",
     "primitive-types/std",
     "scale-info/std",
     "serde/std",
