@@ -22,8 +22,6 @@
 // re-export for macro resolution
 pub use ac_primitives as primitives;
 pub use log;
-pub use sp_core;
-pub use sp_runtime;
 
 mod rpc;
 
