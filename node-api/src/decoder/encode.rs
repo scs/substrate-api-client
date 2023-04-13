@@ -243,7 +243,7 @@ fn encode_variant_value<T>(
 		_ => return Err(EncodeError::WrongShape { actual: value, expected: type_id }),
 	};
 
-	let variant_type = ty.variants.iter().find(|v| &v.name == &variant.name);
+	let variant_type = ty.variants.iter().find(|v| v.name == variant.name);
 
 	let variant_type = match variant_type {
 		None => return Err(EncodeError::VariantNotFound { actual: variant, expected: type_id }),
