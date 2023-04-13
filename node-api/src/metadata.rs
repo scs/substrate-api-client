@@ -65,9 +65,11 @@ pub enum MetadataError {
 	IncompatibleMetadata,
 }
 
+/// Metadata wrapper around the runtime metadata. Offers some extra features,
+/// such as direct pallets, events and error access.
 #[derive(Clone, Debug, Encode, Decode)]
 pub struct Metadata {
-	pub metadata: RuntimeMetadataLastVersion,
+	pub runtime_metadata: RuntimeMetadataLastVersion,
 	pub pallets: BTreeMap<String, PalletMetadata>,
 	pub events: BTreeMap<(u8, u8), EventMetadata>,
 	pub errors: BTreeMap<(u8, u8), ErrorMetadata>,
@@ -145,26 +147,26 @@ impl Metadata {
 
 	/// Return the type registry embedded within the metadata.
 	pub fn types(&self) -> &PortableRegistry {
-		&self.metadata.types
+		&self.runtime_metadata.types
 	}
 
 	/// Resolve a type definition.
 	pub fn resolve_type(&self, id: u32) -> Option<&Type<PortableForm>> {
-		self.metadata.types.resolve(id)
+		self.runtime_metadata.types.resolve(id)
 	}
 
 	/// Return the runtime metadata.
 	pub fn runtime_metadata(&self) -> &RuntimeMetadataLastVersion {
-		&self.metadata
+		&self.runtime_metadata
 	}
 
 	#[cfg(feature = "std")]
-	pub fn pretty_format<Metadata: Serialize>(metadata: &Metadata) -> Option<String> {
+	pub fn pretty_format(&self) -> Result<String, std::string::FromUtf8Error> {
 		let buf = Vec::new();
 		let formatter = serde_json::ser::PrettyFormatter::with_indent(b" ");
 		let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
-		metadata.serialize(&mut ser).unwrap();
-		String::from_utf8(ser.into_inner()).ok()
+		self.runtime_metadata.serialize(&mut ser).unwrap();
+		String::from_utf8(ser.into_inner())
 	}
 }
 
@@ -445,7 +447,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			.find(|ty| ty.ty().path().segments() == ["sp_runtime", "DispatchError"])
 			.map(|ty| ty.id());
 
-		Ok(Metadata { metadata, pallets, events, errors, dispatch_error_ty })
+		Ok(Metadata { runtime_metadata: metadata, pallets, events, errors, dispatch_error_ty })
 	}
 }
 
