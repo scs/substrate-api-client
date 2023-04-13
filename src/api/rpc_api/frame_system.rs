@@ -22,6 +22,7 @@ use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageKey}
 use alloc::{string::String, vec::Vec};
 use log::*;
 
+#[maybe_async::maybe_async(?Send)]
 pub trait GetAccountInformation<AccountId> {
 	type Index;
 	type AccountData;
@@ -37,6 +38,7 @@ pub trait GetAccountInformation<AccountId> {
 	async fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
 	for Api<Signer, Client, Params, Runtime>
 where
@@ -76,6 +78,7 @@ where
 }
 
 /// Helper functions for some common SystemApi function.
+#[maybe_async::maybe_async(?Send)]
 pub trait SystemApi {
 	type ChainType;
 	type Properties;
@@ -113,6 +116,7 @@ pub trait SystemApi {
 	async fn get_system_local_listen_addresses(&self) -> Result<Vec<String>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> SystemApi for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,

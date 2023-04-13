@@ -42,6 +42,7 @@ pub use error::{Error, Result};
 pub mod mocks;
 
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
+#[maybe_async::maybe_async(?Send)]
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
 	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;

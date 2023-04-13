@@ -35,8 +35,9 @@ impl RpcClientMock {
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl Request for RpcClientMock {
-	fn request<R: DeserializeOwned>(&self, method: &str, _params: RpcParams) -> Result<R> {
+	async fn request<R: DeserializeOwned>(&self, method: &str, _params: RpcParams) -> Result<R> {
 		let lock = self.state.read().unwrap();
 		let response = lock.get(method).unwrap();
 		let deserialized_value: R = serde_json::from_str(response).unwrap();

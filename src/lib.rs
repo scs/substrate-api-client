@@ -16,7 +16,6 @@
 */
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(error_in_core)]
-#![feature(async_fn_in_trait)]
 
 extern crate alloc;
 

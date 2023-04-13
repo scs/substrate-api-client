@@ -29,6 +29,7 @@ pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
 
 /// Simple extrinsic submission without any subscription.
+#[maybe_async::maybe_async(?Send)]
 pub trait SubmitExtrinsic {
 	type Hash;
 
@@ -49,6 +50,7 @@ pub trait SubmitExtrinsic {
 	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> SubmitExtrinsic for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
@@ -78,6 +80,7 @@ where
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 pub trait SubmitAndWatch<Client, Hash>
 where
 	Client: Subscribe,
@@ -136,6 +139,7 @@ where
 	) -> Result<ExtrinsicReport<Hash>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 pub trait SubmitAndWatchUntilSuccess<Client, Hash>
 where
 	Client: Subscribe,
@@ -179,6 +183,7 @@ where
 	) -> Result<ExtrinsicReport<Hash>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
@@ -261,6 +266,7 @@ where
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where

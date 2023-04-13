@@ -64,6 +64,7 @@ pub type ForceNoEraCall = CallIndex;
 pub type SetPayeeCall<Address> = (CallIndex, Address);
 pub type SetValidatorCountCall = (CallIndex, u32);
 
+#[maybe_async::maybe_async(?Send)]
 pub trait StakingExtrinsics {
 	type Balance;
 	type RewardDestination;
@@ -149,6 +150,7 @@ pub trait StakingExtrinsics {
 	async fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> StakingExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
@@ -170,53 +172,61 @@ where
 		value: Self::Balance,
 		payee: Self::RewardDestination,
 	) -> Self::Extrinsic<BondCall<Self::Address, Self::Balance>> {
-		compose_extrinsic!(self, STAKING_MODULE, BOND, controller, Compact(value), payee)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, BOND, controller, Compact(value), payee)
 	}
 
 	async fn staking_bond_extra(
 		&self,
 		value: Self::Balance,
 	) -> Self::Extrinsic<BondExtraCall<Self::Balance>> {
-		compose_extrinsic!(self, STAKING_MODULE, BOND_EXTRA, Compact(value))
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, BOND_EXTRA, Compact(value))
 	}
 
 	async fn staking_unbond(
 		&self,
 		value: Self::Balance,
 	) -> Self::Extrinsic<UnbondCall<Self::Balance>> {
-		compose_extrinsic!(self, STAKING_MODULE, UNBOND, Compact(value))
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, UNBOND, Compact(value))
 	}
 
 	async fn staking_rebond(
 		&self,
 		value: Self::Balance,
 	) -> Self::Extrinsic<RebondCall<Self::Balance>> {
-		compose_extrinsic!(self, STAKING_MODULE, REBOND, Compact(value))
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, REBOND, Compact(value))
 	}
 
 	async fn staking_withdraw_unbonded(
 		&self,
 		num_slashing_spans: u32,
 	) -> Self::Extrinsic<WithdrawUnbondedCall> {
-		compose_extrinsic!(self, STAKING_MODULE, WITHDRAW_UNBONDED, num_slashing_spans)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, WITHDRAW_UNBONDED, num_slashing_spans)
 	}
 
 	async fn staking_nominate(
 		&self,
 		targets: Vec<Self::Address>,
 	) -> Self::Extrinsic<NominateCall<Self::Address>> {
-		compose_extrinsic!(self, STAKING_MODULE, NOMINATE, targets)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, NOMINATE, targets)
 	}
 
 	async fn staking_chill(&self) -> Self::Extrinsic<ChillCall> {
-		compose_extrinsic!(self, STAKING_MODULE, CHILL)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, CHILL)
 	}
 
 	async fn staking_set_controller(
 		&self,
 		controller: Self::Address,
 	) -> Self::Extrinsic<SetControllerCall<Self::Address>> {
-		compose_extrinsic!(self, STAKING_MODULE, SET_CONTROLLER, controller)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, SET_CONTROLLER, controller)
 	}
 
 	async fn payout_stakers(
@@ -225,29 +235,35 @@ where
 		account: Self::AccountId,
 	) -> Self::Extrinsic<PayoutStakersCall<Self::AccountId>> {
 		let value = PayoutStakers { validator_stash: account, era };
-		compose_extrinsic!(self, STAKING_MODULE, PAYOUT_STAKERS, value)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, PAYOUT_STAKERS, value)
 	}
 
 	async fn force_new_era(&self) -> Self::Extrinsic<ForceNewEraCall> {
-		compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, FORCE_NEW_ERA)
 	}
 
 	async fn force_new_era_always(&self) -> Self::Extrinsic<ForceNewEraAlwaysCall> {
-		compose_extrinsic!(self, STAKING_MODULE, FORCE_NEW_ERA_ALWAYS)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, FORCE_NEW_ERA_ALWAYS)
 	}
 
 	async fn force_no_era(&self) -> Self::Extrinsic<ForceNewEraAlwaysCall> {
-		compose_extrinsic!(self, STAKING_MODULE, FORCE_NO_ERA)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, FORCE_NO_ERA)
 	}
 
 	async fn set_payee(
 		&self,
 		payee: Self::Address,
 	) -> Self::Extrinsic<SetPayeeCall<Self::Address>> {
-		compose_extrinsic!(self, STAKING_MODULE, SET_PAYEE, payee)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, SET_PAYEE, payee)
 	}
 
 	async fn set_validator_count(&self, count: u32) -> Self::Extrinsic<SetValidatorCountCall> {
-		compose_extrinsic!(self, STAKING_MODULE, SET_VALIDATOR_COUNT, count)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, STAKING_MODULE, SET_VALIDATOR_COUNT, count)
 	}
 }

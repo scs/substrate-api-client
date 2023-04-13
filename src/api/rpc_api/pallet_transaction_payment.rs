@@ -22,6 +22,7 @@ use ac_primitives::{
 use core::str::FromStr;
 
 /// Interface to common calls of the substrate transaction payment pallet.
+#[maybe_async::maybe_async(?Send)]
 pub trait GetTransactionPayment<Hash> {
 	type Balance;
 
@@ -38,6 +39,7 @@ pub trait GetTransactionPayment<Hash> {
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> GetTransactionPayment<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where

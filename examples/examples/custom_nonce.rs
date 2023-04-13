@@ -34,14 +34,12 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client)
-		.await
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 
 	// Information for Era for mortal transactions.
-	let last_finalized_header_hash = api.get_finalized_head().await.unwrap().unwrap();
-	let header = api.get_header(Some(last_finalized_header_hash)).await.unwrap().unwrap();
+	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
+	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
 	let tx_params = GenericAdditionalParams::new()
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
@@ -51,7 +49,7 @@ async fn main() {
 	api.set_additional_params(tx_params);
 
 	// Get the nonce of Alice.
-	let signer_nonce = api.get_nonce().await.unwrap();
+	let signer_nonce = api.get_nonce().unwrap();
 	println!("[+] Signer's Account Nonce is {}\n", signer_nonce);
 
 	// Create an extrinsic that should get included in the future pool due to a nonce that is too high.
@@ -62,7 +60,7 @@ async fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	println!("Returned Result {:?}", result);
 	match result {
 		Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)) => {

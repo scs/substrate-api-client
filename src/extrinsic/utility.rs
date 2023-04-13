@@ -37,6 +37,7 @@ pub struct Batch<Call> {
 
 pub type BatchCall<Call> = (CallIndex, Batch<Call>);
 
+#[maybe_async::maybe_async(?Send)]
 pub trait UtilityExtrinsics {
 	type Extrinsic<Call>;
 
@@ -53,6 +54,7 @@ pub trait UtilityExtrinsics {
 	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> UtilityExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
@@ -72,7 +74,8 @@ where
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		compose_extrinsic!(self, UTILITY_MODULE, BATCH, calls)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, UTILITY_MODULE, BATCH, calls)
 	}
 
 	async fn force_batch<Call: Encode + Clone>(
@@ -80,6 +83,7 @@ where
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		compose_extrinsic!(self, UTILITY_MODULE, FORCE_BATCH, calls)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, UTILITY_MODULE, FORCE_BATCH, calls)
 	}
 }

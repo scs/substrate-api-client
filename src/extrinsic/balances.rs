@@ -36,6 +36,7 @@ pub type TransferAllowDeathCall<Address, Balance> = (CallIndex, Address, Compact
 /// Call to the balance of an account.
 pub type ForceSetBalanceCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
 
+#[maybe_async::maybe_async(?Send)]
 pub trait BalancesExtrinsics {
 	type Balance;
 	type Address;
@@ -56,6 +57,7 @@ pub trait BalancesExtrinsics {
 	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> BalancesExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
@@ -74,7 +76,8 @@ where
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>> {
-		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
 	}
 
 	async fn balance_force_set_balance(
@@ -82,6 +85,14 @@ where
 		who: Self::Address,
 		free_balance: Self::Balance,
 	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>> {
-		compose_extrinsic!(self, BALANCES_MODULE, FORCE_SET_BALANCE, who, Compact(free_balance))
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(
+			self,
+			nonce,
+			BALANCES_MODULE,
+			FORCE_SET_BALANCE,
+			who,
+			Compact(free_balance)
+		)
 	}
 }

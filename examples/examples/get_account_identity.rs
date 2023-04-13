@@ -60,8 +60,13 @@ async fn main() {
 		twitter: Data::None,
 	};
 
-	let xt: UncheckedExtrinsicV4<_, _, _, _> =
-		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone()));
+	let xt: UncheckedExtrinsicV4<_, _, _, _> = compose_extrinsic!(
+		&api,
+		api.get_nonce().unwrap(),
+		"Identity",
+		"set_identity",
+		Box::new(info.clone())
+	);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.

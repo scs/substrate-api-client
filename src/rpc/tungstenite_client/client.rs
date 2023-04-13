@@ -54,6 +54,7 @@ impl TungsteniteRpcClient {
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl Request for TungsteniteRpcClient {
 	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
 		let json_req = to_json_req(method, params)?;

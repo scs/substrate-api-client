@@ -21,6 +21,7 @@ use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
 
+#[maybe_async::maybe_async(?Send)]
 pub trait GetHeader<Hash> {
 	type Header;
 
@@ -29,6 +30,7 @@ pub trait GetHeader<Hash> {
 	async fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
@@ -51,6 +53,7 @@ where
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 pub trait GetBlock<Number, Hash> {
 	type Block;
 
@@ -75,6 +78,7 @@ pub trait GetBlock<Number, Hash> {
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> GetBlock<Runtime::BlockNumber, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where

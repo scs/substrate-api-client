@@ -25,6 +25,8 @@ use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
+
+#[maybe_async::maybe_async(?Send)]
 pub trait FetchEvents<Client, Hash>
 where
 	Client: Request,
@@ -41,6 +43,7 @@ where
 	) -> Result<Vec<EventDetails>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> FetchEvents<Client, Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where
@@ -167,6 +170,7 @@ where
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
+	#[maybe_async::maybe_async(?Send)]
 	async fn retrieve_extrinsic_index_from_block(
 		&self,
 		block_hash: Runtime::Hash,

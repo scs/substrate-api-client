@@ -26,6 +26,7 @@ use log::*;
 use serde::de::DeserializeOwned;
 
 /// Generic interface to substrate storage.
+#[maybe_async::maybe_async(?Send)]
 pub trait GetStorage<Hash> {
 	/// Retrieve the storage value.
 	///
@@ -153,6 +154,7 @@ pub trait GetStorage<Hash> {
 	) -> Result<C>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
 	for Api<Signer, Client, Params, Runtime>
 where

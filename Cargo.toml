@@ -25,6 +25,8 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.79", default-features = false }
+maybe-async = { version = "0.2.7", features = ["is_sync"] }
+async-trait = "0.1.68"
 
 # crates.io std only
 url = { version = "2.0.0", optional = true }
@@ -49,6 +51,7 @@ ac-compose-macros = { path = "compose-macros", default-features = false }
 ac-node-api = { path = "node-api", default-features = false }
 ac-primitives = { path = "primitives", default-features = false }
 
+
 [dev-dependencies]
 ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -57,30 +60,8 @@ scale-info = { version = "2.1.1", features = ["derive"] }
 [features]
 default = ["std", "jsonrpsee-client"]
 # To support `no_std` builds in non-32 bit environments.
-disable_target_static_assertions = [
-    "sp-runtime-interface/disable_target_static_assertions",
-]
-std = [
-    # crates.io no_std
-    "codec/std",
-    "hex/std",
-    "log/std",
-    "serde/std",
-    "serde_json/std",
-    # crates.io std only
-    "url",
-    # substrate no_std
-    "frame-metadata/std",
-    "sp-core/std",
-    "sp-runtime/std",
-    "sp-runtime-interface/std",
-    # substrate std
-    "frame-support",
-    # local deps
-    "ac-compose-macros/std",
-    "ac-node-api/std",
-    "ac-primitives/std",
-]
+disable_target_static_assertions = ["sp-runtime-interface/disable_target_static_assertions"]
+std = ["codec/std", "hex/std", "log/std", "serde/std", "serde_json/std", "url", "frame-metadata/std", "sp-core/std", "sp-runtime/std", "sp-runtime-interface/std", "frame-support", "ac-compose-macros/std", "ac-node-api/std", "ac-primitives/std"]
 jsonrpsee-client = ["std", "jsonrpsee"]
 tungstenite-client = ["std", "tungstenite"]
 ws-client = ["std", "ws"]

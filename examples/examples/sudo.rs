@@ -47,9 +47,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client)
-		.await
-		.unwrap();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::new(sudoer));
 
 	// Set the recipient of newly issued funds.
@@ -71,7 +69,8 @@ async fn main() {
 		Compact(new_balance)
 	);
 
-	let xt: UncheckedExtrinsicV4<_, _, _, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
+	let xt: UncheckedExtrinsicV4<_, _, _, _> =
+		compose_extrinsic!(&api, api.get_nonce().unwrap(), "Sudo", "sudo", call);
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api

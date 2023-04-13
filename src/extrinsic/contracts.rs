@@ -59,6 +59,7 @@ pub type InstantiateWithCodeFor<M> =
 /// Call for calling a function inside a contract.
 pub type ContractCallFor<M> = (CallIndex, AddressFor<M>, ValueFor<M>, GasLimitFor<M>, DataFor<M>);
 
+#[maybe_async::maybe_async(?Send)]
 pub trait ContractsExtrinsics {
 	type Gas;
 	type Currency;
@@ -107,6 +108,7 @@ type BalanceOf<T> = <<T as ContractsConfig>::Currency as frame_support::traits::
 >>::Balance;
 
 #[cfg(feature = "std")]
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> ContractsExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
@@ -131,7 +133,8 @@ where
 		gas_limit: Self::Gas,
 		code: Self::Code,
 	) -> Self::Extrinsic<PutCodeFor<Self>> {
-		compose_extrinsic!(self, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
+		let nonce = self.get_nonce().await.unwrap();
+		compose_extrinsic!(self, nonce, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
 	async fn contract_instantiate(
@@ -141,8 +144,10 @@ where
 		code_hash: Self::Hash,
 		data: Self::Data,
 	) -> Self::Extrinsic<InstantiateWithHashFor<Self>> {
+		let nonce = self.get_nonce().await.unwrap();
 		compose_extrinsic!(
 			self,
+			nonce,
 			CONTRACTS_MODULE,
 			INSTANTIATE,
 			Compact(endowment),
@@ -160,8 +165,10 @@ where
 		data: Self::Data,
 		salt: Self::Salt,
 	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>> {
+		let nonce = self.get_nonce().await.unwrap();
 		compose_extrinsic!(
 			self,
+			nonce,
 			CONTRACTS_MODULE,
 			INSTANTIATE_WITH_CODE,
 			Compact(endowment),
@@ -179,8 +186,10 @@ where
 		gas_limit: Self::Gas,
 		data: Self::Data,
 	) -> Self::Extrinsic<ContractCallFor<Self>> {
+		let nonce = self.get_nonce().await.unwrap();
 		compose_extrinsic!(
 			self,
+			nonce,
 			CONTRACTS_MODULE,
 			CALL,
 			dest,
