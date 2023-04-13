@@ -20,13 +20,17 @@ use kitchensink_runtime::AccountId;
 use sp_keyring::AccountKeyring;
 use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_compose_macros::primitives::SubstrateConfig,
-	ac_node_api::StaticEvent,
-	ac_primitives::{ExtrinsicSigner, PolkadotConfig},
-	extrinsic::ContractsExtrinsics,
-	rpc::JsonrpseeClient,
-	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	ac_compose_macros::primitives::SubstrateConfig, ac_node_api::StaticEvent,
+	ac_primitives::ExtrinsicSigner, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
+	SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
 };
+
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
 
 #[allow(unused)]
 #[derive(Decode)]
@@ -47,15 +51,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	//let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	//api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::<_, _>::new(signer));
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());

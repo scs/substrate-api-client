@@ -28,13 +28,17 @@ use substrate_api_client::{
 	Api, SubmitExtrinsic,
 };
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<
-	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-	Pair,
->;
+type ExtrinsicSigner = GenericExtrinsicSigner<KitchensinkConfig, Pair>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
@@ -48,13 +52,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::new(signer));
 
 	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();

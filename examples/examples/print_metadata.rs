@@ -18,8 +18,15 @@
 
 use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_node_api::Metadata, ac_primitives::PolkadotConfig, rpc::JsonrpseeClient, Api,
+	ac_node_api::Metadata, ac_primitives::SubstrateConfig, rpc::JsonrpseeClient, Api,
 };
+
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
 
 #[tokio::main]
 async fn main() {
@@ -27,11 +34,7 @@ async fn main() {
 
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<
-		PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 

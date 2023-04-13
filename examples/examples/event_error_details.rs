@@ -24,6 +24,13 @@ use substrate_api_client::{
 	Api, GetAccountInformation, SubmitAndWatchUntilSuccess,
 };
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 #[derive(Decode)]
 struct TransferEventArgs {
 	_from: AccountId,
@@ -43,17 +50,8 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice_signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
-	api.set_signer(ExtrinsicSigner::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(alice_signer));
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<KitchensinkConfig, _>::new(alice_signer));
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;

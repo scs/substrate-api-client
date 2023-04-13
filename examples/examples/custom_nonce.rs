@@ -25,6 +25,13 @@ use substrate_api_client::{
 	Api, Error, GetHeader, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -32,17 +39,8 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
-	api.set_signer(ExtrinsicSigner::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(signer));
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<KitchensinkConfig, _>::new(signer));
 
 	// Information for Era for mortal transactions.
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

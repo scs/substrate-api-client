@@ -34,6 +34,13 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -41,17 +48,8 @@ async fn main() {
 	// Create the node-api client and set the signer.
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let signer = AccountKeyring::Alice.pair();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
-	api.set_signer(ExtrinsicSigner::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(signer.clone()));
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<KitchensinkConfig, _>::new(signer.clone()));
 
 	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {

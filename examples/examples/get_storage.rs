@@ -19,16 +19,22 @@ use frame_system::AccountInfo as GenericAccountInfo;
 use sp_keyring::AccountKeyring;
 use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
-	ac_primitives::{Config, ExtrinsicSigner, PolkadotConfig},
+	ac_primitives::{Config, ExtrinsicSigner, SubstrateConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage,
 };
 
-//type IndexFor<T> = <T as frame_system::Config>::Index;
-//type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the different related types.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
 
-type AccountInfo =
-	GenericAccountInfo<<PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::Index, <PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::AccountData>;
+type AccountInfo = GenericAccountInfo<
+	<KitchensinkConfig as Config>::Index,
+	<KitchensinkConfig as Config>::AccountData,
+>;
 
 #[tokio::main]
 async fn main() {
@@ -36,11 +42,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<
-		PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
 
 	// get some plain storage value
 	let result: u128 = api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();

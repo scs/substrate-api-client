@@ -24,6 +24,13 @@ use substrate_api_client::{
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 pub type EraIndex = u32;
 
 pub struct GracePeriod {
@@ -49,15 +56,8 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
-	api.set_signer(ExtrinsicSigner::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(alice.clone()));
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<KitchensinkConfig, _>::new(alice.clone()));
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
 	let validator_account = AccountKeyring::Alice.to_account_id();

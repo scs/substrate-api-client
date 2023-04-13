@@ -28,20 +28,24 @@ use substrate_api_client::{
 	Api, GetBlock, GetStorage,
 };
 
-type Balance = <SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::Balance;
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the related types.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+type Balance = <KitchensinkConfig as Config>::Balance;
 type AccountData = GenericAccountData<Balance>;
-type ErasStakers =
-	Exposure<<SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::AccountId, <SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::StakingBalance>;
+type ErasStakers = Exposure<
+	<KitchensinkConfig as Config>::AccountId,
+	<KitchensinkConfig as Config>::StakingBalance,
+>;
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
+	let api = Api::<KitchensinkConfig, _>::new(client).unwrap();
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let block_hash = api.get_block_hash(None).unwrap().unwrap();

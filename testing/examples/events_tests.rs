@@ -39,20 +39,20 @@ impl StaticEvent for ExtrinsicSuccess {
 	const EVENT: &'static str = "ExtrinsicSuccess";
 }
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
-	api.set_signer(ExtrinsicSigner::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(alice_pair));
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<KitchensinkConfig, _>::new(alice_pair));
 
 	let bob = AccountKeyring::Bob.to_account_id();
 

@@ -25,6 +25,13 @@ use substrate_api_client::{
 	Api, GetHeader, SubmitAndWatch, XtStatus,
 };
 
+// This example run against a specific  node.
+// We use the substrate kitchensink runtime: the config is a substrate config with the kitchensink runtime block type.
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// For better code readability, we define the config type.
+type KitchensinkConfig =
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>;
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -35,18 +42,8 @@ async fn main() {
 	// Api::new(..) is not actually an offline call, but retrieves metadata and other information from the node.
 	// If this is not acceptable, use the Api::new_offline(..) function instead. There are no examples for this,
 	// because of the constantly changing substrate node. But check out our unit tests - there are Apis created with `new_offline`.
-	//
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(client)
-	.unwrap();
-	api.set_signer(ExtrinsicSigner::<
-		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
-		_,
-	>::new(signer));
+	let mut api = Api::<KitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<KitchensinkConfig, _>::new(signer));
 
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
