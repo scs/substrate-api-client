@@ -133,6 +133,15 @@ The `Subscribe` implementation can be found [here](https://github.com/scs/substr
 
 A more complex RPC client, but also with more functionalities, is the [jsonrpsee](https://github.com/paritytech/jsonrpsee) client.
 
+## Example Upgrades from older to newer versions
+There have been some breaking API changes as of late to catch up with the newer Substrate versions and to fully support different Substrate nodes.
+An example project on how to upgrade from older tags can be found in the Integritee [worker repository](https://github.com/integritee-network/worker):
+-  [tag v0.7.0 -> v0.9.0](https://github.com/integritee-network/worker/pull/1263) (Upgrade to tag v0.8.0 is not recommended, directly upgrading to v0.9.0 saves you some extra work).
+- [tag v0.9.0 -> v0.10.0](https://github.com/integritee-network/worker/pull/1265)
+
+If you still experience issues during upgrading, do not hesitate to create an issue for support.
+
+
 ## Alternatives
 
 Parity offers a Rust client with similar functionality: https://github.com/paritytech/subxt

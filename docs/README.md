@@ -9,6 +9,12 @@ Example release: https://github.com/scs/substrate-api-client/releases/tag/v0.10.
 
 The `🎉 Featuring` section has been created manually. It should show the user directly what has been updated and what new features have been added (not only PR names)
 
+### Semantic Versioning
+This is not yet checked or automated by CI, but it may be in the future. Currently, the api-client is following the semantic versioning în pre-release as the public API may change any time.
+In case a new release is triggered, the `.toml` versions of the crates, that have been updated since the last release, should be increased.
+- In case of breaking API changes, the minor version should be increased (`0.9.3 -> 0.10.0`)
+- In case of changes, which do not break the API, the patch version should be increased (`0.9.3 -> 0.9.4`).
+
 ### PR Labels
 For automatic release generation, `E` and `F` labels are used.
 
