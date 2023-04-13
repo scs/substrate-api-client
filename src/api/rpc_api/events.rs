@@ -25,24 +25,25 @@ use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
-pub trait FetchEvents<Client, Hash>
-where
-	Client: Request,
-	Hash: DeserializeOwned,
-{
+
+pub type EventSubscriptionFor<Client, Hash> =
+	EventSubscription<<Client as Subscribe>::Subscription<StorageChangeSet<Hash>>, Hash>;
+
+pub trait FetchEvents {
+	type Hash;
+
 	/// Fetch all block events from node for the given block hash.
-	fn fetch_events_from_block(&self, block_hash: Hash) -> Result<Events<Hash>>;
+	fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
 
 	/// Fetch all assosciated events for a given extrinsic hash and block hash.
 	fn fetch_events_for_extrinsic(
 		&self,
-		block_hash: Hash,
-		extrinsic_hash: Hash,
+		block_hash: Self::Hash,
+		extrinsic_hash: Self::Hash,
 	) -> Result<Vec<EventDetails>>;
 }
 
-impl<Signer, Client, Params, Runtime> FetchEvents<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> FetchEvents for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
@@ -50,20 +51,22 @@ where
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
-	fn fetch_events_from_block(&self, block_hash: Runtime::Hash) -> Result<Events<Runtime::Hash>> {
+	type Hash = Runtime::Hash;
+
+	fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>> {
 		let key = crate::storage_key("System", "Events");
 		let event_bytes = self
 			.get_opaque_storage_by_key(key, Some(block_hash))?
 			.ok_or(Error::BlockNotFound)?;
 		let events =
-			Events::<Runtime::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
+			Events::<Self::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 		Ok(events)
 	}
 
 	fn fetch_events_for_extrinsic(
 		&self,
-		block_hash: Runtime::Hash,
-		extrinsic_hash: Runtime::Hash,
+		block_hash: Self::Hash,
+		extrinsic_hash: Self::Hash,
 	) -> Result<Vec<EventDetails>> {
 		let extrinsic_index =
 			self.retrieve_extrinsic_index_from_block(block_hash, extrinsic_hash)?;
@@ -122,29 +125,24 @@ where
 	}
 }
 
-pub trait SubscribeEvents<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
+pub trait SubscribeEvents {
+	type Client: Subscribe;
+	type Hash: DeserializeOwned;
+
 	/// Subscribe to events.
-	fn subscribe_events(
-		&self,
-	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
+	fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeEvents<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> SubscribeEvents for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 {
-	fn subscribe_events(
-		&self,
-	) -> Result<
-		EventSubscription<Client::Subscription<StorageChangeSet<Runtime::Hash>>, Runtime::Hash>,
-	> {
+	type Client = Client;
+	type Hash = Runtime::Hash;
+
+	fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>> {
 		let key = crate::storage_key("System", "Events");
 		let subscription = self
 			.client()

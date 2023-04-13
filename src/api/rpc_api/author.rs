@@ -78,17 +78,16 @@ where
 	}
 }
 
-pub trait SubmitAndWatch<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
+pub trait SubmitAndWatch {
+	type Client: Subscribe;
+	type Hash: DeserializeOwned;
+
 	/// Submit an extrinsic an return a Subscription
 	/// to watch the extrinsic progress.
 	fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<TransactionSubscriptionFor<Client, Hash>>
+	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -100,7 +99,7 @@ where
 	fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: Bytes,
-	) -> Result<TransactionSubscriptionFor<Client, Hash>>;
+	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>;
 
 	/// Submit an extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
@@ -114,7 +113,7 @@ where
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Hash>>
+	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -133,14 +132,13 @@ where
 		&self,
 		encoded_extrinsic: Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Hash>>;
+	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
 
-pub trait SubmitAndWatchUntilSuccess<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
+pub trait SubmitAndWatchUntilSuccess {
+	type Client: Subscribe;
+	type Hash;
+
 	/// Submit an extrinsic and watch it until
 	/// - wait_for_finalized = false => InBlock
 	/// - wait_for_finalized = true => Finalized
@@ -155,7 +153,7 @@ where
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Hash>>
+	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -176,21 +174,23 @@ where
 		&self,
 		encoded_extrinsic: Bytes,
 		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Hash>>;
+	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> SubmitAndWatch for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
+	type Client = Client;
+	type Hash = Runtime::Hash;
+
 	fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>>
+	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -202,7 +202,7 @@ where
 	fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: Bytes,
-	) -> Result<TransactionSubscriptionFor<Client, Runtime::Hash>> {
+	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -216,7 +216,7 @@ where
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Runtime::Hash>>
+	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -230,9 +230,9 @@ where
 		&self,
 		encoded_extrinsic: Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Runtime::Hash>> {
+	) -> Result<ExtrinsicReport<Self::Hash>> {
 		let tx_hash = Runtime::Hashing::hash_of(&encoded_extrinsic.0);
-		let mut subscription: TransactionSubscriptionFor<Client, Runtime::Hash> =
+		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic)?;
 
 		while let Some(transaction_status) = subscription.next() {
@@ -259,7 +259,7 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime::Hash>
+impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe + Request,
@@ -268,11 +268,14 @@ where
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
 {
+	type Client = Client;
+	type Hash = Runtime::Hash;
+
 	fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Runtime::Hash>>
+	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -289,7 +292,7 @@ where
 		&self,
 		encoded_extrinsic: Bytes,
 		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Runtime::Hash>> {
+	) -> Result<ExtrinsicReport<Self::Hash>> {
 		let xt_status = match wait_for_finalized {
 			true => XtStatus::Finalized,
 			false => XtStatus::InBlock,

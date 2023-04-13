@@ -22,36 +22,37 @@ use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageKey}
 use alloc::{string::String, vec::Vec};
 use log::*;
 
-pub trait GetAccountInformation<AccountId> {
+pub trait GetAccountInformation {
+	type AccountId;
 	type Index;
 	type AccountData;
 
 	fn get_account_info(
 		&self,
-		address: &AccountId,
+		address: &Self::AccountId,
 	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>>;
 
-	fn get_account_data(&self, address: &AccountId) -> Result<Option<Self::AccountData>>;
+	fn get_account_data(&self, address: &Self::AccountId) -> Result<Option<Self::AccountData>>;
 
 	/// Get nonce of an account.
-	fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
+	fn get_account_nonce(&self, account: &Self::AccountId) -> Result<Self::Index>;
 }
 
-impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetAccountInformation for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
+	type AccountId = Runtime::AccountId;
 	type Index = Runtime::Index;
 	type AccountData = Runtime::AccountData;
 
 	fn get_account_info(
 		&self,
-		address: &Runtime::AccountId,
+		address: &Self::AccountId,
 	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>> {
-		let storagekey: StorageKey = self.metadata().storage_map_key::<Runtime::AccountId>(
+		let storagekey: StorageKey = self.metadata().storage_map_key::<Self::AccountId>(
 			"System",
 			"Account",
 			address.clone(),
@@ -61,14 +62,11 @@ where
 		self.get_storage_by_key(storagekey, None)
 	}
 
-	fn get_account_data(
-		&self,
-		address: &Runtime::AccountId,
-	) -> Result<Option<Runtime::AccountData>> {
+	fn get_account_data(&self, address: &Self::AccountId) -> Result<Option<Self::AccountData>> {
 		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 
-	fn get_account_nonce(&self, account: &Runtime::AccountId) -> Result<Runtime::Index> {
+	fn get_account_nonce(&self, account: &Self::AccountId) -> Result<Self::Index> {
 		self.get_account_info(account)
 			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))
 	}
