@@ -54,7 +54,7 @@ dependencies = [
  "bitvec",
  "derive_more",
  "either",
- "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
+ "frame-metadata",
  "hex",
  "log",
  "parity-scale-codec",
@@ -1189,20 +1189,9 @@ dependencies = [
 
 [[package]]
 name = "frame-metadata"
-version = "15.0.0"
+version = "15.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df6bb8542ef006ef0de09a5c4420787d79823c0ed7924225822362fd2bf2ff2d"
-dependencies = [
- "cfg-if 1.0.0",
- "parity-scale-codec",
- "scale-info",
- "serde",
-]
-
-[[package]]
-name = "frame-metadata"
-version = "15.0.0"
-source = "git+https://github.com/paritytech/frame-metadata#02a063bc5e6170f6e7e1d9295da4dec887e86bc4"
+checksum = "878babb0b136e731cc77ec2fd883ff02745ff21e6fb662729953d44923df009c"
 dependencies = [
  "cfg-if 1.0.0",
  "parity-scale-codec",
@@ -1217,7 +1206,7 @@ source = "git+https://github.com/paritytech/substrate.git?branch=master#7363dce0
 dependencies = [
  "bitflags",
  "environmental",
- "frame-metadata 15.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "frame-metadata",
  "frame-support-procedural",
  "impl-trait-for-tuples",
  "k256",
@@ -5313,7 +5302,7 @@ dependencies = [
  "ac-node-api",
  "ac-primitives",
  "derive_more",
- "frame-metadata 15.0.0 (git+https://github.com/paritytech/frame-metadata)",
+ "frame-metadata",
  "frame-support",
  "futures",
  "hex",

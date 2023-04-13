@@ -14,6 +14,7 @@ bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.2.1", features = ["derive", "bit-vec"], default-features = false }
 derive_more = { version = "0.99.17" }
 either = { version = "1.6.1", default-features = false }
+frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
@@ -21,7 +22,6 @@ serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # substrate
-frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
@@ -31,7 +31,6 @@ sp-runtime-interface = { default-features = false, git = "https://github.com/par
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
-
 
 [features]
 default = ["std"]
