@@ -18,6 +18,10 @@ ac-primitives = { path = "../primitives", default-features = false }
 
 [features]
 default = ["std"]
+# To support `no_std` builds in non-32 bit environments.
+disable_target_static_assertions = [
+    "ac-primitives/disable_target_static_assertions",
+]
 std = [
     "log/std",
     # local
