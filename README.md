@@ -53,7 +53,7 @@ Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
 The following examples can be found in the [examples](/examples/examples) folder:
 
- * [benchmark_bulk_xt](/examples/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
+* [benchmark_bulk_xt](/examples/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
 * [compose_extrinsic_offline](/examples/examples/compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
 * [custom_nonce](/examples/examples/custom_nonce.rs): Compose an with a custom nonce.
 * [contract_instantiate_with_code](/examples/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
