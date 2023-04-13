@@ -18,9 +18,7 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-use substrate_api_client::{
-	ac_node_api::Metadata, ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api,
-};
+use substrate_api_client::{ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api};
 
 #[tokio::main]
 async fn main() {
@@ -44,5 +42,5 @@ async fn main() {
 	api.update_runtime().unwrap();
 
 	// Print full substrate metadata json formatted.
-	println!("{}", Metadata::pretty_format(&api.metadata().metadata).unwrap())
+	println!("{}", (&api.metadata().pretty_format().unwrap()))
 }
