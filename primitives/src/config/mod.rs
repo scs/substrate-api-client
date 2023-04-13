@@ -11,14 +11,22 @@
 //! This file is mostly subxt:
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/mod.rs
 
-use crate::{extrinsic_params, SignExtrinsic};
-use codec::{Decode, Encode, FullCodec};
 use core::{fmt::Debug, marker::PhantomData};
+
+use codec::{Decode, Encode, FullCodec};
 use serde::{de::DeserializeOwned, Serialize};
 use sp_core::Pair;
 use sp_runtime::traits::{
 	AtLeast32Bit, AtLeast32BitUnsigned, Block as BlockTrait, MaybeSerializeDeserialize,
 };
+
+use crate::{extrinsic_params, SignExtrinsic};
+
+pub use polkadot_config::*;
+pub use substrate_config::*;
+
+pub mod polkadot_config;
+pub mod substrate_config;
 
 /// Runtime types.
 pub trait Config {
