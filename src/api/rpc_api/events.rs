@@ -27,7 +27,7 @@ use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use log::*;
 use serde::{de::DeserializeOwned, Serialize};
-use sp_runtime::traits::Block as BlockTrait;
+use sp_runtime::traits::Block;
 
 pub trait FetchEvents<Client, Hash>
 where
@@ -45,10 +45,9 @@ where
 	) -> Result<Vec<EventDetails>>;
 }
 
-impl<T: Config, Client, Block> FetchEvents<Client, T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> FetchEvents<Client, T::Hash> for Api<T, Client>
 where
 	Client: Request,
-	Block: BlockTrait + DeserializeOwned,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	fn fetch_events_from_block(&self, block_hash: T::Hash) -> Result<Events<T::Hash>> {
@@ -134,7 +133,7 @@ where
 	) -> Result<EventSubscription<Client::Subscription<StorageChangeSet<Hash>>, Hash>>;
 }
 
-impl<T: Config, Client, Block> SubscribeEvents<Client, T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> SubscribeEvents<Client, T::Hash> for Api<T, Client>
 where
 	Client: Subscribe,
 {
@@ -150,10 +149,9 @@ where
 	}
 }
 
-impl<T: Config, Client, Block> Api<T, Client, Block>
+impl<T: Config, Client> Api<T, Client>
 where
 	Client: Request,
-	Block: BlockTrait + DeserializeOwned,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
@@ -229,9 +227,8 @@ mod tests {
 		metadata: Metadata,
 		data: HashMap<String, String>,
 	) -> Api<
-		PolkadotConfig,
+		PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		RpcClientMock,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	> {
 		// Create new api.
 		let genesis_hash = H256::random();

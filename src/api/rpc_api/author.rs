@@ -26,7 +26,6 @@ use ac_primitives::{
 use codec::Encode;
 use log::*;
 use serde::{de::DeserializeOwned, Serialize};
-use sp_runtime::traits::Block as BlockTrait;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -52,7 +51,7 @@ pub trait SubmitExtrinsic {
 	fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash>;
 }
 
-impl<T: Config, Client, Block> SubmitExtrinsic for Api<T, Client, Block>
+impl<T: Config, Client> SubmitExtrinsic for Api<T, Client>
 where
 	Client: Request,
 {
@@ -180,7 +179,7 @@ where
 	) -> Result<ExtrinsicReport<Hash>>;
 }
 
-impl<T: Config, Client, Block> SubmitAndWatch<Client, T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> SubmitAndWatch<Client, T::Hash> for Api<T, Client>
 where
 	Client: Subscribe,
 {
@@ -256,10 +255,9 @@ where
 	}
 }
 
-impl<T: Config, Client, Block> SubmitAndWatchUntilSuccess<Client, T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> SubmitAndWatchUntilSuccess<Client, T::Hash> for Api<T, Client>
 where
 	Client: Subscribe + Request,
-	Block: BlockTrait + DeserializeOwned,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(

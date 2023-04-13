@@ -37,7 +37,7 @@ pub trait GetAccountInformation<AccountId> {
 	fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
 }
 
-impl<T: Config, Client, Block> GetAccountInformation<T::AccountId> for Api<T, Client, Block>
+impl<T: Config, Client> GetAccountInformation<T::AccountId> for Api<T, Client>
 where
 	Client: Request,
 {
@@ -106,7 +106,7 @@ pub trait SystemApi {
 	fn get_system_local_listen_addresses(&self) -> Result<Vec<String>>;
 }
 
-impl<T: Config, Client, Block> SystemApi for Api<T, Client, Block>
+impl<T: Config, Client> SystemApi for Api<T, Client>
 where
 	Client: Request,
 {

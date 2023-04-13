@@ -102,7 +102,7 @@ pub trait ContractsExtrinsics {
 }
 
 #[cfg(feature = "std")]
-impl<T: Config, Client, Block> ContractsExtrinsics for Api<T, Client, Block>
+impl<T: Config, Client> ContractsExtrinsics for Api<T, Client>
 where
 	Client: Request,
 	Compact<T::ContractBalance>: Encode + Clone,

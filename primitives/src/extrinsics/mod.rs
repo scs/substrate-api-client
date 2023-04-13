@@ -164,6 +164,7 @@ mod tests {
 	use super::*;
 	use crate::SubstrateConfig;
 	use extrinsic_params::{GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
+	use node_template_runtime::Block;
 	use sp_core::{Pair, H256 as Hash};
 	use sp_runtime::{generic::Era, testing::sr25519, AccountId32, MultiSignature};
 
@@ -177,7 +178,7 @@ mod tests {
 		let tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
 			.era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
-		let default_extra = GenericExtrinsicParams::<SubstrateConfig, PlainTip<u128>>::new(
+		let default_extra = GenericExtrinsicParams::<SubstrateConfig<Block>, PlainTip<u128>>::new(
 			0,
 			0,
 			0u32,

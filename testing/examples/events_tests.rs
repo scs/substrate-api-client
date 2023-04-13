@@ -45,12 +45,14 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(alice_pair));
+	api.set_signer(ExtrinsicSigner::<
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
+		_,
+	>::new(alice_pair));
 
 	let bob = AccountKeyring::Bob.to_account_id();
 
@@ -76,7 +78,7 @@ async fn main() {
 	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
 		let event_records = event_subscription
-			.next_event::<RuntimeEvent, <SubstrateConfig as Config>::Hash>()
+			.next_event::<RuntimeEvent, <SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::Hash>()
 			.unwrap()
 			.unwrap();
 		for event_record in &event_records {

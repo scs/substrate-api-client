@@ -44,12 +44,14 @@ async fn main() {
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(signer.clone()));
+	api.set_signer(ExtrinsicSigner::<
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
+		_,
+	>::new(signer.clone()));
 
 	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {

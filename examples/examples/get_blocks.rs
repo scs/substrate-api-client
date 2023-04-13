@@ -30,9 +30,8 @@ async fn main() {
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let api = Api::<
-		PolkadotConfig,
+		PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
 

@@ -50,12 +50,14 @@ async fn main() {
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(alice.clone()));
+	api.set_signer(ExtrinsicSigner::<
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
+		_,
+	>::new(alice.clone()));
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
 	let validator_account = AccountKeyring::Alice.to_account_id();
@@ -144,9 +146,8 @@ pub fn get_last_reward_received_for(
 	account: &AccountId32,
 	current_era: EraIndex,
 	api: &substrate_api_client::Api<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		JsonrpseeClient,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>,
 ) -> Option<u32> {
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();

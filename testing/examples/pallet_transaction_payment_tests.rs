@@ -31,12 +31,13 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
-	api.set_signer(<SubstrateConfig as Config>::ExtrinsicSigner::new(alice_pair));
+	api.set_signer(<SubstrateConfig<
+		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
+	> as Config>::ExtrinsicSigner::new(alice_pair));
 
 	let bob = AccountKeyring::Bob.to_account_id();
 

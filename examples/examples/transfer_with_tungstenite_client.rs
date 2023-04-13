@@ -41,12 +41,14 @@ fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = TungsteniteRpcClient::with_default_url(100);
 	let mut api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateConfig, _>::new(alice.clone()));
+	api.set_signer(ExtrinsicSigner::<
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
+		_,
+	>::new(alice.clone()));
 
 	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

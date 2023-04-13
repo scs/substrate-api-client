@@ -31,10 +31,12 @@ use substrate_api_client::{
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
+type BlockType = <kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock;
+
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateConfig, Pair>;
+type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateConfig<BlockType>, Pair>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
@@ -48,12 +50,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<
-		SubstrateConfig,
-		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
-	>::new(client)
-	.unwrap();
+	let mut api = Api::<SubstrateConfig<BlockType>, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::new(sudoer));
 
 	// Set the recipient of newly issued funds.

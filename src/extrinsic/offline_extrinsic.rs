@@ -24,7 +24,7 @@ use ac_primitives::{
 };
 use codec::Encode;
 
-impl<T: Config, Client, Block> Api<T, Client, Block> {
+impl<T: Config, Client> Api<T, Client> {
 	/// Wrapper around the `compose_extrinsic_offline!` macro to be less verbose.
 	pub fn compose_extrinsic_offline<Call: Encode + Clone>(
 		&self,

@@ -57,7 +57,7 @@ pub trait BalancesExtrinsics {
 	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>;
 }
 
-impl<T: Config, Client, Block> BalancesExtrinsics for Api<T, Client, Block>
+impl<T: Config, Client> BalancesExtrinsics for Api<T, Client>
 where
 	Client: Request,
 	Compact<T::Balance>: Encode,

@@ -20,6 +20,7 @@ use kitchensink_runtime::AccountId;
 use sp_keyring::AccountKeyring;
 use sp_runtime::traits::GetRuntimeBlockType;
 use substrate_api_client::{
+	ac_compose_macros::primitives::SubstrateConfig,
 	ac_node_api::StaticEvent,
 	ac_primitives::{ExtrinsicSigner, PolkadotConfig},
 	extrinsic::ContractsExtrinsics,
@@ -51,9 +52,8 @@ async fn main() {
 	//let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	//api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
 	let mut api = Api::<
-		PolkadotConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
 	api.set_signer(ExtrinsicSigner::<_, _>::new(signer));

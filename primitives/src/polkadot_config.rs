@@ -13,8 +13,8 @@ use crate::{
 };
 
 /// Default set of commonly used types by Polkadot nodes.
-pub type PolkadotConfig =
-	WithExtrinsicParams<SubstrateConfig, PolkadotExtrinsicParams<SubstrateConfig>>;
+pub type PolkadotConfig<Block> =
+	WithExtrinsicParams<SubstrateConfig<Block>, PolkadotExtrinsicParams<SubstrateConfig<Block>>>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction for a polkadot node.

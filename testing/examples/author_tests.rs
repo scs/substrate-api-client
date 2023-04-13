@@ -28,7 +28,10 @@ use substrate_api_client::{
 	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
-type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateConfig, Pair>;
+type ExtrinsicSigner = GenericExtrinsicSigner<
+	SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
+	Pair,
+>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
 #[tokio::main]
@@ -37,9 +40,8 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
 

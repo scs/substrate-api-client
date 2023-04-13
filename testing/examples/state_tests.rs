@@ -28,19 +28,18 @@ use substrate_api_client::{
 	Api, GetBlock, GetStorage,
 };
 
-type Balance = <SubstrateConfig as Config>::Balance;
+type Balance = <SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::Balance;
 type AccountData = GenericAccountData<Balance>;
 type ErasStakers =
-	Exposure<<SubstrateConfig as Config>::AccountId, <SubstrateConfig as Config>::StakingBalance>;
+	Exposure<<SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::AccountId, <SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::StakingBalance>;
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let api = Api::<
-		SubstrateConfig,
+		SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
 

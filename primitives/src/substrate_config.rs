@@ -14,20 +14,24 @@ use crate::{
 };
 use alloc::{format, vec::Vec};
 use codec::{Decode, Encode};
-use core::fmt::Debug;
-use serde::{Deserialize, Serialize};
-use sp_runtime::{AccountId32, MultiAddress, MultiSignature};
-
+use core::{fmt::Debug, marker::PhantomData};
 pub use primitive_types::{H256, U256};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sp_core::sr25519;
+use sp_runtime::{traits::Block as BlockTrait, AccountId32, MultiAddress, MultiSignature};
 
 /// Default set of commonly used types by Substrate runtimes.
 // Note: We only use this at the type level, so it should be impossible to
 // create an instance of it.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub enum SubstrateConfig {}
+pub struct SubstrateConfig<Block> {
+	_marker: PhantomData<Block>,
+}
 
-impl Config for SubstrateConfig {
+impl<Block> Config for SubstrateConfig<Block>
+where
+	Block: BlockTrait + DeserializeOwned,
+{
 	type Index = u32;
 	type Hash = H256;
 	type AccountId = AccountId32;
@@ -38,9 +42,8 @@ impl Config for SubstrateConfig {
 	type AccountData = AccountData<Self::Balance>;
 	type ExtrinsicParams = SubstrateExtrinsicParams<Self>;
 	type CryptoKey = sr25519::Pair;
-	type ExtrinsicSigner = ExtrinsicSigner<Self, sr25519::Pair>;
-	//type ExtrinsicSigner = ExtrinsicSigner<Self, Self::CryptoKey>;
-	//type Block = sp_runtime::generic::Block<Self::Header, Extrinsic>;
+	type ExtrinsicSigner = ExtrinsicSigner<Self, Self::CryptoKey>;
+	type Block = Block;
 	type Balance = u128;
 	type ContractBalance = u128;
 	type StakingBalance = u128;

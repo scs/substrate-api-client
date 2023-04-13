@@ -19,7 +19,6 @@ use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, serde_impls::SignedBlock};
 use log::*;
 use serde::{de::DeserializeOwned, Serialize};
-use sp_runtime::traits::Block as BlockTrait;
 
 pub trait GetHeader<Hash> {
 	type Header;
@@ -29,7 +28,7 @@ pub trait GetHeader<Hash> {
 	fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
 }
 
-impl<T: Config, Client, Block> GetHeader<T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> GetHeader<T::Hash> for Api<T, Client>
 where
 	Client: Request,
 {
@@ -67,14 +66,13 @@ pub trait GetBlock<Number, Hash> {
 		number: Option<Number>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
-impl<T: Config, Client, Block>
-	GetBlock<<T::Header as ac_primitives::config::Header>::Number, T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> GetBlock<<T::Header as ac_primitives::config::Header>::Number, T::Hash>
+	for Api<T, Client>
 where
 	Client: Request,
-	Block: BlockTrait + DeserializeOwned,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
-	type Block = Block;
+	type Block = T::Block;
 
 	fn get_block_hash(
 		&self,
@@ -84,18 +82,18 @@ where
 		Ok(block_hash)
 	}
 
-	fn get_block(&self, hash: Option<T::Hash>) -> Result<Option<Block>> {
+	fn get_block(&self, hash: Option<T::Hash>) -> Result<Option<Self::Block>> {
 		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	fn get_block_by_num(
 		&self,
 		number: Option<<T::Header as ac_primitives::config::Header>::Number>,
-	) -> Result<Option<Block>> {
+	) -> Result<Option<Self::Block>> {
 		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
-	fn get_signed_block(&self, hash: Option<T::Hash>) -> Result<Option<SignedBlock<Block>>> {
+	fn get_signed_block(&self, hash: Option<T::Hash>) -> Result<Option<SignedBlock<Self::Block>>> {
 		let block = self.client().request("chain_getBlock", rpc_params![hash])?;
 		Ok(block)
 	}
@@ -103,7 +101,7 @@ where
 	fn get_signed_block_by_num(
 		&self,
 		number: Option<<T::Header as ac_primitives::config::Header>::Number>,
-	) -> Result<Option<SignedBlock<Block>>> {
+	) -> Result<Option<SignedBlock<Self::Block>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 }
@@ -117,10 +115,9 @@ where
 	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>>;
 }
 
-impl<T: Config, Client, Block> SubscribeChain<Client, T::Hash> for Api<T, Client, Block>
+impl<T: Config, Client> SubscribeChain<Client, T::Hash> for Api<T, Client>
 where
 	Client: Subscribe,
-	Block: BlockTrait + DeserializeOwned,
 	<T::Header as ac_primitives::config::Header>::Number: Serialize,
 {
 	type Header = T::Header;

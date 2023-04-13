@@ -20,7 +20,7 @@ use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{Bytes, Config, ExtrinsicParams, RuntimeVersion, SignExtrinsic};
 use codec::Decode;
-use core::{convert::TryFrom, marker::PhantomData};
+use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
 
@@ -77,11 +77,11 @@ use log::{debug, info};
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<SubstrateConfig, _, <kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>::new(client);
+/// let _api = Api::<SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>, _>::new(client);
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<T: Config, Client, Block> {
+pub struct Api<T: Config, Client> {
 	signer: Option<T::ExtrinsicSigner>,
 	genesis_hash: T::Hash,
 	metadata: Metadata,
@@ -89,10 +89,9 @@ pub struct Api<T: Config, Client, Block> {
 	client: Client,
 	additional_extrinsic_params:
 		Option<<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams>,
-	_phantom: PhantomData<Block>,
 }
 
-impl<T: Config, Client, Block> Api<T, Client, Block> {
+impl<T: Config, Client> Api<T, Client> {
 	/// Create a new api instance without any node interaction.
 	pub fn new_offline(
 		genesis_hash: T::Hash,
@@ -107,7 +106,6 @@ impl<T: Config, Client, Block> Api<T, Client, Block> {
 			runtime_version,
 			client,
 			additional_extrinsic_params: None,
-			_phantom: Default::default(),
 		}
 	}
 
@@ -169,7 +167,7 @@ impl<T: Config, Client, Block> Api<T, Client, Block> {
 	}
 }
 
-impl<T: Config, Client, Block> Api<T, Client, Block>
+impl<T: Config, Client> Api<T, Client>
 where
 	Client: Request,
 {
@@ -202,7 +200,7 @@ where
 	}
 }
 
-impl<T: Config, Client, Block> Api<T, Client, Block>
+impl<T: Config, Client> Api<T, Client>
 where
 	Client: Request,
 {
@@ -221,7 +219,7 @@ where
 
 /// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
 /// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<T: Config, Client, Block> Api<T, Client, Block>
+impl<T: Config, Client> Api<T, Client>
 where
 	Client: Request,
 {
@@ -266,9 +264,8 @@ mod tests {
 		metadata: Metadata,
 		data: HashMap<String, String>,
 	) -> Api<
-		PolkadotConfig,
+		PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		RpcClientMock,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	> {
 		let client = RpcClientMock::new(data);
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
@@ -294,7 +291,10 @@ mod tests {
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
 
-		let expected_params = GenericExtrinsicParams::<SubstrateConfig, PlainTip<u128>>::new(
+		let expected_params = GenericExtrinsicParams::<
+			SubstrateConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
+			PlainTip<u128>,
+		>::new(
 			runtime_version.spec_version,
 			runtime_version.transaction_version,
 			nonce,

@@ -16,7 +16,9 @@ use codec::{Decode, Encode, FullCodec};
 use core::{fmt::Debug, marker::PhantomData};
 use serde::{de::DeserializeOwned, Serialize};
 use sp_core::Pair;
-use sp_runtime::traits::{AtLeast32Bit, AtLeast32BitUnsigned, MaybeSerializeDeserialize};
+use sp_runtime::traits::{
+	AtLeast32Bit, AtLeast32BitUnsigned, Block as BlockTrait, MaybeSerializeDeserialize,
+};
 
 /// Runtime types.
 pub trait Config {
@@ -70,7 +72,7 @@ pub trait Config {
 	/// This extrinsic signer.
 	type ExtrinsicSigner: SignExtrinsic<Self::AccountId>;
 
-	//type Block: BlockTrait + DeserializeOwned;
+	type Block: BlockTrait + DeserializeOwned;
 
 	/// The balance type.
 	type Balance: Debug
@@ -144,7 +146,7 @@ pub trait Header: Sized + Encode {
 /// use ac_primitives::{ SubstrateConfig, WithExtrinsicParams, PolkadotExtrinsicParams };
 ///
 /// // This is how PolkadotConfig is implemented:
-/// type PolkadotConfig = WithExtrinsicParams<SubstrateConfig, PolkadotExtrinsicParams<SubstrateConfig>>;
+/// type PolkadotConfig<Block> = WithExtrinsicParams<SubstrateConfig<Block>, PolkadotExtrinsicParams<SubstrateConfig<Block>>>;
 /// ```
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct WithExtrinsicParams<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> {
@@ -165,7 +167,7 @@ impl<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> Config
 	type ExtrinsicParams = E;
 	type CryptoKey = T::CryptoKey;
 	type ExtrinsicSigner = T::ExtrinsicSigner;
-	//type Block = T::Block;
+	type Block = T::Block;
 	type Balance = T::Balance;
 	type ContractBalance = T::ContractBalance;
 	type StakingBalance = T::StakingBalance;

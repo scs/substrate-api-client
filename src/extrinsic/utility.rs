@@ -51,7 +51,7 @@ pub trait UtilityExtrinsics {
 	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
-impl<T: Config, Client, Block> UtilityExtrinsics for Api<T, Client, Block>
+impl<T: Config, Client> UtilityExtrinsics for Api<T, Client>
 where
 	Client: Request,
 {

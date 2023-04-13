@@ -28,7 +28,7 @@ use substrate_api_client::{
 //type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
 
 type AccountInfo =
-	GenericAccountInfo<<PolkadotConfig as Config>::Index, <PolkadotConfig as Config>::AccountData>;
+	GenericAccountInfo<<PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::Index, <PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock> as Config>::AccountData>;
 
 #[tokio::main]
 async fn main() {
@@ -37,9 +37,8 @@ async fn main() {
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<
-		PolkadotConfig,
+		PolkadotConfig<<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock>,
 		_,
-		<kitchensink_runtime::Runtime as GetRuntimeBlockType>::RuntimeBlock,
 	>::new(client)
 	.unwrap();
 

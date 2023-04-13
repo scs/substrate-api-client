@@ -151,7 +151,9 @@ where
 mod tests {
 	use super::*;
 	use crate::SubstrateConfig;
+	use node_template_runtime::Block;
 	use sp_core::{sr25519, Pair};
+	use sp_keyring::AccountKeyring;
 
 	#[test]
 	fn test_extrinsic_signer_from_sr25519_pair() {
@@ -161,20 +163,20 @@ mod tests {
 		)
 		.unwrap();
 
-		let es_converted: ExtrinsicSigner<SubstrateConfig, _> = alice.clone().into();
-		let es_new = ExtrinsicSigner::<SubstrateConfig, sr25519::Pair>::new(alice.clone());
+		let es_converted: ExtrinsicSigner<SubstrateConfig<Block>, _> = alice.clone().into();
+		let es_new = ExtrinsicSigner::<SubstrateConfig<Block>, sr25519::Pair>::new(alice.clone());
 
 		assert_eq!(es_converted.signer.public(), es_new.signer.public());
 	}
 	// This test does not work. See issue #504.
 
-	// 	#[test]
-	// 	fn test_extrinsic_signer_clone() {
-	// 		let pair = AccountKeyring::Alice.pair();
-	// 		let signer = ExtrinsicSigner::<_, Signature, Runtime>::new(pair);
-	//
-	// 		let signer2 = signer.clone();
-	// 	}
+	#[test]
+	fn test_extrinsic_signer_clone() {
+		let pair = AccountKeyring::Alice.pair();
+		let signer = ExtrinsicSigner::<SubstrateConfig<Block>, sr25519::Pair>::new(pair);
+
+		let _signer2 = signer.clone();
+	}
 
 	//Todo: still needed?
 	/*
