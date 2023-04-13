@@ -68,6 +68,7 @@ disable_target_static_assertions = [
 std = [
     # crates.io no_std
     "codec/std",
+    "frame-metadata/std",
     "hex/std",
     "log/std",
     "serde/std",
@@ -75,7 +76,6 @@ std = [
     # crates.io std only
     "url",
     # substrate no_std
-    "frame-metadata/std",
     "sp-core/std",
     "sp-runtime/std",
     "sp-runtime-interface/std",

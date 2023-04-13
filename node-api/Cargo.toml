@@ -42,13 +42,13 @@ std = [
     "bitvec/std",
     "codec/std",
     "either/default",
+    "frame-metadata/std",
     "hex/std",
     "log/std",
     "scale-info/std",
     "serde/std",
     "serde_json/std",
     # substrate
-    "frame-metadata/std",
     "sp-core/std",
     "sp-runtime/std",
     # no_std support
