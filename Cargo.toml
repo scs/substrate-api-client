@@ -4,6 +4,10 @@ version = "0.11.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
+repository = "https://github.com/scs/substrate-api-client"
+description = "Json-rpc client with helper functions compatible with any Substrate node"
+keywords = ["json", "rpc"]
+categories = ["no-std", "wasm"]
 
 
 [workspace]
