@@ -59,6 +59,8 @@ pub trait GetBlock {
 
 	fn get_block_hash(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Hash>>;
 
+	fn get_genesis_hash(&self) -> Result<Option<Self::Hash>>;
+
 	fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>>;
 
 	fn get_block_by_num(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Block>>;
@@ -76,6 +78,8 @@ pub trait GetBlock {
 		&self,
 		number: Option<Self::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
+
+	fn get_last_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetBlock for Api<Signer, Client, Params, Runtime>
@@ -84,6 +88,7 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::RuntimeBlock: DeserializeOwned,
+	Runtime::Header: DeserializeOwned,
 {
 	type BlockNumber = Runtime::BlockNumber;
 	type Hash = Runtime::Hash;
@@ -92,6 +97,10 @@ where
 	fn get_block_hash(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Hash>> {
 		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
 		Ok(block_hash)
+	}
+
+	fn get_genesis_hash(&self) -> Result<Option<Self::Hash>> {
+		self.get_block_hash(Some(0u32.into()))
 	}
 
 	fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>> {
@@ -115,6 +124,11 @@ where
 		number: Option<Self::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>> {
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
+	}
+
+	fn get_last_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>> {
+		self.get_finalized_head()?
+			.map_or_else(|| Ok(None), |hash| self.get_signed_block(Some(hash)))
 	}
 }
 pub trait SubscribeChain {

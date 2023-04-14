@@ -50,6 +50,7 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Header: DeserializeOwned,
 {
 	type Hash = Runtime::Hash;
 
@@ -159,6 +160,7 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Header: DeserializeOwned,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
 	fn retrieve_extrinsic_index_from_block(

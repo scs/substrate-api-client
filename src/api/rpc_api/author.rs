@@ -267,6 +267,7 @@ where
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
 	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
+	Runtime::Header: DeserializeOwned,
 {
 	type Client = Client;
 	type Hash = Runtime::Hash;
