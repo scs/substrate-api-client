@@ -14,6 +14,7 @@
 use crate::{
 	api::{Api, Result},
 	rpc::{Request, Subscribe},
+	Error,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
@@ -59,7 +60,7 @@ pub trait GetBlock {
 
 	fn get_block_hash(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Hash>>;
 
-	fn get_genesis_hash(&self) -> Result<Option<Self::Hash>>;
+	fn get_genesis_block(&self) -> Result<Self::Block>;
 
 	fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>>;
 
@@ -79,7 +80,7 @@ pub trait GetBlock {
 		number: Option<Self::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 
-	fn get_last_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>>;
+	fn get_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetBlock for Api<Signer, Client, Params, Runtime>
@@ -99,8 +100,8 @@ where
 		Ok(block_hash)
 	}
 
-	fn get_genesis_hash(&self) -> Result<Option<Self::Hash>> {
-		self.get_block_hash(Some(0u32.into()))
+	fn get_genesis_block(&self) -> Result<Self::Block> {
+		self.get_block(Some(self.genesis_hash()))?.ok_or(Error::BlockHashNotFound)
 	}
 
 	fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>> {
@@ -126,7 +127,7 @@ where
 		self.get_block_hash(number).map(|h| self.get_signed_block(h))?
 	}
 
-	fn get_last_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>> {
+	fn get_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>> {
 		self.get_finalized_head()?
 			.map_or_else(|| Ok(None), |hash| self.get_signed_block(Some(hash)))
 	}
