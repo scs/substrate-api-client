@@ -64,21 +64,26 @@ disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
 std = [
+    # crates.io no_std
     "codec/std",
     "hex/std",
     "log/std",
     "serde/std",
     "serde_json/std",
+    # crates.io std only
     "url",
+    # substrate no_std
     "frame-metadata/std",
     "sp-core/std",
     "sp-runtime/std",
     "sp-runtime-interface/std",
+    # substrate std
     "frame-support",
+    # local deps
     "ac-compose-macros/std",
     "ac-node-api/std",
-    "ac-primitives/std",
-]
+    "ac-primitives/std", 
+] 
 jsonrpsee-client = ["std", "jsonrpsee", "futures"]
 tungstenite-client = ["std", "tungstenite"]
 ws-client = ["std", "ws"]
