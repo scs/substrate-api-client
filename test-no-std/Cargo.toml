@@ -9,8 +9,9 @@ edition = "2021"
 libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
-ac-compose-macros = { path = "../compose-macros", default-features = false, optional = true }
+ac-compose-macros = { path = "../compose-macros", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 ac-node-api = { path = "../node-api", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
+ac-primitives = { path = "../primitives", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 
 # substrate dependencies
@@ -22,3 +23,4 @@ sp-io = { default-features = false, features = ["disable_oom", "disable_panic_ha
 api-client = ["substrate-api-client"]
 compose-macros = ["ac-compose-macros"]
 node-api = ["ac-node-api"]
+primitives = ["ac-primitives"]

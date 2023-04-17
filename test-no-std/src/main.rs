@@ -3,7 +3,12 @@
 #![no_std]
 #![no_main]
 
-#[cfg(not(any(feature = "api-client", feature = "node-api", feature = "compose-macros")))]
+#[cfg(not(any(
+	feature = "api-client",
+	feature = "node-api",
+	feature = "compose-macros",
+	feature = "primitives"
+)))]
 compile_error!(
 	"either feature \"api-client\", \"compose-macro\", or feature \"node-api\" must be enabled"
 );
@@ -18,6 +23,9 @@ extern crate ac_compose_macros;
 
 #[cfg(feature = "node-api")]
 extern crate ac_node_api;
+
+#[cfg(feature = "primitives")]
+extern crate ac_primitives;
 
 // The libc crate allows importing functions from C.
 extern crate libc;

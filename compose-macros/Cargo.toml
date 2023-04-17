@@ -4,30 +4,26 @@ version = "0.3.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
+repository = "https://github.com/scs/substrate-api-client"
+description = "Macros for creating Substrate extrsinics and rpc calls"
+readme = "README.md"
+categories = ["no-std"]
+
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 log = { version = "0.4.14", default-features = false }
-
-# substrate
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-
-# need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
 
 [features]
 default = ["std"]
+# To support `no_std` builds in non-32 bit environments.
+disable_target_static_assertions = [
+    "ac-primitives/disable_target_static_assertions",
+]
 std = [
-    "codec/std",
     "log/std",
-    # substrate
-    "sp-core/std",
-    "sp-runtime/std",
-    "sp-application-crypto/std",
     # local
     "ac-primitives/std",
 ]

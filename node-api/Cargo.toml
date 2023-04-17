@@ -1,14 +1,20 @@
 [package]
 name = "ac-node-api"
 version = "0.3.0"
+authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
+repository = "https://github.com/scs/substrate-api-client"
+description = "Substrate node type definitions and helpers for the substrate-api-client"
+readme = "README.md"
+categories = ["no-std"]
 
 [dependencies]
 bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.2.1", features = ["derive", "bit-vec"], default-features = false }
 derive_more = { version = "0.99.17" }
 either = { version = "1.6.1", default-features = false }
+frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
@@ -16,7 +22,6 @@ serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # substrate
-frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
@@ -26,7 +31,6 @@ sp-runtime-interface = { default-features = false, git = "https://github.com/par
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
-
 
 [features]
 default = ["std"]
@@ -38,13 +42,13 @@ std = [
     "bitvec/std",
     "codec/std",
     "either/default",
+    "frame-metadata/std",
     "hex/std",
     "log/std",
     "scale-info/std",
     "serde/std",
     "serde_json/std",
     # substrate
-    "frame-metadata/std",
     "sp-core/std",
     "sp-runtime/std",
     # no_std support
