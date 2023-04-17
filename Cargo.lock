@@ -51,11 +51,7 @@ dependencies = [
  "bitvec",
  "derive_more",
  "either",
-<<<<<<< HEAD
  "frame-metadata",
-=======
- "frame-metadata 15.1.0 (git+https://github.com/paritytech/frame-metadata)",
->>>>>>> cargo update and fix clippy
  "hex",
  "log",
  "parity-scale-codec",
@@ -1197,20 +1193,6 @@ name = "frame-metadata"
 version = "15.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "878babb0b136e731cc77ec2fd883ff02745ff21e6fb662729953d44923df009c"
-<<<<<<< HEAD
-=======
-dependencies = [
- "cfg-if 1.0.0",
- "parity-scale-codec",
- "scale-info",
- "serde",
-]
-
-[[package]]
-name = "frame-metadata"
-version = "15.1.0"
-source = "git+https://github.com/paritytech/frame-metadata#438a5b098bb9d5b5a09bdc5b68275b2c5e63a010"
->>>>>>> cargo update and fix clippy
 dependencies = [
  "cfg-if 1.0.0",
  "parity-scale-codec",
@@ -1225,11 +1207,7 @@ source = "git+https://github.com/paritytech/substrate.git?branch=master#7f930c23
 dependencies = [
  "bitflags",
  "environmental",
-<<<<<<< HEAD
  "frame-metadata",
-=======
- "frame-metadata 15.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
->>>>>>> cargo update and fix clippy
  "frame-support-procedural",
  "impl-trait-for-tuples",
  "k256",
@@ -4990,7 +4968,7 @@ name = "sp-metadata-ir"
 version = "0.1.0"
 source = "git+https://github.com/paritytech/substrate.git?branch=master#7f930c23a8458f360625c9e5e0e1446edbcbb957"
 dependencies = [
- "frame-metadata 15.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "frame-metadata",
  "parity-scale-codec",
  "scale-info",
  "sp-std",
@@ -5375,11 +5353,7 @@ dependencies = [
  "ac-node-api",
  "ac-primitives",
  "derive_more",
-<<<<<<< HEAD
  "frame-metadata",
-=======
- "frame-metadata 15.1.0 (git+https://github.com/paritytech/frame-metadata)",
->>>>>>> cargo update and fix clippy
  "frame-support",
  "futures",
  "hex",
