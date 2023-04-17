@@ -18,6 +18,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignedBlock};
+use alloc::vec::Vec;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
@@ -145,7 +146,7 @@ where
 
 		for n in block_numbers {
 			if let Some(block) = self.get_signed_block_by_num(Some(*n))? {
-				blocks.push(block.into());
+				blocks.push(block);
 			}
 		}
 		Ok(blocks)
