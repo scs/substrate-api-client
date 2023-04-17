@@ -81,6 +81,11 @@ pub trait GetBlock {
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 
 	fn get_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>>;
+
+	fn get_signed_blocks(
+		&self,
+		block_numbers: &[Self::BlockNumber],
+	) -> Result<Vec<SignedBlock<Self::Block>>>;
 }
 
 impl<Signer, Client, Params, Runtime> GetBlock for Api<Signer, Client, Params, Runtime>
@@ -130,6 +135,20 @@ where
 	fn get_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>> {
 		self.get_finalized_head()?
 			.map_or_else(|| Ok(None), |hash| self.get_signed_block(Some(hash)))
+	}
+
+	fn get_signed_blocks(
+		&self,
+		block_numbers: &[Self::BlockNumber],
+	) -> Result<Vec<SignedBlock<Self::Block>>> {
+		let mut blocks = Vec::<SignedBlock<Self::Block>>::new();
+
+		for n in block_numbers {
+			if let Some(block) = self.get_signed_block_by_num(Some(*n))? {
+				blocks.push(block.into());
+			}
+		}
+		Ok(blocks)
 	}
 }
 pub trait SubscribeChain {
