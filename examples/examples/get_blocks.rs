@@ -43,6 +43,13 @@ async fn main() {
 
 	let b = api.get_finalized_block().unwrap().unwrap();
 	println!("Finalized block:\n {:?} \n", b);
+	let last_block_number = b.block.header.number;
+	let block_numbers = std::cmp::max(0, last_block_number - 3)..last_block_number;
+	let block_numbers = block_numbers.collect::<Vec<_>>();
+	let blocks = api.get_signed_blocks(&block_numbers).unwrap();
+	for (i, b) in blocks.iter().enumerate() {
+		println!("Block {} has number: {}", i, b.block.header.number);
+	}
 
 	println!("Latest Header: \n {:?} \n", api.get_header(None).unwrap());
 
