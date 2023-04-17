@@ -38,15 +38,17 @@ async fn main() {
 	let header_hash = api.get_finalized_head().unwrap().unwrap();
 	println!("Latest Finalized Header Hash:\n {} \n", header_hash);
 
-	let h = api.get_header(Some(header_hash)).unwrap().unwrap();
-	println!("Finalized header:\n {:?} \n", h);
+	let header = api.get_header(Some(header_hash)).unwrap().unwrap();
+	println!("Finalized header:\n {:?} \n", header);
 
-	let b = api.get_finalized_block().unwrap().unwrap();
-	println!("Finalized block:\n {:?} \n", b);
-	let last_block_number = b.block.header.number;
-	let block_numbers = std::cmp::max(0, last_block_number - 3)..last_block_number;
-	let block_numbers = block_numbers.collect::<Vec<_>>();
-	let blocks = api.get_signed_blocks(&block_numbers).unwrap();
+	let signed_block = api.get_finalized_block().unwrap().unwrap();
+	println!("Finalized block:\n {:?} \n", signed_block);
+
+	let last_block_number = signed_block.block.header.number;
+	// Get the previous three blocks of the last_block_number
+	let number_of_last_three_blocks: Vec<_> =
+		(last_block_number.saturating_sub(3)..last_block_number).collect();
+	let blocks = api.get_signed_blocks(&number_of_last_three_blocks).unwrap();
 	for (i, b) in blocks.iter().enumerate() {
 		println!("Block {} has number: {}", i, b.block.header.number);
 	}
