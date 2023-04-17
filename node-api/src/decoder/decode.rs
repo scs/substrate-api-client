@@ -61,7 +61,7 @@ pub fn decode_value_as_type<Id: Into<TypeId>>(
 		.resolve(ty_id.id())
 		.ok_or_else(|| DecodeError::TypeIdNotFound(ty_id.id()))?;
 
-	let value = match ty.type_def() {
+	let value = match &ty.type_def {
 		TypeDef::Composite(inner) =>
 			decode_composite_value(data, inner, types).map(ValueDef::Composite),
 		TypeDef::Sequence(inner) =>
@@ -83,7 +83,7 @@ fn decode_composite_value(
 	ty: &TypeDefComposite<PortableForm>,
 	types: &PortableRegistry,
 ) -> Result<Composite<TypeId>, DecodeError> {
-	decode_fields(data, ty.fields(), types)
+	decode_fields(data, &ty.fields, types)
 }
 
 fn decode_variant_value(
@@ -96,13 +96,13 @@ fn decode_variant_value(
 
 	// Does a variant exist with the index we're looking for?
 	let variant = ty
-		.variants()
+		.variants
 		.iter()
-		.find(|v| v.index() == index)
+		.find(|v| v.index == index)
 		.ok_or_else(|| DecodeError::VariantNotFound(index, ty.clone()))?;
 
-	let fields = decode_fields(data, variant.fields(), types)?;
-	Ok(Variant { name: variant.name().clone(), values: fields })
+	let fields = decode_fields(data, &variant.fields, types)?;
+	Ok(Variant { name: variant.name.clone(), values: fields })
 }
 
 /// Variant and Composite types both have fields; this will decode them into values.
@@ -111,10 +111,10 @@ fn decode_fields(
 	fields: &[Field<PortableForm>],
 	types: &PortableRegistry,
 ) -> Result<Composite<TypeId>, DecodeError> {
-	let are_named = fields.iter().any(|f| f.name().is_some());
+	let are_named = fields.iter().any(|f| f.name.is_some());
 	let named_field_vals = fields.iter().map(|f| {
-		let name = f.name().cloned().unwrap_or_default();
-		decode_value_as_type(data, f.ty(), types).map(|val| (name, val))
+		let name = f.name.as_ref().cloned().unwrap_or_default();
+		decode_value_as_type(data, f.ty, types).map(|val| (name, val))
 	});
 
 	if are_named {
@@ -135,7 +135,7 @@ fn decode_sequence_value(
 	// we know how many values to try pulling out of the data.
 	let len = Compact::<u64>::decode(data)?;
 	let values: Vec<_> = (0..len.0)
-		.map(|_| decode_value_as_type(data, ty.type_param(), types))
+		.map(|_| decode_value_as_type(data, ty.type_param, types))
 		.collect::<Result<_, _>>()?;
 
 	Ok(Composite::Unnamed(values))
@@ -148,8 +148,8 @@ fn decode_array_value(
 ) -> Result<Composite<TypeId>, DecodeError> {
 	// The length is known based on the type we want to decode into, so we pull out the number of items according
 	// to that, and don't need a length to exist in the SCALE encoded bytes
-	let values: Vec<_> = (0..ty.len())
-		.map(|_| decode_value_as_type(data, ty.type_param(), types))
+	let values: Vec<_> = (0..ty.len)
+		.map(|_| decode_value_as_type(data, ty.type_param, types))
 		.collect::<Result<_, _>>()?;
 
 	Ok(Composite::Unnamed(values))
@@ -161,7 +161,7 @@ fn decode_tuple_value(
 	types: &PortableRegistry,
 ) -> Result<Composite<TypeId>, DecodeError> {
 	let values: Vec<_> = ty
-		.fields()
+		.fields
 		.iter()
 		.map(|f| decode_value_as_type(data, f, types))
 		.collect::<Result<_, _>>()?;
@@ -208,7 +208,7 @@ fn decode_compact_value(
 		types: &PortableRegistry,
 	) -> Result<ValueDef<TypeId>, DecodeError> {
 		use TypeDefPrimitive::*;
-		let val = match inner.type_def() {
+		let val = match &inner.type_def {
 			// It's obvious how to decode basic primitive unsigned types, since we have impls for them.
 			TypeDef::Primitive(U8) =>
 				ValueDef::Primitive(Primitive::uint(Compact::<u8>::decode(data)?.0)),
@@ -222,13 +222,13 @@ fn decode_compact_value(
 				ValueDef::Primitive(Primitive::uint(Compact::<u128>::decode(data)?.0)),
 			// A struct with exactly 1 field containing one of the above types can be sensibly compact encoded/decoded.
 			TypeDef::Composite(composite) => {
-				if composite.fields().len() != 1 {
+				if composite.fields.len() != 1 {
 					return Err(DecodeError::CannotDecodeCompactIntoType(inner.clone()))
 				}
 
 				// What type is the 1 field that we are able to decode?
-				let field = &composite.fields()[0];
-				let field_type_id = field.ty().id();
+				let field = &composite.fields[0];
+				let field_type_id = field.ty.id;
 				let inner_ty = types
 					.resolve(field_type_id)
 					.ok_or(DecodeError::TypeIdNotFound(field_type_id))?;
@@ -237,11 +237,11 @@ fn decode_compact_value(
 				// the inner type is also a 1-field composite type.
 				let inner_value = Value {
 					value: decode_compact(data, inner_ty, types)?,
-					context: field.ty().into(),
+					context: field.ty.into(),
 				};
 
 				// Wrap the inner type in a representation of this outer composite type.
-				let composite = match field.name() {
+				let composite = match &field.name {
 					Some(name) => Composite::Named(vec![(name.clone(), inner_value)]),
 					None => Composite::Unnamed(vec![inner_value]),
 				};
@@ -258,8 +258,8 @@ fn decode_compact_value(
 
 	// Pluck the inner type out and run it through our compact decoding logic.
 	let inner = types
-		.resolve(ty.type_param().id())
-		.ok_or_else(|| DecodeError::TypeIdNotFound(ty.type_param().id()))?;
+		.resolve(ty.type_param.id)
+		.ok_or_else(|| DecodeError::TypeIdNotFound(ty.type_param.id))?;
 	decode_compact(data, inner, types)
 }
 

@@ -30,20 +30,20 @@ pub fn get_bitsequence_details(
 	ty: &TypeDefBitSequence<PortableForm>,
 	types: &PortableRegistry,
 ) -> Result<(BitOrderTy, BitStoreTy), BitSequenceError> {
-	let bit_store_ty = ty.bit_store_type().id();
-	let bit_order_ty = ty.bit_order_type().id();
+	let bit_store_ty = ty.bit_store_type.id;
+	let bit_order_ty = ty.bit_order_type.id;
 
 	// What is the backing store type expected?
-	let bit_store_def = types
+	let bit_store_def = &types
 		.resolve(bit_store_ty)
 		.ok_or(BitSequenceError::BitStoreTypeNotFound(bit_store_ty))?
-		.type_def();
+		.type_def;
 
 	// What is the bit order type expected?
 	let bit_order_def = types
 		.resolve(bit_order_ty)
 		.ok_or(BitSequenceError::BitOrderTypeNotFound(bit_order_ty))?
-		.path()
+		.path
 		.ident()
 		.ok_or(BitSequenceError::NoBitOrderIdent)?;
 

@@ -107,7 +107,7 @@ impl DispatchError {
 			},
 		};
 
-		let variant = match dispatch_error_ty.type_def() {
+		let variant = match &dispatch_error_ty.type_def {
 			TypeDef::Variant(var) => var,
 			_ => {
 				warn!("Can't decode error: sp_runtime::DispatchError type is not a Variant");
@@ -116,7 +116,7 @@ impl DispatchError {
 		};
 
 		let module_variant_idx =
-			variant.variants().iter().find(|v| v.name() == "Module").map(|v| v.index());
+			variant.variants.iter().find(|v| v.name == "Module").map(|v| v.index);
 		let module_variant_idx = match module_variant_idx {
 			Some(idx) => idx,
 			None => {
