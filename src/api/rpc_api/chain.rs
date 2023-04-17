@@ -61,6 +61,7 @@ pub trait GetBlock {
 
 	fn get_block_hash(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Hash>>;
 
+	/// Returns the genesis block
 	fn get_genesis_block(&self) -> Result<Self::Block>;
 
 	fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>>;
@@ -81,8 +82,11 @@ pub trait GetBlock {
 		number: Option<Self::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 
+	/// Get the last finalized signed block.
 	fn get_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>>;
 
+	/// Returns a vector containing the blocks with the block numbers given in the input parameter.
+	/// If fetching any of the block fails then a `Result::Err` will be returned.
 	fn get_signed_blocks(
 		&self,
 		block_numbers: &[Self::BlockNumber],

@@ -49,8 +49,9 @@ async fn main() {
 	let number_of_last_three_blocks: Vec<_> =
 		(last_block_number.saturating_sub(3)..last_block_number).collect();
 	let blocks = api.get_signed_blocks(&number_of_last_three_blocks).unwrap();
+	println!("Block numbers of the previous three blocks: ");
 	for (i, b) in blocks.iter().enumerate() {
-		println!("Block {} has number: {}", i, b.block.header.number);
+		println!("  Block {} has block number {}", i, b.block.header.number);
 	}
 
 	println!("Latest Header: \n {:?} \n", api.get_header(None).unwrap());
