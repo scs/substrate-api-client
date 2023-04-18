@@ -24,7 +24,7 @@ use substrate_api_client::{
 	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, FrameSystemConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
-	Api, FetchEvents, GetBlock, SubmitAndWatch, SubscribeEvents, XtStatus,
+	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:

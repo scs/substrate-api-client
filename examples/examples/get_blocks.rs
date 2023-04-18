@@ -21,7 +21,7 @@ use sp_core::sr25519;
 use substrate_api_client::{
 	ac_primitives::PlainTipExtrinsicParams,
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, GetBlock, GetHeader, SubscribeChain,
+	Api, GetChainInfo, SubscribeChain,
 };
 
 #[tokio::main]

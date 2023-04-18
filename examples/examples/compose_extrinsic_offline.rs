@@ -22,7 +22,7 @@ use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams},
 	rpc::JsonrpseeClient,
-	Api, GetHeader, SubmitAndWatch, XtStatus,
+	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]

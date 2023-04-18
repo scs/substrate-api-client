@@ -14,7 +14,7 @@
 use crate::{
 	api::{Api, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	GetBlock, GetStorage,
+	GetChainInfo, GetStorage,
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{EventDetails, EventRecord, Events, Phase};

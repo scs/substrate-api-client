@@ -23,41 +23,15 @@ use log::*;
 use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
 
-pub trait GetHeader {
+pub trait GetChainInfo {
+	type BlockNumber;
 	type Hash;
 	type Header;
+	type Block;
 
 	fn get_finalized_head(&self) -> Result<Option<Self::Hash>>;
 
 	fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>>;
-}
-
-impl<Signer, Client, Params, Runtime> GetHeader for Api<Signer, Client, Params, Runtime>
-where
-	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Header: DeserializeOwned,
-{
-	type Hash = Runtime::Hash;
-	type Header = Runtime::Header;
-
-	fn get_finalized_head(&self) -> Result<Option<Self::Hash>> {
-		let finalized_block_hash =
-			self.client().request("chain_getFinalizedHead", rpc_params![])?;
-		Ok(finalized_block_hash)
-	}
-
-	fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>> {
-		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
-		Ok(block_hash)
-	}
-}
-
-pub trait GetBlock {
-	type BlockNumber;
-	type Hash;
-	type Block;
 
 	fn get_block_hash(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Hash>>;
 
@@ -93,7 +67,7 @@ pub trait GetBlock {
 	) -> Result<Vec<SignedBlock<Self::Block>>>;
 }
 
-impl<Signer, Client, Params, Runtime> GetBlock for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetChainInfo for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
@@ -103,7 +77,19 @@ where
 {
 	type BlockNumber = Runtime::BlockNumber;
 	type Hash = Runtime::Hash;
+	type Header = Runtime::Header;
 	type Block = Runtime::RuntimeBlock;
+
+	fn get_finalized_head(&self) -> Result<Option<Self::Hash>> {
+		let finalized_block_hash =
+			self.client().request("chain_getFinalizedHead", rpc_params![])?;
+		Ok(finalized_block_hash)
+	}
+
+	fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>> {
+		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
+		Ok(block_hash)
+	}
 
 	fn get_block_hash(&self, number: Option<Self::BlockNumber>) -> Result<Option<Self::Hash>> {
 		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;

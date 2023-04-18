@@ -22,7 +22,7 @@ use substrate_api_client::{
 	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
-	Api, GetBlock, GetTransactionPayment,
+	Api, GetChainInfo, GetTransactionPayment,
 };
 
 #[tokio::main]

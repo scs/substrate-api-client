@@ -23,7 +23,7 @@ use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::AccountKeyring;
 use sp_staking::EraIndex;
 use substrate_api_client::{
-	ac_primitives::AssetTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetBlock, GetStorage,
+	ac_primitives::AssetTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetChainInfo, GetStorage,
 };
 
 type Balance = <Runtime as pallet_balances::Config>::Balance;
