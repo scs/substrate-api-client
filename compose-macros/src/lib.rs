@@ -86,9 +86,9 @@ macro_rules! compose_extrinsic_offline {
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
+#[maybe_async::sync_impl]
 macro_rules! compose_extrinsic {
 	($api: expr,
-    $nonce: expr,
 	$module: expr,
 	$call: expr
 	$(, $args: expr) *) => {
@@ -102,7 +102,33 @@ macro_rules! compose_extrinsic {
                 $crate::compose_extrinsic_offline!(
                     signer,
                     call.clone(),
-                    $api.extrinsic_params($nonce)
+                    $api.extrinsic_params($api.get_nonce().unwrap())
+                )
+            } else {
+                UncheckedExtrinsicV4::new_unsigned(call.clone())
+            }
+		}
+    };
+}
+
+#[macro_export]
+#[maybe_async::async_impl]
+macro_rules! compose_extrinsic {
+	($api: expr,
+	$module: expr,
+	$call: expr
+	$(, $args: expr) *) => {
+		{
+            use $crate::log::debug;
+            use $crate::primitives::UncheckedExtrinsicV4;
+
+            debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
+            let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
+            if let Some(signer) = $api.signer() {
+                $crate::compose_extrinsic_offline!(
+                    signer,
+                    call.clone(),
+                    $api.extrinsic_params($api.get_nonce().await.unwrap())
                 )
             } else {
                 UncheckedExtrinsicV4::new_unsigned(call.clone())

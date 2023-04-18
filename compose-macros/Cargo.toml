@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ['derive'] }
 log = { version = "0.4.14", default-features = false }
+maybe-async = { version = "0.2.7", features = ["is_sync"] }
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }

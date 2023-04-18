@@ -69,8 +69,7 @@ async fn main() {
 		Compact(new_balance)
 	);
 
-	let xt: UncheckedExtrinsicV4<_, _, _, _> =
-		compose_extrinsic!(&api, api.get_nonce().unwrap(), "Sudo", "sudo", call);
+	let xt: UncheckedExtrinsicV4<_, _, _, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api

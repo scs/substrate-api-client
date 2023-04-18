@@ -76,8 +76,7 @@ where
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>> {
-		let nonce = self.get_nonce().await.unwrap();
-		compose_extrinsic!(self, nonce, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
+		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
 	}
 
 	async fn balance_force_set_balance(
@@ -85,14 +84,6 @@ where
 		who: Self::Address,
 		free_balance: Self::Balance,
 	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>> {
-		let nonce = self.get_nonce().await.unwrap();
-		compose_extrinsic!(
-			self,
-			nonce,
-			BALANCES_MODULE,
-			FORCE_SET_BALANCE,
-			who,
-			Compact(free_balance)
-		)
+		compose_extrinsic!(self, BALANCES_MODULE, FORCE_SET_BALANCE, who, Compact(free_balance))
 	}
 }

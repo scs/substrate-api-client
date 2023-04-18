@@ -133,8 +133,7 @@ where
 		gas_limit: Self::Gas,
 		code: Self::Code,
 	) -> Self::Extrinsic<PutCodeFor<Self>> {
-		let nonce = self.get_nonce().await.unwrap();
-		compose_extrinsic!(self, nonce, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
+		compose_extrinsic!(self, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
 	async fn contract_instantiate(
@@ -144,10 +143,8 @@ where
 		code_hash: Self::Hash,
 		data: Self::Data,
 	) -> Self::Extrinsic<InstantiateWithHashFor<Self>> {
-		let nonce = self.get_nonce().await.unwrap();
 		compose_extrinsic!(
 			self,
-			nonce,
 			CONTRACTS_MODULE,
 			INSTANTIATE,
 			Compact(endowment),
@@ -165,10 +162,8 @@ where
 		data: Self::Data,
 		salt: Self::Salt,
 	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>> {
-		let nonce = self.get_nonce().await.unwrap();
 		compose_extrinsic!(
 			self,
-			nonce,
 			CONTRACTS_MODULE,
 			INSTANTIATE_WITH_CODE,
 			Compact(endowment),
@@ -186,10 +181,8 @@ where
 		gas_limit: Self::Gas,
 		data: Self::Data,
 	) -> Self::Extrinsic<ContractCallFor<Self>> {
-		let nonce = self.get_nonce().await.unwrap();
 		compose_extrinsic!(
 			self,
-			nonce,
 			CONTRACTS_MODULE,
 			CALL,
 			dest,

@@ -74,8 +74,7 @@ where
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		let nonce = self.get_nonce().await.unwrap();
-		compose_extrinsic!(self, nonce, UTILITY_MODULE, BATCH, calls)
+		compose_extrinsic!(self, UTILITY_MODULE, BATCH, calls)
 	}
 
 	async fn force_batch<Call: Encode + Clone>(
@@ -83,7 +82,6 @@ where
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
-		let nonce = self.get_nonce().await.unwrap();
-		compose_extrinsic!(self, nonce, UTILITY_MODULE, FORCE_BATCH, calls)
+		compose_extrinsic!(self, UTILITY_MODULE, FORCE_BATCH, calls)
 	}
 }

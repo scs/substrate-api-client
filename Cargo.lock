@@ -18,6 +18,7 @@ version = "0.3.0"
 dependencies = [
  "ac-primitives",
  "log",
+ "maybe-async",
  "parity-scale-codec",
  "sp-application-crypto",
  "sp-core",
