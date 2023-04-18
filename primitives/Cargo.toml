@@ -19,25 +19,26 @@ serde = { version = "1.0", default-features = false, features = ["derive", "allo
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate no_std
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-weights = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { version = "19.0", default-features = false, features = ["full_crypto"] }
+sp-runtime = { version = "22.0", default-features = false }
+sp-runtime-interface = { version = "16.0", default-features = false }
+sp-staking = { version = "18.0", default-features = false }
+sp-version = { version = "20.0", default-features = false }
+sp-weights = { version = "18.0", default-features = false }
+
 # need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-application-crypto = { version = "21.0", default-features = false, features = ["full_crypto"] }
 
 # substrate std / wasm only
-frame-system = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-assets = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-balances = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-contracts = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-staking = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-system = { version = "20.0", optional = true }
+pallet-assets = { version = "21.0", optional = true }
+pallet-balances = { version = "20.0", optional = true }
+pallet-contracts = { version = "19.0", optional = true }
+pallet-staking = { version = "20.0", optional = true }
 
 [dev-dependencies]
-node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+node-template-runtime = { version = "2.0" }
+sp-keyring = { version = "22.0" }
 
 [features]
 default = ["std"]

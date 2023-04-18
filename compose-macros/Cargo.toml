@@ -14,7 +14,7 @@ categories = ["no-std"]
 log = { version = "0.4.14", default-features = false }
 
 # local
-ac-primitives = { path = "../primitives", default-features = false }
+ac-primitives = { version = "6.0", default-features = false }
 
 [features]
 default = ["std"]

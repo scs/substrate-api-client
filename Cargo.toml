@@ -42,21 +42,21 @@ tungstenite = { version = "0.18.0", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { version = "19.0", default-features = false, features = ["full_crypto"] }
+sp-runtime = { version = "22.0", default-features = false }
+sp-runtime-interface = { version = "16.0", default-features = false }
 
 # substrate std / wasm only
-frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-support = { version = "20.0", optional = true }
 
 # local deps
-ac-compose-macros = { path = "compose-macros", default-features = false }
-ac-node-api = { path = "node-api", default-features = false }
-ac-primitives = { path = "primitives", default-features = false }
+ac-compose-macros = { version = "6.0", default-features = false }
+ac-node-api = { version = "6.0", default-features = false }
+ac-primitives = { version = "6.0", default-features = false }
 
 [dev-dependencies]
-ac-node-api = { path = "node-api", features = ["mocks"] }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+ac-node-api = { version = "6.0", features = ["mocks"] }
+kitchensink-runtime = { package = "node-template-runtime", version = "2.0" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 
 [features]

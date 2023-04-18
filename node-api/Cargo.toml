@@ -22,15 +22,14 @@ serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # substrate
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { version = "19.0", default-features = false, features = ["full_crypto"] }
+sp-runtime = { version = "22.0", default-features = false }
 
 # need to add this for `no_std`
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-
+sp-application-crypto = { version = "21.0", default-features = false, features = ["full_crypto"] }
+sp-runtime-interface = { version = "16.0", default-features = false }
 # local
-ac-primitives = { path = "../primitives", default-features = false }
+ac-primitives = { version = "6.0", default-features = false }
 
 [features]
 default = ["std"]
