@@ -6375,6 +6375,7 @@ dependencies = [
  "ac-primitives 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc",
  "sp-io 7.0.0",
+ "sp-runtime-interface 7.0.0",
  "substrate-api-client 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
