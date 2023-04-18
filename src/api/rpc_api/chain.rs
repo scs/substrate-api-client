@@ -22,46 +22,53 @@ use serde::de::DeserializeOwned;
 use sp_runtime::traits::GetRuntimeBlockType;
 
 #[maybe_async::maybe_async(?Send)]
-pub trait GetHeader<Hash> {
+pub trait GetHeader {
+	type Hash;
 	type Header;
 
-	async fn get_finalized_head(&self) -> Result<Option<Hash>>;
+	async fn get_finalized_head(&self) -> Result<Option<Self::Hash>>;
 
-	async fn get_header(&self, hash: Option<Hash>) -> Result<Option<Self::Header>>;
+	async fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetHeader<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetHeader for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::Header: DeserializeOwned,
 {
+	type Hash = Runtime::Hash;
 	type Header = Runtime::Header;
 
-	async fn get_finalized_head(&self) -> Result<Option<Runtime::Hash>> {
+	async fn get_finalized_head(&self) -> Result<Option<Self::Hash>> {
 		let finalized_block_hash =
 			self.client().request("chain_getFinalizedHead", rpc_params![]).await?;
 		Ok(finalized_block_hash)
 	}
 
-	async fn get_header(&self, hash: Option<Runtime::Hash>) -> Result<Option<Runtime::Header>> {
-		let block_hash = self.client().request("chain_getHeader", rpc_params![hash]).await?;
+	async fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>> {
+		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
 		Ok(block_hash)
 	}
 }
 
 #[maybe_async::maybe_async(?Send)]
-pub trait GetBlock<Number, Hash> {
+pub trait GetBlock {
+	type BlockNumber;
+	type Hash;
 	type Block;
 
-	async fn get_block_hash(&self, number: Option<Number>) -> Result<Option<Hash>>;
+	async fn get_block_hash(&self, number: Option<Self::BlockNumber>)
+		-> Result<Option<Self::Hash>>;
 
-	async fn get_block(&self, hash: Option<Hash>) -> Result<Option<Self::Block>>;
+	async fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>>;
 
-	async fn get_block_by_num(&self, number: Option<Number>) -> Result<Option<Self::Block>>;
+	async fn get_block_by_num(
+		&self,
+		number: Option<Self::BlockNumber>,
+	) -> Result<Option<Self::Block>>;
 
 	/// A signed block is a block with Justification ,i.e., a Grandpa finality proof.
 	/// The interval at which finality proofs are provided is set via the
@@ -69,50 +76,49 @@ pub trait GetBlock<Number, Hash> {
 	/// The Justification may be None.
 	async fn get_signed_block(
 		&self,
-		hash: Option<Hash>,
+		hash: Option<Self::Hash>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 
 	async fn get_signed_block_by_num(
 		&self,
-		number: Option<Number>,
+		number: Option<Self::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetBlock<Runtime::BlockNumber, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetBlock for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: FrameSystemConfig + GetRuntimeBlockType,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::RuntimeBlock: DeserializeOwned,
 {
+	type BlockNumber = Runtime::BlockNumber;
+	type Hash = Runtime::Hash;
 	type Block = Runtime::RuntimeBlock;
 
 	async fn get_block_hash(
 		&self,
-		number: Option<Runtime::BlockNumber>,
-	) -> Result<Option<Runtime::Hash>> {
-		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number]).await?;
+		number: Option<Self::BlockNumber>,
+	) -> Result<Option<Self::Hash>> {
+		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
 		Ok(block_hash)
 	}
 
-	async fn get_block(&self, hash: Option<Runtime::Hash>) -> Result<Option<Self::Block>> {
-		Self::get_signed_block(self, hash).await.map(|sb_opt| sb_opt.map(|sb| sb.block))
+	async fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>> {
+		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	async fn get_block_by_num(
 		&self,
-		number: Option<Runtime::BlockNumber>,
+		number: Option<Self::BlockNumber>,
 	) -> Result<Option<Self::Block>> {
-		Self::get_signed_block_by_num(self, number)
-			.await
-			.map(|sb_opt| sb_opt.map(|sb| sb.block))
+		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	async fn get_signed_block(
 		&self,
-		hash: Option<Runtime::Hash>,
+		hash: Option<Self::Hash>,
 	) -> Result<Option<SignedBlock<Self::Block>>> {
 		let block = self.client().request("chain_getBlock", rpc_params![hash]).await?;
 		Ok(block)
@@ -120,32 +126,33 @@ where
 
 	async fn get_signed_block_by_num(
 		&self,
-		number: Option<Runtime::BlockNumber>,
+		number: Option<Self::BlockNumber>,
 	) -> Result<Option<SignedBlock<Self::Block>>> {
 		self.get_block_hash(number).await.map(|h| self.get_signed_block(h))?.await
 	}
 }
-pub trait SubscribeChain<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
+pub trait SubscribeChain {
+	type Client: Subscribe;
 	type Header: DeserializeOwned;
 
-	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>>;
+	fn subscribe_finalized_heads(
+		&self,
+	) -> Result<<Self::Client as Subscribe>::Subscription<Self::Header>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeChain<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> SubscribeChain for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 	Runtime::Header: DeserializeOwned,
 {
+	type Client = Client;
 	type Header = Runtime::Header;
 
-	fn subscribe_finalized_heads(&self) -> Result<Client::Subscription<Self::Header>> {
+	fn subscribe_finalized_heads(
+		&self,
+	) -> Result<<Self::Client as Subscribe>::Subscription<Self::Header>> {
 		debug!("subscribing to finalized heads");
 		self.client()
 			.subscribe(

@@ -23,37 +23,41 @@ use alloc::{string::String, vec::Vec};
 use log::*;
 
 #[maybe_async::maybe_async(?Send)]
-pub trait GetAccountInformation<AccountId> {
+pub trait GetAccountInformation {
+	type AccountId;
 	type Index;
 	type AccountData;
 
 	async fn get_account_info(
 		&self,
-		address: &AccountId,
+		address: &Self::AccountId,
 	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>>;
 
-	async fn get_account_data(&self, address: &AccountId) -> Result<Option<Self::AccountData>>;
+	async fn get_account_data(
+		&self,
+		address: &Self::AccountId,
+	) -> Result<Option<Self::AccountData>>;
 
 	/// Get nonce of an account.
-	async fn get_account_nonce(&self, account: &AccountId) -> Result<Self::Index>;
+	async fn get_account_nonce(&self, account: &Self::AccountId) -> Result<Self::Index>;
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetAccountInformation<Runtime::AccountId>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetAccountInformation for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
+	type AccountId = Runtime::AccountId;
 	type Index = Runtime::Index;
 	type AccountData = Runtime::AccountData;
 
 	async fn get_account_info(
 		&self,
-		address: &Runtime::AccountId,
+		address: &Self::AccountId,
 	) -> Result<Option<AccountInfo<Self::Index, Self::AccountData>>> {
-		let storagekey: StorageKey = self.metadata().storage_map_key::<Runtime::AccountId>(
+		let storagekey: StorageKey = self.metadata().storage_map_key::<Self::AccountId>(
 			"System",
 			"Account",
 			address.clone(),
@@ -65,12 +69,12 @@ where
 
 	async fn get_account_data(
 		&self,
-		address: &Runtime::AccountId,
-	) -> Result<Option<Runtime::AccountData>> {
-		self.get_account_info(address).await.map(|info| info.map(|i| i.data))
+		address: &Self::AccountId,
+	) -> Result<Option<Self::AccountData>> {
+		self.get_account_info(address).map(|info| info.map(|i| i.data))
 	}
 
-	async fn get_account_nonce(&self, account: &Runtime::AccountId) -> Result<Runtime::Index> {
+	async fn get_account_nonce(&self, account: &Self::AccountId) -> Result<Self::Index> {
 		self.get_account_info(account)
 			.await
 			.map(|acc_opt| acc_opt.map_or_else(|| 0u32.into(), |acc| acc.nonce))

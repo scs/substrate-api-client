@@ -25,9 +25,13 @@ use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
 
+pub type StorageChangeSetSubscriptionFor<Client, Hash> =
+	<Client as Subscribe>::Subscription<StorageChangeSet<Hash>>;
+
 /// Generic interface to substrate storage.
 #[maybe_async::maybe_async(?Send)]
-pub trait GetStorage<Hash> {
+pub trait GetStorage {
+	type Hash;
 	/// Retrieve the storage value.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
@@ -35,7 +39,7 @@ pub trait GetStorage<Hash> {
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>>;
 
 	/// Retrieve the storage value from a map for the given `map_key`.
@@ -46,7 +50,7 @@ pub trait GetStorage<Hash> {
 		pallet: &'static str,
 		storage_item: &'static str,
 		map_key: K,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>>;
 
 	/// Retrieve the key prefix for a storage map. This is the prefix needed for get_storage_keys_paged().
@@ -65,7 +69,7 @@ pub trait GetStorage<Hash> {
 		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>>;
 
 	/// Retrieve the storage value from the given `storage_key`.
@@ -74,7 +78,7 @@ pub trait GetStorage<Hash> {
 	async fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>>;
 
 	/// Retrieve the keys with prefix with pagination support.
@@ -87,7 +91,7 @@ pub trait GetStorage<Hash> {
 		prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Vec<StorageKey>>;
 
 	/// Retrieve the raw storage for the given `storage_key`.
@@ -96,7 +100,7 @@ pub trait GetStorage<Hash> {
 	async fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<Vec<u8>>>;
 
 	/// Retrieve the storage proof of the corresponding storage value.
@@ -106,8 +110,8 @@ pub trait GetStorage<Hash> {
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
-		at_block: Option<Hash>,
-	) -> Result<Option<ReadProof<Hash>>>;
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>>;
 
 	/// Retrieve the storage proof of the corresponding storage map value.
 	///
@@ -117,8 +121,8 @@ pub trait GetStorage<Hash> {
 		pallet: &'static str,
 		storage_item: &'static str,
 		map_key: K,
-		at_block: Option<Hash>,
-	) -> Result<Option<ReadProof<Hash>>>;
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>>;
 
 	/// Retrieve the storage proof of the corresponding storage double map value.
 	///
@@ -129,8 +133,8 @@ pub trait GetStorage<Hash> {
 		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
-		at_block: Option<Hash>,
-	) -> Result<Option<ReadProof<Hash>>>;
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>>;
 
 	/// Retrieve the proof of the corresponding storage entries.
 	///
@@ -138,13 +142,13 @@ pub trait GetStorage<Hash> {
 	async fn get_storage_proof_by_keys(
 		&self,
 		keys: Vec<StorageKey>,
-		at_block: Option<Hash>,
-	) -> Result<Option<ReadProof<Hash>>>;
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>>;
 
 	async fn get_keys(
 		&self,
 		key: StorageKey,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<Vec<String>>>;
 
 	async fn get_constant<C: Decode>(
@@ -155,18 +159,19 @@ pub trait GetStorage<Hash> {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetStorage<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetStorage for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: FrameSystemConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
+	type Hash = Runtime::Hash;
+
 	async fn get_storage<V: Decode>(
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
@@ -178,7 +183,7 @@ where
 		pallet: &'static str,
 		storage_item: &'static str,
 		map_key: K,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
@@ -201,7 +206,7 @@ where
 		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>> {
 		let storagekey = self.metadata().storage_double_map_key::<K, Q>(
 			pallet,
@@ -216,7 +221,7 @@ where
 	async fn get_storage_by_key<V: Decode>(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<V>> {
 		let s = self.get_opaque_storage_by_key(storage_key, at_block).await?;
 		match s {
@@ -230,7 +235,7 @@ where
 		storage_key_prefix: Option<StorageKey>,
 		count: u32,
 		start_key: Option<StorageKey>,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Vec<StorageKey>> {
 		let storage = self
 			.client()
@@ -245,7 +250,7 @@ where
 	async fn get_opaque_storage_by_key(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<Vec<u8>>> {
 		let storage: Option<StorageData> = self
 			.client()
@@ -258,8 +263,8 @@ where
 		&self,
 		pallet: &'static str,
 		storage_item: &'static str,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>> {
 		let storagekey = self.metadata().storage_value_key(pallet, storage_item)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block).await
@@ -270,8 +275,8 @@ where
 		pallet: &'static str,
 		storage_item: &'static str,
 		map_key: K,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>> {
 		let storagekey = self.metadata().storage_map_key::<K>(pallet, storage_item, map_key)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_proof_by_keys(vec![storagekey], at_block).await
@@ -283,8 +288,8 @@ where
 		storage_item: &'static str,
 		first_double_map_key: K,
 		second_double_map_key: Q,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>> {
 		let storage_key = self.metadata().storage_double_map_key::<K, Q>(
 			pallet,
 			storage_item,
@@ -298,8 +303,8 @@ where
 	async fn get_storage_proof_by_keys(
 		&self,
 		storage_keys: Vec<StorageKey>,
-		at_block: Option<Runtime::Hash>,
-	) -> Result<Option<ReadProof<Runtime::Hash>>> {
+		at_block: Option<Self::Hash>,
+	) -> Result<Option<ReadProof<Self::Hash>>> {
 		let proof = self
 			.client()
 			.request("state_getReadProof", rpc_params![storage_keys, at_block])
@@ -310,7 +315,7 @@ where
 	async fn get_keys(
 		&self,
 		storage_key: StorageKey,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<Vec<String>>> {
 		let keys = self
 			.client()
@@ -334,30 +339,31 @@ where
 		Ok(Decode::decode(&mut c.value.as_slice())?)
 	}
 }
-pub trait SubscribeState<Client, Hash>
-where
-	Client: Subscribe,
-	Hash: DeserializeOwned,
-{
+pub trait SubscribeState {
+	type Client: Subscribe;
+	type Hash: DeserializeOwned;
+
 	fn subscribe_state(
 		&self,
 		pallet: &str,
 		storage_key: &str,
-	) -> Result<Client::Subscription<StorageChangeSet<Hash>>>;
+	) -> Result<StorageChangeSetSubscriptionFor<Self::Client, Self::Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeState<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> SubscribeState for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime: FrameSystemConfig,
 {
+	type Client = Client;
+	type Hash = Runtime::Hash;
+
 	fn subscribe_state(
 		&self,
 		pallet: &str,
 		storage_key_name: &str,
-	) -> Result<Client::Subscription<StorageChangeSet<Runtime::Hash>>> {
+	) -> Result<StorageChangeSetSubscriptionFor<Self::Client, Self::Hash>> {
 		debug!("subscribing to events");
 		let key = crate::storage_key(pallet, storage_key_name);
 		self.client()

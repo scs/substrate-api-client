@@ -77,8 +77,7 @@ async fn main() {
 			let string_error = format!("{:?}", e);
 			// We expect a TokenError::FundsUnavailable error. See :
 			//https://github.com/paritytech/substrate/blob/b42a687c9050cbe04849c45b0c5ccadb82c84948/frame/support/src/traits/tokens/fungible/mod.rs#L177
-			assert!(string_error.contains("Other"));
-			assert!(string_error.contains("[7, 0, 194, 110, 3, 65, 37, 56, 0, 0]")); //Fixme This is for now not decoded. See issue: #488
+			assert!(string_error.contains("Other")); //Fixme This is for now not decoded. See issue: #488
 		},
 	};
 

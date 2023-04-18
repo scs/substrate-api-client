@@ -343,7 +343,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 				.types
 				.resolve(type_id)
 				.ok_or(InvalidMetadataError::MissingType(type_id))?;
-			if let scale_info::TypeDef::Variant(var) = ty.type_def() {
+			if let scale_info::TypeDef::Variant(var) = &ty.type_def {
 				Ok(var)
 			} else {
 				Err(InvalidMetadataError::TypeDefNotVariant(type_id))
@@ -353,14 +353,14 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			.pallets
 			.iter()
 			.map(|pallet| {
-				let call_ty_id = pallet.calls.as_ref().map(|c| c.ty.id());
+				let call_ty_id = pallet.calls.as_ref().map(|c| c.ty.id);
 
 				let call_indexes = pallet.calls.as_ref().map_or(Ok(BTreeMap::new()), |call| {
-					let type_def_variant = get_type_def_variant(call.ty.id())?;
+					let type_def_variant = get_type_def_variant(call.ty.id)?;
 					let call_indexes = type_def_variant
-						.variants()
+						.variants
 						.iter()
-						.map(|v| (v.name().clone(), v.index()))
+						.map(|v| (v.name.clone(), v.index))
 						.collect();
 					Ok(call_indexes)
 				})?;
@@ -396,26 +396,26 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 		for pallet in &metadata.pallets {
 			if let Some(event) = &pallet.event {
 				let pallet_name: String = pallet.name.to_string();
-				let event_type_id = event.ty.id();
+				let event_type_id = event.ty.id;
 				let event_variant = get_type_def_variant(event_type_id)?;
-				for variant in event_variant.variants() {
+				for variant in &event_variant.variants {
 					events.insert(
-						(pallet.index, variant.index()),
+						(pallet.index, variant.index),
 						EventMetadata {
 							pallet: pallet_name.clone(),
-							event: variant.name().to_owned(),
+							event: variant.name.to_owned(),
 							fields: variant
-								.fields()
+								.fields
 								.iter()
 								.map(|f| {
 									EventFieldMetadata::new(
-										f.name().map(|n| n.to_owned()),
-										f.type_name().map(|n| n.to_owned()),
-										f.ty().id(),
+										f.name.clone(),
+										f.type_name.clone(),
+										f.ty.id,
 									)
 								})
 								.collect(),
-							docs: variant.docs().to_vec(),
+							docs: variant.docs.to_vec(),
 						},
 					);
 				}
@@ -426,14 +426,14 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 		for pallet in &metadata.pallets {
 			if let Some(error) = &pallet.error {
 				let pallet_name: String = pallet.name.to_string();
-				let error_variant = get_type_def_variant(error.ty.id())?;
-				for variant in error_variant.variants() {
+				let error_variant = get_type_def_variant(error.ty.id)?;
+				for variant in &error_variant.variants {
 					errors.insert(
-						(pallet.index, variant.index()),
+						(pallet.index, variant.index),
 						ErrorMetadata {
 							pallet: pallet_name.clone(),
-							error: variant.name().clone(),
-							docs: variant.docs().to_vec(),
+							error: variant.name.clone(),
+							docs: variant.docs.to_vec(),
 						},
 					);
 				}
@@ -442,10 +442,10 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 
 		let dispatch_error_ty = metadata
 			.types
-			.types()
+			.types
 			.iter()
-			.find(|ty| ty.ty().path().segments() == ["sp_runtime", "DispatchError"])
-			.map(|ty| ty.id());
+			.find(|ty| ty.ty.path.segments == ["sp_runtime", "DispatchError"])
+			.map(|ty| ty.id);
 
 		Ok(Metadata { runtime_metadata: metadata, pallets, events, errors, dispatch_error_ty })
 	}

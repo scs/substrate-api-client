@@ -23,37 +23,38 @@ use core::str::FromStr;
 
 /// Interface to common calls of the substrate transaction payment pallet.
 #[maybe_async::maybe_async(?Send)]
-pub trait GetTransactionPayment<Hash> {
+pub trait GetTransactionPayment {
+	type Hash;
 	type Balance;
 
 	async fn get_fee_details(
 		&self,
 		encoded_extrinsic: Bytes,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>>;
 
 	async fn get_payment_info(
 		&self,
 		encoded_extrinsic: Bytes,
-		at_block: Option<Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetTransactionPayment<Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+impl<Signer, Client, Params, Runtime> GetTransactionPayment for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
 	Runtime: BalancesConfig,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
 {
+	type Hash = Runtime::Hash;
 	type Balance = Runtime::Balance;
 
 	async fn get_fee_details(
 		&self,
 		encoded_extrinsic: Bytes,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>> {
 		let details: Option<FeeDetails<NumberOrHex>> = self
 			.client()
@@ -70,7 +71,7 @@ where
 	async fn get_payment_info(
 		&self,
 		encoded_extrinsic: Bytes,
-		at_block: Option<Runtime::Hash>,
+		at_block: Option<Self::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>> {
 		let res = self
 			.client()

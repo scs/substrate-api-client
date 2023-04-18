@@ -4,6 +4,11 @@ version = "0.11.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
+repository = "https://github.com/scs/substrate-api-client"
+description = "Json-rpc client with helper functions compatible with any Substrate node"
+readme = "README.md"
+keywords = ["json", "rpc"]
+categories = ["no-std", "wasm"]
 
 
 [workspace]
@@ -22,6 +27,7 @@ members = [
 async-trait = "0.1.68"
 codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
+frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 maybe-async = { version = "0.2.7", features = ["is_sync"] }
@@ -38,7 +44,6 @@ tungstenite = { version = "0.18.0", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
-frame-metadata = { default-features = false, git = "https://github.com/paritytech/frame-metadata", features = ["v14", "serde_full", "decode"] }
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -66,6 +71,7 @@ disable_target_static_assertions = [
 std = [
     # crates.io no_std
     "codec/std",
+    "frame-metadata/std",
     "hex/std",
     "log/std",
     "serde/std",
@@ -73,7 +79,6 @@ std = [
     # crates.io std only
     "url",
     # substrate no_std
-    "frame-metadata/std",
     "sp-core/std",
     "sp-runtime/std",
     "sp-runtime-interface/std",

@@ -10,8 +10,6 @@ accepted = [
     "OpenSSL",
     "Unicode-DFS-2016",
     "NOASSERTION",
-    # Should be removed after #525 is fixed.
-    "GPL-3.0"
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true
