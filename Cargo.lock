@@ -18,6 +18,7 @@ version = "0.3.0"
 dependencies = [
  "ac-primitives",
  "log",
+ "maybe-async",
 ]
 
 [[package]]
@@ -2159,6 +2160,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "add85d4dd35074e6fedc608f8c8f513a3548619a9024b751949ef0e8e45a4d84"
 dependencies = [
  "rawpointer",
+]
+
+[[package]]
+name = "maybe-async"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f1b8c13cb1f814b634a96b2c725449fe7ed464a7b8781de8688be5ffbd3f305"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -5352,6 +5364,7 @@ dependencies = [
  "ac-compose-macros",
  "ac-node-api",
  "ac-primitives",
+ "async-trait",
  "derive_more",
  "frame-metadata",
  "frame-support",
@@ -5360,6 +5373,7 @@ dependencies = [
  "jsonrpsee",
  "kitchensink-runtime",
  "log",
+ "maybe-async",
  "parity-scale-codec",
  "scale-info",
  "serde",

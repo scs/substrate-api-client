@@ -181,8 +181,8 @@ pub trait SubmitAndWatchUntilSuccess {
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubmitAndWatch<Client, Runtime::Hash>
-	for Api<Signer, Client, Params, Runtime>
+#[maybe_async::maybe_async(?Send)]
+impl<Signer, Client, Params, Runtime> SubmitAndWatch for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe,
 	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
@@ -267,7 +267,7 @@ where
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess<Client, Runtime::Hash>
+impl<Signer, Client, Params, Runtime> SubmitAndWatchUntilSuccess
 	for Api<Signer, Client, Params, Runtime>
 where
 	Client: Subscribe + Request,
