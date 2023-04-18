@@ -59,6 +59,13 @@ pub trait GetStorage {
 		storage_item: &'static str,
 	) -> Result<StorageKey>;
 
+	fn get_storage_double_map_key_prefix<K: Encode>(
+		&self,
+		storage_prefix: &'static str,
+		storage_key_name: &'static str,
+		first: K,
+	) -> Result<StorageKey>;
+
 	/// Retrieve the storage value from a double map for the given keys: `first_double_map_key` and `second_double_map_key`.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
@@ -210,6 +217,17 @@ where
 		)?;
 		info!("storage key is: 0x{}", hex::encode(&storagekey));
 		self.get_storage_by_key(storagekey, at_block)
+	}
+
+	fn get_storage_double_map_key_prefix<K: Encode>(
+		&self,
+		storage_prefix: &'static str,
+		storage_key_name: &'static str,
+		first: K,
+	) -> Result<StorageKey> {
+		self.metadata()
+			.storage_double_map_key_prefix(storage_prefix, storage_key_name, first)
+			.map_err(|e| e.into())
 	}
 
 	fn get_storage_by_key<V: Decode>(

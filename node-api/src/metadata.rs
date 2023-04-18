@@ -480,6 +480,17 @@ impl Metadata {
 		self.pallet(pallet)?.storage(storage_item)?.get_map_prefix(pallet)
 	}
 
+	pub fn storage_double_map_key_prefix<K: Encode>(
+		&self,
+		storage_prefix: &'static str,
+		storage_key_name: &'static str,
+		first: K,
+	) -> Result<StorageKey, MetadataError> {
+		self.pallet(storage_prefix)?
+			.storage(storage_key_name)?
+			.get_double_map_prefix::<K>(storage_prefix, first)
+	}
+
 	pub fn storage_double_map_key<K: Encode, Q: Encode>(
 		&self,
 		pallet: &'static str,
