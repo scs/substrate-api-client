@@ -50,12 +50,12 @@ sp-runtime-interface = { version = "16.0", default-features = false }
 frame-support = { version = "20.0", optional = true }
 
 # local deps
-ac-compose-macros = { version = "6.0", default-features = false }
-ac-node-api = { version = "6.0", default-features = false }
-ac-primitives = { version = "6.0", default-features = false }
+ac-compose-macros = { version = "0.3", default-features = false }
+ac-node-api = { version = "0.6", default-features = false }
+ac-primitives = { version = "0.6", default-features = false }
 
 [dev-dependencies]
-ac-node-api = { version = "6.0", features = ["mocks"] }
+ac-node-api = { version = "0.6", features = ["mocks"] }
 kitchensink-runtime = { package = "node-template-runtime", version = "2.0" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 
