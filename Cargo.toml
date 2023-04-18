@@ -87,8 +87,8 @@ std = [
     # local deps
     "ac-compose-macros/std",
     "ac-node-api/std",
-    "ac-primitives/std", 
-] 
+    "ac-primitives/std",
+]
 jsonrpsee-client = ["std", "jsonrpsee", "futures"]
 tungstenite-client = ["std", "tungstenite"]
 ws-client = ["std", "ws"]
