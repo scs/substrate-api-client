@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 pub use api_client::Api;
 pub use error::{Error, Result};
 pub use rpc_api::{
-	FetchEvents, GetAccountInformation, GetBalance, GetBlock, GetHeader, GetStorage,
+	FetchEvents, GetAccountInformation, GetBalance, GetChainInfo, GetStorage,
 	GetTransactionPayment, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic,
 	SubscribeChain, SubscribeEvents, SystemApi,
 };
