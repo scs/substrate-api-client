@@ -63,12 +63,12 @@ kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", bra
 scale-info = { version = "2.1.1", features = ["derive"] }
 
 [features]
-default = ["std", "jsonrpsee-client", "sync_api"]
+default = ["std", "jsonrpsee-client", "sync-api"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
-sync_api = ["ac-compose-macros/sync_api", "maybe-async/is_sync"]
+sync-api = ["ac-compose-macros/sync-api", "maybe-async/is_sync"]
 std = [
     # crates.io no_std
     "codec/std",

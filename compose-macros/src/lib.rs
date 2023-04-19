@@ -110,7 +110,7 @@ macro_rules! compose_extrinsic_with_nonce {
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
-#[cfg(feature = "sync_api")]
+#[cfg(feature = "sync-api")]
 macro_rules! compose_extrinsic {
 	($api: expr,
 	$module: expr,
@@ -125,7 +125,7 @@ macro_rules! compose_extrinsic {
 }
 
 #[macro_export]
-#[cfg(not(feature = "sync_api"))]
+#[cfg(not(feature = "sync-api"))]
 macro_rules! compose_extrinsic {
 	($api: expr,
 	$module: expr,
