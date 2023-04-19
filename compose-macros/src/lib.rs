@@ -29,7 +29,7 @@ mod rpc;
 /// # Arguments
 ///
 /// * 'node_metadata' - This crate's parsed node metadata as field of the API.
-/// * 'pallet' - Module name as &str for which the call is composed.
+/// * 'pallet' - Pallet name as &str for which the call is composed.
 /// * 'call_name' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
@@ -75,7 +75,7 @@ macro_rules! compose_extrinsic_offline {
 /// # Arguments
 ///
 /// * 'api' - This instance of API. If the *signer* field is not set, an unsigned extrinsic will be generated.
-/// * 'nonce' - signer's account nonce: u32
+/// * 'nonce' - signer's account nonce: Index
 /// * 'module' - Module name as &str for which the call is composed.
 /// * 'call' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
