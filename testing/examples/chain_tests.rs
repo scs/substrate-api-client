@@ -20,7 +20,7 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_primitives::AssetTipExtrinsicParams,
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, GetBlock, GetHeader, SubscribeChain,
+	Api, GetChainInfo, SubscribeChain,
 };
 
 #[tokio::main]
@@ -31,12 +31,10 @@ async fn main() {
 	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
 	api.set_signer(alice_pair);
 
-	// GetHeader
+	// GetChainInfo
 	let finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
 	let _latest_header = api.get_header(None).unwrap().unwrap();
 	let _some_header = api.get_header(Some(finalized_header_hash)).unwrap().unwrap();
-
-	// GetBlock
 	let _block_hash = api.get_block_hash(None).unwrap().unwrap();
 	let block_hash = api.get_block_hash(Some(1)).unwrap().unwrap();
 	let _block = api.get_block(None).unwrap().unwrap();
