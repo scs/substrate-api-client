@@ -45,7 +45,7 @@ jobs:
                 cargo build --target wasm32-unknown-unknown --no-default-features,
 
                 # Test for async compilation
-                cargo build --no-default-features --features "std, jsonrpsee-client",
+                cargo build --no-default-features --features 'std, jsonrpsee-client',
 
                 # Clippy
                 cargo clippy --workspace --exclude test-no-std -- -D warnings,
