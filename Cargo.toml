@@ -68,6 +68,7 @@ default = ["std", "jsonrpsee-client", "sync-api"]
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
+# If this is active all the code compiles in synchronous mode. Otherwise `async` is supported
 sync-api = ["ac-compose-macros/sync-api", "maybe-async/is_sync"]
 std = [
     # crates.io no_std
