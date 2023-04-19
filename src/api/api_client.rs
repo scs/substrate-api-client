@@ -177,36 +177,63 @@ where
 	Runtime: FrameSystemConfig,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
-	#[maybe_async::maybe_async(?Send)]
+	#[maybe_async::async_impl]
 	pub async fn new(client: Client) -> Result<Self> {
 		let genesis_hash_future = Self::get_genesis_hash(&client);
 		let metadata_future = Self::get_metadata(&client);
 		let runtime_version_future = Self::get_runtime_version(&client);
 
-		/*let (genesis_hash, metadata, runtime_version) = futures::future::try_join3(
+		let (genesis_hash, metadata, runtime_version) = futures::future::try_join3(
 			genesis_hash_future,
 			metadata_future,
 			runtime_version_future,
 		)
-		.await?;*/
-		let (genesis_hash, metadata, runtime_version) =
-			(genesis_hash_future.await?, metadata_future.await?, runtime_version_future.await?);
+		.await?;
 		info!("Got genesis hash: {:?}", genesis_hash);
 		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
 		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
 
+	/// Create a new Api client with call to the node to retrieve metadata.
+	#[maybe_async::sync_impl]
+	pub fn new(client: Client) -> Result<Self> {
+		let genesis_hash = Self::get_genesis_hash(&client)?;
+		info!("Got genesis hash: {:?}", genesis_hash);
+
+		let metadata = Self::get_metadata(&client)?;
+		debug!("Metadata: {:?}", metadata);
+
+		let runtime_version = Self::get_runtime_version(&client)?;
+		info!("Runtime Version: {:?}", runtime_version);
+
+		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
+	}
+
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
-	#[maybe_async::maybe_async(?Send)]
+	#[maybe_async::sync_impl]
+	pub fn update_runtime(&mut self) -> Result<()> {
+		let metadata = Self::get_metadata(&self.client)?;
+		let runtime_version = Self::get_runtime_version(&self.client)?;
+
+		debug!("Metadata: {:?}", metadata);
+		info!("Runtime Version: {:?}", runtime_version);
+
+		self.metadata = metadata;
+		self.runtime_version = runtime_version;
+		Ok(())
+	}
+
+	/// Updates the runtime and metadata of the api via node query.
+	/// Ideally, this function is called if a substrate update runtime event is encountered.
+	#[maybe_async::async_impl]
 	pub async fn update_runtime(&mut self) -> Result<()> {
 		let metadata_future = Self::get_metadata(&self.client);
 		let runtime_version_future = Self::get_runtime_version(&self.client);
 
-		//let (metadata, runtime_version) =
-		//	futures::future::try_join(metadata_future, runtime_version_future).await?;
-		let (metadata, runtime_version) = (metadata_future.await?, runtime_version_future.await?);
+		let (metadata, runtime_version) =
+			futures::future::try_join(metadata_future, runtime_version_future).await?;
 
 		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
