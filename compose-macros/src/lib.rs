@@ -74,6 +74,33 @@ macro_rules! compose_extrinsic_offline {
 	}};
 }
 
+#[macro_export]
+#[maybe_async::sync_impl]
+macro_rules! compose_extrinsic_with_nonce {
+	($api: expr,
+	$nonce: expr,
+	$module: expr,
+	$call: expr
+	$(, $args: expr) *) => {
+		{
+			use $crate::log::debug;
+            use $crate::primitives::UncheckedExtrinsicV4;
+
+            debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
+
+            let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
+            if let Some(signer) = $api.signer() {
+                $crate::compose_extrinsic_offline!(
+                    signer,
+                    call.clone(),
+                    $api.extrinsic_params($nonce)
+                )
+            } else {
+                UncheckedExtrinsicV4::new_unsigned(call.clone())
+            }
+		}
+	};
+}
 /// Generates an Unchecked extrinsic for a given module and call passed as a &str.
 /// # Arguments
 ///
@@ -90,20 +117,9 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            use $crate::log::debug;
-            use $crate::primitives::UncheckedExtrinsicV4;
-
-            debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
-            let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
-            if let Some(signer) = $api.signer() {
-                $crate::compose_extrinsic_offline!(
-                    signer,
-                    call.clone(),
-                    $api.extrinsic_params($api.get_nonce().unwrap())
-                )
-            } else {
-                UncheckedExtrinsicV4::new_unsigned(call.clone())
-            }
+			let nonce = $api.get_nonce().unwrap();
+			let extrinsic = $crate::compose_extrinsic_with_nonce!($api, nonce, $module, $call $(, ($args)) *);
+			extrinsic
 		}
     };
 }
@@ -116,20 +132,9 @@ macro_rules! compose_extrinsic {
 	$call: expr
 	$(, $args: expr) *) => {
 		{
-            use $crate::log::debug;
-            use $crate::primitives::UncheckedExtrinsicV4;
-
-            debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
-            let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
-            if let Some(signer) = $api.signer() {
-                $crate::compose_extrinsic_offline!(
-                    signer,
-                    call.clone(),
-                    $api.extrinsic_params($api.get_nonce().await.unwrap())
-                )
-            } else {
-                UncheckedExtrinsicV4::new_unsigned(call.clone())
-            }
+			let nonce = $api.get_nonce().await.unwrap();
+			let extrinsic = $crate::compose_extrinsic_with_nonce!($api, nonce, $module, $call $(, ($args)) *);
+			extrinsic
 		}
-    };
+	};
 }
