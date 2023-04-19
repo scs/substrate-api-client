@@ -88,12 +88,12 @@ where
 
 	async fn get_finalized_head(&self) -> Result<Option<Self::Hash>> {
 		let finalized_block_hash =
-			self.client().request("chain_getFinalizedHead", rpc_params![])?;
+			self.client().request("chain_getFinalizedHead", rpc_params![]).await?;
 		Ok(finalized_block_hash)
 	}
 
 	async fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>> {
-		let block_hash = self.client().request("chain_getHeader", rpc_params![hash])?;
+		let block_hash = self.client().request("chain_getHeader", rpc_params![hash]).await?;
 		Ok(block_hash)
 	}
 
@@ -101,23 +101,25 @@ where
 		&self,
 		number: Option<Self::BlockNumber>,
 	) -> Result<Option<Self::Hash>> {
-		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number])?;
+		let block_hash = self.client().request("chain_getBlockHash", rpc_params![number]).await?;
 		Ok(block_hash)
 	}
 
 	async fn get_genesis_block(&self) -> Result<Self::Block> {
-		self.get_block(Some(self.genesis_hash()))?.ok_or(Error::BlockHashNotFound)
+		self.get_block(Some(self.genesis_hash())).await?.ok_or(Error::BlockHashNotFound)
 	}
 
-	fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>> {
-		Self::get_signed_block(self, hash).map(|sb_opt| sb_opt.map(|sb| sb.block))
+	async fn get_block(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Block>> {
+		Self::get_signed_block(self, hash).await.map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	async fn get_block_by_num(
 		&self,
 		number: Option<Self::BlockNumber>,
 	) -> Result<Option<Self::Block>> {
-		Self::get_signed_block_by_num(self, number).map(|sb_opt| sb_opt.map(|sb| sb.block))
+		Self::get_signed_block_by_num(self, number)
+			.await
+			.map(|sb_opt| sb_opt.map(|sb| sb.block))
 	}
 
 	async fn get_signed_block(
@@ -136,8 +138,11 @@ where
 	}
 
 	async fn get_finalized_block(&self) -> Result<Option<SignedBlock<Self::Block>>> {
-		self.get_finalized_head()?
-			.map_or_else(|| Ok(None), |hash| self.get_signed_block(Some(hash)))
+		let hash = self.get_finalized_head().await?;
+		match hash {
+			Some(hash) => self.get_signed_block(Some(hash)).await,
+			None => Ok(None),
+		}
 	}
 
 	async fn get_signed_blocks(
@@ -147,7 +152,7 @@ where
 		let mut blocks = Vec::<SignedBlock<Self::Block>>::new();
 
 		for n in block_numbers {
-			if let Some(block) = self.get_signed_block_by_num(Some(*n))? {
+			if let Some(block) = self.get_signed_block_by_num(Some(*n)).await? {
 				blocks.push(block);
 			}
 		}

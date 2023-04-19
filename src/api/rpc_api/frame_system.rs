@@ -71,7 +71,7 @@ where
 		&self,
 		address: &Self::AccountId,
 	) -> Result<Option<Self::AccountData>> {
-		self.get_account_info(address).map(|info| info.map(|i| i.data))
+		self.get_account_info(address).await.map(|info| info.map(|i| i.data))
 	}
 
 	async fn get_account_nonce(&self, account: &Self::AccountId) -> Result<Self::Index> {
