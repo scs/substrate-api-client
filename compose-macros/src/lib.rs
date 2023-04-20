@@ -29,8 +29,8 @@ mod rpc;
 /// # Arguments
 ///
 /// * 'node_metadata' - This crate's parsed node metadata as field of the API.
-/// * 'module' - Module name as &str for which the call is composed.
-/// * 'call' - Call name as &str
+/// * 'pallet' - Pallet name as &str for which the call is composed.
+/// * 'call_name' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
@@ -51,10 +51,7 @@ macro_rules! compose_call {
 ///
 /// * 'signer' - AccountKey that is used to sign the extrinsic.
 /// * 'call' - call as returned by the compose_call! macro or via substrate's call enums.
-/// * 'nonce' - signer's account nonce: u32
-/// * 'era' - Era for extrinsic to be valid
-/// * 'genesis_hash' - sp-runtime::Hash256/[u8; 32].
-/// * 'runtime_spec_version' - RuntimeVersion.spec_version/u32
+/// * 'params' - Instance of `ExtrinsicParams` that can be used to fetch signed extra and additional signed
 #[macro_export]
 macro_rules! compose_extrinsic_offline {
 	($signer: expr,
@@ -78,13 +75,15 @@ macro_rules! compose_extrinsic_offline {
 /// # Arguments
 ///
 /// * 'api' - This instance of API. If the *signer* field is not set, an unsigned extrinsic will be generated.
+/// * 'nonce' - signer's account nonce: Index
 /// * 'module' - Module name as &str for which the call is composed.
 /// * 'call' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 /// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
-macro_rules! compose_extrinsic {
+macro_rules! compose_extrinsic_with_nonce {
 	($api: expr,
+	$nonce: expr,
 	$module: expr,
 	$call: expr
 	$(, $args: expr) *) => {
@@ -93,16 +92,53 @@ macro_rules! compose_extrinsic {
             use $crate::primitives::UncheckedExtrinsicV4;
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
+
             let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
             if let Some(signer) = $api.signer() {
                 $crate::compose_extrinsic_offline!(
                     signer,
                     call.clone(),
-                    $api.extrinsic_params($api.get_nonce().unwrap())
+                    $api.extrinsic_params($nonce)
                 )
             } else {
                 UncheckedExtrinsicV4::new_unsigned(call.clone())
             }
 		}
+	};
+}
+
+/// Generates an Unchecked extrinsic for a given module and call passed as a &str.
+/// Fetches the nonce from the given `api` instance
+/// See also compose_extrinsic_with_nonce
+#[macro_export]
+#[cfg(feature = "sync-api")]
+macro_rules! compose_extrinsic {
+	($api: expr,
+	$module: expr,
+	$call: expr
+	$(, $args: expr) *) => {
+		{
+			let nonce = $api.get_nonce().unwrap();
+			let extrinsic = $crate::compose_extrinsic_with_nonce!($api, nonce, $module, $call $(, ($args)) *);
+			extrinsic
+		}
     };
+}
+
+/// Generates an Unchecked extrinsic for a given module and call passed as a &str.
+/// Fetches the nonce from the given `api` instance
+/// See also compose_extrinsic_with_nonce
+#[macro_export]
+#[cfg(not(feature = "sync-api"))]
+macro_rules! compose_extrinsic {
+	($api: expr,
+	$module: expr,
+	$call: expr
+	$(, $args: expr) *) => {
+		{
+			let nonce = $api.get_nonce().await.unwrap();
+			let extrinsic = $crate::compose_extrinsic_with_nonce!($api, nonce, $module, $call $(, ($args)) *);
+			extrinsic
+		}
+	};
 }

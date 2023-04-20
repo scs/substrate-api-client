@@ -24,11 +24,13 @@ members = [
 
 [dependencies]
 # crates.io no_std
+async-trait = "0.1.68"
 codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
 frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
+maybe-async = { version = "0.2.7" }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.79", default-features = false }
 
@@ -54,17 +56,20 @@ ac-compose-macros = { path = "compose-macros", default-features = false }
 ac-node-api = { path = "node-api", default-features = false }
 ac-primitives = { path = "primitives", default-features = false }
 
+
 [dev-dependencies]
 ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 
 [features]
-default = ["std", "jsonrpsee-client"]
+default = ["std", "jsonrpsee-client", "sync-api"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
+# If this is active all the code compiles in synchronous mode. Otherwise `async` is supported.
+sync-api = ["ac-compose-macros/sync-api", "maybe-async/is_sync"]
 std = [
     # crates.io no_std
     "codec/std",

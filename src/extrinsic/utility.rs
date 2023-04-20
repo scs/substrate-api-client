@@ -37,19 +37,24 @@ pub struct Batch<Call> {
 
 pub type BatchCall<Call> = (CallIndex, Batch<Call>);
 
+#[maybe_async::maybe_async(?Send)]
 pub trait UtilityExtrinsics {
 	type Extrinsic<Call>;
 
 	// Send a batch of dispatch calls.
-	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>>;
+	async fn batch<Call: Encode + Clone>(
+		&self,
+		calls: Vec<Call>,
+	) -> Self::Extrinsic<BatchCall<Call>>;
 
 	// Send a batch of dispatch calls. Unlike batch, it allows errors and won't interrupt.
-	fn force_batch<Call: Encode + Clone>(
+	async fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> UtilityExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
@@ -64,12 +69,15 @@ where
 		Params::SignedExtra,
 	>;
 
-	fn batch<Call: Encode + Clone>(&self, calls: Vec<Call>) -> Self::Extrinsic<BatchCall<Call>> {
+	async fn batch<Call: Encode + Clone>(
+		&self,
+		calls: Vec<Call>,
+	) -> Self::Extrinsic<BatchCall<Call>> {
 		let calls = Batch { calls };
 		compose_extrinsic!(self, UTILITY_MODULE, BATCH, calls)
 	}
 
-	fn force_batch<Call: Encode + Clone>(
+	async fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
 	) -> Self::Extrinsic<BatchCall<Call>> {

@@ -29,20 +29,22 @@ use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashT
 pub type EventSubscriptionFor<Client, Hash> =
 	EventSubscription<<Client as Subscribe>::Subscription<StorageChangeSet<Hash>>, Hash>;
 
+#[maybe_async::maybe_async(?Send)]
 pub trait FetchEvents {
 	type Hash;
 
 	/// Fetch all block events from node for the given block hash.
-	fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
+	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
 
 	/// Fetch all assosciated events for a given extrinsic hash and block hash.
-	fn fetch_events_for_extrinsic(
+	async fn fetch_events_for_extrinsic(
 		&self,
 		block_hash: Self::Hash,
 		extrinsic_hash: Self::Hash,
 	) -> Result<Vec<EventDetails>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> FetchEvents for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
@@ -54,24 +56,25 @@ where
 {
 	type Hash = Runtime::Hash;
 
-	fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>> {
+	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>> {
 		let key = crate::storage_key("System", "Events");
 		let event_bytes = self
-			.get_opaque_storage_by_key(key, Some(block_hash))?
+			.get_opaque_storage_by_key(key, Some(block_hash))
+			.await?
 			.ok_or(Error::BlockNotFound)?;
 		let events =
 			Events::<Self::Hash>::new(self.metadata().clone(), Default::default(), event_bytes);
 		Ok(events)
 	}
 
-	fn fetch_events_for_extrinsic(
+	async fn fetch_events_for_extrinsic(
 		&self,
 		block_hash: Self::Hash,
 		extrinsic_hash: Self::Hash,
 	) -> Result<Vec<EventDetails>> {
 		let extrinsic_index =
-			self.retrieve_extrinsic_index_from_block(block_hash, extrinsic_hash)?;
-		let block_events = self.fetch_events_from_block(block_hash)?;
+			self.retrieve_extrinsic_index_from_block(block_hash, extrinsic_hash).await?;
+		let block_events = self.fetch_events_from_block(block_hash).await?;
 		self.filter_extrinsic_events(block_events, extrinsic_index)
 	}
 }
@@ -163,12 +166,13 @@ where
 	Runtime::Header: DeserializeOwned,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
-	fn retrieve_extrinsic_index_from_block(
+	#[maybe_async::maybe_async(?Send)]
+	async fn retrieve_extrinsic_index_from_block(
 		&self,
 		block_hash: Runtime::Hash,
 		extrinsic_hash: Runtime::Hash,
 	) -> Result<u32> {
-		let block = self.get_block(Some(block_hash))?.ok_or(Error::BlockNotFound)?;
+		let block = self.get_block(Some(block_hash)).await?.ok_or(Error::BlockNotFound)?;
 		let xt_index = block
 			.extrinsics()
 			.iter()

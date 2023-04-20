@@ -17,12 +17,14 @@ use crate::{
 use ac_primitives::{BalancesConfig, ExtrinsicParams};
 
 /// Interface to common calls of the substrate balances pallet.
+#[maybe_async::maybe_async(?Send)]
 pub trait GetBalance {
 	type Balance;
 
-	fn get_existential_deposit(&self) -> Result<Self::Balance>;
+	async fn get_existential_deposit(&self) -> Result<Self::Balance>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> GetBalance for Api<Signer, Client, Params, Runtime>
 where
 	Client: Request,
@@ -31,7 +33,7 @@ where
 {
 	type Balance = Runtime::Balance;
 
-	fn get_existential_deposit(&self) -> Result<Self::Balance> {
-		self.get_constant("Balances", "ExistentialDeposit")
+	async fn get_existential_deposit(&self) -> Result<Self::Balance> {
+		self.get_constant("Balances", "ExistentialDeposit").await
 	}
 }

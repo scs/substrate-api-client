@@ -12,12 +12,14 @@ categories = ["no-std"]
 
 [dependencies]
 log = { version = "0.4.14", default-features = false }
+maybe-async = { version = "0.2.7" }
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
 
 [features]
-default = ["std"]
+default = ["std", "sync-api"]
+sync-api = ["maybe-async/is_sync"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
     "ac-primitives/disable_target_static_assertions",

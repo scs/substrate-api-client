@@ -177,6 +177,26 @@ where
 	Runtime: FrameSystemConfig,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
+	#[maybe_async::async_impl]
+	pub async fn new(client: Client) -> Result<Self> {
+		let genesis_hash_future = Self::get_genesis_hash(&client);
+		let metadata_future = Self::get_metadata(&client);
+		let runtime_version_future = Self::get_runtime_version(&client);
+
+		let (genesis_hash, metadata, runtime_version) = futures::future::try_join3(
+			genesis_hash_future,
+			metadata_future,
+			runtime_version_future,
+		)
+		.await?;
+		info!("Got genesis hash: {:?}", genesis_hash);
+		debug!("Metadata: {:?}", metadata);
+		info!("Runtime Version: {:?}", runtime_version);
+		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
+	}
+
+	/// Create a new Api client with call to the node to retrieve metadata.
+	#[maybe_async::sync_impl]
 	pub fn new(client: Client) -> Result<Self> {
 		let genesis_hash = Self::get_genesis_hash(&client)?;
 		info!("Got genesis hash: {:?}", genesis_hash);
@@ -192,11 +212,30 @@ where
 
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
+	#[maybe_async::sync_impl]
 	pub fn update_runtime(&mut self) -> Result<()> {
 		let metadata = Self::get_metadata(&self.client)?;
-		debug!("Metadata: {:?}", metadata);
-
 		let runtime_version = Self::get_runtime_version(&self.client)?;
+
+		debug!("Metadata: {:?}", metadata);
+		info!("Runtime Version: {:?}", runtime_version);
+
+		self.metadata = metadata;
+		self.runtime_version = runtime_version;
+		Ok(())
+	}
+
+	/// Updates the runtime and metadata of the api via node query.
+	/// Ideally, this function is called if a substrate update runtime event is encountered.
+	#[maybe_async::async_impl]
+	pub async fn update_runtime(&mut self) -> Result<()> {
+		let metadata_future = Self::get_metadata(&self.client);
+		let runtime_version_future = Self::get_runtime_version(&self.client);
+
+		let (metadata, runtime_version) =
+			futures::future::try_join(metadata_future, runtime_version_future).await?;
+
+		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
 
 		self.metadata = metadata;
@@ -219,9 +258,10 @@ where
 	}
 
 	/// Get nonce of self signer account.
-	pub fn get_nonce(&self) -> Result<Runtime::Index> {
+	#[maybe_async::maybe_async(?Send)]
+	pub async fn get_nonce(&self) -> Result<Runtime::Index> {
 		let account = self.signer_account().ok_or(Error::NoSigner)?;
-		self.get_account_nonce(account)
+		self.get_account_nonce(account).await
 	}
 }
 
@@ -234,21 +274,25 @@ where
 	Runtime: FrameSystemConfig,
 {
 	/// Get the genesis hash from node via websocket query.
-	fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
+	#[maybe_async::maybe_async(?Send)]
+	async fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
 		let genesis: Option<Runtime::Hash> =
-			client.request("chain_getBlockHash", rpc_params![Some(0)])?;
+			client.request("chain_getBlockHash", rpc_params![Some(0)]).await?;
 		genesis.ok_or(Error::FetchGenesisHash)
 	}
 
 	/// Get runtime version from node via websocket query.
-	fn get_runtime_version(client: &Client) -> Result<RuntimeVersion> {
-		let version: RuntimeVersion = client.request("state_getRuntimeVersion", rpc_params![])?;
+	#[maybe_async::maybe_async(?Send)]
+	async fn get_runtime_version(client: &Client) -> Result<RuntimeVersion> {
+		let version: RuntimeVersion =
+			client.request("state_getRuntimeVersion", rpc_params![]).await?;
 		Ok(version)
 	}
 
 	/// Get metadata from node via websocket query.
-	fn get_metadata(client: &Client) -> Result<Metadata> {
-		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![])?;
+	#[maybe_async::maybe_async(?Send)]
+	async fn get_metadata(client: &Client) -> Result<Metadata> {
+		let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![]).await?;
 
 		let metadata = RuntimeMetadataPrefixed::decode(&mut metadata_bytes.0.as_slice())?;
 		Metadata::try_from(metadata).map_err(|e| e.into())

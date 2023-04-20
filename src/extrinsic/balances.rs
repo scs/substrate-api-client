@@ -36,26 +36,28 @@ pub type TransferAllowDeathCall<Address, Balance> = (CallIndex, Address, Compact
 /// Call to the balance of an account.
 pub type ForceSetBalanceCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
 
+#[maybe_async::maybe_async(?Send)]
 pub trait BalancesExtrinsics {
 	type Balance;
 	type Address;
 	type Extrinsic<Call>;
 
 	/// Transfer some liquid free balance to another account.
-	fn balance_transfer_allow_death(
+	async fn balance_transfer_allow_death(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>;
 
 	///  Set the balances of a given account.
-	fn balance_force_set_balance(
+	async fn balance_force_set_balance(
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
 	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Signer, Client, Params, Runtime> BalancesExtrinsics for Api<Signer, Client, Params, Runtime>
 where
 	Signer: SignExtrinsic<Runtime::AccountId>,
@@ -69,7 +71,7 @@ where
 	type Extrinsic<Call> =
 		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
 
-	fn balance_transfer_allow_death(
+	async fn balance_transfer_allow_death(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
@@ -77,7 +79,7 @@ where
 		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
 	}
 
-	fn balance_force_set_balance(
+	async fn balance_force_set_balance(
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,

@@ -55,9 +55,17 @@ impl JsonrpseeClient {
 	}
 }
 
+#[maybe_async::async_impl(?Send)]
+impl Request for JsonrpseeClient {
+	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+		// Support async: #278
+		let future = self.inner.request(method, RpcParamsWrapper(params)).await;
+		future.map_err(|e| Error::Client(Box::new(e)))
+	}
+}
+#[maybe_async::sync_impl]
 impl Request for JsonrpseeClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		// Support async: #278
 		block_on(self.inner.request(method, RpcParamsWrapper(params)))
 			.map_err(|e| Error::Client(Box::new(e)))
 	}
