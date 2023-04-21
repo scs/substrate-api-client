@@ -17,7 +17,7 @@ use crate::{
 	GetChainInfo, GetStorage,
 };
 use ac_compose_macros::rpc_params;
-use ac_node_api::{EventDetails, EventRecord, Events, Phase};
+use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
 use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
@@ -83,22 +83,30 @@ where
 /// Simplifies the event retrieval from the subscription.
 pub struct EventSubscription<Subscription, Hash> {
 	pub subscription: Subscription,
+	pub metadata: Metadata,
 	_phantom: PhantomData<Hash>,
+}
+
+impl<Subscription, Hash> EventSubscription<Subscription, Hash> {
+	/// Create a new wrapper around the subscription.
+	pub fn new(subscription: Subscription, metadata: Metadata) -> Self {
+		Self { subscription, metadata, _phantom: Default::default() }
+	}
+
+	/// Update the metadata.
+	pub fn update_metadata(&mut self, metadata: Metadata) {
+		self.metadata = metadata
+	}
 }
 
 impl<Subscription, Hash> EventSubscription<Subscription, Hash>
 where
-	Hash: DeserializeOwned,
+	Hash: DeserializeOwned + Copy,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
-	/// Create a new wrapper around the subscription.
-	pub fn new(subscription: Subscription) -> Self {
-		Self { subscription, _phantom: Default::default() }
-	}
-
 	/// Wait for the next value from the internal subscription.
 	/// Upon encounter, it retrieves and decodes the expected `EventRecord`.
-	pub fn next_event<RuntimeEvent: Decode, Topic: Decode>(
+	pub fn next_events<RuntimeEvent: Decode, Topic: Decode>(
 		&mut self,
 	) -> Option<Result<Vec<EventRecord<RuntimeEvent, Topic>>>> {
 		let change_set = match self.subscription.next()? {
@@ -109,23 +117,34 @@ where
 		// changes in the set. Also, we don't care about the key but only the data, so take
 		// the second value in the tuple of two.
 		let storage_data = change_set.changes[0].1.as_ref()?;
-		let events = Decode::decode(&mut storage_data.0.as_slice()).map_err(Error::Codec);
-		Some(events)
+		let event_records = Decode::decode(&mut storage_data.0.as_slice()).map_err(Error::Codec);
+		Some(event_records)
+	}
+
+	/// Wait for the next value from the internal subscription.
+	/// Upon encounter, it retrieves and decodes the expected `EventDetails`.
+	//
+	// On the contrary to `next_events` this function only needs up-to-date metadata
+	// and is therefore updateable during runtime.
+	pub fn next_events_from_metadata(&mut self) -> Option<Result<Events<Hash>>> {
+		let change_set = match self.subscription.next()? {
+			Ok(set) => set,
+			Err(e) => return Some(Err(Error::RpcClient(e))),
+		};
+		let block_hash = change_set.block;
+		// Since we subscribed to only the events key, we can simply take the first value of the
+		// changes in the set. Also, we don't care about the key but only the data, so take
+		// the second value in the tuple of two.
+		let storage_data = change_set.changes[0].1.as_ref()?;
+		let event_bytes = storage_data.0.clone();
+
+		let events = Events::<Hash>::new(self.metadata.clone(), block_hash, event_bytes);
+		Some(Ok(events))
 	}
 
 	/// Unsubscribe from the internal subscription.
 	pub fn unsubscribe(self) -> Result<()> {
 		self.subscription.unsubscribe().map_err(|e| e.into())
-	}
-}
-
-impl<Subscription, Hash> From<Subscription> for EventSubscription<Subscription, Hash>
-where
-	Hash: DeserializeOwned,
-	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
-{
-	fn from(subscription: Subscription) -> Self {
-		EventSubscription::new(subscription)
 	}
 }
 
@@ -151,7 +170,7 @@ where
 		let subscription = self
 			.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
-			.map(|sub| sub.into())?;
+			.map(|sub| EventSubscription::new(sub, self.metadata().clone()))?;
 		Ok(subscription)
 	}
 }

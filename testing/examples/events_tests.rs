@@ -70,7 +70,7 @@ async fn main() {
 	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
 		let event_records = event_subscription
-			.next_event::<RuntimeEvent, <Runtime as FrameSystemConfig>::Hash>()
+			.next_events::<RuntimeEvent, <Runtime as FrameSystemConfig>::Hash>()
 			.unwrap()
 			.unwrap();
 		for event_record in &event_records {
@@ -78,6 +78,20 @@ async fn main() {
 			match &event_record.event {
 				RuntimeEvent::System(_) => println!("Got System event, all good"),
 				_ => panic!("Unexpected event"),
+			}
+		}
+	}
+
+	// Wait for event callbacks from the node, which are received via subscription, in case no RuntimeEvents are accessible.
+	for _ in 0..5 {
+		let events = event_subscription.next_events_from_metadata().unwrap().unwrap();
+		for event in events.iter() {
+			let event = event.unwrap();
+			println!("got event: {:?} {:?}", event.pallet_name(), event.variant_name());
+			if let Ok(Some(_extrinisic_success)) = event.as_event::<ExtrinsicSuccess>() {
+				println!("Got System event, all good");
+			} else {
+				panic!("Unexpected event");
 			}
 		}
 	}

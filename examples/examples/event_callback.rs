@@ -39,7 +39,7 @@ async fn main() {
 
 	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
-		let event_records = subscription.next_event::<RuntimeEvent, Hash>().unwrap().unwrap();
+		let event_records = subscription.next_events::<RuntimeEvent, Hash>().unwrap().unwrap();
 		for event_record in &event_records {
 			println!("decoded: {:?} {:?}", event_record.phase, event_record.event);
 			match &event_record.event {
