@@ -24,9 +24,6 @@ use sp_core::H256;
 
 /// A collection of events obtained from a block, bundled with the necessary
 /// information needed to decode and iterate over them.
-//
-// In subxt, this was generic over a `Config` type, but it's sole usage was to derive the
-// hash type. We omitted this here and use the `ac_primitives::Hash` instead.
 #[derive(Clone, Debug)]
 pub struct Events<Hash> {
 	metadata: Metadata,
