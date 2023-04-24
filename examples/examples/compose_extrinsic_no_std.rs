@@ -21,7 +21,10 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic_offline,
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams},
+	ac_primitives::{
+		AssetTipExtrinsicParams, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams,
+		GenericExtrinsicParams,
+	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
@@ -56,8 +59,19 @@ async fn main() {
 	// Set the additional params.
 	api.set_additional_params(tx_params);
 	// Get the nonce of the signer account (online).
+	let spec_version = api.runtime_version().spec_version;
+	let transaction_version = api.runtime_version().transaction_version;
 	let signer_nonce = api.get_nonce().unwrap();
-	let extrinsic_params = api.extrinsic_params(signer_nonce);
+	let genesis_hash = api.genesis_hash();
+	let additional_extrinsic_params = tx_params;
+
+	let extrinsic_params = GenericExtrinsicParams::new(
+		spec_version,
+		transaction_version,
+		signer_nonce,
+		genesis_hash,
+		additional_extrinsic_params,
+	);
 
 	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
 	// Compose the extrinsic (offline).
