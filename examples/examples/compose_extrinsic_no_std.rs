@@ -71,8 +71,6 @@ async fn main() {
 			.era(Era::mortal(period, header.unwrap().number.into()), last_finalized_header_hash)
 			.tip(0);
 
-	// Set the additional params.
-	//api.set_additional_params(tx_params);
 	// Get the nonce of the signer account (online).
 	let spec_version = api.runtime_version().spec_version;
 	let transaction_version = api.runtime_version().transaction_version;
@@ -93,11 +91,6 @@ async fn main() {
 	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 	let call =
 		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
-	/*for i in 0..5 {
-		let xt = api.compose_extrinsic_offline(call.clone(), signer_nonce);
-		println!("{:?}", xt.signature);
-	}
-	let xt = api.compose_extrinsic_offline(call.clone(), signer_nonce);*/
 	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
 
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
