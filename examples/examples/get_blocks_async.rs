@@ -32,33 +32,34 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api =
-		Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client)
+		.await
+		.unwrap();
 
-	println!("Genesis block: \n {:?} \n", api.get_genesis_block().unwrap());
+	println!("Genesis block: \n {:?} \n", api.get_genesis_block().await.unwrap());
 
-	let header_hash = api.get_finalized_head().unwrap().unwrap();
+	let header_hash = api.get_finalized_head().await.unwrap().unwrap();
 	println!("Latest Finalized Header Hash:\n {} \n", header_hash);
 
-	let header = api.get_header(Some(header_hash)).unwrap().unwrap();
+	let header = api.get_header(Some(header_hash)).await.unwrap().unwrap();
 	println!("Finalized header:\n {:?} \n", header);
 
-	let signed_block = api.get_finalized_block().unwrap().unwrap();
+	let signed_block = api.get_finalized_block().await.unwrap().unwrap();
 	println!("Finalized block:\n {:?} \n", signed_block);
 
 	let last_block_number = signed_block.block.header.number;
 	// Get the previous three blocks of the last_block_number
 	let number_of_last_three_blocks: Vec<_> =
 		(last_block_number.saturating_sub(3)..last_block_number).collect();
-	let blocks = api.get_signed_blocks(&number_of_last_three_blocks).unwrap();
+	let blocks = api.get_signed_blocks(&number_of_last_three_blocks).await.unwrap();
 	println!("Block numbers of the previous three blocks: ");
 	for (i, b) in blocks.iter().enumerate() {
 		println!("  Block {} has block number {}", i, b.block.header.number);
 	}
 
-	println!("Latest Header: \n {:?} \n", api.get_header(None).unwrap());
+	println!("Latest Header: \n {:?} \n", api.get_header(None).await.unwrap());
 
-	println!("Latest block: \n {:?} \n", api.get_block(None).unwrap());
+	println!("Latest block: \n {:?} \n", api.get_block(None).await.unwrap());
 	println!("Fetching block information took {} ms", start.elapsed().as_millis());
 
 	println!("Subscribing to finalized heads");
