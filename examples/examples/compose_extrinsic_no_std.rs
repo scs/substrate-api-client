@@ -62,13 +62,15 @@ async fn main() {
 	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
 
-	// Get the nonce of the signer account (online).
+	// Get information out of Api (online).
 	let spec_version = api.runtime_version().spec_version;
 	let transaction_version = api.runtime_version().transaction_version;
 	let genesis_hash = api.genesis_hash();
 	let signer_nonce = api.get_nonce().unwrap();
 	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
+	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
+	// Construct extrinsic without using Api (no_std).
 	let additional_extrinsic_params: GenericAdditionalParams<
 		AssetTip<AssetBalanceFor<Runtime>>,
 		Hash,
@@ -82,13 +84,9 @@ async fn main() {
 		genesis_hash,
 		additional_extrinsic_params,
 	);
-
-	// Compose the extrinsic (offline).
-	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 	let call =
 		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
 	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
-
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
 
 	// Send and watch extrinsic until in block (online).
