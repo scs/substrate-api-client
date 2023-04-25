@@ -20,17 +20,15 @@ use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, Signature};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	ac_compose_macros::{compose_extrinsic_offline, rpc_params},
+	ac_compose_macros::compose_extrinsic_offline,
 	ac_primitives::{
 		extrinsic_params::AssetBalanceFor, AssetTip, AssetTipExtrinsicParams, ExtrinsicParams,
 		ExtrinsicSigner, FrameSystemConfig, GenericAdditionalParams, GenericExtrinsicParams,
 	},
-	rpc::{JsonrpseeClient, Request},
+	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitExtrinsic,
 };
 
-type Header = <Runtime as FrameSystemConfig>::Header;
-//type Tip = <Runtime as FrameSystemConfig>::Tip;
 type Hash = <Runtime as FrameSystemConfig>::Hash;
 
 #[tokio::main]
@@ -61,23 +59,22 @@ async fn main() {
 
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
-	//let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
-	let header: Option<Header> = client
-		.request("chain_getHeader", rpc_params![last_finalized_header_hash])
-		.unwrap();
+	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
-	let tx_params: GenericAdditionalParams<AssetTip<AssetBalanceFor<Runtime>>, Hash> =
-		GenericAdditionalParams::new()
-			.era(Era::mortal(period, header.unwrap().number.into()), last_finalized_header_hash)
-			.tip(0);
 
 	// Get the nonce of the signer account (online).
 	let spec_version = api.runtime_version().spec_version;
 	let transaction_version = api.runtime_version().transaction_version;
-	let signer_nonce = api.get_nonce().unwrap();
 	let genesis_hash = api.genesis_hash();
-	let additional_extrinsic_params = tx_params;
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
 
+	let additional_extrinsic_params: GenericAdditionalParams<
+		AssetTip<AssetBalanceFor<Runtime>>,
+		Hash,
+	> = GenericAdditionalParams::new()
+		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
+		.tip(0);
 	let extrinsic_params = GenericExtrinsicParams::new(
 		spec_version,
 		transaction_version,
@@ -86,7 +83,6 @@ async fn main() {
 		additional_extrinsic_params,
 	);
 
-	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
 	// Compose the extrinsic (offline).
 	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 	let call =
