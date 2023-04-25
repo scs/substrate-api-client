@@ -22,12 +22,16 @@ use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_extrinsic_offline, rpc_params},
 	ac_primitives::{
-		AssetTipExtrinsicParams, ExtrinsicParams, ExtrinsicSigner, FrameSystemConfig,
-		GenericAdditionalParams, GenericExtrinsicParams,
+		extrinsic_params::AssetBalanceFor, AssetTip, AssetTipExtrinsicParams, ExtrinsicParams,
+		ExtrinsicSigner, FrameSystemConfig, GenericAdditionalParams, GenericExtrinsicParams,
 	},
 	rpc::{JsonrpseeClient, Request},
 	Api, GetChainInfo, SubmitExtrinsic,
 };
+
+type Header = <Runtime as FrameSystemConfig>::Header;
+//type Tip = <Runtime as FrameSystemConfig>::Tip;
+type Hash = <Runtime as FrameSystemConfig>::Hash;
 
 #[tokio::main]
 async fn main() {
@@ -58,16 +62,17 @@ async fn main() {
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
 	//let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
-	let header: Option<<Runtime as FrameSystemConfig>::Header> = client
+	let header: Option<Header> = client
 		.request("chain_getHeader", rpc_params![last_finalized_header_hash])
 		.unwrap();
 	let period = 5;
-	let tx_params = GenericAdditionalParams::new()
-		.era(Era::mortal(period, header.unwrap().number.into()), last_finalized_header_hash)
-		.tip(0);
+	let tx_params: GenericAdditionalParams<AssetTip<AssetBalanceFor<Runtime>>, Hash> =
+		GenericAdditionalParams::new()
+			.era(Era::mortal(period, header.unwrap().number.into()), last_finalized_header_hash)
+			.tip(0);
 
 	// Set the additional params.
-	api.set_additional_params(tx_params);
+	//api.set_additional_params(tx_params);
 	// Get the nonce of the signer account (online).
 	let spec_version = api.runtime_version().spec_version;
 	let transaction_version = api.runtime_version().transaction_version;
