@@ -6,10 +6,11 @@
 
 substrate-api-client is a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
 
-* Compose extrinsics, send them and subscribe to updates (synchronously).
-* supports `no_std` builds. Only the rpc-client is std only. For `no_std` builds, a custom rpc client needs to be implemented.
+* Compose extrinsics, send them (asynchronously and synchronously) and subscribe to updates (synchronously).
+* Support `no_std` builds. Only the rpc-client is std only. For `no_std` builds, a custom rpc client needs to be implemented.
 * Watch events and execute code upon events.
 * Parse and print the node metadata.
+* Support three different websocket crates (`jsonrpsee`, `tungstenite` and `ws`). See `Cargo.toml` for more information and limitations.
 
 ## Prerequisites
 

@@ -24,7 +24,7 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-//! RPC parameters, orginally belonging to jsonrpsee:
+//! RPC parameters, originally belonging to jsonrpsee:
 //! https://github.com/paritytech/jsonrpsee
 //! It is copied & pasted here to avoid std dependencies.
 
