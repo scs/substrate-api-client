@@ -22,6 +22,9 @@ use substrate_api_client::{
 	ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetChainInfo,
 };
 
+#[cfg(all(feature = "sync-examples", feature = "async-examples",))]
+compile_error!("Please disable the \"sync-examples\" feature by using --no-default-features");
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
