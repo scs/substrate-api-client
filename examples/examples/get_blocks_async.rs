@@ -14,6 +14,7 @@
 */
 
 //! Very simple example that shows how to fetch chain metadata with async.
+//! To compile this example for async you need to set the `--no-default-features` flag
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
@@ -22,9 +23,11 @@ use substrate_api_client::{
 	ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetChainInfo,
 };
 
-#[cfg(all(feature = "sync-examples", feature = "async-examples",))]
-compile_error!("Please disable the \"sync-examples\" feature by using --no-default-features");
+#[cfg(feature = "sync-examples")]
+#[tokio::main]
+async fn main() {}
 
+#[cfg(not(feature = "sync-examples"))]
 #[tokio::main]
 async fn main() {
 	env_logger::init();
