@@ -23,6 +23,7 @@ use substrate_api_client::{
 	ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetChainInfo,
 };
 
+// Empty implementation that is used in case the example is compiled in synchronous mode
 #[cfg(feature = "sync-examples")]
 #[tokio::main]
 async fn main() {}
