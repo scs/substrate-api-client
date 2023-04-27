@@ -53,8 +53,6 @@ jobs:
 
                 # Run tests and build examples
                 cargo test --release --workspace --all-features --exclude test-no-std,
-                # Compile async example separately to enable async-mode
-                cargo b -p ac-examples --example get_blocks_async --no-default-features,
 
                 # Fmt
                 cargo fmt --all -- --check
@@ -71,6 +69,10 @@ jobs:
 
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
+
+      # Compile async example separately to enable async-mode
+      - name: compile-async-examples
+        run: cargo build --release -p ac-examples --example get_blocks_async --no-default-features
 
       - name: Upload examples
         uses: actions/upload-artifact@v3
