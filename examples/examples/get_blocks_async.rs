@@ -75,5 +75,12 @@ async fn main() {
 	}
 	println!("Latest Header: \n {:?} \n", latest_header);
 	println!("Latest block: \n {:?} \n", latest_block);
-	println!("Fetching block information took {} ms", start.elapsed().as_millis());
+
+	// This part is still executed synchronously
+	println!("Subscribing to finalized heads");
+	let mut subscription = api.subscribe_finalized_heads().unwrap();
+	for _ in 0..5 {
+		let head = subscription.next().unwrap().unwrap();
+		println!("Got new Block {:?}", head);
+	}
 }
