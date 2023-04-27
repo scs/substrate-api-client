@@ -91,8 +91,11 @@ std = [
     "ac-node-api/std",
     "ac-primitives/std",
 ]
+# Use the `jsonrpsee` crate for websocket communication. Does provide sync and async support.
 jsonrpsee-client = ["std", "jsonrpsee", "futures"]
+# Use the `tungstenite` crate for websocket communication. No async support.
 tungstenite-client = ["std", "tungstenite"]
+# Use the `ws` crate for websocket communication. No async support.
 ws-client = ["std", "ws"]
 staking-xt = ["std", "ac-primitives/staking-xt"]
 contracts-xt = ["std", "ac-primitives/contracts-xt"]
