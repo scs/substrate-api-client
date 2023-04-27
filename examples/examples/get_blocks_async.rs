@@ -13,7 +13,7 @@
 	limitations under the License.
 */
 
-//! Very simple example that shows how to fetch chain metadata with async.
+//! Very simple example that shows how to fetch chain information with async.
 //! To compile this example for async you need to set the `--no-default-features` flag
 
 use kitchensink_runtime::Runtime;
@@ -26,7 +26,9 @@ use substrate_api_client::{
 // Empty implementation that is used in case the example is compiled in synchronous mode
 #[cfg(feature = "sync-examples")]
 #[tokio::main]
-async fn main() {}
+async fn main() {
+	println!("Please compile this example with `--no-default-features` for it to run properly.")
+}
 
 #[cfg(not(feature = "sync-examples"))]
 #[tokio::main]
