@@ -47,7 +47,7 @@ jobs:
                 # Test for async compilation
                 cargo build --no-default-features --features "std jsonrpsee-client",
                 # Compile async example separately to enable async-mode
-                cargo build --release -p ac-examples --example get_blocks_async --no-default-features
+                cargo build --release -p ac-examples --example get_blocks_async --no-default-features,
 
                 # Clippy
                 cargo clippy --workspace --exclude test-no-std -- -D warnings,
