@@ -18,9 +18,10 @@
 
 use kitchensink_runtime::Runtime;
 use sp_core::sr25519;
-use std::time::Instant;
 use substrate_api_client::{
-	ac_primitives::PlainTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetChainInfo,
+	ac_primitives::PlainTipExtrinsicParams,
+	rpc::{HandleSubscription, JsonrpseeClient},
+	Api, GetChainInfo, SubscribeChain,
 };
 
 // Empty implementation that is used in case the example is compiled in synchronous mode
@@ -34,7 +35,6 @@ async fn main() {
 #[tokio::main]
 async fn main() {
 	env_logger::init();
-	let start = Instant::now();
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
