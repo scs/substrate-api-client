@@ -13,7 +13,7 @@
 	limitations under the License.
 */
 
-//! This example shows how to use the nonce macro which generates an extrinsic
+//! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
 use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, Signature};
@@ -44,18 +44,10 @@ async fn main() {
 	//
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<
-		ExtrinsicSigner<sp_core::sr25519::Pair, Signature, Runtime>,
-		JsonrpseeClient,
-		AssetTipExtrinsicParams<Runtime>,
-		Runtime,
-	>::new(client.clone())
-	.unwrap();
-	let extrinsic_signer =
-		ExtrinsicSigner::<sp_core::sr25519::Pair, Signature, Runtime>::new(signer);
-	let signer_clone = extrinsic_signer.clone();
+	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<_, Signature, Runtime>::new(signer);
 	// Signer is needed to get the nonce
-	api.set_signer(signer_clone);
+	api.set_signer(extrinsic_signer.clone());
 
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
@@ -89,7 +81,7 @@ async fn main() {
 	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
 
-	// Send and watch extrinsic until in block (online).
+	// Submit extrinsic (online)
 	let hash = api.submit_extrinsic(xt_no_std);
 	println!("[+] Extrinsic got included in block {:?}", hash);
 }
