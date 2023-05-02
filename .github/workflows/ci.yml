@@ -46,6 +46,8 @@ jobs:
 
                 # Test for async compilation
                 cargo build --no-default-features --features "std jsonrpsee-client",
+                # Compile async example separately to enable async-mode
+                cargo build --release -p ac-examples --example get_blocks_async --no-default-features,
 
                 # Clippy
                 cargo clippy --workspace --exclude test-no-std -- -D warnings,
@@ -54,7 +56,7 @@ jobs:
                 # Run tests and build examples
                 cargo test --release --workspace --all-features --exclude test-no-std,
 
-                 # Fmt
+                # Fmt
                 cargo fmt --all -- --check
 
         ]
@@ -70,15 +72,24 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-      - name: Upload examples
+      - name: Upload sync examples
         uses: actions/upload-artifact@v3
         if: contains(matrix.check, 'cargo test')
         with:
           name: examples
           path:  |
             target/release/examples/*
+            !target/release/examples/*async*
             !target/release/examples/*.d
             !target/release/examples/*-*
+
+      - name: Upload async examples
+        uses: actions/upload-artifact@v3
+        if: contains(matrix.check, 'async')
+        with:
+          name: examples
+          path:  |
+            target/release/examples/*async
 
   taplo-fmt:
     name: "Taplo fmt"
@@ -126,7 +137,7 @@ jobs:
           event_callback,
           event_error_details,
           get_account_identity,
-          get_blocks,
+          get_blocks_async,
           get_storage,
           print_metadata,
           staking_batch_payout,
