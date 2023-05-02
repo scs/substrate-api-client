@@ -77,9 +77,6 @@ pub trait Block: Sized + Encode {
 	fn hash(&self) -> <Self::Hasher as Hasher>::Output {
 		<<Self::Header as Header>::Hasher>::hash_of(self.header())
 	}
-	//Self::Hash {
-	// 		<<Self::Header as Header>::Hashing as Hash>::hash_of(self.header())
-	// 	}
 	/// Creates an encoded block from the given `header` and `extrinsics` without requiring the
 	/// creation of an instance.
 	fn encode_from(header: &Self::Header, extrinsics: &[Self::Extrinsic]) -> Vec<u8>;
