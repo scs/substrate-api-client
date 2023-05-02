@@ -223,15 +223,13 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::{
-		Bytes, FrameSystemConfig, PolkadotConfig, RuntimeVersion, SignedBlock, StorageData,
-	};
+	use ac_primitives::{Bytes, PolkadotConfig, RuntimeVersion, SignedBlock, StorageData};
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
-	use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, UncheckedExtrinsic};
+	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
 	use sp_core::{crypto::Ss58Codec, sr25519, H256};
-	use sp_runtime::{generic::Block, traits::Hash, AccountId32, MultiAddress};
+	use sp_runtime::{generic::Block, AccountId32, MultiAddress};
 	use std::{collections::HashMap, fs};
 
 	#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
@@ -366,9 +364,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt1.0);
-		let xt_hash2 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt2.0);
-		let xt_hash3 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt3.0);
+		let xt_hash1 = <PolkadotConfig as Config>::Hasher::hash_of(&xt1.0);
+		let xt_hash2 = <PolkadotConfig as Config>::Hasher::hash_of(&xt2.0);
+		let xt_hash3 = <PolkadotConfig as Config>::Hasher::hash_of(&xt3.0);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };
