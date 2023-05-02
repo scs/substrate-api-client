@@ -134,6 +134,7 @@ jobs:
           benchmark_bulk_xt,
           compose_extrinsic_offline,
           custom_nonce,
+          dispatch_errors_tests,
           event_callback,
           event_error_details,
           get_account_identity,

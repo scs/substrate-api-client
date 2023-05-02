@@ -75,9 +75,7 @@ async fn main() {
 		Err(e) => {
 			println!("[+] Couldn't execute the extrinsic due to {:?}\n", e);
 			let string_error = format!("{:?}", e);
-			// We expect a TokenError::FundsUnavailable error. See :
-			//https://github.com/paritytech/substrate/blob/b42a687c9050cbe04849c45b0c5ccadb82c84948/frame/support/src/traits/tokens/fungible/mod.rs#L177
-			assert!(string_error.contains("Other")); //Fixme This is for now not decoded. See issue: #488
+			assert!(string_error.contains("FundsUnavailable"));
 		},
 	};
 
