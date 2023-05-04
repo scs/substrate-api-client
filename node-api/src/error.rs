@@ -142,8 +142,11 @@ impl DispatchError {
 				return DispatchError::Other(bytes.into_owned())
 			},
 		};
+
 		if bytes.len() < 2 {
-			warn!("Can't decode error: sp_runtime::DispatchError does not have a name variant");
+			warn!(
+				"Can't decode error: sp_runtime::DispatchError because it contains too few bytes"
+			);
 			return DispatchError::Other(bytes.into_owned())
 		}
 		// The remaining bytes are the specific error to decode:
