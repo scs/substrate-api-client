@@ -1,6 +1,6 @@
 [package]
 name = "substrate-api-client"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
