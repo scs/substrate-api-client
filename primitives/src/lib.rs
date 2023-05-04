@@ -30,6 +30,5 @@ pub mod config;
 pub mod extrinsics;
 pub mod rpc_params;
 pub mod rpc_params;
-pub mod signer;
 pub mod traits;
 pub mod types;
