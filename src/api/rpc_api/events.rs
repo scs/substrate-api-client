@@ -18,13 +18,12 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, StorageChangeSet};
+use ac_primitives::{config::Config, Block, Hasher, StorageChangeSet};
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::{Block as BlockTrait, GetRuntimeBlockType, Hash as HashTrait};
 
 pub type EventSubscriptionFor<Client, Hash> =
 	EventSubscription<<Client as Subscribe>::Subscription<StorageChangeSet<Hash>>, Hash>;
@@ -45,16 +44,12 @@ pub trait FetchEvents {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> FetchEvents for Api<Signer, Client, Params, Runtime>
+impl<T, Client> FetchEvents for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Header: DeserializeOwned,
 {
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>> {
 		let key = crate::storage_key("System", "Events");
@@ -156,14 +151,13 @@ pub trait SubscribeEvents {
 	fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeEvents for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SubscribeEvents for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	type Client = Client;
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>> {
 		let key = crate::storage_key("System", "Events");
@@ -175,28 +169,24 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig + GetRuntimeBlockType,
-	Runtime::RuntimeBlock: BlockTrait + DeserializeOwned,
-	Runtime::Hashing: HashTrait<Output = Runtime::Hash>,
-	Runtime::Header: DeserializeOwned,
 {
 	/// Retrieve block details from node and search for the position of the given extrinsic.
 	#[maybe_async::maybe_async(?Send)]
 	async fn retrieve_extrinsic_index_from_block(
 		&self,
-		block_hash: Runtime::Hash,
-		extrinsic_hash: Runtime::Hash,
+		block_hash: T::Hash,
+		extrinsic_hash: T::Hash,
 	) -> Result<u32> {
 		let block = self.get_block(Some(block_hash)).await?.ok_or(Error::BlockNotFound)?;
 		let xt_index = block
 			.extrinsics()
 			.iter()
 			.position(|xt| {
-				let xt_hash = Runtime::Hashing::hash_of(&xt.encode());
+				let xt_hash = T::Hasher::hash_of(&xt.encode());
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
@@ -207,7 +197,7 @@ where
 	/// Filter events and return the ones associated to the given extrinsic index.
 	fn filter_extrinsic_events(
 		&self,
-		events: Events<Runtime::Hash>,
+		events: Events<T::Hash>,
 		extrinsic_index: u32,
 	) -> Result<Vec<EventDetails>> {
 		let extrinsic_event_results = events.iter().filter(|ev| {
@@ -233,14 +223,12 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::{
-		AssetTipExtrinsicParams, Bytes, FrameSystemConfig, RuntimeVersion, SignedBlock, StorageData,
-	};
+	use ac_primitives::{Bytes, PolkadotConfig, RuntimeVersion, SignedBlock, StorageData};
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
-	use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, UncheckedExtrinsic};
+	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
-	use sp_core::{crypto::Ss58Codec, sr25519, sr25519::Pair, H256};
+	use sp_core::{crypto::Ss58Codec, sr25519, H256};
 	use sp_runtime::{generic::Block, AccountId32, MultiAddress};
 	use std::{collections::HashMap, fs};
 
@@ -253,7 +241,7 @@ mod tests {
 	fn create_mock_api(
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<Pair, RpcClientMock, AssetTipExtrinsicParams<Runtime>, Runtime> {
+	) -> Api<PolkadotConfig, RpcClientMock> {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();
@@ -376,9 +364,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt1.0);
-		let xt_hash2 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt2.0);
-		let xt_hash3 = <Runtime as FrameSystemConfig>::Hashing::hash_of(&xt3.0);
+		let xt_hash1 = <PolkadotConfig as Config>::Hasher::hash_of(&xt1.0);
+		let xt_hash2 = <PolkadotConfig as Config>::Hasher::hash_of(&xt2.0);
+		let xt_hash3 = <PolkadotConfig as Config>::Hasher::hash_of(&xt3.0);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };

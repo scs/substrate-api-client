@@ -20,6 +20,7 @@ serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate no_std
 sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core-hashing = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -53,6 +54,7 @@ std = [
     "serde_json/std",
     # substrate no_std
     "sp-core/std",
+    "sp-core-hashing/std",
     "sp-runtime/std",
     "sp-staking/std",
     "sp-version/std",

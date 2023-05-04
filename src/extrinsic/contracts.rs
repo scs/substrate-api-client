@@ -24,7 +24,7 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	CallIndex, ContractsConfig, ExtrinsicParams, FrameSystemConfig, SignExtrinsic,
+	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
 use alloc::vec::Vec;
@@ -103,30 +103,26 @@ pub trait ContractsExtrinsics {
 }
 
 #[cfg(feature = "std")]
-type BalanceOf<T> = <<T as ContractsConfig>::Currency as frame_support::traits::Currency<
-	<T as FrameSystemConfig>::AccountId,
->>::Balance;
-
-#[cfg(feature = "std")]
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> ContractsExtrinsics for Api<Signer, Client, Params, Runtime>
+impl<T, Client> ContractsExtrinsics for Api<T, Client>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: ContractsConfig,
-	Compact<BalanceOf<Runtime>>: Encode + Clone,
-	Runtime::Currency: frame_support::traits::Currency<Runtime::AccountId>,
+	Compact<T::ContractCurrency>: Encode + Clone,
 {
 	type Gas = u64;
-	type Currency = BalanceOf<Runtime>;
-	type Hash = Runtime::Hash;
+	type Currency = T::ContractCurrency;
+	type Hash = T::Hash;
 	type Code = Vec<u8>;
 	type Data = Vec<u8>;
 	type Salt = Vec<u8>;
-	type Address = Signer::ExtrinsicAddress;
-	type Extrinsic<Call> =
-		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
+	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
+	type Extrinsic<Call> = UncheckedExtrinsicV4<
+		Self::Address,
+		Call,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+	>;
 
 	async fn contract_put_code(
 		&self,

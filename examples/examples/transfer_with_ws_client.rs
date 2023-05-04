@@ -15,18 +15,20 @@
 
 //! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
 
-use kitchensink_runtime::{Runtime, Signature};
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
 	sr25519,
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{ExtrinsicSigner, SubstrateKitchensinkConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::WsRpcClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
+
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 fn main() {
 	env_logger::init();
@@ -41,8 +43,8 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::with_default_url();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice.clone()));
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(alice.clone()));
 
 	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

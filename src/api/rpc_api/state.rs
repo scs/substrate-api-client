@@ -17,9 +17,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::MetadataError;
-use ac_primitives::{
-	ExtrinsicParams, FrameSystemConfig, StorageChangeSet, StorageData, StorageKey,
-};
+use ac_primitives::{config::Config, StorageChangeSet, StorageData, StorageKey};
 use alloc::{string::String, vec, vec::Vec};
 use codec::{Decode, Encode};
 use log::*;
@@ -159,13 +157,12 @@ pub trait GetStorage {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetStorage for Api<Signer, Client, Params, Runtime>
+impl<T, Client> GetStorage for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	async fn get_storage<V: Decode>(
 		&self,
@@ -350,14 +347,13 @@ pub trait SubscribeState {
 	) -> Result<StorageChangeSetSubscriptionFor<Self::Client, Self::Hash>>;
 }
 
-impl<Signer, Client, Params, Runtime> SubscribeState for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SubscribeState for Api<T, Client>
 where
+	T: Config,
 	Client: Subscribe,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	type Client = Client;
-	type Hash = Runtime::Hash;
+	type Hash = T::Hash;
 
 	fn subscribe_state(
 		&self,

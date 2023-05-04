@@ -16,8 +16,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{
-	BalancesConfig, Bytes, ExtrinsicParams, FeeDetails, InclusionFee, NumberOrHex,
-	RuntimeDispatchInfo,
+	config::Config, Bytes, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo,
 };
 use core::str::FromStr;
 
@@ -41,15 +40,14 @@ pub trait GetTransactionPayment {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetTransactionPayment for Api<Signer, Client, Params, Runtime>
+impl<T, Client> GetTransactionPayment for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Runtime: BalancesConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime::Balance: TryFrom<NumberOrHex> + FromStr,
+	T::Balance: TryFrom<NumberOrHex> + FromStr,
 {
-	type Hash = Runtime::Hash;
-	type Balance = Runtime::Balance;
+	type Hash = T::Hash;
+	type Balance = T::Balance;
 
 	async fn get_fee_details(
 		&self,

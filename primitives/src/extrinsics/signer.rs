@@ -17,11 +17,11 @@
 
 //! Signer used to sign extrinsic.
 
-use crate::FrameSystemConfig;
+use crate::config::Config;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use sp_core::{crypto::AccountId32, Pair};
-use sp_runtime::{traits::StaticLookup, MultiAddress};
+use sp_runtime::MultiAddress;
 
 pub trait SignExtrinsic<AccountId: Clone + Encode> {
 	type Signature: Encode;
@@ -40,49 +40,34 @@ pub trait SignExtrinsic<AccountId: Clone + Encode> {
 }
 
 #[derive(Encode, Decode, Clone, PartialEq)]
-pub struct ExtrinsicSigner<Signer, Signature, Runtime>
-where
-	Signer: Pair,
-	Runtime: FrameSystemConfig,
-{
-	signer: Signer,
-	account_id: Runtime::AccountId,
-	extrinsic_address: <Runtime::Lookup as StaticLookup>::Source,
-	_phantom: PhantomData<Signature>,
+pub struct ExtrinsicSigner<T: Config> {
+	signer: T::CryptoKey,
+	account_id: T::AccountId,
+	extrinsic_address: T::Address,
+	_phantom: PhantomData<T::Signature>,
 }
 
-impl<Signer, Signature, Runtime> ExtrinsicSigner<Signer, Signature, Runtime>
-where
-	Signer: Pair,
-	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
-{
-	pub fn new(signer: Signer) -> Self {
-		let account_id: Runtime::AccountId = signer.public().into();
-		let extrinsic_address = Runtime::Lookup::unlookup(account_id.clone());
+impl<T: Config> ExtrinsicSigner<T> {
+	pub fn new(signer: T::CryptoKey) -> Self {
+		let account_id: T::AccountId = signer.public().into();
+		let extrinsic_address: T::Address = account_id.clone().into();
 		Self { signer, account_id, extrinsic_address, _phantom: Default::default() }
 	}
 
-	pub fn signer(&self) -> &Signer {
+	pub fn signer(&self) -> &T::CryptoKey {
 		&self.signer
 	}
 }
 
-impl<Signer, Signature, Runtime> SignExtrinsic<Runtime::AccountId>
-	for ExtrinsicSigner<Signer, Signature, Runtime>
-where
-	Runtime: FrameSystemConfig,
-	Signer: Pair,
-	Signature: From<Signer::Signature> + Encode,
-{
-	type Signature = Signature;
-	type ExtrinsicAddress = <Runtime::Lookup as StaticLookup>::Source;
+impl<T: Config> SignExtrinsic<T::AccountId> for ExtrinsicSigner<T> {
+	type Signature = T::Signature;
+	type ExtrinsicAddress = T::Address;
 
 	fn sign(&self, payload: &[u8]) -> Self::Signature {
 		self.signer.sign(payload).into()
 	}
 
-	fn public_account_id(&self) -> &Runtime::AccountId {
+	fn public_account_id(&self) -> &T::AccountId {
 		&self.account_id
 	}
 
@@ -91,14 +76,13 @@ where
 	}
 }
 
-impl<Signer, Runtime> From<Signer> for ExtrinsicSigner<Signer, Signer::Signature, Runtime>
+impl<T, Signer> From<Signer> for ExtrinsicSigner<T>
 where
-	Signer: Pair,
-	Runtime: FrameSystemConfig,
-	Runtime::AccountId: From<Signer::Public>,
+	T: Config,
+	Signer: Pair + Into<T::CryptoKey>,
 {
 	fn from(value: Signer) -> Self {
-		ExtrinsicSigner::<Signer, Signer::Signature, Runtime>::new(value)
+		ExtrinsicSigner::<T>::new(value.into())
 	}
 }
 
@@ -154,9 +138,26 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use node_template_runtime::{Runtime, Signature};
-	use sp_core::{sr25519, Pair};
+	use crate::SubstrateKitchensinkConfig;
+	use node_template_runtime::Signature;
+	use sp_core::sr25519;
 	use sp_keyring::AccountKeyring;
+
+	#[test]
+	fn test_extrinsic_signer_clone() {
+		let pair = AccountKeyring::Alice.pair();
+		let signer = ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(pair);
+
+		let _signer2 = signer.clone();
+	}
+
+	#[test]
+	fn test_static_extrinsic_signer_clone() {
+		let pair = AccountKeyring::Alice.pair();
+		let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
+
+		let _signer2 = signer.clone();
+	}
 
 	#[test]
 	fn test_extrinsic_signer_from_sr25519_pair() {
@@ -166,28 +167,9 @@ mod tests {
 		)
 		.unwrap();
 
-		let es_converted: ExtrinsicSigner<_, _, Runtime> = alice.clone().into();
-		let es_new =
-			ExtrinsicSigner::<sr25519::Pair, sr25519::Signature, Runtime>::new(alice.clone());
+		let es_converted: ExtrinsicSigner<SubstrateKitchensinkConfig> = alice.clone().into();
+		let es_new = ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(alice.clone());
 
 		assert_eq!(es_converted.signer.public(), es_new.signer.public());
-	}
-
-	// This test does not work. See issue #504.
-
-	// 	#[test]
-	// 	fn test_extrinsic_signer_clone() {
-	// 		let pair = AccountKeyring::Alice.pair();
-	// 		let signer = ExtrinsicSigner::<_, Signature, Runtime>::new(pair);
-	//
-	// 		let signer2 = signer.clone();
-	// 	}
-
-	#[test]
-	fn test_static_extrinsic_signer_clone() {
-		let pair = AccountKeyring::Alice.pair();
-		let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
-
-		let _signer2 = signer.clone();
 	}
 }

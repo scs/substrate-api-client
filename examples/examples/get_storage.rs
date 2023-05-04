@@ -16,18 +16,20 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use frame_system::AccountInfo as GenericAccountInfo;
-use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{ExtrinsicSigner, PlainTipExtrinsicParams},
+	ac_primitives::{Config, ExtrinsicSigner, SubstrateKitchensinkConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage,
 };
 
-type IndexFor<T> = <T as frame_system::Config>::Index;
-type AccountDataFor<T> = <T as frame_system::Config>::AccountData;
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
-type AccountInfo = GenericAccountInfo<IndexFor<Runtime>, AccountDataFor<Runtime>>;
+type AccountInfo = GenericAccountInfo<
+	<SubstrateKitchensinkConfig as Config>::Index,
+	<SubstrateKitchensinkConfig as Config>::AccountData,
+>;
 
 #[tokio::main]
 async fn main() {
@@ -35,7 +37,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<_, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 
 	// get some plain storage value
 	let result: u128 = api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();
@@ -58,7 +60,7 @@ async fn main() {
 
 	// get Alice's AccountNonce with api.get_nonce()
 	let signer = AccountKeyring::Alice.pair();
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(signer));
+	api.set_signer(ExtrinsicSigner::<_>::new(signer));
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
 	println!(

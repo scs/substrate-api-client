@@ -16,10 +16,8 @@
 //! Very simple example that shows how to fetch chain information with async.
 //! To compile this example for async you need to set the `--no-default-features` flag
 
-use kitchensink_runtime::Runtime;
-use sp_core::sr25519;
 use substrate_api_client::{
-	ac_primitives::PlainTipExtrinsicParams,
+	ac_primitives::SubstrateKitchensinkConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetChainInfo, SubscribeChain,
 };
@@ -31,6 +29,9 @@ async fn main() {
 	println!("Please compile this example with `--no-default-features` for it to run properly.")
 }
 
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+
 #[cfg(not(feature = "sync-examples"))]
 #[tokio::main]
 async fn main() {
@@ -38,9 +39,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<sr25519::Pair, _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client)
-		.await
-		.unwrap();
+	let api = Api::<SubstrateKitchensinkConfig, _>::new(client).await.unwrap();
 
 	let (genesis_block, header_hash, signed_block) = futures::future::try_join3(
 		api.get_genesis_block(),

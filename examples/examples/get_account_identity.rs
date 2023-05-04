@@ -16,13 +16,13 @@
 //! Example to show how to get the account identity display name from the identity pallet.
 
 use frame_support::traits::Currency;
-use kitchensink_runtime::{Runtime as KitchensinkRuntime, Signature};
+use kitchensink_runtime::Runtime as KitchensinkRuntime;
 use pallet_identity::{Data, IdentityInfo, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner, UncheckedExtrinsicV4},
+	ac_primitives::{ExtrinsicSigner, SubstrateKitchensinkConfig, UncheckedExtrinsicV4},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
@@ -33,6 +33,9 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -40,12 +43,8 @@ async fn main() {
 	// Create the node-api client and set the signer.
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let signer = AccountKeyring::Alice.pair();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api =
-		Api::<_, _, AssetTipExtrinsicParams<KitchensinkRuntime>, KitchensinkRuntime>::new(client)
-			.unwrap();
-	api.set_signer(ExtrinsicSigner::<_, Signature, KitchensinkRuntime>::new(signer.clone()));
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(signer.clone()));
 
 	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {

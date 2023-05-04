@@ -17,14 +17,14 @@
 
 //! Primitives for substrate extrinsics.
 
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
+use sp_runtime::traits::Extrinsic;
 
 pub use extrinsic_params::{
-	AssetTip, AssetTipExtrinsicParams, ExtrinsicParams, GenericAdditionalParams,
-	GenericAdditionalSigned, GenericExtrinsicParams, GenericSignedExtra, PlainTip,
-	PlainTipExtrinsicParams, SignedPayload,
+	AssetTip, ExtrinsicParams, GenericAdditionalParams, GenericAdditionalSigned,
+	GenericExtrinsicParams, GenericSignedExtra, PlainTip, SignedPayload,
 };
 pub use signer::{ExtrinsicSigner, SignExtrinsic};
 
@@ -62,6 +62,26 @@ impl<Address, Call, Signature, SignedExtra>
 	/// New instance of an unsigned extrinsic.
 	pub fn new_unsigned(function: Call) -> Self {
 		Self { signature: None, function }
+	}
+}
+
+impl<Address, Call, Signature, SignedExtra> Extrinsic
+	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
+{
+	type Call = Call;
+
+	type SignaturePayload = (Address, Signature, SignedExtra);
+
+	fn is_signed(&self) -> Option<bool> {
+		Some(self.signature.is_some())
+	}
+
+	fn new(function: Call, signed_data: Option<Self::SignaturePayload>) -> Option<Self> {
+		Some(if let Some((address, signature, extra)) = signed_data {
+			Self::new_signed(function, address, signature, extra)
+		} else {
+			Self::new_unsigned(function)
+		})
 	}
 }
 
@@ -137,6 +157,40 @@ where
 	}
 }
 
+impl<Address, Call, Signature, SignedExtra> serde::Serialize
+	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
+where
+	Address: Encode,
+	Signature: Encode,
+	Call: Encode,
+	SignedExtra: Encode,
+{
+	fn serialize<S>(&self, seq: S) -> Result<S::Ok, S::Error>
+	where
+		S: ::serde::Serializer,
+	{
+		self.using_encoded(|bytes| impl_serde::serialize::serialize(bytes, seq))
+	}
+}
+
+impl<'a, Address, Call, Signature, SignedExtra> serde::Deserialize<'a>
+	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
+where
+	Address: Decode,
+	Signature: Decode,
+	Call: Decode,
+	SignedExtra: Decode,
+{
+	fn deserialize<D>(de: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'a>,
+	{
+		let r = impl_serde::serialize::deserialize(de)?;
+		Decode::decode(&mut &r[..])
+			.map_err(|e| serde::de::Error::custom(format!("Decode error: {e}")))
+	}
+}
+
 /// Same function as in primitives::generic. Needed to be copied as it is private there.
 fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8> {
 	let size = core::mem::size_of::<T>();
@@ -163,11 +217,11 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use extrinsic_params::{
-		ExtrinsicParams, GenericAdditionalParams, GenericExtrinsicParams, PlainTip,
-	};
-	use sp_core::{Pair, H256 as Hash};
-	use sp_runtime::{generic::Era, testing::sr25519, AccountId32, MultiSignature};
+	use crate::SubstrateKitchensinkConfig;
+	use extrinsic_params::{GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
+	use node_template_runtime::{BalancesCall, RuntimeCall, SignedExtra};
+	use sp_core::{crypto::Ss58Codec, Pair, H256 as Hash};
+	use sp_runtime::{generic::Era, testing::sr25519, AccountId32, MultiAddress, MultiSignature};
 
 	#[test]
 	fn encode_decode_roundtrip_works() {
@@ -180,7 +234,13 @@ mod tests {
 			.era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
 		let default_extra =
-			GenericExtrinsicParams::new(0, 0, 0u32, Hash::from([0u8; 32]), tx_params);
+			GenericExtrinsicParams::<SubstrateKitchensinkConfig, PlainTip<u128>>::new(
+				0,
+				0,
+				0u32,
+				Hash::from([0u8; 32]),
+				tx_params,
+			);
 		let xt = UncheckedExtrinsicV4::new_signed(
 			vec![1, 1, 1],
 			account,
@@ -189,5 +249,35 @@ mod tests {
 		);
 		let xt_enc = xt.encode();
 		assert_eq!(xt, Decode::decode(&mut xt_enc.as_slice()).unwrap())
+	}
+
+	#[test]
+	fn serialize_deserialize_works() {
+		let bob: AccountId32 =
+			sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+				.unwrap()
+				.into();
+		let bob = MultiAddress::Id(bob);
+
+		let call1 = RuntimeCall::Balances(BalancesCall::force_transfer {
+			source: bob.clone(),
+			dest: bob.clone(),
+			value: 10,
+		});
+		let xt1 = UncheckedExtrinsicV4::<
+			MultiAddress<AccountId32, u32>,
+			RuntimeCall,
+			MultiSignature,
+			SignedExtra,
+		>::new_unsigned(call1.clone());
+		let json = serde_json::to_string(&xt1).expect("serializing failed");
+		let extrinsic: UncheckedExtrinsicV4<
+			MultiAddress<AccountId32, u32>,
+			RuntimeCall,
+			MultiSignature,
+			SignedExtra,
+		> = serde_json::from_str(&json).expect("deserializing failed");
+		let call = extrinsic.function;
+		assert_eq!(call, call1);
 	}
 }

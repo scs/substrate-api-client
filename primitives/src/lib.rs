@@ -20,16 +20,18 @@
 extern crate alloc;
 
 // Re-export everything.
+pub use config::*;
 pub use extrinsics::*;
-pub use pallet_traits::*;
 pub use rpc_numbers::*;
 pub use rpc_params::*;
 pub use serde_impls::*;
+pub use traits::*;
 pub use types::*;
 
+pub mod config;
 pub mod extrinsics;
-pub mod pallet_traits;
 pub mod rpc_numbers;
 pub mod rpc_params;
 pub mod serde_impls;
+pub mod traits;
 pub mod types;
