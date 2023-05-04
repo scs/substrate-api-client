@@ -19,7 +19,7 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, ExtrinsicParams, UncheckedExtrinsicV4};
+use ac_primitives::{config::Config, UncheckedExtrinsicV4};
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
