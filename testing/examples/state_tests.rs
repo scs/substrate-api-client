@@ -16,30 +16,30 @@
 //! Tests for the state rpc interface functions.
 
 use codec::Decode;
-use kitchensink_runtime::Runtime;
 use pallet_balances::AccountData as GenericAccountData;
 use pallet_staking::Exposure;
 use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::AccountKeyring;
 use sp_staking::EraIndex;
 use substrate_api_client::{
-	ac_primitives::AssetTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetChainInfo, GetStorage,
+	ac_primitives::{Config, SubstrateKitchensinkConfig},
+	rpc::JsonrpseeClient,
+	Api, GetChainInfo, GetStorage,
 };
 
-type Balance = <Runtime as pallet_balances::Config>::Balance;
+type KitchensinkConfig = SubstrateKitchensinkConfig;
+type Balance = <KitchensinkConfig as Config>::Balance;
 type AccountData = GenericAccountData<Balance>;
 type ErasStakers = Exposure<
-	<Runtime as frame_system::Config>::AccountId,
-	<Runtime as pallet_staking::Config>::CurrencyBalance,
+	<KitchensinkConfig as Config>::AccountId,
+	<KitchensinkConfig as Config>::StakingBalance,
 >;
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(alice_pair);
+	let api = Api::<KitchensinkConfig, _>::new(client).unwrap();
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let block_hash = api.get_block_hash(None).unwrap().unwrap();

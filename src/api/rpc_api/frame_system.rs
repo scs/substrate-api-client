@@ -18,7 +18,7 @@ use crate::{
 	rpc::Request,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{AccountInfo, ExtrinsicParams, FrameSystemConfig, StorageKey};
+use ac_primitives::{config::Config, AccountInfo, StorageKey};
 use alloc::{string::String, vec::Vec};
 use log::*;
 
@@ -43,15 +43,14 @@ pub trait GetAccountInformation {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> GetAccountInformation for Api<Signer, Client, Params, Runtime>
+impl<T, Client> GetAccountInformation for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
-	type AccountId = Runtime::AccountId;
-	type Index = Runtime::Index;
-	type AccountData = Runtime::AccountData;
+	type AccountId = T::AccountId;
+	type Index = T::Index;
+	type AccountData = T::AccountData;
 
 	async fn get_account_info(
 		&self,
@@ -121,11 +120,10 @@ pub trait SystemApi {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> SystemApi for Api<Signer, Client, Params, Runtime>
+impl<T, Client> SystemApi for Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 {
 	type ChainType = ac_primitives::ChainType;
 	type Properties = ac_primitives::Properties;

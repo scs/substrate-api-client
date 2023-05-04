@@ -15,19 +15,15 @@
 
 //! Tests for the pallet balances interface functions.
 
-use kitchensink_runtime::Runtime;
-use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::AssetTipExtrinsicParams, rpc::JsonrpseeClient, Api, GetBalance,
+	ac_primitives::SubstrateKitchensinkConfig, rpc::JsonrpseeClient, Api, GetBalance,
 };
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	api.set_signer(alice_pair);
+	let api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 
 	let _ed = api.get_existential_deposit().unwrap();
 }

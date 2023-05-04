@@ -27,6 +27,50 @@ use sp_runtime::traits::{AtLeast32BitUnsigned, Zero};
 
 /// Type used to encode the number of references an account has.
 pub type RefCount = u32;
+
+/// All balance information for an account.
+//https://github.com/paritytech/substrate/blob/d6f278b9685ac871c79e45551b66111b77cb1b71/frame/balances/src/types.rs#L95
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+pub struct AccountData<Balance> {
+	/// Non-reserved part of the balance which the account holder may be able to control.
+	///
+	/// This is the only balance that matters in terms of most operations on tokens.
+	pub free: Balance,
+	/// Balance which is has active holds on it and may not be used at all.
+	///
+	/// This is the sum of all individual holds together with any sums still under the (deprecated)
+	/// reserves API.
+	pub reserved: Balance,
+	/// The amount that `free` may not drop below when reducing the balance, except for actions
+	/// where the account owner cannot reasonably benefit from thr balance reduction, such as
+	/// slashing.
+	pub frozen: Balance,
+	/// Extra information about this account. The MSB is a flag indicating whether the new ref-
+	/// counting logic is in place for this account.
+	pub flags: ExtraFlags,
+}
+
+const IS_NEW_LOGIC: u128 = 0x80000000_00000000_00000000_00000000u128;
+
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+pub struct ExtraFlags(u128);
+impl Default for ExtraFlags {
+	fn default() -> Self {
+		Self(IS_NEW_LOGIC)
+	}
+}
+impl ExtraFlags {
+	pub fn old_logic() -> Self {
+		Self(0)
+	}
+	pub fn set_new_logic(&mut self) {
+		self.0 |= IS_NEW_LOGIC
+	}
+	pub fn is_new_logic(&self) -> bool {
+		(self.0 & IS_NEW_LOGIC) == IS_NEW_LOGIC
+	}
+}
+
 /// Information of an account.
 // https://github.com/paritytech/substrate/blob/416a331399452521f3e9cf7e1394d020373a95c5/frame/system/src/lib.rs#L735-L753
 #[derive(Clone, Eq, PartialEq, Default, Encode, Decode, TypeInfo, MaxEncodedLen)]

@@ -18,21 +18,23 @@
 // run this against test node with
 // > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
 
-use kitchensink_runtime::{AccountId, BalancesCall, Runtime, RuntimeCall, Signature};
-use sp_core::sr25519::Pair;
+use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_primitives::{
-		AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, SubstrateKitchensinkConfig,
 	},
 	rpc::JsonrpseeClient,
 	Api, SubmitExtrinsic,
 };
 
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateKitchensinkConfig>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
@@ -46,9 +48,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::new(signer));
 
 	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();

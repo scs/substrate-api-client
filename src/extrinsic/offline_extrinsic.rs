@@ -19,22 +19,27 @@
 
 use crate::Api;
 use ac_compose_macros::compose_extrinsic_offline;
-use ac_primitives::{ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4};
+use ac_primitives::{
+	config::Config, extrinsic_params::ExtrinsicParams, SignExtrinsic, UncheckedExtrinsicV4,
+};
 use codec::Encode;
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
-where
-	Signer: SignExtrinsic<Runtime::AccountId>,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
-{
+type ExtrinsicAddress<T> =
+	<<T as Config>::ExtrinsicSigner as SignExtrinsic<<T as Config>::AccountId>>::ExtrinsicAddress;
+type Signature<T> =
+	<<T as Config>::ExtrinsicSigner as SignExtrinsic<<T as Config>::AccountId>>::Signature;
+type SignedExtra<T> = <<T as Config>::ExtrinsicParams as ExtrinsicParams<
+	<T as Config>::Index,
+	<T as Config>::Hash,
+>>::SignedExtra;
+
+impl<T: Config, Client> Api<T, Client> {
 	/// Wrapper around the `compose_extrinsic_offline!` macro to be less verbose.
 	pub fn compose_extrinsic_offline<Call: Encode + Clone>(
 		&self,
 		call: Call,
-		nonce: Runtime::Index,
-	) -> UncheckedExtrinsicV4<Signer::ExtrinsicAddress, Call, Signer::Signature, Params::SignedExtra>
-	{
+		nonce: T::Index,
+	) -> UncheckedExtrinsicV4<ExtrinsicAddress<T>, Call, Signature<T>, SignedExtra<T>> {
 		match self.signer() {
 			Some(signer) => compose_extrinsic_offline!(signer, call, self.extrinsic_params(nonce)),
 			None => UncheckedExtrinsicV4 { signature: None, function: call },

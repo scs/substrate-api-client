@@ -21,7 +21,8 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	BalancesConfig, CallIndex, ExtrinsicParams, SignExtrinsic, UncheckedExtrinsicV4,
+	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
+	UncheckedExtrinsicV4,
 };
 use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
@@ -58,18 +59,20 @@ pub trait BalancesExtrinsics {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> BalancesExtrinsics for Api<Signer, Client, Params, Runtime>
+impl<T, Client> BalancesExtrinsics for Api<T, Client>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
+	T: Config,
 	Client: Request,
-	Runtime: BalancesConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Compact<Runtime::Balance>: Encode,
+	Compact<T::Balance>: Encode,
 {
-	type Balance = Runtime::Balance;
-	type Address = Signer::ExtrinsicAddress;
-	type Extrinsic<Call> =
-		UncheckedExtrinsicV4<Self::Address, Call, Signer::Signature, Params::SignedExtra>;
+	type Balance = T::Balance;
+	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
+	type Extrinsic<Call> = UncheckedExtrinsicV4<
+		Self::Address,
+		Call,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+	>;
 
 	async fn balance_transfer_allow_death(
 		&self,

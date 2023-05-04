@@ -20,7 +20,7 @@ use crate::{
 	metadata::Metadata,
 };
 
-use codec::Decode;
+use codec::{Decode, Encode};
 use core::fmt::Debug;
 use derive_more::From;
 use log::*;
@@ -72,25 +72,43 @@ impl From<&str> for Error {
 		Error::Other(error.into())
 	}
 }
-/// This is our attempt to decode a runtime DispatchError. We either
-/// successfully decode it into a [`ModuleError`], or we fail and keep
-/// hold of the bytes, which we can attempt to decode if we have an
-/// appropriate static type to hand.
+
+/// An error dispatching a transaction. See Substrate DispatchError
+//https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L524
 #[derive(Debug)]
 pub enum DispatchError {
-	/// An error was emitted from a specific pallet/module.
-	Module(ModuleError),
-	/// Some other error was emitted.
+	/// Some error occurred.
 	Other(Vec<u8>),
+	/// Failed to lookup some data.
+	CannotLookup,
+	/// A bad origin.
+	BadOrigin,
+	/// A custom error in a module.
+	Module(ModuleError),
+	/// At least one consumer is remaining so the account cannot be destroyed.
+	ConsumerRemaining,
+	/// There are no providers so the account cannot be created.
+	NoProviders,
+	/// There are too many consumers so the account cannot be created.
+	TooManyConsumers,
+	/// An error to do with tokens.
+	Token(TokenError),
+	/// An arithmetic error.
+	Arithmetic(ArithmeticError),
+	/// The number of transactional layers has been reached, or we are not in a transactional layer.
+	Transactional(TransactionalError),
+	/// Resources exhausted, e.g. attempt to read/write data which is too large to manipulate.
+	Exhausted,
+	/// The state is corrupt; this is generally not going to fix itself.
+	Corruption,
+	/// Some resource (e.g. a preimage) is unavailable right now. This might fix itself later.
+	Unavailable,
 }
 
 impl DispatchError {
-	/// Attempt to decode a runtime DispatchError, returning either the [`ModuleError`] it decodes
-	/// to, along with additional details on the error, or returning the raw bytes if it could not
-	/// be decoded.
+	/// Attempt to decode a runtime DispatchError
 	pub fn decode_from<'a>(bytes: impl Into<Cow<'a, [u8]>>, metadata: &Metadata) -> Self {
 		let bytes = bytes.into();
-
 		let dispatch_error_ty_id = match metadata.dispatch_error_ty() {
 			Some(id) => id,
 			None => {
@@ -115,26 +133,78 @@ impl DispatchError {
 			},
 		};
 
-		let module_variant_idx =
-			variant.variants.iter().find(|v| v.name == "Module").map(|v| v.index);
-		let module_variant_idx = match module_variant_idx {
-			Some(idx) => idx,
+		let variant_name =
+			variant.variants.iter().find(|v| v.index == bytes[0]).map(|v| v.name.as_str());
+		let name = match variant_name {
+			Some(name) => name,
 			None => {
-				warn!("Can't decode error: sp_runtime::DispatchError does not have a 'Module' variant");
+				warn!("Can't decode error: sp_runtime::DispatchError does not have a name variant");
 				return DispatchError::Other(bytes.into_owned())
 			},
 		};
 
-		// If the error bytes don't correspond to a ModuleError, just return the bytes.
-		// This is perfectly reasonable and expected, so no logging.
-		if bytes[0] != module_variant_idx {
+		if bytes.len() < 2 {
+			warn!(
+				"Can't decode error: sp_runtime::DispatchError because it contains too few bytes"
+			);
 			return DispatchError::Other(bytes.into_owned())
 		}
+		// The remaining bytes are the specific error to decode:
+		let mut specific_bytes = &bytes[1..];
 
-		// The remaining bytes are the module error, all being well:
-		let bytes = &bytes[1..];
+		match name {
+			"Module" => Self::decode_module_error(specific_bytes, metadata), // We apply custom logic to transform the module error into the outward facing version
+			"Token" => {
+				let token_error = match TokenError::decode(&mut specific_bytes) {
+					Ok(err) => err,
+					Err(_) => {
+						warn!("Can't decode token error: TokenError does not match known formats");
+						return DispatchError::Other(bytes.to_vec())
+					},
+				};
+				DispatchError::Token(token_error)
+			},
+			"Arithmetic" => {
+				let arithmetic_error = match ArithmeticError::decode(&mut specific_bytes) {
+					Ok(err) => err,
+					Err(_) => {
+						warn!("Can't decode arithmetic error: ArithmeticError does not match known formats");
+						return DispatchError::Other(bytes.to_vec())
+					},
+				};
+				DispatchError::Arithmetic(arithmetic_error)
+			},
+			"Transactional" => {
+				let error = match TransactionalError::decode(&mut specific_bytes) {
+					Ok(err) => err,
+					Err(_) => {
+						warn!("Can't decode transactional error: TransactionalError does not match known formats");
+						return DispatchError::Other(bytes.to_vec())
+					},
+				};
+				DispatchError::Transactional(error)
+			},
+			"CannotLookup" => DispatchError::CannotLookup,
+			"BadOrigin" => DispatchError::BadOrigin,
+			"ConsumerRemaining" => DispatchError::ConsumerRemaining,
+			"NoProviders" => DispatchError::NoProviders,
+			"TooManyConsumers" => DispatchError::TooManyConsumers,
+			"Exhausted" => DispatchError::Exhausted,
+			"Corruption" => DispatchError::Corruption,
+			"Unavailable" => DispatchError::Unavailable,
+			_ => {
+				warn!("Can't decode runtime dispatch error: sp_runtime::DispatchError  does not match known formats");
+				DispatchError::Other(bytes.into_owned())
+			},
+		}
+	}
 
-		// The oldest and second oldest type of error decode to this shape:
+	/// ModuleError is a bit special; we want to support being decoded from either
+	/// a legacy format of 2 bytes, or a newer format of 5 bytes. So, just grab the bytes
+	/// out when decoding to manually work with them.
+	fn decode_module_error(mut bytes: &[u8], metadata: &Metadata) -> Self {
+		// The oldest and second oldest type of error decode to this shape.
+		// The old version is 2 bytes; a pallet and error index.
 		#[derive(Decode)]
 		struct LegacyModuleError {
 			index: u8,
@@ -142,6 +212,7 @@ impl DispatchError {
 		}
 
 		// The newer case expands the error for forward compat:
+		// The new version is 5 bytes; a pallet and error index and then 3 extra bytes.
 		#[derive(Decode)]
 		struct CurrentModuleError {
 			index: u8,
@@ -149,13 +220,13 @@ impl DispatchError {
 		}
 
 		// try to decode into the new shape, or the old if that doesn't work
-		let err = match CurrentModuleError::decode(&mut &*bytes) {
+		let err = match CurrentModuleError::decode(&mut bytes) {
 			Ok(e) => e,
 			Err(_) => {
-				let old_e = match LegacyModuleError::decode(&mut &*bytes) {
+				let old_e = match LegacyModuleError::decode(&mut bytes) {
 					Ok(err) => err,
 					Err(_) => {
-						warn!("Can't decode error: sp_runtime::DispatchError does not match known formats");
+						warn!("Can't decode module error: sp_runtime::DispatchError does not match known formats");
 						return DispatchError::Other(bytes.to_vec())
 					},
 				};
@@ -178,6 +249,52 @@ impl DispatchError {
 			error_data: ModuleErrorData { pallet_index: err.index, error: err.error },
 		})
 	}
+}
+
+/// An error relating to tokens when dispatching a transaction.
+//https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L607
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+pub enum TokenError {
+	/// Funds are unavailable.
+	FundsUnavailable,
+	/// Some part of the balance gives the only provider reference to the account and thus cannot be (re)moved.
+	OnlyProvider,
+	/// Account cannot exist with the funds that would be given.
+	BelowMinimum,
+	/// Account cannot be created.
+	CannotCreate,
+	/// The asset in question is unknown.
+	UnknownAsset,
+	/// Funds exist but are frozen.
+	Frozen,
+	/// Operation is not supported by the asset.
+	Unsupported,
+	/// Account cannot be created for a held balance.
+	CannotCreateHold,
+	/// Withdrawal would cause unwanted loss of account.
+	NotExpendable,
+}
+
+/// An error relating to arithmetic when dispatching a transaction.
+// https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/arithmetic/src/lib.rs#L59
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+pub enum ArithmeticError {
+	/// Underflow.
+	Underflow,
+	/// Overflow.
+	Overflow,
+	/// Division by zero.
+	DivisionByZero,
+}
+
+/// An error relating to the transactional layers when dispatching a transaction.
+// https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L496
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+pub enum TransactionalError {
+	/// Too many transactional layers have been spawned.
+	LimitReached,
+	/// A transactional layer was expected, but does not exist.
+	NoLayer,
 }
 
 /// Block error

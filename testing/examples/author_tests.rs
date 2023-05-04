@@ -15,21 +15,20 @@
 
 //! Tests for the author rpc interface functions.
 
-use kitchensink_runtime::{AccountId, Runtime, Signature};
-use sp_core::sr25519::Pair;
+use kitchensink_runtime::AccountId;
 use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
 	ac_node_api::EventDetails,
 	ac_primitives::{
-		AssetTipExtrinsicParams, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, SubstrateKitchensinkConfig,
 	},
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
-type ExtrinsicSigner = GenericExtrinsicSigner<Pair, Signature, Runtime>;
+type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateKitchensinkConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
 #[tokio::main]
@@ -37,7 +36,8 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+
 	api.set_signer(ExtrinsicSigner::new(alice_pair));
 
 	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();

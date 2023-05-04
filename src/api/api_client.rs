@@ -18,7 +18,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
-use ac_primitives::{Bytes, ExtrinsicParams, FrameSystemConfig, RuntimeVersion, SignExtrinsic};
+use ac_primitives::{Bytes, Config, ExtrinsicParams, RuntimeVersion, SignExtrinsic};
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
@@ -32,13 +32,13 @@ use log::{debug, info};
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, ac_primitives::PlainTipExtrinsicParams, rpc::Result as RpcResult
+///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, ac_primitives::SubstrateKitchensinkConfig
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
 /// use serde_json::{Value, json};
-/// use kitchensink_runtime::Runtime;
-///
+/// ;
+/// ///
 /// struct MyClient {
 ///     // pick any request crate, such as ureq::Agent
 ///     _inner: (),
@@ -76,31 +76,24 @@ use log::{debug, info};
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<(), _, PlainTipExtrinsicParams<Runtime>, Runtime>::new(client);
+/// let _api = Api::<SubstrateKitchensinkConfig,MyClient>::new(client);
 ///
 /// ```
 #[derive(Clone)]
-pub struct Api<Signer, Client, Params, Runtime>
-where
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-{
-	signer: Option<Signer>,
-	genesis_hash: Runtime::Hash,
+pub struct Api<T: Config, Client> {
+	signer: Option<T::ExtrinsicSigner>,
+	genesis_hash: T::Hash,
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
 	client: Client,
-	additional_extrinsic_params: Option<Params::AdditionalParams>,
+	additional_extrinsic_params:
+		Option<<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams>,
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
-where
-	Runtime: FrameSystemConfig,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-{
+impl<T: Config, Client> Api<T, Client> {
 	/// Create a new api instance without any node interaction.
 	pub fn new_offline(
-		genesis_hash: Runtime::Hash,
+		genesis_hash: T::Hash,
 		metadata: Metadata,
 		runtime_version: RuntimeVersion,
 		client: Client,
@@ -116,17 +109,17 @@ where
 	}
 
 	/// Set the api signer account.
-	pub fn set_signer(&mut self, signer: Signer) {
+	pub fn set_signer(&mut self, signer: T::ExtrinsicSigner) {
 		self.signer = Some(signer);
 	}
 
 	/// Get the private key pair of the api signer.
-	pub fn signer(&self) -> Option<&Signer> {
+	pub fn signer(&self) -> Option<&T::ExtrinsicSigner> {
 		self.signer.as_ref()
 	}
 
 	/// Get the cached genesis hash of the substrate node.
-	pub fn genesis_hash(&self) -> Runtime::Hash {
+	pub fn genesis_hash(&self) -> T::Hash {
 		self.genesis_hash
 	}
 
@@ -151,16 +144,19 @@ where
 	}
 
 	/// Set the additional params.
-	pub fn set_additional_params(&mut self, extrinsic_params: Params::AdditionalParams) {
-		self.additional_extrinsic_params = Some(extrinsic_params);
+	pub fn set_additional_params(
+		&mut self,
+		add_params: <T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams,
+	) {
+		self.additional_extrinsic_params = Some(add_params);
 	}
 
 	/// Get the extrinsic params with the set additional params. If no additional params are set,
 	/// the default is taken.
-	pub fn extrinsic_params(&self, nonce: Runtime::Index) -> Params {
+	pub fn extrinsic_params(&self, nonce: T::Index) -> T::ExtrinsicParams {
 		let additional_extrinsic_params =
 			self.additional_extrinsic_params.clone().unwrap_or_default();
-		<Params as ExtrinsicParams<Runtime::Index, Runtime::Hash>>::new(
+		T::ExtrinsicParams::new(
 			self.runtime_version.spec_version,
 			self.runtime_version.transaction_version,
 			nonce,
@@ -170,11 +166,10 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	/// Create a new Api client with call to the node to retrieve metadata.
 	#[maybe_async::async_impl]
@@ -244,22 +239,20 @@ where
 	}
 }
 
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T, Client> Api<T, Client>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	/// Get the public part of the api signer account.
-	pub fn signer_account(&self) -> Option<&Runtime::AccountId> {
+	pub fn signer_account(&self) -> Option<&T::AccountId> {
 		let pair = self.signer.as_ref()?;
 		Some(pair.public_account_id())
 	}
 
 	/// Get nonce of self signer account.
 	#[maybe_async::maybe_async(?Send)]
-	pub async fn get_nonce(&self) -> Result<Runtime::Index> {
+	pub async fn get_nonce(&self) -> Result<T::Index> {
 		let account = self.signer_account().ok_or(Error::NoSigner)?;
 		self.get_account_nonce(account).await
 	}
@@ -267,16 +260,15 @@ where
 
 /// Private node query methods. They should be used internally only, because the user should retrieve the data from the struct cache.
 /// If an up-to-date query is necessary, cache should be updated beforehand.
-impl<Signer, Client, Params, Runtime> Api<Signer, Client, Params, Runtime>
+impl<T, Client> Api<T, Client>
 where
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	/// Get the genesis hash from node via websocket query.
 	#[maybe_async::maybe_async(?Send)]
-	async fn get_genesis_hash(client: &Client) -> Result<Runtime::Hash> {
-		let genesis: Option<Runtime::Hash> =
+	async fn get_genesis_hash(client: &Client) -> Result<T::Hash> {
+		let genesis: Option<T::Hash> =
 			client.request("chain_getBlockHash", rpc_params![Some(0)]).await?;
 		genesis.ok_or(Error::FetchGenesisHash)
 	}
@@ -301,12 +293,12 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{
-		ac_primitives::{GenericAdditionalParams, PlainTipExtrinsicParams},
-		rpc::mocks::RpcClientMock,
+	use crate::rpc::mocks::RpcClientMock;
+	use ac_primitives::{
+		GenericAdditionalParams, GenericExtrinsicParams, PlainTip, PolkadotConfig,
+		SubstrateKitchensinkConfig,
 	};
-	use kitchensink_runtime::Runtime;
-	use sp_core::{sr25519::Pair, H256};
+	use sp_core::H256;
 	use std::{
 		collections::{BTreeMap, HashMap},
 		fs,
@@ -317,7 +309,7 @@ mod tests {
 		runtime_version: RuntimeVersion,
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<Pair, RpcClientMock, PlainTipExtrinsicParams<Runtime>, Runtime> {
+	) -> Api<PolkadotConfig, RpcClientMock> {
 		let client = RpcClientMock::new(data);
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}
@@ -342,13 +334,14 @@ mod tests {
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
 
-		let expected_params = PlainTipExtrinsicParams::<Runtime>::new(
-			runtime_version.spec_version,
-			runtime_version.transaction_version,
-			nonce,
-			genesis_hash,
-			Default::default(),
-		);
+		let expected_params =
+			GenericExtrinsicParams::<SubstrateKitchensinkConfig, PlainTip<u128>>::new(
+				runtime_version.spec_version,
+				runtime_version.transaction_version,
+				nonce,
+				genesis_hash,
+				Default::default(),
+			);
 
 		assert_eq!(expected_params, retrieved_params)
 	}

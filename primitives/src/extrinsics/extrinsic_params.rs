@@ -15,27 +15,12 @@
 
 */
 
+use crate::config::Config;
 use codec::{Decode, Encode};
-use core::hash::Hash as HashTrait;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
 };
-
-pub type BalanceFor<Runtime> = <Runtime as crate::pallet_traits::BalancesConfig>::Balance;
-pub type AssetBalanceFor<Runtime> = <Runtime as crate::pallet_traits::AssetsConfig>::Balance;
-pub type HashFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Hash;
-pub type IndexFor<Runtime> = <Runtime as crate::FrameSystemConfig>::Index;
-
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in asset fees.
-pub type AssetTipExtrinsicParams<Runtime> =
-	GenericExtrinsicParams<AssetTip<AssetBalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
-
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in token fees.
-pub type PlainTipExtrinsicParams<Runtime> =
-	GenericExtrinsicParams<PlainTip<BalanceFor<Runtime>>, IndexFor<Runtime>, HashFor<Runtime>>;
 
 /// SignedExtra that is compatible with a default Substrate / Polkadot node.
 // Unlike the SignedExtra on the node side, which seemingly contains a lot more parameters
@@ -111,14 +96,14 @@ pub trait ExtrinsicParams<Index, Hash> {
 /// extrinsics that can be sent to a node with the same signed extra and additional
 /// parameters as a Polkadot/Substrate node.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct GenericExtrinsicParams<Tip, Index, Hash> {
+pub struct GenericExtrinsicParams<T: Config, Tip> {
 	era: Era,
-	nonce: Index,
+	nonce: T::Index,
 	tip: Tip,
 	spec_version: u32,
 	transaction_version: u32,
-	genesis_hash: Hash,
-	mortality_checkpoint: Hash,
+	genesis_hash: T::Hash,
+	mortality_checkpoint: T::Hash,
 }
 
 /// Representation of the default Substrate / Polkadot node additional params,
@@ -161,23 +146,21 @@ impl<Tip: Default, Hash> Default for GenericAdditionalParams<Tip, Hash> {
 	}
 }
 
-impl<Tip, Index, Hash> ExtrinsicParams<Index, Hash> for GenericExtrinsicParams<Tip, Index, Hash>
+impl<T, Tip> ExtrinsicParams<T::Index, T::Hash> for GenericExtrinsicParams<T, Tip>
 where
+	T: Config,
 	u128: From<Tip>,
 	Tip: Copy + Default + Encode,
-	Index: Copy + Default + Encode,
-	Hash: HashTrait + Encode + Copy,
-	GenericSignedExtra<Tip, Index>: Encode,
 {
-	type AdditionalParams = GenericAdditionalParams<Tip, Hash>;
-	type SignedExtra = GenericSignedExtra<Tip, Index>;
-	type AdditionalSigned = GenericAdditionalSigned<Hash>;
+	type AdditionalParams = GenericAdditionalParams<Tip, T::Hash>;
+	type SignedExtra = GenericSignedExtra<Tip, T::Index>;
+	type AdditionalSigned = GenericAdditionalSigned<T::Hash>;
 
 	fn new(
 		spec_version: u32,
 		transaction_version: u32,
-		nonce: Index,
-		genesis_hash: Hash,
+		nonce: T::Index,
+		genesis_hash: T::Hash,
 		additional_params: Self::AdditionalParams,
 	) -> Self {
 		GenericExtrinsicParams {

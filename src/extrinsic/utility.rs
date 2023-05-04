@@ -21,7 +21,8 @@
 use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	CallIndex, ExtrinsicParams, FrameSystemConfig, SignExtrinsic, UncheckedExtrinsicV4,
+	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
+	UncheckedExtrinsicV4,
 };
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
@@ -55,18 +56,16 @@ pub trait UtilityExtrinsics {
 }
 
 #[maybe_async::maybe_async(?Send)]
-impl<Signer, Client, Params, Runtime> UtilityExtrinsics for Api<Signer, Client, Params, Runtime>
+impl<T, Client> UtilityExtrinsics for Api<T, Client>
 where
-	Signer: SignExtrinsic<Runtime::AccountId>,
+	T: Config,
 	Client: Request,
-	Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	Runtime: FrameSystemConfig,
 {
 	type Extrinsic<Call> = UncheckedExtrinsicV4<
-		Signer::ExtrinsicAddress,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress,
 		Call,
-		Signer::Signature,
-		Params::SignedExtra,
+		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
 	>;
 
 	async fn batch<Call: Encode + Clone>(
