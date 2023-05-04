@@ -15,11 +15,10 @@
 
 //! Tests for the dispatch error.
 
-use kitchensink_runtime::{Runtime, Signature};
 use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::{AssetTipExtrinsicParams, ExtrinsicSigner},
+	ac_primitives::{ExtrinsicSigner, SubstrateKitchensinkConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatchUntilSuccess,
@@ -31,7 +30,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_signer = AccountKeyring::Alice.pair();
 	let bob_signer = AccountKeyring::Bob.pair();
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;
@@ -46,7 +45,7 @@ async fn main() {
 	println!("[+] One's Free Balance is {}\n", balance_of_one);
 
 	//BadOrigin
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(bob_signer));
+	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(bob_signer));
 	//Can only be called by root
 	let xt = api.balance_force_set_balance(MultiAddress::Id(alice.clone()), 10);
 
@@ -56,7 +55,7 @@ async fn main() {
 	println!("[+] BadOrigin error: Bob can't force set balance");
 
 	//BelowMinimum
-	api.set_signer(ExtrinsicSigner::<_, Signature, Runtime>::new(alice_signer));
+	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(alice_signer));
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(one.clone()), 999999);
 	let result = api.submit_and_watch_extrinsic_until_success(xt, false);
 	assert!(result.is_err());
