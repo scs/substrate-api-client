@@ -25,6 +25,7 @@ sp-runtime = { default-features = false, features = ["serde"], git = "https://gi
 sp-runtime-interface = { default-features = false, git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 sp-staking = { default-features = false, git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+sp-version = { default-features = false, features = ["serde"], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 # need to add this for the app_crypto macro
 sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 
