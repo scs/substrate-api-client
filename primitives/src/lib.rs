@@ -29,6 +29,5 @@ pub use types::*;
 pub mod config;
 pub mod extrinsics;
 pub mod rpc_params;
-pub mod rpc_params;
 pub mod traits;
 pub mod types;

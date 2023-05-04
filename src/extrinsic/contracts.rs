@@ -27,8 +27,7 @@ use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 #[cfg(feature = "std")]
 use ac_primitives::{
-	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
-	UncheckedExtrinsicV4,
+	config::Config, extrinsic_params::ExtrinsicParams, SignExtrinsic, UncheckedExtrinsicV4,
 };
 #[cfg(feature = "std")]
 use alloc::vec::Vec;

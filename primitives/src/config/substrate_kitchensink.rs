@@ -8,14 +8,17 @@
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/substrate.rs
 
 use crate::{
-	config::Config, types::AccountData, AssetTip, BlakeTwo256, ExtrinsicSigner,
-	GenericExtrinsicParams, SubstrateBlock, SubstrateHeader, SubstrateOpaqueExtrinsic,
+	config::Config, types::AccountData, AssetTip, ExtrinsicSigner, GenericExtrinsicParams,
 };
 use codec::{Decode, Encode};
 use core::fmt::Debug;
 pub use primitive_types::{H256, U256};
 use sp_core::sr25519;
-use sp_runtime::{AccountId32, MultiAddress, MultiSignature};
+use sp_runtime::{
+	generic::{Block as SubstrateBlock, Header as SubstrateHeader},
+	traits::BlakeTwo256,
+	AccountId32, MultiAddress, MultiSignature, OpaqueExtrinsic as SubstrateOpaqueExtrinsic,
+};
 
 /// Default set of commonly used types by Substrate kitchensink runtime.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]

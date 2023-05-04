@@ -18,12 +18,13 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
-use ac_primitives::{config::Config, Block, Hasher};
+use ac_primitives::config::Config;
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
+use sp_runtime::traits::{Block, Hash};
 use sp_storage::StorageChangeSet;
 
 pub type EventSubscriptionFor<Client, Hash> =
@@ -229,7 +230,7 @@ mod tests {
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
-	use sp_core::{crypto::Ss58Codec, sr25519, sr25519::Pair, Bytes, H256};
+	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
 	use sp_runtime::{
 		generic::{Block, SignedBlock},
 		AccountId32, MultiAddress,
