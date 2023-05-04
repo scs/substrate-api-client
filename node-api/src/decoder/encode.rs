@@ -81,7 +81,7 @@ pub fn encode_value_as_type<T, Id: Into<TypeId>>(
 	let ty_id = ty_id.into();
 	let ty = types.resolve(ty_id.id()).ok_or(EncodeError::TypeIdNotFound(ty_id))?;
 
-	match ty.type_def() {
+	match &ty.type_def {
 		TypeDef::Composite(inner) => encode_composite_value(value, ty_id, inner, types, bytes),
 		TypeDef::Sequence(inner) => encode_sequence_value(value, ty_id, inner, types, bytes),
 		TypeDef::Array(inner) => encode_array_value(value, ty_id, inner, types, bytes),
@@ -104,11 +104,11 @@ fn encode_composite_value<T>(
 ) -> Result<(), EncodeError<T>> {
 	match value.value {
 		ValueDef::Composite(composite) =>
-			encode_composite_fields(composite, ty.fields(), type_id, types, bytes),
+			encode_composite_fields(composite, &ty.fields, type_id, types, bytes),
 		_ => {
-			if ty.fields().len() == 1 {
+			if ty.fields.len() == 1 {
 				// A 1-field composite type? try encoding inner content then.
-				encode_value_as_type(value, ty.fields()[0].ty(), types, bytes)
+				encode_value_as_type(value, ty.fields[0].ty, types, bytes)
 			} else {
 				Err(EncodeError::WrongShape { actual: value, expected: type_id })
 			}
@@ -129,7 +129,7 @@ fn encode_sequence_value<T>(
 		ValueDef::Composite(c) => {
 			// Compact encoded length comes first
 			Compact(c.len() as u64).encode_to(bytes);
-			let ty = ty.type_param();
+			let ty = ty.type_param;
 			for value in c.into_values() {
 				encode_value_as_type(value, ty, types, bytes)?;
 			}
@@ -139,7 +139,7 @@ fn encode_sequence_value<T>(
 		ValueDef::Primitive(Primitive::I256(a) | Primitive::U256(a)) => {
 			// Compact encoded length comes first
 			Compact(a.len() as u64).encode_to(bytes);
-			let ty = ty.type_param();
+			let ty = ty.type_param;
 			for val in a {
 				if encode_value_as_type(Value::uint(val), ty, types, bytes).is_err() {
 					return Err(EncodeError::WrongShape { actual: value, expected: type_id })
@@ -162,7 +162,7 @@ fn encode_array_value<T>(
 		// Let's see whether our composite type is the right length,
 		// and try to encode each inner value into what the array wants.
 		ValueDef::Composite(c) => {
-			let arr_len = ty.len() as usize;
+			let arr_len = ty.len as usize;
 			if c.len() != arr_len {
 				return Err(EncodeError::CompositeIsWrongLength {
 					actual: c,
@@ -171,7 +171,7 @@ fn encode_array_value<T>(
 				})
 			}
 
-			let ty = ty.type_param();
+			let ty = ty.type_param;
 			for value in c.into_values() {
 				encode_value_as_type(value, ty, types, bytes)?;
 			}
@@ -179,12 +179,12 @@ fn encode_array_value<T>(
 		// As a special case, primitive U256/I256s are arrays, and may be compatible
 		// with the array type being asked for, too.
 		ValueDef::Primitive(Primitive::I256(a) | Primitive::U256(a)) => {
-			let arr_len = ty.len() as usize;
+			let arr_len = ty.len as usize;
 			if a.len() != arr_len {
 				return Err(EncodeError::WrongShape { actual: value, expected: type_id })
 			}
 
-			let ty = ty.type_param();
+			let ty = ty.type_param;
 			for val in a {
 				if encode_value_as_type(Value::uint(val), ty, types, bytes).is_err() {
 					return Err(EncodeError::WrongShape { actual: value, expected: type_id })
@@ -205,25 +205,25 @@ fn encode_tuple_value<T>(
 ) -> Result<(), EncodeError<T>> {
 	match value.value {
 		ValueDef::Composite(composite) => {
-			if composite.len() != ty.fields().len() {
+			if composite.len() != ty.fields.len() {
 				return Err(EncodeError::CompositeIsWrongLength {
 					actual: composite,
 					expected: type_id,
-					expected_len: ty.fields().len(),
+					expected_len: ty.fields.len(),
 				})
 			}
 			// We don't care whether the fields are named or unnamed
 			// as long as we have the number of them that we expect..
-			let field_value_pairs = ty.fields().iter().zip(composite.into_values());
+			let field_value_pairs = ty.fields.iter().zip(composite.into_values());
 			for (ty, value) in field_value_pairs {
 				encode_value_as_type(value, ty, types, bytes)?;
 			}
 			Ok(())
 		},
 		_ => {
-			if ty.fields().len() == 1 {
+			if ty.fields.len() == 1 {
 				// A 1-field tuple? try encoding inner content then.
-				encode_value_as_type(value, ty.fields()[0], types, bytes)
+				encode_value_as_type(value, ty.fields[0], types, bytes)
 			} else {
 				Err(EncodeError::WrongShape { actual: value, expected: type_id })
 			}
@@ -243,15 +243,15 @@ fn encode_variant_value<T>(
 		_ => return Err(EncodeError::WrongShape { actual: value, expected: type_id }),
 	};
 
-	let variant_type = ty.variants().iter().find(|v| v.name() == &variant.name);
+	let variant_type = ty.variants.iter().find(|v| v.name == variant.name);
 
 	let variant_type = match variant_type {
 		None => return Err(EncodeError::VariantNotFound { actual: variant, expected: type_id }),
 		Some(v) => v,
 	};
 
-	variant_type.index().encode_to(bytes);
-	encode_composite_fields(variant.values, variant_type.fields(), type_id, types, bytes)
+	variant_type.index.encode_to(bytes);
+	encode_composite_fields(variant.values, &variant_type.fields, type_id, types, bytes)
 }
 
 fn encode_composite_fields<T>(
@@ -275,13 +275,13 @@ fn encode_composite_fields<T>(
 	}
 
 	// Does the type we're encoding to have named fields or not?
-	let is_named = fields[0].name().is_some();
+	let is_named = fields[0].name.is_some();
 
 	match (composite, is_named) {
 		(Composite::Named(mut values), true) => {
 			// Match up named values with those of the type we're encoding to.
 			for field in fields.iter() {
-				let field_name = field.name().expect("field should be named; checked above");
+				let field_name = field.name.as_ref().expect("field should be named; checked above");
 				let value = values
 					.iter()
 					.position(|(n, _)| field_name == n)
@@ -289,7 +289,7 @@ fn encode_composite_fields<T>(
 
 				match value {
 					Some(value) => {
-						encode_value_as_type(value, field.ty(), types, bytes)?;
+						encode_value_as_type(value, field.ty, types, bytes)?;
 					},
 					None =>
 						return Err(EncodeError::CompositeFieldIsMissing {
@@ -304,7 +304,7 @@ fn encode_composite_fields<T>(
 		(Composite::Unnamed(values), false) => {
 			// Expect values in correct order only and encode.
 			for (field, value) in fields.iter().zip(values) {
-				encode_value_as_type(value, field.ty(), types, bytes)?;
+				encode_value_as_type(value, field.ty, types, bytes)?;
 			}
 			Ok(())
 		},
@@ -426,23 +426,24 @@ fn encode_compact_value<T>(
 
 	// Resolve to a primitive type inside the compact encoded type (or fail if
 	// we hit some type we wouldn't know how to work with).
-	let mut inner_ty_id = ty.type_param().id();
+	let mut inner_ty_id = ty.type_param.id;
 	let inner_ty = loop {
 		let inner_ty = types
 			.resolve(inner_ty_id)
 			.ok_or_else(|| EncodeError::TypeIdNotFound(inner_ty_id.into()))?
-			.type_def();
+			.type_def
+			.clone();
 
 		match inner_ty {
 			TypeDef::Composite(c) =>
-				if c.fields().len() == 1 {
-					inner_ty_id = c.fields()[0].ty().id();
+				if c.fields.len() == 1 {
+					inner_ty_id = c.fields[0].ty.id;
 				} else {
 					return Err(EncodeError::CannotCompactEncode(inner_ty_id.into()))
 				},
 			TypeDef::Tuple(t) =>
-				if t.fields().len() == 1 {
-					inner_ty_id = t.fields()[0].id();
+				if t.fields.len() == 1 {
+					inner_ty_id = t.fields[0].id;
 				} else {
 					return Err(EncodeError::CannotCompactEncode(inner_ty_id.into()))
 				},
