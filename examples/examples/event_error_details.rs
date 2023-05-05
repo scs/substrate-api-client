@@ -51,7 +51,7 @@ async fn main() {
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;
-	println!("[+] Alice's Free Balance is is {}\n", balance_of_alice);
+	println!("[+] Alice's Free Balance is {}\n", balance_of_alice);
 
 	let bob = AccountKeyring::Bob.to_account_id();
 	let balance_of_bob = api.get_account_data(&bob).unwrap().unwrap_or_default().free;

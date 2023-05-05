@@ -51,7 +51,7 @@ fn main() {
 		.unwrap();
 
 	let bob_balance = api.get_account_data(&bob.into()).unwrap().unwrap_or_default().free;
-	println!("[+] Bob's Free Balance is is {}\n", bob_balance);
+	println!("[+] Bob's Free Balance is {}\n", bob_balance);
 
 	// Generate extrinsic.
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), 1000000000000);
