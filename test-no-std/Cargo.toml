@@ -14,39 +14,22 @@ ac-node-api = { path = "../node-api", default-features = false, optional = true,
 ac-primitives = { path = "../primitives", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
 substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
 
-# sp-application-crypto = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-arithmetic = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-consensus-babe = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-consensus-beefy = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-consensus-grandpa = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-consensus-slots = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-core = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-mmr-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-npos-elections = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-rpc = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-# sp-runtime = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-serializer = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-# sp-storage = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-test-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-version = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-# sp-weights = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
-
-sp-application-crypto = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-arithmetic = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-consensus-babe = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-consensus-beefy = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-consensus-grandpa = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-consensus-slots = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-core = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-mmr-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-npos-elections = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
+sp-application-crypto = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-arithmetic = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-babe = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-beefy = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-grandpa = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-consensus-slots = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-core = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-mmr-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-npos-elections = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
 sp-rpc = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-runtime = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
+sp-runtime = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
 sp-serializer = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-storage = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-test-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-version = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
-sp-weights = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true }
+sp-storage = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-test-primitives = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-version = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
+sp-weights = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, optional = true, features = ["serde"] }
 
 # substrate dependencies
 sp-io = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives", default-features = false, features = ["disable_oom", "disable_panic_handler"] }

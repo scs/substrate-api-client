@@ -4790,6 +4790,7 @@ dependencies = [
  "lazy_static",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-api",
  "sp-application-crypto",
  "sp-core",
@@ -5203,6 +5204,7 @@ source = "git+https://github.com/haerdib/substrate.git?branch=add-serde-feature-
 dependencies = [
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-application-crypto",
  "sp-core",
  "sp-runtime",
