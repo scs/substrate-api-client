@@ -16,6 +16,8 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use frame_system::AccountInfo as GenericAccountInfo;
+use kitchensink_runtime::{AccountId, Runtime, Signature};
+use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_primitives::{Config, ExtrinsicSigner, SubstrateKitchensinkConfig},
@@ -80,6 +82,21 @@ async fn main() {
 		println!("Retrieving value for key {:?}", storage_key);
 		// We're expecting account info as return value because we fetch added a prefix of "System" + "Account".
 		let storage_data: AccountInfo =
+			api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
+		println!("Retrieved data {:?}", storage_data);
+	}
+
+	let storage_double_map_key_prefix =
+		api.get_storage_double_map_key_prefix("Staking", "ErasStakers", 0).unwrap();
+	let double_map_storage_keys = api
+		.get_storage_keys_paged(Some(storage_double_map_key_prefix), max_keys, None, None)
+		.unwrap();
+
+	// Get the storage values that belong to the retrieved storage keys.
+	for storage_key in double_map_storage_keys.iter() {
+		println!("Retrieving value for key {:?}", storage_key);
+		// We're expecting account info as return value because we fetch added a prefix of "System" + "Account".
+		let storage_data: Exposure<AccountId, u128> =
 			api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}
