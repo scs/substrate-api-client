@@ -31,13 +31,14 @@ pub trait ContractsConfig: FrameSystemConfig {
 	type ChainExtension: Default;
 	type Schedule;
 	type CallStack;
-	type DeletionQueueDepth: Get<u32>;
-	type DeletionWeightLimit;
 	type DepositPerByte;
+	type DefaultDepositLimit;
 	type DepositPerItem;
 	type AddressGenerator;
 	type MaxCodeLen: Get<u32>;
 	type MaxStorageKeyLen: Get<u32>;
+	type UnsafeUnstableInterface: Get<bool>;
+	type MaxDebugBufferLen: Get<u32>;
 }
 
 #[cfg(feature = "std")]
@@ -56,11 +57,12 @@ where
 	type ChainExtension = T::ChainExtension;
 	type Schedule = T::Schedule;
 	type CallStack = T::CallStack;
-	type DeletionQueueDepth = T::DeletionQueueDepth;
-	type DeletionWeightLimit = T::DeletionWeightLimit;
 	type DepositPerByte = T::DepositPerByte;
+	type DefaultDepositLimit = T::DefaultDepositLimit;
 	type DepositPerItem = T::DepositPerItem;
 	type AddressGenerator = T::AddressGenerator;
 	type MaxCodeLen = T::MaxCodeLen;
 	type MaxStorageKeyLen = T::MaxStorageKeyLen;
+	type UnsafeUnstableInterface = T::UnsafeUnstableInterface;
+	type MaxDebugBufferLen = T::MaxDebugBufferLen;
 }

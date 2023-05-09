@@ -42,10 +42,14 @@ pub trait BalancesConfig: crate::FrameSystemConfig {
 	type RuntimeEvent;
 	type ExistentialDeposit: Get<Self::Balance>;
 	type AccountStore;
+	type ReserveIdentifier: Codec + EncodeLike + TypeInfo + Member + MaxEncodedLen + Ord + Copy;
+	type HoldIdentifier: Codec + EncodeLike + TypeInfo + Member + MaxEncodedLen + Ord + Copy;
+	type FreezeIdentifier: Codec + EncodeLike + TypeInfo + Member + MaxEncodedLen + Ord + Copy;
 	type WeightInfo;
 	type MaxLocks: Get<u32>;
 	type MaxReserves: Get<u32>;
-	type ReserveIdentifier: Codec + EncodeLike + TypeInfo + Member + MaxEncodedLen + Ord + Copy;
+	type MaxHolds: Get<u32>;
+	type MaxFreezes: Get<u32>;
 }
 
 #[cfg(feature = "std")]
@@ -62,4 +66,8 @@ where
 	type MaxLocks = T::MaxLocks;
 	type MaxReserves = T::MaxReserves;
 	type ReserveIdentifier = T::ReserveIdentifier;
+	type HoldIdentifier = T::HoldIdentifier;
+	type FreezeIdentifier = T::FreezeIdentifier;
+	type MaxHolds = T::MaxHolds;
+	type MaxFreezes = T::MaxFreezes;
 }

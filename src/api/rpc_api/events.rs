@@ -340,9 +340,12 @@ mod tests {
 			dest: bob.clone(),
 			value: 10,
 		});
-		let call2 =
-			RuntimeCall::Balances(BalancesCall::transfer { dest: bob.clone(), value: 2000 });
-		let call3 = RuntimeCall::Balances(BalancesCall::transfer { dest: bob, value: 1000 });
+		let call2 = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+			dest: bob.clone(),
+			value: 2000,
+		});
+		let call3 =
+			RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: bob, value: 1000 });
 
 		let xt1: Bytes = UncheckedExtrinsic::new_unsigned(call1).encode().into();
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
