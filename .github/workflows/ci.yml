@@ -141,7 +141,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:3.0.0-dev-ae83a672f2b --dev --ws-external --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external &
 
       - name: Wait until node has started
         run: sleep 20s
