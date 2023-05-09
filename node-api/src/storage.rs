@@ -164,7 +164,7 @@ impl GetStorageTypes for StorageEntryMetadata<PortableForm> {
 
 				let mut bytes = sp_core::twox_128(module_prefix).to_vec();
 				bytes.extend(&sp_core::twox_128(storage_prefix)[..]);
-				bytes.extend(key_hash(&key1, &hasher1));
+				bytes.extend(key_hash(&key1, hasher1));
 
 				Ok(StorageKey(bytes))
 			},
