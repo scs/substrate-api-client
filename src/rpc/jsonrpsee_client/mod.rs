@@ -42,7 +42,7 @@ impl JsonrpseeClient {
 		Self::new("ws://127.0.0.1:9944")
 	}
 
-	async fn async_new(url: &str) -> Result<Self> {
+	pub async fn async_new(url: &str) -> Result<Self> {
 		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
 			.build(uri)
