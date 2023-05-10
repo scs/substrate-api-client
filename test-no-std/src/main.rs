@@ -84,10 +84,6 @@ pub extern "C" fn main(_nargs: i32, _args: *const *const u8) -> i32 {
 	unsafe {
 		printf(b"Hello, World!\n" as *const u8);
 	}
-
-	#[cfg(feature = "core")]
-	let test = sp_core::ed25519::Public::from_string("test");
-
 	// Exit with a return status of 0.
 	0
 }
