@@ -35,6 +35,9 @@ extern crate sp_consensus_slots;
 #[cfg(feature = "core")]
 extern crate sp_core;
 
+#[cfg(feature = "core")]
+use sp_core::crypto::{Pair, Public, Ss58Codec};
+
 #[cfg(feature = "finality-grandpa")]
 extern crate sp_consensus_grandpa;
 
@@ -44,14 +47,8 @@ extern crate sp_mmr_primitives;
 #[cfg(feature = "npos-elections")]
 extern crate sp_npos_elections;
 
-#[cfg(feature = "rpc")]
-extern crate sp_rpc;
-
 #[cfg(feature = "runtime")]
 extern crate sp_runtime;
-
-#[cfg(feature = "serializer")]
-extern crate sp_serializer;
 
 #[cfg(feature = "storage")]
 extern crate sp_storage;
@@ -59,7 +56,7 @@ extern crate sp_storage;
 #[cfg(feature = "test-primitives")]
 extern crate sp_test_primitives;
 
-#[cfg(feature = "versiom")]
+#[cfg(feature = "version")]
 extern crate sp_version;
 
 #[cfg(feature = "weights")]
@@ -87,6 +84,9 @@ pub extern "C" fn main(_nargs: i32, _args: *const *const u8) -> i32 {
 	unsafe {
 		printf(b"Hello, World!\n" as *const u8);
 	}
+
+	#[cfg(feature = "core")]
+	let test = sp_core::ed25519::Public::from_string("test");
 
 	// Exit with a return status of 0.
 	0

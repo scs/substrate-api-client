@@ -45,7 +45,7 @@ ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
-sp-rpc = { default-features = false, git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
+sp-rpc = { git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/haerdib/substrate.git", branch = "add-serde-feature-to-primitives" }
@@ -104,7 +104,6 @@ std = [
     "url",
     # substrate no_std
     "sp-core/std",
-    "sp-rpc/std",
     "sp-runtime/std",
     "sp-runtime-interface/std",
     "sp-storage/std",
