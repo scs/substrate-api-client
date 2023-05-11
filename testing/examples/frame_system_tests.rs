@@ -58,6 +58,10 @@ async fn main() {
 	assert!(maybe_account_data.is_none());
 
 	// System Api
+	let next_index = api.get_system_account_next_index(alice).unwrap();
+	println!("Next Account Index (should be Bob): {next_index:?}");
+	assert_eq!(next_index, 2);
+
 	let system_name = api.get_system_name().unwrap();
 	println!("System name: {system_name}");
 
