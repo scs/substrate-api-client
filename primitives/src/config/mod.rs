@@ -62,8 +62,7 @@ pub trait Config {
 	type AccountId: Debug
 		+ Clone
 		+ Encode
-		+ DeserializeOwned
-		+ Serialize
+		+ MaybeSerializeDeserialize
 		+ From<<Self::CryptoKey as Pair>::Public>;
 
 	/// The address type.

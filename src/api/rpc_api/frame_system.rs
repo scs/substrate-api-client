@@ -90,6 +90,8 @@ pub trait SystemApi {
 	type AccountId;
 
 	/// Retrieves the next accountIndex as available on the node.
+	// FIXME: Remove once #391 is fixed.
+	#[cfg(feature = "std")]
 	async fn get_system_account_next_index(
 		&self,
 		account_id: Self::AccountId,
@@ -139,6 +141,8 @@ where
 	type Index = T::Index;
 	type AccountId = T::AccountId;
 
+	// FIXME: Remove once #391 is fixed.
+	#[cfg(feature = "std")]
 	async fn get_system_account_next_index(
 		&self,
 		account_id: Self::AccountId,
