@@ -28,6 +28,14 @@ pub trait GetAccountInformation {
 	type Index;
 	type AccountData;
 
+	/// Retrieves the next account index as available on the node.
+	// FIXME: Remove std feature #574
+	#[cfg(feature = "std")]
+	async fn get_system_account_next_index(
+		&self,
+		account_id: Self::AccountId,
+	) -> Result<Self::Index>;
+
 	async fn get_account_info(
 		&self,
 		address: &Self::AccountId,
@@ -51,6 +59,19 @@ where
 	type AccountId = T::AccountId;
 	type Index = T::Index;
 	type AccountData = T::AccountData;
+
+	// FIXME: Remove std feature: #574
+	#[cfg(feature = "std")]
+	async fn get_system_account_next_index(
+		&self,
+		account_id: Self::AccountId,
+	) -> Result<Self::Index> {
+		let next_index = self
+			.client()
+			.request("system_accountNextIndex", rpc_params![account_id])
+			.await?;
+		Ok(next_index)
+	}
 
 	async fn get_account_info(
 		&self,
@@ -86,16 +107,6 @@ pub trait SystemApi {
 	type ChainType;
 	type Properties;
 	type Health;
-	type Index;
-	type AccountId;
-
-	/// Retrieves the next accountIndex as available on the node.
-	// FIXME: Remove once #391 is fixed.
-	#[cfg(feature = "std")]
-	async fn get_system_account_next_index(
-		&self,
-		account_id: Self::AccountId,
-	) -> Result<Self::Index>;
 
 	/// Get the node's implementation name.
 	async fn get_system_name(&self) -> Result<String>;
@@ -138,21 +149,6 @@ where
 	type ChainType = ac_primitives::ChainType;
 	type Properties = ac_primitives::Properties;
 	type Health = ac_primitives::Health;
-	type Index = T::Index;
-	type AccountId = T::AccountId;
-
-	// FIXME: Remove once #391 is fixed.
-	#[cfg(feature = "std")]
-	async fn get_system_account_next_index(
-		&self,
-		account_id: Self::AccountId,
-	) -> Result<Self::Index> {
-		let next_index = self
-			.client()
-			.request("system_accountNextIndex", rpc_params![account_id])
-			.await?;
-		Ok(next_index)
-	}
 
 	async fn get_system_name(&self) -> Result<String> {
 		let res = self.client().request("system_name", rpc_params![]).await?;
