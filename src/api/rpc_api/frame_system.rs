@@ -86,6 +86,16 @@ pub trait SystemApi {
 	type ChainType;
 	type Properties;
 	type Health;
+	type Index;
+	type AccountId;
+
+	/// Retrieves the next accountIndex as available on the node.
+	// FIXME: Remove once #391 is fixed.
+	#[cfg(feature = "std")]
+	async fn get_system_account_next_index(
+		&self,
+		account_id: Self::AccountId,
+	) -> Result<Self::Index>;
 
 	/// Get the node's implementation name.
 	async fn get_system_name(&self) -> Result<String>;
@@ -112,7 +122,7 @@ pub trait SystemApi {
 	/// Get the base58-encoded PeerId of the node.
 	async fn get_system_local_peer_id(&self) -> Result<String>;
 
-	/// Returns the multi-addresses that the local node is listening on
+	/// Returns the multi-addresses that the local node is listening on.
 	///
 	/// The addresses include a trailing `/p2p/` with the local PeerId, and are thus suitable to
 	/// be passed to `addReservedPeer` or as a bootnode address for example.
@@ -128,6 +138,21 @@ where
 	type ChainType = ac_primitives::ChainType;
 	type Properties = ac_primitives::Properties;
 	type Health = ac_primitives::Health;
+	type Index = T::Index;
+	type AccountId = T::AccountId;
+
+	// FIXME: Remove once #391 is fixed.
+	#[cfg(feature = "std")]
+	async fn get_system_account_next_index(
+		&self,
+		account_id: Self::AccountId,
+	) -> Result<Self::Index> {
+		let next_index = self
+			.client()
+			.request("system_accountNextIndex", rpc_params![account_id])
+			.await?;
+		Ok(next_index)
+	}
 
 	async fn get_system_name(&self) -> Result<String> {
 		let res = self.client().request("system_name", rpc_params![]).await?;
