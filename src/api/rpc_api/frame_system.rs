@@ -26,6 +26,11 @@ pub trait GetAccountInformation<AccountId> {
 	type Index;
 	type AccountData;
 
+	/// Retrieves the next accountIndex as available on the node.
+	// FIXME: Remove once #391 is fixed.
+	#[cfg(feature = "std")]
+	fn get_system_account_next_index(&self, account_id: AccountId) -> Result<Self::Index>;
+
 	fn get_account_info(
 		&self,
 		address: &AccountId,
@@ -44,6 +49,14 @@ where
 {
 	type Index = Runtime::Index;
 	type AccountData = Runtime::AccountData;
+
+	// FIXME: Remove once #391 is fixed.
+	#[cfg(feature = "std")]
+	fn get_system_account_next_index(&self, account_id: Runtime::AccountId) -> Result<Self::Index> {
+		let next_index =
+			self.client().request("system_accountNextIndex", rpc_params![account_id])?;
+		Ok(next_index)
+	}
 
 	fn get_account_info(
 		&self,
@@ -98,7 +111,7 @@ pub trait SystemApi {
 	/// Get the base58-encoded PeerId of the node.
 	fn get_system_local_peer_id(&self) -> Result<String>;
 
-	/// Returns the multi-addresses that the local node is listening on
+	/// Returns the multi-addresses that the local node is listening on.
 	///
 	/// The addresses include a trailing `/p2p/` with the local PeerId, and are thus suitable to
 	/// be passed to `addReservedPeer` or as a bootnode address for example.

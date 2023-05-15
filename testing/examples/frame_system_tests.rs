@@ -50,6 +50,10 @@ async fn main() {
 	let _account_data = api.get_account_data(&alice).unwrap().unwrap();
 
 	// System Api
+	let next_index = api.get_system_account_next_index(alice).unwrap();
+	// Alice has not yet sent any extrinsic, so next_index should be 0.
+	assert_eq!(next_index, 0);
+
 	let system_name = api.get_system_name().unwrap();
 	println!("System name: {system_name}");
 
