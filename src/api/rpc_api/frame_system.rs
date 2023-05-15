@@ -28,7 +28,7 @@ pub trait GetAccountInformation {
 	type Index;
 	type AccountData;
 
-	/// Retrieves the next accountIndex as available on the node.
+	/// Retrieves the next account index as available on the node.
 	// FIXME: Remove std feature #574
 	#[cfg(feature = "std")]
 	async fn get_system_account_next_index(
