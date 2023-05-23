@@ -16,6 +16,7 @@
 //! Very simple example that shows how to fetch chain information with async.
 //! To compile this example for async you need to set the `--no-default-features` flag
 
+#[cfg(not(feature = "sync-examples"))]
 use substrate_api_client::{
 	ac_primitives::SubstrateKitchensinkConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
