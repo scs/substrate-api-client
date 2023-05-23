@@ -16,7 +16,7 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use frame_system::AccountInfo as GenericAccountInfo;
-use kitchensink_runtime::{AccountId, Runtime, Signature};
+use kitchensink_runtime::AccountId;
 use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
