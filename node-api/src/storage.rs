@@ -81,6 +81,11 @@ pub trait GetStorageTypes {
 	fn get_map<K: Encode>(&self, pallet_prefix: &str) -> Result<StorageMap<K>, MetadataError>;
 	fn get_map_prefix(&self, pallet_prefix: &str) -> Result<StorageKey, MetadataError>;
 	fn get_value(&self, pallet_prefix: &str) -> Result<StorageValue, MetadataError>;
+	fn get_double_map_prefix<K: Encode>(
+		&self,
+		pallet_prefix: &str,
+		key1: K,
+	) -> Result<StorageKey, MetadataError>;
 }
 
 impl GetStorageTypes for StorageEntryMetadata<PortableForm> {
@@ -139,6 +144,28 @@ impl GetStorageTypes for StorageEntryMetadata<PortableForm> {
 			StorageEntryType::Map { .. } => {
 				let mut bytes = sp_core::twox_128(pallet_prefix.as_bytes()).to_vec();
 				bytes.extend(&sp_core::twox_128(self.name.as_bytes())[..]);
+				Ok(StorageKey(bytes))
+			},
+			_ => Err(MetadataError::StorageTypeError),
+		}
+	}
+
+	fn get_double_map_prefix<K: Encode>(
+		&self,
+		pallet_prefix: &str,
+		key1: K,
+	) -> Result<StorageKey, MetadataError> {
+		match &self.ty {
+			StorageEntryType::Map { hashers, .. } => {
+				let module_prefix = pallet_prefix.as_bytes();
+				let storage_prefix = self.name.as_bytes();
+
+				let hasher1 = hashers.get(0).ok_or(MetadataError::StorageTypeError)?;
+
+				let mut bytes = sp_core::twox_128(module_prefix).to_vec();
+				bytes.extend(&sp_core::twox_128(storage_prefix)[..]);
+				bytes.extend(key_hash(&key1, hasher1));
+
 				Ok(StorageKey(bytes))
 			},
 			_ => Err(MetadataError::StorageTypeError),
