@@ -16,7 +16,7 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use frame_system::AccountInfo as GenericAccountInfo;
-use kitchensink_runtime::{AccountId, Runtime, Signature};
+use kitchensink_runtime::AccountId;
 use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -33,6 +33,8 @@ type AccountInfo = GenericAccountInfo<
 	<SubstrateKitchensinkConfig as Config>::AccountData,
 >;
 
+type Balance = <SubstrateKitchensinkConfig as Config>::Balance;
+
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -42,7 +44,7 @@ async fn main() {
 	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 
 	// get some plain storage value
-	let result: u128 = api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();
+	let result: Balance = api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();
 	println!("[+] TotalIssuance is {}", result);
 
 	let proof = api.get_storage_value_proof("Balances", "TotalIssuance", None).unwrap();
@@ -80,7 +82,7 @@ async fn main() {
 	// Get the storage values that belong to the retrieved storage keys.
 	for storage_key in storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
-		// We're expecting account info as return value because we fetch added a prefix of "System" + "Account".
+		// We're expecting account info as return value because we fetch a storage value with prefix combination of "System" + "Account".
 		let storage_data: AccountInfo =
 			api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
@@ -95,8 +97,8 @@ async fn main() {
 	// Get the storage values that belong to the retrieved storage keys.
 	for storage_key in double_map_storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
-		// We're expecting account info as return value because we fetch added a prefix of "System" + "Account".
-		let storage_data: Exposure<AccountId, u128> =
+		// We're expecting Exposure as return value because we fetch a storage value with prefix combination of "Staking" + "EraStakers" + 0.
+		let storage_data: Exposure<AccountId, Balance> =
 			api.get_storage_by_key(storage_key.clone(), None).unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}
