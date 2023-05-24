@@ -35,7 +35,7 @@ pub trait AssetsConfig: crate::FrameSystemConfig {
 	type RemoveItemsLimit: Get<u32>;
 	/// This type enforces the (de)serialization implementation
 	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
-	type AssetId: Member + Copy + Serialize + DeserializeOwned + MaxEncodedLen;
+	type AssetId: Member + Serialize + DeserializeOwned + MaxEncodedLen;
 	type AssetIdParameter: Copy + From<Self::AssetId> + Into<Self::AssetId> + MaxEncodedLen;
 	type Currency;
 	type CreateOrigin;
