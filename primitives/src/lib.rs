@@ -32,18 +32,15 @@ pub mod rpc_numbers;
 pub mod rpc_params;
 pub mod types;
 
-// Re-export substrate types for easy import
+// Re-export substrate types for easy import on user side.
 pub use sp_core::{
 	storage::{StorageChangeSet, StorageData, StorageKey},
 	Bytes,
 };
 pub use sp_runtime::{
-	generic::{
-		Block as SubstrateBlock, Digest, DigestItem, Header as SubstrateHeader, SignedBlock,
-	},
+	generic::{Block, Digest, DigestItem, Header, SignedBlock},
 	traits::{BlakeTwo256, Block as BlockTrait, Hash as HashTrait, Header as HeaderTrait},
-	AccountId32, ConsensusEngineId, Justifications, MultiAddress, MultiSignature,
-	OpaqueExtrinsic as SubstrateOpaqueExtrinsic,
+	AccountId32, ConsensusEngineId, Justifications, MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
 pub use sp_version::RuntimeVersion;
 pub use sp_weights::Weight;
