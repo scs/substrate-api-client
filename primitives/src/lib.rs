@@ -34,8 +34,9 @@ pub mod types;
 
 // Re-export substrate types for easy import on user side.
 pub use sp_core::{
+	sr25519,
 	storage::{StorageChangeSet, StorageData, StorageKey},
-	Bytes,
+	Bytes, H256,
 };
 pub use sp_runtime::{
 	generic::{Block, Digest, DigestItem, Header, SignedBlock},
