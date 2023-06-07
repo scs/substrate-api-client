@@ -19,10 +19,12 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, Bytes, Hasher, UncheckedExtrinsicV4};
+use ac_primitives::{config::Config, UncheckedExtrinsicV4};
 use codec::Encode;
 use log::*;
 use serde::de::DeserializeOwned;
+use sp_core::Bytes;
+use sp_runtime::traits::Hash as HashTrait;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;

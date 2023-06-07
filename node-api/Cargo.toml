@@ -22,15 +22,13 @@ serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # substrate
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # need to add this for `no_std`
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-
-# local
-ac-primitives = { path = "../primitives", default-features = false }
 
 [features]
 default = ["std"]
@@ -54,8 +52,7 @@ std = [
     # no_std support
     "sp-application-crypto/std",
     "sp-runtime-interface/std",
-    # local
-    "ac-primitives/std",
+    "sp-storage/std",
 ]
 # Enable import of test_utils also outside of crate (feature test does not allow to do so).
 mocks = []
