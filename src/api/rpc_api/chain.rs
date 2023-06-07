@@ -17,7 +17,7 @@ use crate::{
 	Error,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config};
+use ac_primitives::config::Config;
 use alloc::vec::Vec;
 use log::*;
 use serde::de::DeserializeOwned;

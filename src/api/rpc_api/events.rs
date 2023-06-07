@@ -18,7 +18,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
-use ac_primitives::{config::Config};
+use ac_primitives::config::Config;
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
@@ -225,7 +225,7 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::{PolkadotConfig};
+	use ac_primitives::PolkadotConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};

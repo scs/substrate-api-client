@@ -15,9 +15,7 @@ use crate::{
 	rpc::Request,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{
-	config::Config, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo,
-};
+use ac_primitives::{config::Config, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo};
 use core::str::FromStr;
 use sp_core::Bytes;
 
