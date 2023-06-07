@@ -24,17 +24,15 @@ pub use config::*;
 pub use extrinsics::*;
 pub use rpc_numbers::*;
 pub use rpc_params::*;
-pub use traits::*;
 pub use types::*;
 
 pub mod config;
 pub mod extrinsics;
 pub mod rpc_numbers;
 pub mod rpc_params;
-pub mod traits;
 pub mod types;
 
-// Re-export previous substrate exports to avoid breaking changes
+// Re-export substrate types for easy import
 pub use sp_core::{
 	storage::{StorageChangeSet, StorageData, StorageKey},
 	Bytes,
@@ -43,7 +41,7 @@ pub use sp_runtime::{
 	generic::{
 		Block as SubstrateBlock, Digest, DigestItem, Header as SubstrateHeader, SignedBlock,
 	},
-	traits::BlakeTwo256,
+	traits::{BlakeTwo256, Block as BlockTrait, Hash as HashTrait, Header as HeaderTrait},
 	AccountId32, ConsensusEngineId, Justifications, MultiAddress, MultiSignature,
 	OpaqueExtrinsic as SubstrateOpaqueExtrinsic,
 };
