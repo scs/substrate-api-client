@@ -160,7 +160,7 @@ impl<Balance: AtLeast32BitUnsigned + Copy> FeeDetails<Balance> {
 #[serde(rename_all = "camelCase")]
 #[serde(bound(serialize = "Balance: core::fmt::Display, Weight: Serialize"))]
 #[serde(bound(deserialize = "Balance: core::str::FromStr, Weight: Deserialize<'de>"))]
-pub struct RuntimeDispatchInfo<Balance, Weight = crate::serde_impls::Weight> {
+pub struct RuntimeDispatchInfo<Balance, Weight = sp_weights::Weight> {
 	/// Weight of this dispatch.
 	pub weight: Weight,
 	/// Class of this dispatch.

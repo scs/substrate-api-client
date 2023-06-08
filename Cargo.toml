@@ -44,9 +44,11 @@ tungstenite = { version = "0.18.0", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # substrate std / wasm only
 frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -103,6 +105,8 @@ std = [
     "sp-core/std",
     "sp-runtime/std",
     "sp-runtime-interface/std",
+    "sp-storage/std",
+    "sp-version/std",
     # substrate std
     "frame-support",
     # local deps

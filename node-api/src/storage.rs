@@ -14,12 +14,12 @@
 //! For querying runtime storage.
 
 use crate::metadata::MetadataError;
-use ac_primitives::StorageKey;
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::Encode;
 use core::marker::PhantomData;
 use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
 use scale_info::form::PortableForm;
+use sp_storage::StorageKey;
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub struct StorageValue {

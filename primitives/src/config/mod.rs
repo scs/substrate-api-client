@@ -11,14 +11,16 @@
 //! This file is mostly subxt:
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/mod.rs
 
-use core::{fmt::Debug, marker::PhantomData};
-
 use codec::{Decode, Encode, FullCodec};
+use core::{fmt::Debug, marker::PhantomData};
 use serde::{de::DeserializeOwned, Serialize};
 use sp_core::Pair;
-use sp_runtime::traits::{AtLeast32Bit, AtLeast32BitUnsigned, MaybeSerializeDeserialize};
+use sp_runtime::traits::{
+	AtLeast32Bit, AtLeast32BitUnsigned, Block, Hash as HashTrait, Header as HeaderTrait,
+	MaybeSerializeDeserialize,
+};
 
-use crate::{extrinsic_params, Block, Hasher, Header, SignExtrinsic};
+use crate::{extrinsic_params, SignExtrinsic};
 
 pub use polkadot::*;
 pub use substrate_kitchensink::*;
@@ -72,11 +74,11 @@ pub trait Config {
 	type Signature: Debug + Encode + From<<Self::CryptoKey as Pair>::Signature>;
 
 	/// The hashing system (algorithm) being used in the runtime (e.g. Blake2).
-	type Hasher: Debug + Hasher<Output = Self::Hash>;
+	type Hasher: Debug + HashTrait<Output = Self::Hash>;
 
 	/// The block header.
 	type Header: Debug
-		+ Header<Number = Self::BlockNumber, Hasher = Self::Hasher>
+		+ HeaderTrait<Number = Self::BlockNumber, Hashing = Self::Hasher>
 		+ Send
 		+ DeserializeOwned;
 
