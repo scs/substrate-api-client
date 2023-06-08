@@ -11,12 +11,13 @@
 //! This file is mostly subxt:
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/mod.rs
 
-use core::{fmt::Debug, marker::PhantomData};
 use codec::{Decode, Encode, FullCodec};
+use core::{fmt::Debug, marker::PhantomData};
 use serde::{de::DeserializeOwned, Serialize};
 use sp_core::Pair;
 use sp_runtime::traits::{
-	AtLeast32Bit, AtLeast32BitUnsigned, Block, Hash as HashTrait, Header as HeaderTrait, MaybeSerializeDeserialize,
+	AtLeast32Bit, AtLeast32BitUnsigned, Block, Hash as HashTrait, Header as HeaderTrait,
+	MaybeSerializeDeserialize,
 };
 
 use crate::{extrinsic_params, SignExtrinsic};
