@@ -13,9 +13,10 @@
 use crate::{alloc::borrow::ToOwned, storage::GetStorageTypes, Encoded};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
-	PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
-	StorageEntryMetadata, META_RESERVED,
+	RuntimeMetadata, RuntimeMetadataPrefixed,
+	META_RESERVED,
 };
+use frame_metadata::v15::{RuntimeMetadataLastVersion, PalletConstantMetadata, StorageEntryMetadata};
 use scale_info::{form::PortableForm, PortableRegistry, Type};
 use sp_storage::StorageKey;
 
@@ -334,7 +335,7 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			return Err(InvalidMetadataError::InvalidPrefix)
 		}
 		let metadata = match metadata.1 {
-			RuntimeMetadata::V14(meta) => meta,
+			RuntimeMetadata::V15(meta) => meta,
 			_ => return Err(InvalidMetadataError::InvalidVersion),
 		};
 

@@ -11,7 +11,7 @@ use crate::{Events, Metadata, Phase};
 use codec::Encode;
 use codec::{Compact, Decode};
 use frame_metadata::{
-	v14::{ExtrinsicMetadata, PalletEventMetadata, PalletMetadata, RuntimeMetadataV14},
+	v15::{ExtrinsicMetadata, PalletEventMetadata, PalletMetadata, RuntimeMetadataV15},
 	RuntimeMetadataPrefixed,
 };
 use scale_info::{meta_type, TypeInfo};
@@ -49,13 +49,14 @@ pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
 		constants: vec![],
 		error: None,
 		index: 0,
+		docs: vec![]
 	}];
 
 	let extrinsic =
 		ExtrinsicMetadata { ty: meta_type::<()>(), version: 0, signed_extensions: vec![] };
 
-	let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
-	let runtime_metadata: RuntimeMetadataPrefixed = v14.into();
+	let v15 = RuntimeMetadataV15::new(pallets, extrinsic, meta_type::<()>(), vec![]);
+	let runtime_metadata: RuntimeMetadataPrefixed = v15.into();
 
 	Metadata::try_from(runtime_metadata).unwrap()
 }
