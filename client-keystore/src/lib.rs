@@ -36,6 +36,9 @@ use std::{
 
 use sc_keystore::{Error, Result};
 
+mod keystore_ext;
+pub use keystore_ext::KeystoreExt;
+
 /// A local based keystore that is either memory-based or filesystem-based.
 pub struct LocalKeystore(RwLock<KeystoreInner>);
 
