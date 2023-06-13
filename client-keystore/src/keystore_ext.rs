@@ -21,7 +21,7 @@ use sp_application_crypto::{AppPair, AppPublic};
 /// make that clear.
 pub trait KeystoreExt {
 	fn generate<Pair: AppPair>(&self) -> Result<Pair>;
-	fn public_keys_ext<Public: AppPublic>(&self) -> Result<Vec<Public>>;
+	fn public_keys<Public: AppPublic>(&self) -> Result<Vec<Public>>;
 }
 
 impl KeystoreExt for LocalKeystore {
@@ -29,7 +29,7 @@ impl KeystoreExt for LocalKeystore {
 		self.0.write().generate_by_type::<Pair::Generic>(Pair::ID).map(Into::into)
 	}
 
-	fn public_keys_ext<Public: AppPublic>(&self) -> Result<Vec<Public>> {
+	fn public_keys<Public: AppPublic>(&self) -> Result<Vec<Public>> {
 		self.0
 			.read()
 			.raw_public_keys(Public::ID)
