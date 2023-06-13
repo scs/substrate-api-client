@@ -13,10 +13,9 @@
 use crate::{alloc::borrow::ToOwned, storage::GetStorageTypes, Encoded};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
-	RuntimeMetadata, RuntimeMetadataPrefixed,
-	META_RESERVED,
+	v15::{PalletConstantMetadata, RuntimeMetadataLastVersion, StorageEntryMetadata},
+	RuntimeMetadata, RuntimeMetadataPrefixed, META_RESERVED,
 };
-use frame_metadata::v15::{RuntimeMetadataLastVersion, PalletConstantMetadata, StorageEntryMetadata};
 use scale_info::{form::PortableForm, PortableRegistry, Type};
 use sp_storage::StorageKey;
 

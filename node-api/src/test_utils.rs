@@ -49,7 +49,7 @@ pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
 		constants: vec![],
 		error: None,
 		index: 0,
-		docs: vec![]
+		docs: vec![],
 	}];
 
 	let extrinsic =
