@@ -30,6 +30,9 @@ sp-storage = { default-features = false, features = ["serde"], git = "https://gi
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
+[dev-dependencies]
+test-case = "3.1.0"
+
 [features]
 default = ["std"]
 # To support `no_std` builds in non-32 bit environments.

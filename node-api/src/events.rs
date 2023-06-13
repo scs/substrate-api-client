@@ -330,10 +330,12 @@ mod tests {
 	use super::*;
 	use crate::{
 		decoder::Value,
-		test_utils::{event_record, events, events_raw, metadata},
+		test_utils::{event_record, events, events_raw, metadata, metadata_with_version},
 	};
 	use codec::Encode;
 	use scale_info::TypeInfo;
+	use crate::test_utils::SupportedMetadataVersions;
+	use test_case::test_case;
 
 	/// [`RawEventDetails`] can be annoying to test, because it contains
 	/// type info in the decoded field Values. Strip that here so that
@@ -558,15 +560,16 @@ mod tests {
 		assert!(events_iter.next().is_none());
 	}
 
-	#[test]
-	fn compact_event_field() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn compact_event_field(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
 		enum Event {
 			A(#[codec(compact)] u32),
 		}
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode our events in the format we expect back from a node, and
 		// construst an Events object to iterate them:

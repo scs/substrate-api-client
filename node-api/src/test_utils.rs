@@ -32,6 +32,11 @@ pub struct EventRecord<E: Encode> {
 	topics: Vec<H256>,
 }
 
+pub enum SupportedMetadataVersions {
+	V14,
+	V15
+}
+
 /// Build an EventRecord, which encoded events in the format expected
 /// to be handed back from storage queries to System.Events.
 pub fn event_record<E: Encode>(phase: Phase, event: E) -> EventRecord<E> {
@@ -41,6 +46,12 @@ pub fn event_record<E: Encode>(phase: Phase, event: E) -> EventRecord<E> {
 /// Build fake metadata consisting of a single pallet that knows
 /// about the event type provided.
 pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
+	metadata_with_version::<E>(SupportedMetadataVersions::V14)
+}
+
+/// Build fake metadata consisting of a single pallet that knows
+/// about the event type provided.
+pub fn metadata_with_version<E: TypeInfo + 'static>(version: SupportedMetadataVersions) -> Metadata {
 	let pallets = vec![PalletMetadata {
 		name: "Test",
 		storage: None,
@@ -54,8 +65,16 @@ pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
 	let extrinsic =
 		ExtrinsicMetadata { ty: meta_type::<()>(), version: 0, signed_extensions: vec![] };
 
-	let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
-	let runtime_metadata: RuntimeMetadataPrefixed = v14.into();
+	let runtime_metadata: RuntimeMetadataPrefixed =	match version {
+		SupportedMetadataVersions::V14 => {
+			let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
+			v14.into()
+		},
+		SupportedMetadataVersions::V15 => {
+			let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
+			v14.into()
+		}
+	};
 
 	Metadata::try_from(runtime_metadata).unwrap()
 }
