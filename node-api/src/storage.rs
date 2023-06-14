@@ -17,7 +17,7 @@ use crate::metadata::MetadataError;
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::Encode;
 use core::marker::PhantomData;
-use frame_metadata::{StorageEntryMetadata, StorageEntryType, StorageHasher};
+use frame_metadata::v15::{StorageEntryMetadata, StorageEntryType, StorageHasher};
 use scale_info::form::PortableForm;
 use sp_storage::StorageKey;
 

@@ -238,6 +238,7 @@ mod tests {
 	use sp_storage::StorageData;
 	use sp_version::RuntimeVersion;
 	use std::{collections::HashMap, fs};
+	use test_case::test_case;
 
 	#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
 	enum Event {
@@ -266,9 +267,10 @@ mod tests {
 		}
 	}
 
-	#[test]
-	fn filter_extrinsic_events_works() {
-		let metadata = metadata::<Event>();
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn filter_extrinsic_events_works(metadata_version: SupportedMetadataVersions) {
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		let extrinsic_index = 1;
 
@@ -303,9 +305,10 @@ mod tests {
 		assert_eq!(assosciated_events[1].index(), assosciated_event_details3.index());
 	}
 
-	#[test]
-	fn fetch_events_from_block_works() {
-		let metadata = metadata::<Event>();
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn fetch_events_from_block_works(metadata_version: SupportedMetadataVersions) {
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		let extrinsic_index = 1;
 

@@ -5560,6 +5560,7 @@ dependencies = [
  "sp-runtime-interface",
  "sp-storage",
  "sp-version",
+ "test-case",
  "tungstenite",
  "url",
  "ws",
