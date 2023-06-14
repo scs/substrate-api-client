@@ -26,7 +26,7 @@ pub const SR25519: KeyTypeId = KeyTypeId(*b"sr25");
 #[tokio::main]
 async fn main() {
 	let store = LocalKeystore::open(PathBuf::from(&KEYSTORE_PATH), None).unwrap();
-	let seed = "MyAccount";
+	let seed = "//Ferdie";
 
 	// This does not place the key into the keystore if we have a seed, but it does
 	// place it into the keystore if the seed is none.
