@@ -148,6 +148,7 @@ jobs:
           chain_tests,
           dispatch_errors_tests,
           frame_system_tests,
+          keystore_tests,
           pallet_balances_tests,
           pallet_transaction_payment_tests,
           state_tests,

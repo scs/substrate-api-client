@@ -17,9 +17,8 @@ wabt = "0.10.0"
 frame-support = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
-sp-core = { features = [
-    "full_crypto",
-], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-application-crypto = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-core = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-staking = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -35,6 +34,8 @@ substrate-api-client = { path = "..", features = [
     "staking-xt",
     "contracts-xt",
 ] }
+substrate-client-keystore = { path = "../client-keystore" }
+
 
 [features]
 default = ["ws-client"]
