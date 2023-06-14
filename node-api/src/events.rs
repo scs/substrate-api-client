@@ -330,11 +330,12 @@ mod tests {
 	use super::*;
 	use crate::{
 		decoder::Value,
-		test_utils::{event_record, events, events_raw, metadata_with_version},
+		test_utils::{
+			event_record, events, events_raw, metadata_with_version, SupportedMetadataVersions,
+		},
 	};
 	use codec::Encode;
 	use scale_info::TypeInfo;
-	use crate::test_utils::SupportedMetadataVersions;
 	use test_case::test_case;
 
 	/// [`RawEventDetails`] can be annoying to test, because it contains

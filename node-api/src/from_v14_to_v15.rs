@@ -1,9 +1,7 @@
-
 use frame_metadata::{v14, v15};
 
-
 pub fn v14_to_v15(metadata: v14::RuntimeMetadataV14) -> v15::RuntimeMetadataV15 {
-    v15::RuntimeMetadataV15 {
+	v15::RuntimeMetadataV15 {
         types: metadata.types,
         pallets: metadata
             .pallets

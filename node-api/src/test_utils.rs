@@ -11,8 +11,14 @@ use crate::{Events, Metadata, Phase};
 use codec::Encode;
 use codec::{Compact, Decode};
 use frame_metadata::{
-	v14::{ExtrinsicMetadata as ExtrinsicMetadataV14, PalletEventMetadata as PalletEventMetadataV14, PalletMetadata as PalletMetadataV14, RuntimeMetadataV14},
-	v15::{ExtrinsicMetadata as ExtrinsicMetadataV15, PalletEventMetadata as PalletEventMetadataV15, PalletMetadata as PalletMetadataV15, RuntimeMetadataV15},
+	v14::{
+		ExtrinsicMetadata as ExtrinsicMetadataV14, PalletEventMetadata as PalletEventMetadataV14,
+		PalletMetadata as PalletMetadataV14, RuntimeMetadataV14,
+	},
+	v15::{
+		ExtrinsicMetadata as ExtrinsicMetadataV15, PalletEventMetadata as PalletEventMetadataV15,
+		PalletMetadata as PalletMetadataV15, RuntimeMetadataV15,
+	},
 	RuntimeMetadataPrefixed,
 };
 use scale_info::{meta_type, TypeInfo};
@@ -35,7 +41,7 @@ pub struct EventRecord<E: Encode> {
 
 pub enum SupportedMetadataVersions {
 	V14,
-	V15
+	V15,
 }
 
 /// Build an EventRecord, which encoded events in the format expected
@@ -52,8 +58,10 @@ pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
 
 /// Build fake metadata consisting of a single pallet that knows
 /// about the event type provided.
-pub fn metadata_with_version<E: TypeInfo + 'static>(version: SupportedMetadataVersions) -> Metadata {
-	let runtime_metadata: RuntimeMetadataPrefixed =	match version {
+pub fn metadata_with_version<E: TypeInfo + 'static>(
+	version: SupportedMetadataVersions,
+) -> Metadata {
+	let runtime_metadata: RuntimeMetadataPrefixed = match version {
 		SupportedMetadataVersions::V14 => {
 			let pallets = vec![PalletMetadataV14 {
 				name: "Test",
@@ -65,8 +73,11 @@ pub fn metadata_with_version<E: TypeInfo + 'static>(version: SupportedMetadataVe
 				index: 0,
 			}];
 
-			let extrinsic =
-				ExtrinsicMetadataV14 { ty: meta_type::<()>(), version: 0, signed_extensions: vec![] };
+			let extrinsic = ExtrinsicMetadataV14 {
+				ty: meta_type::<()>(),
+				version: 0,
+				signed_extensions: vec![],
+			};
 			let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
 			v14.into()
 		},
@@ -82,11 +93,14 @@ pub fn metadata_with_version<E: TypeInfo + 'static>(version: SupportedMetadataVe
 				docs: vec![],
 			}];
 
-			let extrinsic =
-				ExtrinsicMetadataV15 { ty: meta_type::<()>(), version: 0, signed_extensions: vec![] };
+			let extrinsic = ExtrinsicMetadataV15 {
+				ty: meta_type::<()>(),
+				version: 0,
+				signed_extensions: vec![],
+			};
 			let v15 = RuntimeMetadataV15::new(pallets, extrinsic, meta_type::<()>(), vec![]);
 			v15.into()
-		}
+		},
 	};
 
 	Metadata::try_from(runtime_metadata).unwrap()

@@ -27,9 +27,9 @@ pub use metadata::{Metadata, MetadataError};
 pub mod decoder;
 pub mod error;
 pub mod events;
+pub mod from_v14_to_v15;
 pub mod metadata;
 pub mod storage;
-pub mod from_v14_to_v15;
 
 #[cfg(any(feature = "mocks", test))]
 pub mod test_utils;
