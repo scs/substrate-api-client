@@ -1,3 +1,11 @@
+// This file was taken from subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+// And was adapted by Supercomputing Systems AG.
+//
+// Copyright 2019-2023 Parity Technologies (UK) Ltd and Supercomputing Systems AG.
+// This file is licensed as Apache-2.0
+// see LICENSE for license details.
+
 use frame_metadata::{v14, v15};
 
 pub fn v14_to_v15(metadata: v14::RuntimeMetadataV14) -> v15::RuntimeMetadataV15 {
