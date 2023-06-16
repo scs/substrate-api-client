@@ -36,3 +36,19 @@ impl KeystoreExt for LocalKeystore {
 			.map(|v| v.into_iter().filter_map(|k| Public::from_slice(k.as_slice()).ok()).collect())
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use crate::{KeystoreExt, LocalKeystore};
+	use sp_application_crypto::sr25519::AppPair;
+	use sp_core::Pair;
+
+	#[test]
+	fn test_execute_generate_doesnt_fail() {
+		let store = LocalKeystore::in_memory();
+		let generated_key = store.generate::<AppPair>();
+
+		// check that something was generated
+		assert_ne!("", format!("{:?}", generated_key.unwrap().to_raw_vec()));
+	}
+}
