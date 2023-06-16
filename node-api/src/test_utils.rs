@@ -11,7 +11,14 @@ use crate::{Events, Metadata, Phase};
 use codec::Encode;
 use codec::{Compact, Decode};
 use frame_metadata::{
-	v14::{ExtrinsicMetadata, PalletEventMetadata, PalletMetadata, RuntimeMetadataV14},
+	v14::{
+		ExtrinsicMetadata as ExtrinsicMetadataV14, PalletEventMetadata as PalletEventMetadataV14,
+		PalletMetadata as PalletMetadataV14, RuntimeMetadataV14,
+	},
+	v15::{
+		ExtrinsicMetadata as ExtrinsicMetadataV15, PalletEventMetadata as PalletEventMetadataV15,
+		PalletMetadata as PalletMetadataV15, RuntimeMetadataV15,
+	},
 	RuntimeMetadataPrefixed,
 };
 use scale_info::{meta_type, TypeInfo};
@@ -32,6 +39,11 @@ pub struct EventRecord<E: Encode> {
 	topics: Vec<H256>,
 }
 
+pub enum SupportedMetadataVersions {
+	V14,
+	V15,
+}
+
 /// Build an EventRecord, which encoded events in the format expected
 /// to be handed back from storage queries to System.Events.
 pub fn event_record<E: Encode>(phase: Phase, event: E) -> EventRecord<E> {
@@ -41,21 +53,55 @@ pub fn event_record<E: Encode>(phase: Phase, event: E) -> EventRecord<E> {
 /// Build fake metadata consisting of a single pallet that knows
 /// about the event type provided.
 pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
-	let pallets = vec![PalletMetadata {
-		name: "Test",
-		storage: None,
-		calls: None,
-		event: Some(PalletEventMetadata { ty: meta_type::<E>() }),
-		constants: vec![],
-		error: None,
-		index: 0,
-	}];
+	metadata_with_version::<E>(SupportedMetadataVersions::V14)
+}
 
-	let extrinsic =
-		ExtrinsicMetadata { ty: meta_type::<()>(), version: 0, signed_extensions: vec![] };
+/// Build fake metadata consisting of a single pallet that knows
+/// about the event type provided.
+pub fn metadata_with_version<E: TypeInfo + 'static>(
+	version: SupportedMetadataVersions,
+) -> Metadata {
+	let runtime_metadata: RuntimeMetadataPrefixed = match version {
+		SupportedMetadataVersions::V14 => {
+			let pallets = vec![PalletMetadataV14 {
+				name: "Test",
+				storage: None,
+				calls: None,
+				event: Some(PalletEventMetadataV14 { ty: meta_type::<E>() }),
+				constants: vec![],
+				error: None,
+				index: 0,
+			}];
 
-	let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
-	let runtime_metadata: RuntimeMetadataPrefixed = v14.into();
+			let extrinsic = ExtrinsicMetadataV14 {
+				ty: meta_type::<()>(),
+				version: 0,
+				signed_extensions: vec![],
+			};
+			let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
+			v14.into()
+		},
+		SupportedMetadataVersions::V15 => {
+			let pallets = vec![PalletMetadataV15 {
+				name: "Test",
+				storage: None,
+				calls: None,
+				event: Some(PalletEventMetadataV15 { ty: meta_type::<E>() }),
+				constants: vec![],
+				error: None,
+				index: 0,
+				docs: vec![],
+			}];
+
+			let extrinsic = ExtrinsicMetadataV15 {
+				ty: meta_type::<()>(),
+				version: 0,
+				signed_extensions: vec![],
+			};
+			let v15 = RuntimeMetadataV15::new(pallets, extrinsic, meta_type::<()>(), vec![]);
+			v15.into()
+		},
+	};
 
 	Metadata::try_from(runtime_metadata).unwrap()
 }

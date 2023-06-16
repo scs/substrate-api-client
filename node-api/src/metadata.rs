@@ -10,11 +10,13 @@
 //!
 //! This file is mostly subxt.
 
-use crate::{alloc::borrow::ToOwned, storage::GetStorageTypes, Encoded};
+use crate::{
+	alloc::borrow::ToOwned, from_v14_to_v15::v14_to_v15, storage::GetStorageTypes, Encoded,
+};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_metadata::{
-	PalletConstantMetadata, RuntimeMetadata, RuntimeMetadataLastVersion, RuntimeMetadataPrefixed,
-	StorageEntryMetadata, META_RESERVED,
+	v15::{PalletConstantMetadata, RuntimeMetadataLastVersion, StorageEntryMetadata},
+	RuntimeMetadata, RuntimeMetadataPrefixed, META_RESERVED,
 };
 use scale_info::{form::PortableForm, PortableRegistry, Type};
 use sp_storage::StorageKey;
@@ -334,7 +336,8 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			return Err(InvalidMetadataError::InvalidPrefix)
 		}
 		let metadata = match metadata.1 {
-			RuntimeMetadata::V14(meta) => meta,
+			RuntimeMetadata::V14(meta) => v14_to_v15(meta),
+			RuntimeMetadata::V15(meta) => meta,
 			_ => return Err(InvalidMetadataError::InvalidVersion),
 		};
 

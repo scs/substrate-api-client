@@ -27,7 +27,7 @@ members = [
 async-trait = "0.1.68"
 codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
-frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
+frame-metadata = { version = "15.1", default-features = false, features = ["v14", "v15-unstable", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 maybe-async = { version = "0.2.7" }
@@ -63,6 +63,7 @@ ac-primitives = { path = "primitives", default-features = false }
 ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
+test-case = "3.1.0"
 
 [features]
 default = ["std", "jsonrpsee-client", "sync-api"]

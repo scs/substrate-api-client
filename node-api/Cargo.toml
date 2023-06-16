@@ -14,7 +14,7 @@ bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.2.1", features = ["derive", "bit-vec"], default-features = false }
 derive_more = { version = "0.99.17" }
 either = { version = "1.6.1", default-features = false }
-frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
+frame-metadata = { version = "15.1", default-features = false, features = ["v14", "v15-unstable", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
@@ -29,6 +29,9 @@ sp-storage = { default-features = false, features = ["serde"], git = "https://gi
 # need to add this for `no_std`
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+[dev-dependencies]
+test-case = "3.1.0"
 
 [features]
 default = ["std"]

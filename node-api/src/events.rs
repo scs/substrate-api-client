@@ -330,10 +330,13 @@ mod tests {
 	use super::*;
 	use crate::{
 		decoder::Value,
-		test_utils::{event_record, events, events_raw, metadata},
+		test_utils::{
+			event_record, events, events_raw, metadata_with_version, SupportedMetadataVersions,
+		},
 	};
 	use codec::Encode;
 	use scale_info::TypeInfo;
+	use test_case::test_case;
 
 	/// [`RawEventDetails`] can be annoying to test, because it contains
 	/// type info in the decoded field Values. Strip that here so that
@@ -387,15 +390,16 @@ mod tests {
 		assert_eq!(actual_fields_no_context, expected.fields);
 	}
 
-	#[test]
-	fn dynamically_decode_single_event() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn dynamically_decode_single_event(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo)]
 		enum Event {
 			A(u8, bool, Vec<String>),
 		}
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode our events in the format we expect back from a node, and
 		// construst an Events object to iterate them:
@@ -426,8 +430,9 @@ mod tests {
 		assert!(event_details.next().is_none());
 	}
 
-	#[test]
-	fn dynamically_decode_multiple_events() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn dynamically_decode_multiple_events(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
 		enum Event {
 			A(u8),
@@ -435,7 +440,7 @@ mod tests {
 		}
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode our events in the format we expect back from a node, and
 		// construst an Events object to iterate them:
@@ -496,8 +501,9 @@ mod tests {
 		assert!(event_details.next().is_none());
 	}
 
-	#[test]
-	fn dynamically_decode_multiple_events_until_error() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn dynamically_decode_multiple_events_until_error(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo)]
 		enum Event {
 			A(u8),
@@ -505,7 +511,7 @@ mod tests {
 		}
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode 2 events:
 		let mut event_bytes = vec![];
@@ -558,15 +564,16 @@ mod tests {
 		assert!(events_iter.next().is_none());
 	}
 
-	#[test]
-	fn compact_event_field() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn compact_event_field(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
 		enum Event {
 			A(#[codec(compact)] u32),
 		}
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode our events in the format we expect back from a node, and
 		// construst an Events object to iterate them:
@@ -591,8 +598,9 @@ mod tests {
 		assert!(event_details.next().is_none());
 	}
 
-	#[test]
-	fn compact_wrapper_struct_field() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn compact_wrapper_struct_field(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Decode, Debug, PartialEq, Encode, TypeInfo)]
 		enum Event {
 			A(#[codec(compact)] CompactWrapper),
@@ -602,7 +610,7 @@ mod tests {
 		struct CompactWrapper(u64);
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode our events in the format we expect back from a node, and
 		// construct an Events object to iterate them:
@@ -629,8 +637,9 @@ mod tests {
 		assert!(event_details.next().is_none());
 	}
 
-	#[test]
-	fn event_containing_explicit_index() {
+	#[test_case(SupportedMetadataVersions::V14)]
+	#[test_case(SupportedMetadataVersions::V15)]
+	fn event_containing_explicit_index(metadata_version: SupportedMetadataVersions) {
 		#[derive(Clone, Debug, PartialEq, Eq, Decode, Encode, TypeInfo)]
 		#[repr(u8)]
 		#[allow(trivial_numeric_casts, clippy::unnecessary_cast)] // required because the Encode derive produces a warning otherwise
@@ -644,7 +653,7 @@ mod tests {
 		}
 
 		// Create fake metadata that knows about our single event, above:
-		let metadata = metadata::<Event>();
+		let metadata = metadata_with_version::<Event>(metadata_version);
 
 		// Encode our events in the format we expect back from a node, and
 		// construct an Events object to iterate them:
