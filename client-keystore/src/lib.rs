@@ -25,7 +25,6 @@ use sp_core::{
 	crypto::{ByteArray, ExposeSecret, KeyTypeId, Pair as CorePair, SecretString, VrfSecret},
 	ecdsa, ed25519, sr25519,
 };
-use sp_keystore::{Error as TraitError, Keystore, KeystorePtr};
 use std::{
 	collections::HashMap,
 	fs::{self, File},
@@ -35,6 +34,10 @@ use std::{
 };
 
 use sc_keystore::{Error, Result};
+
+mod keystore_ext;
+pub use keystore_ext::KeystoreExt;
+pub use sp_keystore::{Error as TraitError, Keystore, KeystorePtr};
 
 /// A local based keystore that is either memory-based or filesystem-based.
 pub struct LocalKeystore(RwLock<KeystoreInner>);
