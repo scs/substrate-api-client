@@ -26,14 +26,17 @@ smallvec = "1.10.0"
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
-scale-bits = { default-features = false, features = ["scale-info"], git = "https://github.com/haerdib/scale-bits.git", branch = "bh/no-std" }
+scale-bits = { default-features = false, features = ["scale-info", "serde"], git = "https://github.com/haerdib/scale-bits.git", branch = "bh/no-std" }
 
 # need to add this for `no_std`
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [dev-dependencies]
+scale-encode = { version = "0.3.0", default-features = false, features = ["bits"] }
 test-case = "3.1.0"
+
+
 
 [features]
 default = ["std"]

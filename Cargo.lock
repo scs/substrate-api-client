@@ -56,7 +56,8 @@ dependencies = [
  "hex",
  "log",
  "parity-scale-codec",
- "scale-bits",
+ "scale-bits 0.3.0 (git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std)",
+ "scale-encode",
  "scale-info",
  "serde",
  "serde_json",
@@ -4423,10 +4424,34 @@ dependencies = [
 [[package]]
 name = "scale-bits"
 version = "0.3.0"
-source = "git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std#6b1aa9d4e1cb5c0d70dd826da05e912086409764"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8dd7aca73785181cc41f0bbe017263e682b585ca660540ba569133901d013ecf"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
+]
+
+[[package]]
+name = "scale-bits"
+version = "0.3.0"
+source = "git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std#41daa270ae62adcae310b801c82647a772f464e4"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
+name = "scale-encode"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0401b7cdae8b8aa33725f3611a051358d5b32887ecaa0fda5953a775b2d4d76"
+dependencies = [
+ "parity-scale-codec",
+ "scale-bits 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scale-info",
+ "smallvec",
+ "thiserror",
 ]
 
 [[package]]

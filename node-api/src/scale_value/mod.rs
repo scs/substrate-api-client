@@ -34,6 +34,10 @@ pub use scale::*;
 pub mod scale {
 	use super::TypeId;
 	pub use crate::scale_decode::DecodeError;
+	#[cfg(test)]
+	use scale_encode::EncodeAsType;
+	#[cfg(test)]
+	pub use scale_encode::Error as EncodeError;
 	pub use scale_info::PortableRegistry;
 
 	/// Attempt to decode some SCALE encoded bytes into a value, by providing a pointer
@@ -57,7 +61,7 @@ pub mod scale {
 		ty_id: TypeId,
 		types: &PortableRegistry,
 		buf: &mut Vec<u8>,
-	) -> Result<(), super::encode::EncodeError<T>> {
-		super::encode::encode_value_as_type(value.clone(), ty_id, types, buf)
+	) -> Result<(), EncodeError> {
+		value.encode_as_type_to(ty_id, types, buf)
 	}
 }
