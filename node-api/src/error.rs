@@ -28,8 +28,8 @@ use scale_info::TypeDef;
 
 // Re-expose the errors we use from other crates here:
 pub use crate::{
-	decoder::{DecodeError, EncodeError},
 	metadata::{InvalidMetadataError, MetadataError},
+	scale_value::DecodeError,
 };
 pub use sp_core::crypto::SecretStringError;
 pub use sp_runtime::transaction_validity::TransactionValidityError;
@@ -55,8 +55,6 @@ pub enum Error {
 	Runtime(DispatchError),
 	/// Error decoding to a [`crate::dynamic::Value`].
 	DecodeValue(DecodeError),
-	/// Error encoding from a [`crate::dynamic::Value`].
-	EncodeValue(EncodeError<()>),
 	/// Transaction progress error.
 	Transaction(TransactionError),
 	/// Block related error.

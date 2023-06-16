@@ -7,18 +7,13 @@
 // see LICENSE for license details.
 
 use super::{
-	bit_sequence::{get_bitsequence_details, BitOrderTy, BitSequenceError, BitStoreTy},
 	value::{Composite, Primitive, Value, ValueDef, Variant},
-	ScaleTypeDef as TypeDef, TypeId,
+	TypeId,
 };
 use crate::alloc::{string::String, vec::Vec};
-use bitvec::{
-	order::{Lsb0, Msb0},
-	vec::BitVec,
-};
 use codec::{Compact, Encode};
 use scale_info::{
-	form::PortableForm, Field, PortableRegistry, TypeDefArray, TypeDefBitSequence, TypeDefCompact,
+	form::PortableForm, Field, PortableRegistry, TypeDef, TypeDefArray, TypeDefCompact,
 	TypeDefComposite, TypeDefPrimitive, TypeDefSequence, TypeDefTuple, TypeDefVariant,
 };
 
@@ -64,8 +59,6 @@ pub enum EncodeError<T> {
 		/// The type we're trying to encode it into.
 		expected: TypeId,
 	},
-	/// There was an error trying to encode the bit sequence provided.
-	BitSequenceError(BitSequenceError),
 	/// The type ID given is supposed to be compact encoded, but this is not possible to do automatically.
 	CannotCompactEncode(TypeId),
 }
@@ -79,7 +72,7 @@ pub fn encode_value_as_type<T, Id: Into<TypeId>>(
 	bytes: &mut Vec<u8>,
 ) -> Result<(), EncodeError<T>> {
 	let ty_id = ty_id.into();
-	let ty = types.resolve(ty_id.id()).ok_or(EncodeError::TypeIdNotFound(ty_id))?;
+	let ty = types.resolve(ty_id).ok_or(EncodeError::TypeIdNotFound(ty_id))?;
 
 	match &ty.type_def {
 		TypeDef::Composite(inner) => encode_composite_value(value, ty_id, inner, types, bytes),
@@ -89,7 +82,7 @@ pub fn encode_value_as_type<T, Id: Into<TypeId>>(
 		TypeDef::Variant(inner) => encode_variant_value(value, ty_id, inner, types, bytes),
 		TypeDef::Primitive(inner) => encode_primitive_value(value, ty_id, inner, bytes),
 		TypeDef::Compact(inner) => encode_compact_value(value, ty_id, inner, types, bytes),
-		TypeDef::BitSequence(inner) => encode_bitsequence_value(value, ty_id, inner, types, bytes),
+		TypeDef::BitSequence(inner) => unimplemented!(),
 	}?;
 
 	Ok(())
@@ -108,7 +101,7 @@ fn encode_composite_value<T>(
 		_ => {
 			if ty.fields.len() == 1 {
 				// A 1-field composite type? try encoding inner content then.
-				encode_value_as_type(value, ty.fields[0].ty, types, bytes)
+				encode_value_as_type(value, ty.fields.id(), types, bytes)
 			} else {
 				Err(EncodeError::WrongShape { actual: value, expected: type_id })
 			}
@@ -141,7 +134,7 @@ fn encode_sequence_value<T>(
 			Compact(a.len() as u64).encode_to(bytes);
 			let ty = ty.type_param;
 			for val in a {
-				if encode_value_as_type(Value::uint(val), ty, types, bytes).is_err() {
+				if encode_value_as_type(Value::u128(val.into()), ty, types, bytes).is_err() {
 					return Err(EncodeError::WrongShape { actual: value, expected: type_id })
 				}
 			}
@@ -186,7 +179,7 @@ fn encode_array_value<T>(
 
 			let ty = ty.type_param;
 			for val in a {
-				if encode_value_as_type(Value::uint(val), ty, types, bytes).is_err() {
+				if encode_value_as_type(Value::u128(val.into()), ty, types, bytes).is_err() {
 					return Err(EncodeError::WrongShape { actual: value, expected: type_id })
 				}
 			}
@@ -516,229 +509,4 @@ fn encode_compact_value<T>(
 	};
 
 	Ok(())
-}
-
-fn encode_bitsequence_value<T>(
-	value: Value<T>,
-	type_id: TypeId,
-	ty: &TypeDefBitSequence<PortableForm>,
-	types: &PortableRegistry,
-	bytes: &mut Vec<u8>,
-) -> Result<(), EncodeError<T>> {
-	// First, try to convert whatever we have into a vec of bools:
-	let bools: Vec<bool> = match value.value {
-		ValueDef::BitSequence(bits) => bits.iter().by_vals().collect(),
-		ValueDef::Composite(Composite::Unnamed(vals)) => {
-			let mut bools = Vec::with_capacity(vals.len());
-			for val in vals {
-				match val.value {
-					ValueDef::Primitive(Primitive::Bool(b)) => bools.push(b),
-					_ => return Err(EncodeError::WrongShape { actual: val, expected: type_id }),
-				}
-			}
-			bools
-		},
-		_ => return Err(EncodeError::WrongShape { actual: value, expected: type_id }),
-	};
-
-	// next, turn those bools into a bit sequence of the expected shape.
-	match get_bitsequence_details(ty, types).map_err(EncodeError::BitSequenceError)? {
-		(BitOrderTy::U8, BitStoreTy::Lsb0) => {
-			bools.into_iter().collect::<BitVec<u8, Lsb0>>().encode_to(bytes);
-		},
-		(BitOrderTy::U16, BitStoreTy::Lsb0) => {
-			bools.into_iter().collect::<BitVec<u16, Lsb0>>().encode_to(bytes);
-		},
-		(BitOrderTy::U32, BitStoreTy::Lsb0) => {
-			bools.into_iter().collect::<BitVec<u32, Lsb0>>().encode_to(bytes);
-		},
-		#[cfg(target_pointer_width = "64")]
-		(BitOrderTy::U64, BitStoreTy::Lsb0) => {
-			bools.into_iter().collect::<BitVec<u64, Lsb0>>().encode_to(bytes);
-		},
-		(BitOrderTy::U8, BitStoreTy::Msb0) => {
-			bools.into_iter().collect::<BitVec<u8, Msb0>>().encode_to(bytes);
-		},
-		(BitOrderTy::U16, BitStoreTy::Msb0) => {
-			bools.into_iter().collect::<BitVec<u16, Msb0>>().encode_to(bytes);
-		},
-		(BitOrderTy::U32, BitStoreTy::Msb0) => {
-			bools.into_iter().collect::<BitVec<u32, Msb0>>().encode_to(bytes);
-		},
-		#[cfg(target_pointer_width = "64")]
-		(BitOrderTy::U64, BitStoreTy::Msb0) => {
-			bools.into_iter().collect::<BitVec<u64, Msb0>>().encode_to(bytes);
-		},
-	}
-
-	Ok(())
-}
-
-#[cfg(test)]
-mod test {
-	use super::*;
-
-	/// Given a type definition, return the PortableType and PortableRegistry
-	/// that our decode functions expect.
-	fn make_type<T: scale_info::TypeInfo + 'static>() -> (TypeId, PortableRegistry) {
-		let m = scale_info::MetaType::new::<T>();
-		let mut types = scale_info::Registry::new();
-		let id = types.register_type(&m);
-		let portable_registry: PortableRegistry = types.into();
-
-		(id.into(), portable_registry)
-	}
-
-	// Attempt to SCALE encode a Value and expect it to match the standard Encode impl for the second param given.
-	fn assert_can_encode_to_type<T: Encode + scale_info::TypeInfo + 'static>(
-		value: Value<()>,
-		ty: T,
-	) {
-		let expected = ty.encode();
-		let mut buf = Vec::new();
-
-		let (ty_id, types) = make_type::<T>();
-
-		encode_value_as_type(value, ty_id, &types, &mut buf).expect("error encoding value as type");
-		assert_eq!(expected, buf);
-	}
-
-	#[test]
-	fn can_encode_basic_primitive_values() {
-		assert_can_encode_to_type(Value::int(123), 123i8);
-		assert_can_encode_to_type(Value::int(123), 123i16);
-		assert_can_encode_to_type(Value::int(123), 123i32);
-		assert_can_encode_to_type(Value::int(123), 123i64);
-		assert_can_encode_to_type(Value::int(123), 123i128);
-
-		assert_can_encode_to_type(Value::uint(123u8), 123u8);
-		assert_can_encode_to_type(Value::uint(123u8), 123u16);
-		assert_can_encode_to_type(Value::uint(123u8), 123u32);
-		assert_can_encode_to_type(Value::uint(123u8), 123u64);
-		assert_can_encode_to_type(Value::uint(123u8), 123u128);
-
-		assert_can_encode_to_type(Value::bool(true), true);
-		assert_can_encode_to_type(Value::bool(false), false);
-
-		assert_can_encode_to_type(Value::string("Hello"), "Hello");
-		assert_can_encode_to_type(Value::string("Hello"), "Hello".to_string());
-	}
-
-	#[test]
-	fn chars_encoded_like_numbers() {
-		assert_can_encode_to_type(Value::char('j'), 'j' as u32);
-		assert_can_encode_to_type(Value::char('j'), b'j');
-	}
-
-	#[test]
-	fn can_encode_primitive_arrs_to_array() {
-		use crate::decoder::Primitive;
-
-		assert_can_encode_to_type(Value::primitive(Primitive::U256([12u8; 32])), [12u8; 32]);
-		assert_can_encode_to_type(Value::primitive(Primitive::I256([12u8; 32])), [12u8; 32]);
-	}
-
-	#[test]
-	fn can_encode_primitive_arrs_to_vecs() {
-		use crate::decoder::Primitive;
-
-		assert_can_encode_to_type(Value::primitive(Primitive::U256([12u8; 32])), vec![12u8; 32]);
-		assert_can_encode_to_type(Value::primitive(Primitive::I256([12u8; 32])), vec![12u8; 32]);
-	}
-
-	#[test]
-	fn can_encode_arrays() {
-		let value = Value::unnamed_composite(vec![
-			Value::uint(1u8),
-			Value::uint(2u8),
-			Value::uint(3u8),
-			Value::uint(4u8),
-		]);
-		assert_can_encode_to_type(value, [1u16, 2, 3, 4]);
-	}
-
-	#[test]
-	fn can_encode_variants() {
-		#[derive(Encode, scale_info::TypeInfo)]
-		enum Foo {
-			Named { hello: String, foo: bool },
-			Unnamed(u64, Vec<bool>),
-		}
-
-		let named_value = Value::named_variant(
-			"Named",
-			vec![
-				// Deliverately a different order; order shouldn't matter:
-				("foo".into(), Value::bool(true)),
-				("hello".into(), Value::string("world")),
-			],
-		);
-		assert_can_encode_to_type(named_value, Foo::Named { hello: "world".into(), foo: true });
-
-		let unnamed_value = Value::unnamed_variant(
-			"Unnamed",
-			vec![
-				Value::uint(123u8),
-				Value::unnamed_composite(vec![
-					Value::bool(true),
-					Value::bool(false),
-					Value::bool(true),
-				]),
-			],
-		);
-		assert_can_encode_to_type(unnamed_value, Foo::Unnamed(123, vec![true, false, true]));
-	}
-
-	#[test]
-	fn can_encode_structs() {
-		#[derive(Encode, scale_info::TypeInfo)]
-		struct Foo {
-			hello: String,
-			foo: bool,
-		}
-
-		let named_value = Value::named_composite(vec![
-			// Deliverately a different order; order shouldn't matter:
-			("foo".into(), Value::bool(true)),
-			("hello".into(), Value::string("world")),
-		]);
-		assert_can_encode_to_type(named_value, Foo { hello: "world".into(), foo: true });
-	}
-
-	#[test]
-	fn can_encode_tuples_from_named_composite() {
-		let named_value = Value::named_composite(vec![
-			("hello".into(), Value::string("world")),
-			("foo".into(), Value::bool(true)),
-		]);
-		assert_can_encode_to_type(named_value, ("world", true));
-	}
-
-	#[test]
-	fn can_encode_tuples_from_unnamed_composite() {
-		let unnamed_value =
-			Value::unnamed_composite(vec![Value::string("world"), Value::bool(true)]);
-		assert_can_encode_to_type(unnamed_value, ("world", true));
-	}
-
-	#[test]
-	fn can_encode_to_compact_types() {
-		assert_can_encode_to_type(Value::uint(123u8), Compact(123u64));
-		assert_can_encode_to_type(Value::uint(123u8), Compact(123u64));
-		assert_can_encode_to_type(Value::uint(123u8), Compact(123u64));
-		assert_can_encode_to_type(Value::uint(123u8), Compact(123u64));
-
-		// As a special case, as long as ultimately we have a primitive value, we can compact encode it:
-		assert_can_encode_to_type(
-			Value::unnamed_composite(vec![Value::uint(123u8)]),
-			Compact(123u64),
-		);
-		assert_can_encode_to_type(
-			Value::unnamed_composite(vec![Value::named_composite(vec![(
-				"foo".to_string(),
-				Value::uint(123u8),
-			)])]),
-			Compact(123u64),
-		);
-	}
 }
