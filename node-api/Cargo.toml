@@ -20,11 +20,13 @@ log = { version = "0.4.14", default-features = false }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
+smallvec = "1.10.0"
 
-# substrate
+# parity
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+scale-bits = { default-features = false, features = ["scale-info"], git = "https://github.com/haerdib/scale-bits.git", branch = "bh/no-std" }
 
 # need to add this for `no_std`
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }

@@ -56,9 +56,11 @@ dependencies = [
  "hex",
  "log",
  "parity-scale-codec",
+ "scale-bits",
  "scale-info",
  "serde",
  "serde_json",
+ "smallvec",
  "sp-application-crypto",
  "sp-core",
  "sp-runtime",
@@ -4419,6 +4421,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "scale-bits"
+version = "0.3.0"
+source = "git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std#6b1aa9d4e1cb5c0d70dd826da05e912086409764"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "scale-info"
 version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6005,7 +6016,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "digest 0.10.7",
  "rand 0.8.5",
  "static_assertions",
