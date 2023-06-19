@@ -331,8 +331,7 @@ mod tests {
 	use crate::{
 		scale_value::Value,
 		test_utils::{
-			event_record, events, events_raw, metadata, metadata_with_version,
-			SupportedMetadataVersions,
+			event_record, events, events_raw, metadata_with_version, SupportedMetadataVersions,
 		},
 	};
 	use codec::Encode;
