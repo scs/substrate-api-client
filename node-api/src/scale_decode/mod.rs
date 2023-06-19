@@ -16,6 +16,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+//! Based on https://github.com/paritytech/scale-decode/tree/5a982798a7987f2b79858f726478a1c415e1b416
+
 use alloc::vec::Vec;
 
 mod impls;

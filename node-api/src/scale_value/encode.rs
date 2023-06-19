@@ -6,6 +6,8 @@
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
+//! Based on https://github.com/paritytech/scale-value/blob/430bfaf8f302dfcfc45d8d63c687628fd9b7fc25/src/scale_impls/encode.rs
+
 use crate::scale_value::{Composite, Primitive, Value, ValueDef, Variant};
 use codec::{Compact, Encode};
 use scale_encode::{

@@ -6,14 +6,13 @@
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
-//! Decode helper.
+//! Decode helpers.
 //! It was not possible to take the scale-value as crate, because it's not no_std compatible.
-//! Based on https://github.com/paritytech/scale-value/blob/4d30d609dc86cbcf102385bc34ef2c01b8c9bbb1/src/scale_impls/decode.rs
+//! Based on https://github.com/paritytech/scale-value/blob/430bfaf8f302dfcfc45d8d63c687628fd9b7fc25/src/lib.rs
 
-// mod bit_sequence;
 mod decode;
 
-// Encode is currently used for testing only. If needed in production, one should take a look at scale_encode.
+// Encode is currently used for testing only.
 #[cfg(test)]
 mod encode;
 mod value;
@@ -24,12 +23,8 @@ pub use value::{BitSequence, Composite, Primitive, Value, ValueDef, Variant};
 /// A type ID which can be resolved into a type given a [`scale_info::PortableRegistry`].
 pub type TypeId = u32;
 
-// pub use bit_sequence::BitSequenceError;
-// pub use decode::{decode_value_as_type, DecodeError};
-// pub use encode::{encode_value_as_type, EncodeError};
-pub use scale_info::PortableRegistry;
-// pub use value::*;
 pub use scale::*;
+pub use scale_info::PortableRegistry;
 
 pub mod scale {
 	use super::TypeId;
