@@ -6,9 +6,7 @@
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
-//! The errors use in the node-api crate.
-//!
-//! This file is mostly subxt.
+//! General node-api Error and Substrate DispatchError implementation.
 
 use crate::{
 	alloc::{
