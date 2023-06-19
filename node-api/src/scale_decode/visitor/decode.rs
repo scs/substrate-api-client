@@ -1,4 +1,8 @@
-// Copyright (C) 2022 Parity Technologies (UK) Ltd. (admin@parity.io)
+// This file was taken from scale-decode (Parity Technologies (UK))
+// https://github.com/paritytech/scale-decode/
+// And was adapted by Supercomputing Systems AG.
+//
+// Copyright (C) 2022-2023 Parity Technologies (UK) Ltd. (admin@parity.io)
 // This file is a part of the scale-decode crate.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
