@@ -28,6 +28,7 @@ use crate::{
 	scale_decode::FieldIter,
 	scale_value::{Composite, Primitive, Value, ValueDef, Variant},
 };
+use alloc::{borrow::ToOwned, vec::Vec};
 use scale_info::{form::PortableForm, Path, PortableRegistry};
 
 // This is emitted if something goes wrong decoding into a Value.
