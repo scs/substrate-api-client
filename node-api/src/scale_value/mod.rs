@@ -29,6 +29,7 @@ pub mod scale {
 		decode::{DecodeError, DecodeValueVisitor},
 		encode::EncodeError,
 	};
+	use alloc::vec::Vec;
 	use scale_encode::EncodeAsType;
 	pub use scale_info::PortableRegistry;
 
