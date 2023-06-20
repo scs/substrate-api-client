@@ -23,13 +23,11 @@ use codec::{Decode, Encode};
 
 pub use events::{EventDetails, Events};
 pub use metadata::{Metadata, MetadataError};
-pub use scale_decode::DecodeError;
 
 pub mod error;
 pub mod events;
 pub mod from_v14_to_v15;
 pub mod metadata;
-pub mod scale_decode;
 pub mod scale_value;
 pub mod storage;
 

@@ -12,8 +12,7 @@
 
 mod decode;
 
-// Encode is currently used for testing only.
-#[cfg(test)]
+// Encode is currently used for testing only.d
 mod encode;
 mod value;
 
@@ -28,11 +27,11 @@ pub use scale_info::PortableRegistry;
 
 pub mod scale {
 	use super::TypeId;
-	pub use crate::scale_decode::DecodeError;
-	#[cfg(test)]
+	pub use super::{
+		decode::{DecodeError, DecodeValueVisitor},
+		encode::EncodeError,
+	};
 	use scale_encode::EncodeAsType;
-	#[cfg(test)]
-	pub use scale_encode::Error as EncodeError;
 	pub use scale_info::PortableRegistry;
 
 	/// Attempt to decode some SCALE encoded bytes into a value, by providing a pointer
@@ -49,8 +48,6 @@ pub mod scale {
 	/// Attempt to encode some [`crate::Value<T>`] into SCALE bytes, by providing a pointer to the
 	/// type ID that we'd like to encode it as, a type registry from which we'll look
 	/// up the relevant type information, and a buffer to encode the bytes to.
-	// Currently only availbale in testing. If needed in production, one should take a look at scale_encode.
-	#[cfg(test)]
 	pub fn encode_as_type<T: Clone>(
 		value: &super::Value<T>,
 		ty_id: TypeId,

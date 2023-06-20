@@ -9,16 +9,13 @@
 //! Based on https://github.com/paritytech/scale-value/blob/430bfaf8f302dfcfc45d8d63c687628fd9b7fc25/src/scale_impls/decode.rs
 
 use super::TypeId;
-use crate::{
-	scale_decode,
-	scale_decode::FieldIter,
-	scale_value::{Composite, Primitive, Value, ValueDef, Variant},
-};
+use crate::scale_value::{Composite, Primitive, Value, ValueDef, Variant};
 use alloc::{borrow::ToOwned, vec::Vec};
+use scale_decode::FieldIter;
 use scale_info::{form::PortableForm, Path, PortableRegistry};
 
 // This is emitted if something goes wrong decoding into a Value.
-pub use crate::scale_decode::visitor::DecodeError;
+pub use scale_decode::visitor::DecodeError;
 
 /// Decode data according to the [`TypeId`] provided.
 /// The provided pointer to the data slice will be moved forwards as needed
