@@ -11,8 +11,6 @@
 //! Based on https://github.com/paritytech/scale-value/blob/430bfaf8f302dfcfc45d8d63c687628fd9b7fc25/src/lib.rs
 
 mod decode;
-
-// Encode is currently used for testing only.d
 mod encode;
 mod value;
 
