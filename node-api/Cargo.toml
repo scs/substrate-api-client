@@ -21,6 +21,11 @@ scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], def
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
+# scale
+scale-bits = { default-features = false, features = ["scale-info", "serde"], git = "https://github.com/haerdib/scale-bits.git", branch = "bh/no-std" }
+scale-decode = { default-features = false, features = ["primitive-types"], git = "https://github.com/scs/scale-decode.git", branch = "no-std" }
+scale-encode = { default-features = false, features = ["bits", "primitive-types"], git = "https://github.com/scs/scale-encode.git", branch = "no-std" }
+
 # substrate
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }

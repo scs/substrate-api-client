@@ -14,21 +14,21 @@
 //! Contains stuff to instantiate communication with a substrate node.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![feature(error_in_core)]
 
 extern crate alloc;
 
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
-pub use decoder::{DecodeError, EncodeError};
 pub use events::{EventDetails, Events};
 pub use metadata::{Metadata, MetadataError};
 
-pub mod decoder;
 pub mod error;
 pub mod events;
 pub mod from_v14_to_v15;
 pub mod metadata;
+pub mod scale_value;
 pub mod storage;
 
 #[cfg(any(feature = "mocks", test))]

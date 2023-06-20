@@ -6,9 +6,7 @@
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
-//! The errors use in the node-api crate.
-//!
-//! This file is mostly subxt.
+//! General node-api Error and Substrate DispatchError implementation.
 
 use crate::{
 	alloc::{
@@ -28,8 +26,8 @@ use scale_info::TypeDef;
 
 // Re-expose the errors we use from other crates here:
 pub use crate::{
-	decoder::{DecodeError, EncodeError},
 	metadata::{InvalidMetadataError, MetadataError},
+	scale_value::{DecodeError, EncodeError},
 };
 pub use sp_core::crypto::SecretStringError;
 pub use sp_runtime::transaction_validity::TransactionValidityError;
@@ -56,7 +54,7 @@ pub enum Error {
 	/// Error decoding to a [`crate::dynamic::Value`].
 	DecodeValue(DecodeError),
 	/// Error encoding from a [`crate::dynamic::Value`].
-	EncodeValue(EncodeError<()>),
+	EncodeValue(EncodeError),
 	/// Transaction progress error.
 	Transaction(TransactionError),
 	/// Block related error.
@@ -75,7 +73,7 @@ impl From<&str> for Error {
 
 /// An error dispatching a transaction. See Substrate DispatchError
 //https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L524
-#[derive(Debug)]
+#[derive(Debug, From)]
 pub enum DispatchError {
 	/// Some error occurred.
 	Other(Vec<u8>),

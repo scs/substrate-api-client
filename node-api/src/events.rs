@@ -13,9 +13,9 @@
 
 use crate::{
 	alloc::{string::ToString, sync::Arc, vec, vec::Vec},
-	decoder::{decode_as_type, Composite, TypeId},
 	error::{DispatchError, Error},
 	metadata::EventMetadata,
+	scale_value::{decode_as_type, Composite, TypeId},
 	Metadata, Phase, StaticEvent,
 };
 use codec::{Compact, Decode, Error as CodecError};
@@ -329,7 +329,7 @@ impl EventDetails {
 mod tests {
 	use super::*;
 	use crate::{
-		decoder::Value,
+		scale_value::Value,
 		test_utils::{
 			event_record, events, events_raw, metadata_with_version, SupportedMetadataVersions,
 		},
@@ -368,7 +368,7 @@ mod tests {
 		let actual_fields = actual.field_values().expect("can decode field values (1)");
 		let mut actual_bytes = vec![];
 		for field in actual_fields.into_values() {
-			crate::decoder::encode_as_type(field.clone(), field.context, types, &mut actual_bytes)
+			crate::scale_value::encode_as_type(&field, field.context, types, &mut actual_bytes)
 				.expect("should be able to encode properly");
 		}
 		assert_eq!(actual_bytes, actual.field_bytes());
@@ -421,7 +421,7 @@ mod tests {
 				variant: "A".to_string(),
 				variant_index: 0,
 				fields: vec![
-					Value::uint(1u8),
+					Value::u128(1u128),
 					Value::bool(true),
 					Value::unnamed_composite(vec![Value::string("Hi")]),
 				],
@@ -469,7 +469,7 @@ mod tests {
 				pallet_index: 0,
 				variant: "A".to_string(),
 				variant_index: 0,
-				fields: vec![Value::uint(1u8)],
+				fields: vec![Value::u128(1u128)],
 			},
 		);
 		assert_raw_events_match(
@@ -495,7 +495,7 @@ mod tests {
 				pallet_index: 0,
 				variant: "A".to_string(),
 				variant_index: 0,
-				fields: vec![Value::uint(234u16)],
+				fields: vec![Value::u128(234u128)],
 			},
 		);
 		assert!(event_details.next().is_none());
@@ -540,7 +540,7 @@ mod tests {
 				pallet_index: 0,
 				variant: "A".to_string(),
 				variant_index: 0,
-				fields: vec![Value::uint(1u8)],
+				fields: vec![Value::u128(1u128)],
 			},
 		);
 		assert_raw_events_match(
@@ -592,7 +592,7 @@ mod tests {
 				pallet_index: 0,
 				variant: "A".to_string(),
 				variant_index: 0,
-				fields: vec![Value::uint(1u8)],
+				fields: vec![Value::u128(1u128)],
 			},
 		);
 		assert!(event_details.next().is_none());
@@ -631,7 +631,7 @@ mod tests {
 				pallet_index: 0,
 				variant: "A".to_string(),
 				variant_index: 0,
-				fields: vec![Value::unnamed_composite(vec![Value::uint(1u8)])],
+				fields: vec![Value::u128(1)],
 			},
 		);
 		assert!(event_details.next().is_none());
