@@ -62,7 +62,6 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
- "smallvec",
  "sp-application-crypto",
  "sp-core",
  "sp-runtime",
