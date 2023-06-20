@@ -202,7 +202,6 @@ where
 		events: Events<T::Hash>,
 		extrinsic_index: u32,
 	) -> Result<Vec<EventDetails>> {
-		println!("events: {events:?}");
 		let extrinsic_event_results = events.iter().filter(|ev| {
 			ev.as_ref()
 				.map_or(true, |ev| ev.phase() == Phase::ApplyExtrinsic(extrinsic_index))
