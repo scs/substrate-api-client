@@ -8,7 +8,7 @@
 
 //! General node-api Error implementation.
 
-use alloc::string::String;
+use alloc::{format, string::String};
 use core::fmt::Debug;
 use derive_more::From;
 

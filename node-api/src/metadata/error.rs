@@ -11,6 +11,7 @@
 	limitations under the License.
 */
 
+use alloc::string::String;
 use codec::{Decode, Encode, Error as CodecError};
 
 /// Metadata error originated from inspecting the internal representation of the runtime metadata.
