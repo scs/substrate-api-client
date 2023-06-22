@@ -11,9 +11,19 @@
 //! This file is mostly subxt.
 
 use crate::{
-	alloc::borrow::ToOwned, from_v14_to_v15::v14_to_v15, storage::GetStorageTypes, Encoded,
+	metadata::{v14_to_v15, InvalidMetadataError, MetadataError},
+	storage::GetStorageTypes,
+	Encoded,
 };
-use codec::{Decode, Encode, Error as CodecError};
+use alloc::{
+	borrow::ToOwned,
+	// We use `BTreeMap` because we can't use `HashMap` in `no_std`.
+	collections::btree_map::BTreeMap,
+	string::{String, ToString},
+	vec,
+	vec::Vec,
+};
+use codec::{Decode, Encode};
 use frame_metadata::{
 	v15::{PalletConstantMetadata, RuntimeMetadataLastVersion, StorageEntryMetadata},
 	RuntimeMetadata, RuntimeMetadataPrefixed, META_RESERVED,
@@ -23,49 +33,6 @@ use sp_storage::StorageKey;
 
 #[cfg(feature = "std")]
 use serde::Serialize;
-
-use alloc::{
-	// We use `BTreeMap` because we can't use `HashMap` in `no_std`.
-	collections::btree_map::BTreeMap,
-	string::{String, ToString},
-	vec,
-	vec::Vec,
-};
-
-/// Metadata error originated from inspecting the internal representation of the runtime metadata.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MetadataError {
-	/// Module is not in metadata.
-	PalletNotFound(String),
-	/// Pallet is not in metadata.
-	PalletIndexNotFound(u8),
-	/// Call is not in metadata.
-	CallNotFound(&'static str),
-	/// Event is not in metadata.
-	EventNotFound(u8, u8),
-	/// Error is not in metadata.
-	ErrorNotFound(u8, u8),
-	/// Storage is not in metadata.
-	StorageNotFound(&'static str),
-	/// Storage type does not match requested type.
-	StorageTypeError,
-	/// Default error.
-	DefaultError(CodecError),
-	/// Failure to decode constant value.
-	ConstantValueError(CodecError),
-	/// Constant is not in metadata.
-	ConstantNotFound(&'static str),
-	/// Type is not in metadata.
-	TypeNotFound(u32),
-	/// Runtime constant metadata is incompatible with the static one.
-	IncompatibleConstantMetadata(String, String),
-	/// Runtime call metadata is incompatible with the static one.
-	IncompatibleCallMetadata(String, String),
-	/// Runtime storage metadata is incompatible with the static one.
-	IncompatibleStorageMetadata(String, String),
-	/// Runtime metadata is not fully compatible with the static one.
-	IncompatibleMetadata,
-}
 
 /// Metadata wrapper around the runtime metadata. Offers some extra features,
 /// such as direct pallets, events and error access.
@@ -316,16 +283,6 @@ impl ErrorMetadata {
 	pub fn docs(&self) -> &[String] {
 		&self.docs
 	}
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
-pub enum InvalidMetadataError {
-	InvalidPrefix,
-	InvalidVersion,
-	/// Type is missing from type registry.
-	MissingType(u32),
-	/// Type was not variant/enum type.
-	TypeDefNotVariant(u32),
 }
 
 impl TryFrom<RuntimeMetadataPrefixed> for Metadata {

@@ -26,16 +26,12 @@ pub use metadata::{Metadata, MetadataError};
 
 pub mod error;
 pub mod events;
-pub mod from_v14_to_v15;
 pub mod metadata;
 pub mod scale_value;
 pub mod storage;
 
 #[cfg(any(feature = "mocks", test))]
 pub mod test_utils;
-
-#[cfg(feature = "std")]
-mod print_metadata;
 
 /// Wraps an already encoded byte vector, prevents being encoded as a raw byte vector as part of
 /// the transaction payload
