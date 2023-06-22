@@ -8,16 +8,13 @@
 
 //! General node-api Error and Substrate DispatchError implementation.
 
-use crate::{
-	alloc::{
-		borrow::Cow,
-		format,
-		string::{String, ToString},
-		vec::Vec,
-	},
-	metadata::Metadata,
+use crate::metadata::Metadata;
+use alloc::{
+	borrow::Cow,
+	format,
+	string::{String, ToString},
+	vec::Vec,
 };
-
 use codec::{Decode, Encode};
 use core::fmt::Debug;
 use derive_more::From;
