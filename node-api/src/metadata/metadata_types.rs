@@ -132,11 +132,6 @@ impl Metadata {
 		&self.runtime_metadata
 	}
 
-	/// Exposes the runtime metadata.
-	pub fn runtime_metadata_mut(&mut self) -> &mut RuntimeMetadataLastVersion {
-		&mut self.runtime_metadata
-	}
-
 	#[cfg(feature = "std")]
 	pub fn pretty_format(&self) -> Result<String, std::string::FromUtf8Error> {
 		let buf = Vec::new();
@@ -436,32 +431,6 @@ impl Encode for Metadata {
 		let m: frame_metadata::v15::RuntimeMetadataV15 = self.runtime_metadata().clone();
 		let m: frame_metadata::RuntimeMetadataPrefixed = m.into();
 		m.encode_to(dest)
-	}
-}
-
-/// Metadata for the signed extensions used by extrinsics.
-#[derive(Debug, Clone)]
-pub struct SignedExtensionMetadata {
-	/// The unique signed extension identifier, which may be different from the type name.
-	identifier: String,
-	/// The type of the signed extension, with the data to be included in the extrinsic.
-	extra_ty: u32,
-	/// The type of the additional signed data, with the data to be included in the signed payload
-	additional_ty: u32,
-}
-
-impl SignedExtensionMetadata {
-	/// The unique signed extension identifier, which may be different from the type name.
-	pub fn identifier(&self) -> &str {
-		&self.identifier
-	}
-	/// The type of the signed extension, with the data to be included in the extrinsic.
-	pub fn extra_ty(&self) -> u32 {
-		self.extra_ty
-	}
-	/// The type of the additional signed data, with the data to be included in the signed payload
-	pub fn additional_ty(&self) -> u32 {
-		self.additional_ty
 	}
 }
 
