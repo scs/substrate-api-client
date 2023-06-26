@@ -21,9 +21,10 @@ extern crate alloc;
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
+pub use alloc::{collections::BTreeMap, vec};
 pub use events::{EventDetails, Events};
 pub use metadata::{Metadata, MetadataError};
-pub use scale_decode::DecodeAsFields;
+pub use scale_decode::DecodeAsType;
 
 pub mod error;
 pub mod events;
@@ -54,7 +55,7 @@ impl codec::Encode for Encoded {
 ///
 /// The trait is utilized to decode emitted events from a block, via obtaining the
 /// form of the `Event` from the metadata.
-pub trait StaticEvent: DecodeAsFields {
+pub trait StaticEvent: Decode {
 	/// Pallet name.
 	const PALLET: &'static str;
 	/// Event name.

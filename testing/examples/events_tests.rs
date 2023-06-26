@@ -20,7 +20,7 @@ use frame_support::dispatch::DispatchInfo;
 use kitchensink_runtime::RuntimeEvent;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::{DecodeAsFields, EventDetails, StaticEvent},
+	ac_node_api::{EventDetails, StaticEvent},
 	ac_primitives::{Config, ExtrinsicSigner, SubstrateKitchensinkConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
@@ -30,7 +30,7 @@ use substrate_api_client::{
 type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
-#[derive(Decode, Debug, DecodeAsFields)]
+#[derive(Decode, Debug)]
 struct ExtrinsicSuccess {
 	_dispatch_info: DispatchInfo,
 }

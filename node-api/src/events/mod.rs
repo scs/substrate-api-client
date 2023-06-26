@@ -20,7 +20,7 @@ pub use event_details::EventDetails;
 
 /// A collection of events obtained from a block, bundled with the necessary
 /// information needed to decode and iterate over them.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Events<Hash> {
 	metadata: Metadata,
 	block_hash: Hash,
@@ -30,6 +30,18 @@ pub struct Events<Hash> {
 	event_bytes: Arc<[u8]>,
 	start_idx: usize,
 	num_events: u32,
+}
+
+// Ignore the Metadata when debug-logging events; it's big and distracting.
+impl<Hash: core::fmt::Debug> core::fmt::Debug for Events<Hash> {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.debug_struct("Events")
+			.field("block_hash", &self.block_hash)
+			.field("event_bytes", &self.event_bytes)
+			.field("start_idx", &self.start_idx)
+			.field("num_events", &self.num_events)
+			.finish()
+	}
 }
 
 impl<Hash: Copy + Decode> Events<Hash> {

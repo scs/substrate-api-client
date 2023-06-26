@@ -190,14 +190,7 @@ impl<Hash: Decode> EventDetails<Hash> {
 	pub fn as_event<E: StaticEvent>(&self) -> Result<Option<E>, Error> {
 		let ev_metadata = self.event_metadata();
 		if ev_metadata.pallet.name() == E::PALLET && ev_metadata.variant.name == E::EVENT {
-			let mut fields = ev_metadata
-				.variant
-				.fields
-				.iter()
-				.map(|f| scale_decode::Field::new(f.ty.id, f.name.as_deref()));
-			let decoded =
-				E::decode_as_fields(&mut self.field_bytes(), &mut fields, self.metadata.types())?;
-			Ok(Some(decoded))
+			Ok(Some(E::decode(&mut self.field_bytes())?))
 		} else {
 			Ok(None)
 		}
