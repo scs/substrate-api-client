@@ -67,26 +67,13 @@ impl Metadata {
 }
 
 impl Metadata {
-	/// Return details about the extrinsic format.
-	pub fn extrinsic(&self) -> &ExtrinsicMetadata<PortableForm> {
-		&self.extrinsic
+	/// Access a pallet given its name.
+	#[deprecated(note = "please use `pallet_by_name` or `pallet_by_name_err` instead")]
+	pub fn pallet(&self, pallet_name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
+		self.pallet_by_name(pallet_name)
+			.ok_or_else(|| MetadataError::PalletNameNotFound(pallet_name.to_string()))
 	}
 
-	/// An iterator over all of the runtime APIs.
-	pub fn runtime_api_traits(&self) -> impl ExactSizeIterator<Item = RuntimeApiMetadata<'_>> {
-		self.apis
-			.values()
-			.map(|inner| RuntimeApiMetadata { inner, types: self.types() })
-	}
-
-	/// Access a runtime API trait given its name.
-	pub fn runtime_api_trait_by_name(&'_ self, name: &str) -> Option<RuntimeApiMetadata<'_>> {
-		let inner = self.apis.get(name)?;
-		Some(RuntimeApiMetadata { inner, types: self.types() })
-	}
-}
-
-impl Metadata {
 	/// An iterator over all of the available pallets.
 	pub fn pallets(&self) -> impl Iterator<Item = PalletMetadata<'_>> {
 		self.pallets.values().map(|inner| PalletMetadata { inner, types: self.types() })
@@ -96,13 +83,6 @@ impl Metadata {
 	pub fn pallet_by_index(&self, variant_index: u8) -> Option<PalletMetadata<'_>> {
 		let name = self.pallets_by_index.get(&variant_index)?;
 		self.pallet_by_name(name)
-	}
-
-	/// Access a pallet given its name.
-	#[deprecated(note = "please use `pallet_by_name` or `pallet_by_name_err` instead")]
-	pub fn pallet(&self, pallet_name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
-		self.pallet_by_name(pallet_name)
-			.ok_or_else(|| MetadataError::PalletNameNotFound(pallet_name.to_string()))
 	}
 
 	/// Access a pallet given its name.
@@ -130,6 +110,24 @@ impl Metadata {
 	/// Exposes the runtime metadata.
 	pub fn runtime_metadata(&self) -> &RuntimeMetadataLastVersion {
 		&self.runtime_metadata
+	}
+
+	/// Return details about the extrinsic format.
+	pub fn extrinsic(&self) -> &ExtrinsicMetadata<PortableForm> {
+		&self.extrinsic
+	}
+
+	/// An iterator over all of the runtime APIs.
+	pub fn runtime_api_traits(&self) -> impl ExactSizeIterator<Item = RuntimeApiMetadata<'_>> {
+		self.apis
+			.values()
+			.map(|inner| RuntimeApiMetadata { inner, types: self.types() })
+	}
+
+	/// Access a runtime API trait given its name.
+	pub fn runtime_api_trait_by_name(&'_ self, name: &str) -> Option<RuntimeApiMetadata<'_>> {
+		let inner = self.apis.get(name)?;
+		Some(RuntimeApiMetadata { inner, types: self.types() })
 	}
 
 	#[cfg(feature = "std")]
