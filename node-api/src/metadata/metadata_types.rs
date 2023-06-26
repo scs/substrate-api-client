@@ -45,28 +45,6 @@ pub struct Metadata {
 }
 
 impl Metadata {
-	/// Identical to `metadata.pallet_by_name()`, but returns an error if the pallet is not found.
-	pub fn pallet_by_name_err(&self, name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
-		self.pallet_by_name(name)
-			.ok_or_else(|| MetadataError::PalletNameNotFound(name.to_owned()))
-	}
-
-	/// Identical to `metadata.pallet_by_index()`, but returns an error if the pallet is not found.
-	pub fn pallet_by_index_err(&self, index: u8) -> Result<PalletMetadata<'_>, MetadataError> {
-		self.pallet_by_index(index).ok_or(MetadataError::PalletIndexNotFound(index))
-	}
-
-	/// Identical to `metadata.runtime_api_trait_by_name()`, but returns an error if the trait is not found.
-	pub fn runtime_api_trait_by_name_err(
-		&self,
-		name: &str,
-	) -> Result<RuntimeApiMetadata<'_>, MetadataError> {
-		self.runtime_api_trait_by_name(name)
-			.ok_or_else(|| MetadataError::RuntimeApiNotFound(name.to_owned()))
-	}
-}
-
-impl Metadata {
 	/// Access a pallet given its name.
 	#[deprecated(note = "please use `pallet_by_name` or `pallet_by_name_err` instead")]
 	pub fn pallet(&self, pallet_name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
@@ -137,6 +115,29 @@ impl Metadata {
 		let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
 		self.runtime_metadata.serialize(&mut ser).unwrap();
 		String::from_utf8(ser.into_inner())
+	}
+}
+
+/// Err wrappers around option.
+impl Metadata {
+	/// Identical to `metadata.pallet_by_name()`, but returns an error if the pallet is not found.
+	pub fn pallet_by_name_err(&self, name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
+		self.pallet_by_name(name)
+			.ok_or_else(|| MetadataError::PalletNameNotFound(name.to_owned()))
+	}
+
+	/// Identical to `metadata.pallet_by_index()`, but returns an error if the pallet is not found.
+	pub fn pallet_by_index_err(&self, index: u8) -> Result<PalletMetadata<'_>, MetadataError> {
+		self.pallet_by_index(index).ok_or(MetadataError::PalletIndexNotFound(index))
+	}
+
+	/// Identical to `metadata.runtime_api_trait_by_name()`, but returns an error if the trait is not found.
+	pub fn runtime_api_trait_by_name_err(
+		&self,
+		name: &str,
+	) -> Result<RuntimeApiMetadata<'_>, MetadataError> {
+		self.runtime_api_trait_by_name(name)
+			.ok_or_else(|| MetadataError::RuntimeApiNotFound(name.to_owned()))
 	}
 }
 
