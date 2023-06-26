@@ -15,7 +15,7 @@ use scale_decode::FieldIter;
 use scale_info::{form::PortableForm, Path, PortableRegistry};
 
 // This is emitted if something goes wrong decoding into a Value.
-pub use scale_decode::visitor::DecodeError;
+pub use scale_decode::visitor::DecodeError as VisitorDecodeError;
 
 /// Decode data according to the [`TypeId`] provided.
 /// The provided pointer to the data slice will be moved forwards as needed
@@ -24,7 +24,7 @@ pub fn decode_value_as_type(
 	data: &mut &[u8],
 	ty_id: TypeId,
 	types: &PortableRegistry,
-) -> Result<Value<TypeId>, DecodeError> {
+) -> Result<Value<TypeId>, VisitorDecodeError> {
 	scale_decode::visitor::decode_with_visitor(data, ty_id, types, DecodeValueVisitor)
 }
 
@@ -73,7 +73,7 @@ impl scale_decode::IntoVisitor for Value<TypeId> {
 
 impl scale_decode::visitor::Visitor for DecodeValueVisitor {
 	type Value<'scale, 'info> = Value<TypeId>;
-	type Error = DecodeError;
+	type Error = VisitorDecodeError;
 
 	fn visit_bool<'scale, 'info>(
 		self,
@@ -232,7 +232,7 @@ impl scale_decode::visitor::Visitor for DecodeValueVisitor {
 /// Extract a named/unnamed Composite type out of scale_decode's Composite.
 fn visit_composite(
 	value: &mut scale_decode::visitor::types::Composite<'_, '_>,
-) -> Result<Composite<TypeId>, DecodeError> {
+) -> Result<Composite<TypeId>, VisitorDecodeError> {
 	let len = value.remaining();
 	// if no fields, we'll always assume unnamed.
 	let named = len > 0 && !value.has_unnamed_fields();

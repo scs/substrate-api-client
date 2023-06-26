@@ -19,14 +19,14 @@ use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::StaticEvent,
+	ac_node_api::{DecodeAsFields, StaticEvent},
 	ac_primitives::{ExtrinsicSigner, SubstrateKitchensinkConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SystemApi,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
-#[derive(Decode, Debug)]
+#[derive(Decode, Debug, DecodeAsFields)]
 struct ExtrinsicSuccess {
 	_dispatch_info: DispatchInfo,
 }

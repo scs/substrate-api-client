@@ -26,7 +26,7 @@ pub use scale_info::PortableRegistry;
 pub mod scale {
 	use super::TypeId;
 	pub use super::{
-		decode::{DecodeError, DecodeValueVisitor},
+		decode::{DecodeValueVisitor, VisitorDecodeError},
 		encode::EncodeError,
 	};
 	use alloc::vec::Vec;
@@ -40,7 +40,7 @@ pub mod scale {
 		data: &mut &[u8],
 		ty_id: TypeId,
 		types: &PortableRegistry,
-	) -> Result<super::Value<TypeId>, DecodeError> {
+	) -> Result<super::Value<TypeId>, VisitorDecodeError> {
 		crate::scale_value::decode::decode_value_as_type(data, ty_id, types)
 	}
 

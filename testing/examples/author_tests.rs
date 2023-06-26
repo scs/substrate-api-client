@@ -21,7 +21,8 @@ use std::{thread, time::Duration};
 use substrate_api_client::{
 	ac_node_api::EventDetails,
 	ac_primitives::{
-		ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, SubstrateKitchensinkConfig,
+		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		SubstrateKitchensinkConfig,
 	},
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient},
@@ -30,6 +31,7 @@ use substrate_api_client::{
 
 type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateKitchensinkConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
+type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
 
 #[tokio::main]
 async fn main() {
@@ -121,7 +123,7 @@ async fn main() {
 	until_finalized_handle.join().unwrap();
 }
 
-fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {
+fn assert_assosciated_events_match_expected(events: Vec<EventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");

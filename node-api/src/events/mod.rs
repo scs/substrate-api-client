@@ -32,7 +32,7 @@ pub struct Events<Hash> {
 	num_events: u32,
 }
 
-impl<Hash: Copy> Events<Hash> {
+impl<Hash: Copy + Decode> Events<Hash> {
 	pub fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
 		// event_bytes is a SCALE encoded vector of events. So, pluck the
 		// compact encoded length from the front, leaving the remaining bytes
@@ -77,7 +77,7 @@ impl<Hash: Copy> Events<Hash> {
 	// use of it with our `FilterEvents` stuff.
 	pub fn iter(
 		&self,
-	) -> impl Iterator<Item = Result<EventDetails, Error>> + Send + Sync + 'static {
+	) -> impl Iterator<Item = Result<EventDetails<Hash>, Error>> + Send + Sync + 'static {
 		// The event bytes ignoring the compact encoded length on the front:
 		let event_bytes = self.event_bytes.clone();
 		let metadata = self.metadata.clone();
@@ -140,9 +140,9 @@ mod tests {
 		},
 		Phase,
 	};
-
 	use codec::Encode;
 	use scale_info::TypeInfo;
+	use sp_core::H256;
 	use test_case::test_case;
 
 	/// [`RawEventDetails`] can be annoying to test, because it contains
@@ -165,7 +165,7 @@ mod tests {
 		// Just for convenience, pass in the metadata type constructed
 		// by the `metadata` function above to simplify caller code.
 		metadata: &Metadata,
-		actual: EventDetails,
+		actual: EventDetails<H256>,
 		expected: TestRawEventDetails,
 	) {
 		let types = &metadata.runtime_metadata().types;

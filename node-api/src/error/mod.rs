@@ -13,10 +13,9 @@ use core::fmt::Debug;
 use derive_more::From;
 
 // Re-expose the errors we use from other crates here:
-pub use crate::{
-	metadata::{InvalidMetadataError, MetadataError},
-	scale_value::{DecodeError, EncodeError},
-};
+pub use crate::metadata::{InvalidMetadataError, MetadataError};
+pub use scale_decode::Error as DecodeError;
+pub use scale_encode::Error as EncodeError;
 pub use sp_core::crypto::SecretStringError;
 pub use sp_runtime::transaction_validity::TransactionValidityError;
 
@@ -52,6 +51,8 @@ pub enum Error {
 	Block(BlockError),
 	/// An error encoding a storage address.
 	StorageAddress(StorageAddressError),
+	/// The bytes representing an error that we were unable to decode.
+	Unknown(Vec<u8>),
 	/// Other error.
 	Other(String),
 }

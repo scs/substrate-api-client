@@ -17,6 +17,7 @@
 
 use ac_node_api::EventDetails;
 use alloc::{string::String, vec::Vec};
+use codec::Decode;
 use serde::{Deserialize, Serialize};
 use sp_core::Bytes;
 
@@ -35,7 +36,7 @@ pub mod rpc_api;
 /// Extrinsic report returned upon a submit_and_watch request.
 /// Holds as much information as available.
 #[derive(Debug, Clone)]
-pub struct ExtrinsicReport<Hash> {
+pub struct ExtrinsicReport<Hash: Decode> {
 	// Hash of the extrinsic.
 	pub extrinsic_hash: Hash,
 	// Block hash of the block the extrinsic was included in.
@@ -46,15 +47,15 @@ pub struct ExtrinsicReport<Hash> {
 	// Events assosciated to the extrinsic.
 	// Only available if explicitly stated, because
 	// extra node queries are necessary to fetch the events.
-	pub events: Option<Vec<EventDetails>>,
+	pub events: Option<Vec<EventDetails<Hash>>>,
 }
 
-impl<Hash> ExtrinsicReport<Hash> {
+impl<Hash: Decode> ExtrinsicReport<Hash> {
 	pub fn new(
 		extrinsic_hash: Hash,
 		block_hash: Option<Hash>,
 		status: TransactionStatus<Hash, Hash>,
-		events: Option<Vec<EventDetails>>,
+		events: Option<Vec<EventDetails<Hash>>>,
 	) -> Self {
 		Self { extrinsic_hash, block_hash, status, events }
 	}

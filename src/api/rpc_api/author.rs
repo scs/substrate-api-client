@@ -20,7 +20,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsicV4};
-use codec::Encode;
+use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_core::Bytes;
@@ -83,7 +83,7 @@ where
 #[maybe_async::maybe_async(?Send)]
 pub trait SubmitAndWatch {
 	type Client: Subscribe;
-	type Hash: DeserializeOwned;
+	type Hash: DeserializeOwned + Decode;
 
 	/// Submit an extrinsic an return a Subscription
 	/// to watch the extrinsic progress.
@@ -141,7 +141,7 @@ pub trait SubmitAndWatch {
 #[maybe_async::maybe_async(?Send)]
 pub trait SubmitAndWatchUntilSuccess {
 	type Client: Subscribe;
-	type Hash;
+	type Hash: Decode;
 
 	/// Submit an extrinsic and watch it until
 	/// - wait_for_finalized = false => InBlock

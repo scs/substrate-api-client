@@ -23,8 +23,8 @@ serde_json = { version = "1.0.79", default-features = false, features = ["alloc"
 
 # scale
 scale-bits = { default-features = false, features = ["scale-info", "serde"], git = "https://github.com/haerdib/scale-bits.git", branch = "bh/no-std" }
-scale-decode = { default-features = false, features = ["primitive-types"], git = "https://github.com/scs/scale-decode.git", branch = "no-std" }
-scale-encode = { default-features = false, features = ["bits", "primitive-types"], git = "https://github.com/scs/scale-encode.git", branch = "no-std" }
+scale-decode = { default-features = false, features = ["primitive-types", "derive"], git = "https://github.com/scs/scale-decode.git", branch = "no-std" }
+scale-encode = { default-features = false, features = ["bits", "primitive-types", "derive"], git = "https://github.com/scs/scale-encode.git", branch = "no-std" }
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -34,6 +34,9 @@ sp-storage = { default-features = false, features = ["serde"], git = "https://gi
 # need to add this for `no_std`
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+# local
+ac-primitives = { path = "../primitives", default-features = false }
 
 [dev-dependencies]
 test-case = "3.1.0"

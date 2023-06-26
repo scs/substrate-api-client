@@ -20,15 +20,17 @@ use frame_support::dispatch::DispatchInfo;
 use kitchensink_runtime::RuntimeEvent;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::{EventDetails, StaticEvent},
+	ac_node_api::{DecodeAsFields, EventDetails, StaticEvent},
 	ac_primitives::{Config, ExtrinsicSigner, SubstrateKitchensinkConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
+type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
+
 /// Check out frame_system::Event::ExtrinsicSuccess:
-#[derive(Decode, Debug)]
+#[derive(Decode, Debug, DecodeAsFields)]
 struct ExtrinsicSuccess {
 	_dispatch_info: DispatchInfo,
 }
@@ -97,7 +99,7 @@ async fn main() {
 	}
 }
 
-fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {
+fn assert_assosciated_events_match_expected(events: Vec<EventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");
