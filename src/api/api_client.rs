@@ -367,7 +367,7 @@ mod tests {
 			signed_extensions: Vec::new(),
 		};
 		let changed_runtime_metadata_prefixed =
-			RuntimeMetadataPrefixed(0, RuntimeMetadata::V14(runtime_metadata));
+			RuntimeMetadataPrefixed(1635018093, RuntimeMetadata::V14(runtime_metadata));
 		let changed_metadata = Metadata::try_from(changed_runtime_metadata_prefixed).unwrap();
 
 		let data = HashMap::<String, String>::from([
