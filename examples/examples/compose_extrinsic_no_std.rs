@@ -16,20 +16,25 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use kitchensink_runtime::{BalancesCall, Runtime, RuntimeCall, Signature};
+use kitchensink_runtime::{BalancesCall, RuntimeCall};
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic_offline,
 	ac_primitives::{
-		extrinsic_params::AssetBalanceFor, AssetTip, AssetTipExtrinsicParams, ExtrinsicParams,
-		ExtrinsicSigner, FrameSystemConfig, GenericAdditionalParams, GenericExtrinsicParams,
+		ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, GenericExtrinsicParams,
+		PlainTip, SubstrateKitchensinkConfig,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitExtrinsic,
 };
 
-type Hash = <Runtime as FrameSystemConfig>::Hash;
+type Hash = H256; //<Runtime as FrameSystemConfig>::Hash;
+/// Get the balance type from your node runtime and adapt it if necessary.
+type Balance = u128;
+/// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
+type AdditionalParams = GenericAdditionalParams<PlainTip<Balance>, Hash>;
 
 #[tokio::main]
 async fn main() {
@@ -44,8 +49,8 @@ async fn main() {
 	//
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<_, _, AssetTipExtrinsicParams<Runtime>, Runtime>::new(client).unwrap();
-	let extrinsic_signer = ExtrinsicSigner::<_, Signature, Runtime>::new(signer);
+	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<_>::new(signer);
 	// Signer is needed to get the nonce
 	api.set_signer(extrinsic_signer.clone());
 
@@ -63,19 +68,17 @@ async fn main() {
 	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
 	// Construct extrinsic without using Api (no_std).
-	let additional_extrinsic_params: GenericAdditionalParams<
-		AssetTip<AssetBalanceFor<Runtime>>,
-		Hash,
-	> = GenericAdditionalParams::new()
+	let additional_extrinsic_params: AdditionalParams = GenericAdditionalParams::new()
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
-	let extrinsic_params = GenericExtrinsicParams::new(
-		spec_version,
-		transaction_version,
-		signer_nonce,
-		genesis_hash,
-		additional_extrinsic_params,
-	);
+	let extrinsic_params =
+		GenericExtrinsicParams::<SubstrateKitchensinkConfig, PlainTip<u128>>::new(
+			spec_version,
+			transaction_version,
+			signer_nonce,
+			genesis_hash,
+			additional_extrinsic_params,
+		);
 	let call =
 		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
 	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
