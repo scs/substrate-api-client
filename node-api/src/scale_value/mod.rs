@@ -1,8 +1,8 @@
 // This file was taken from scale-value (Parity Technologies (UK))
 // https://github.com/paritytech/scale-value/
-// And was adapted by Supercomputing Systems AG and Integritee AG.
+// And was adapted by Supercomputing Systems AG.
 //
-// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG and Integritee AG.
+// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG.
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 

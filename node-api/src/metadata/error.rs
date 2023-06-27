@@ -12,7 +12,7 @@
 */
 
 use alloc::string::String;
-use codec::{Decode, Encode, Error as CodecError};
+use codec::{Decode, Encode};
 
 /// Metadata error originated from inspecting the internal representation of the runtime metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,10 +35,6 @@ pub enum MetadataError {
 	StorageNotFound(&'static str),
 	/// Storage type does not match requested type.
 	StorageTypeError,
-	/// Default error.
-	DefaultError(CodecError),
-	/// Failure to decode constant value.
-	ConstantValueError(CodecError),
 	/// Constant is not in metadata.
 	ConstantNotFound(&'static str),
 	/// Variant not found.
@@ -47,14 +43,6 @@ pub enum MetadataError {
 	TypeNotFound(u32),
 	/// Api is not in metadata.
 	RuntimeApiNotFound(String),
-	/// Runtime constant metadata is incompatible with the static one.
-	IncompatibleConstantMetadata(String, String),
-	/// Runtime call metadata is incompatible with the static one.
-	IncompatibleCallMetadata(String, String),
-	/// Runtime storage metadata is incompatible with the static one.
-	IncompatibleStorageMetadata(String, String),
-	/// Runtime metadata is not fully compatible with the static one.
-	IncompatibleMetadata,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
