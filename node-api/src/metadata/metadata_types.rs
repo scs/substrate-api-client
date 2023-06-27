@@ -1,8 +1,8 @@
-// This file was taken from subxt (Parity Technologies (UK))
+// This file bases on subxt (Parity Technologies (UK))
 // https://github.com/paritytech/subxt/
-// And was adapted by Supercomputing Systems AG and Integritee AG.
+// And was adapted by Supercomputing Systems AG.
 //
-// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG and Integritee AG.
+// Copyright 2019-2023 Parity Technologies (UK) Ltd and Supercomputing Systems AG.
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
@@ -146,6 +146,7 @@ impl Metadata {
 }
 
 /// Metadata for a specific pallet.
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/lib.rs#L153-L251
 #[derive(Debug, Clone, Copy)]
 pub struct PalletMetadata<'a> {
 	inner: &'a PalletMetadataInner,
@@ -255,6 +256,7 @@ impl<'a> PalletMetadata<'a> {
 	}
 }
 
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/lib.rs#L274-L298
 #[derive(Debug, Clone)]
 struct PalletMetadataInner {
 	/// Pallet name.
@@ -282,6 +284,7 @@ struct PalletMetadataInner {
 }
 
 /// Metadata for the available runtime APIs.
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/lib.rs#L494-L527
 #[derive(Debug, Clone, Copy)]
 pub struct RuntimeApiMetadata<'a> {
 	inner: &'a RuntimeApiMetadataInner,
@@ -313,6 +316,7 @@ impl<'a> RuntimeApiMetadata<'a> {
 	}
 }
 
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/lib.rs#L529-L537
 #[derive(Debug, Clone)]
 struct RuntimeApiMetadataInner {
 	/// Trait name.
@@ -323,6 +327,7 @@ struct RuntimeApiMetadataInner {
 	docs: Vec<String>,
 }
 
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/from_into/v15.rs
 impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 	type Error = InvalidMetadataError;
 
