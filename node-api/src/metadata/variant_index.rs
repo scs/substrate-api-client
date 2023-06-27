@@ -2,7 +2,7 @@
 // This file is dual-licensed as Apache-2.0 or GPL-3.0.
 // see LICENSE for license details.
 
-use alloc::collections::BTreeMap;
+use alloc::{borrow::ToOwned, collections::BTreeMap, string::String};
 use scale_info::{form::PortableForm, PortableRegistry, TypeDef, Variant};
 
 /// Given some type ID and type registry, build a couple of

@@ -12,7 +12,11 @@ use crate::{
 	metadata::{v14_to_v15, variant_index::VariantIndex, InvalidMetadataError, MetadataError},
 	storage::GetStorageTypes,
 };
-use alloc::{borrow::ToOwned, collections::btree_map::BTreeMap, string::String, vec::Vec};
+use alloc::{
+	collections::btree_map::BTreeMap,
+	string::{String, ToString},
+	vec::Vec,
+};
 use codec::{Decode, Encode};
 use frame_metadata::{
 	v15::{
@@ -123,7 +127,7 @@ impl Metadata {
 	/// Identical to `metadata.pallet_by_name()`, but returns an error if the pallet is not found.
 	pub fn pallet_by_name_err(&self, name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
 		self.pallet_by_name(name)
-			.ok_or_else(|| MetadataError::PalletNameNotFound(name.to_owned()))
+			.ok_or_else(|| MetadataError::PalletNameNotFound(name.to_string()))
 	}
 
 	/// Identical to `metadata.pallet_by_index()`, but returns an error if the pallet is not found.
@@ -137,7 +141,7 @@ impl Metadata {
 		name: &str,
 	) -> Result<RuntimeApiMetadata<'_>, MetadataError> {
 		self.runtime_api_trait_by_name(name)
-			.ok_or_else(|| MetadataError::RuntimeApiNotFound(name.to_owned()))
+			.ok_or_else(|| MetadataError::RuntimeApiNotFound(name.to_string()))
 	}
 }
 
