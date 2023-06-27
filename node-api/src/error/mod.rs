@@ -8,7 +8,7 @@
 
 //! General node-api Error implementation.
 
-use alloc::{format, string::String, vec::Vec};
+use alloc::{string::String, vec::Vec};
 use core::fmt::Debug;
 use derive_more::From;
 
@@ -33,8 +33,6 @@ pub enum Error {
 	Serialization(serde_json::error::Error),
 	/// Secret string error.
 	SecretString(SecretStringError),
-	/// Extrinsic validity error
-	Invalid(TransactionValidityError),
 	/// Invalid metadata error
 	InvalidMetadata(InvalidMetadataError),
 	/// Invalid metadata error
@@ -45,12 +43,6 @@ pub enum Error {
 	DecodeValue(DecodeError),
 	/// Error encoding from a [`crate::dynamic::Value`].
 	EncodeValue(EncodeError),
-	/// Transaction progress error.
-	Transaction(TransactionError),
-	/// Block related error.
-	Block(BlockError),
-	/// An error encoding a storage address.
-	StorageAddress(StorageAddressError),
 	/// The bytes representing an error that we were unable to decode.
 	Unknown(Vec<u8>),
 	/// Other error.
@@ -61,53 +53,4 @@ impl From<&str> for Error {
 	fn from(error: &str) -> Self {
 		Error::Other(error.into())
 	}
-}
-
-/// Block error
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum BlockError {
-	/// The block
-	BlockHashNotFound(String),
-}
-
-impl BlockError {
-	/// Produce an error that a block with the given hash cannot be found.
-	pub fn block_hash_not_found(hash: impl AsRef<[u8]>) -> BlockError {
-		let hash = format!("0x{}", hex::encode(hash));
-		BlockError::BlockHashNotFound(hash)
-	}
-}
-
-/// Transaction error.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TransactionError {
-	/// The finality subscription expired (after ~512 blocks we give up if the
-	/// block hasn't yet been finalized).
-	FinalitySubscriptionTimeout,
-	/// The block hash that the transaction was added to could not be found.
-	/// This is probably because the block was retracted before being finalized.
-	BlockHashNotFound,
-}
-
-/// Something went wrong trying to encode a storage address.
-#[derive(Clone, Debug)]
-pub enum StorageAddressError {
-	/// Storage map type must be a composite type.
-	MapTypeMustBeTuple,
-	/// Storage lookup does not have the expected number of keys.
-	WrongNumberOfKeys {
-		/// The actual number of keys needed, based on the metadata.
-		actual: usize,
-		/// The number of keys provided in the storage address.
-		expected: usize,
-	},
-	/// Storage lookup requires a type that wasn't found in the metadata.
-	TypeNotFound(u32),
-	/// This storage entry in the metadata does not have the correct number of hashers to fields.
-	WrongNumberOfHashers {
-		/// The number of hashers in the metadata for this storage entry.
-		hashers: usize,
-		/// The number of fields in the metadata for this storage entry.
-		fields: usize,
-	},
 }
