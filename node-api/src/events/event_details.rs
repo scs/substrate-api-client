@@ -1,15 +1,12 @@
-/*
-	Copyright 2021 Integritee AG and Supercomputing Systems AG
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-		http://www.apache.org/licenses/LICENSE-2.0
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
-*/
+// This file bases on subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+// And was adapted by Supercomputing Systems AG.
+
+// Copyright 2019-2023 Parity Technologies (UK) Ltd.
+// This file is dual-licensed as Apache-2.0 or GPL-3.0.
+// see LICENSE for license details.
+
+//! A representation of a block of events.
 
 use crate::{
 	error::{DispatchError, Error},
@@ -23,6 +20,8 @@ use log::*;
 use scale_decode::DecodeAsFields;
 
 /// The event details.
+/// Based on subxt EventDetails.
+/// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L197-L216
 #[derive(Debug, Clone)]
 pub struct EventDetails<Hash: Decode> {
 	phase: Phase,
@@ -43,6 +42,8 @@ pub struct EventDetails<Hash: Decode> {
 	topics: Vec<Hash>,
 }
 
+// Based on subxt:
+// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L218-L409
 impl<Hash: Decode> EventDetails<Hash> {
 	// Attempt to dynamically decode a single event from our events input.
 	pub(crate) fn decode_from(
@@ -230,6 +231,7 @@ impl<Hash: Decode> EventDetails<Hash> {
 }
 
 /// Details for the given event plucked from the metadata.
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L411-L415
 pub struct EventMetadataDetails<'a> {
 	pub pallet: PalletMetadata<'a>,
 	pub variant: &'a scale_info::Variant<scale_info::form::PortableForm>,
@@ -240,6 +242,7 @@ pub struct EventMetadataDetails<'a> {
 /// becasue the "root event" type is generated using pallet info but doesn't actually exist in the
 /// metadata types, so we have no easy way to decode things into it via type information and need a
 /// little help via codegen.
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L417-L432
 #[doc(hidden)]
 pub trait RootEvent: Sized {
 	/// Given details of the pallet event we want to decode, and the name of the pallet, try to hand

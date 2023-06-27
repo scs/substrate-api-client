@@ -7,9 +7,7 @@
 // see LICENSE for license details.
 
 //! A representation of a block of events.
-//!
-//! This file is very similar to subxt, except where noted.
-//! Based on https://github.com/paritytech/subxt/commit/1e8d0956cc6aeb882637bde1d09ac44186181781#
+//! This file bases on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L19-L196
 
 use crate::{error::Error, Metadata, StaticEvent};
 use alloc::{sync::Arc, vec::Vec};
