@@ -93,7 +93,7 @@ macro_rules! compose_extrinsic_with_nonce {
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-			let metadata = $api.metadata().clone();
+			let metadata = $api.metadata();
             let call = $crate::compose_call!(metadata, $module, $call $(, ($args)) *);
             if let Some(signer) = $api.signer() {
                 $crate::compose_extrinsic_offline!(
