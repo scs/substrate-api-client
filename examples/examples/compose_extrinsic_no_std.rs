@@ -19,9 +19,9 @@
 use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_core::H256;
 use sp_keyring::AccountKeyring;
-use sp_runtime::{generic::Era, MultiAddress};
+use sp_runtime::{generic::Era, AccountId32, MultiAddress};
 use substrate_api_client::{
-	ac_compose_macros::compose_extrinsic_offline,
+	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
 		ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, GenericExtrinsicParams,
 		PlainTip, SubstrateKitchensinkConfig,
@@ -65,7 +65,8 @@ async fn main() {
 	let genesis_hash = api.genesis_hash();
 	let signer_nonce = api.get_nonce().unwrap();
 	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
-	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let recipient: MultiAddress<AccountId32, u32> =
+		MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
 	// Construct extrinsic without using Api (no_std).
 	let additional_extrinsic_params: AdditionalParams = GenericAdditionalParams::new()
@@ -79,8 +80,13 @@ async fn main() {
 			genesis_hash,
 			additional_extrinsic_params,
 		);
-	let call =
-		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
+	//let pallet = api.metadata().pallet("balances").unwrap();
+	//let pallet_index = pallet.index();
+	//let call_index = pallet.call_index("transfer_allow_death").unwrap();
+	//let call =
+	//RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
+
+	let call = compose_call!(api.metadata(), "balances", "transfer_allow_death", 4);
 	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
 
