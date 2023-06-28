@@ -21,8 +21,10 @@ extern crate alloc;
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
+pub use alloc::{collections::BTreeMap, vec};
 pub use events::{EventDetails, Events};
 pub use metadata::{Metadata, MetadataError};
+pub use scale_decode::DecodeAsType;
 
 pub mod error;
 pub mod events;
@@ -67,7 +69,7 @@ pub trait StaticEvent: Decode {
 
 /// A phase of a block's execution.
 // https://github.com/paritytech/substrate/blob/2bfc1dd66ef32cf8beb90007dfb544a9d28f1b2f/frame/system/src/lib.rs#L698-L708
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Encode, Decode)]
 pub enum Phase {
 	/// Applying an extrinsic.
 	ApplyExtrinsic(u32),

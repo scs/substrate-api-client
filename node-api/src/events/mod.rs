@@ -7,9 +7,7 @@
 // see LICENSE for license details.
 
 //! A representation of a block of events.
-//!
-//! This file is very similar to subxt, except where noted.
-//! Based on https://github.com/paritytech/subxt/commit/1e8d0956cc6aeb882637bde1d09ac44186181781#
+//! This file bases on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L19-L196
 
 use crate::{error::Error, Metadata, StaticEvent};
 use alloc::{sync::Arc, vec::Vec};
@@ -20,7 +18,7 @@ pub use event_details::EventDetails;
 
 /// A collection of events obtained from a block, bundled with the necessary
 /// information needed to decode and iterate over them.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Events<Hash> {
 	metadata: Metadata,
 	block_hash: Hash,
@@ -32,7 +30,19 @@ pub struct Events<Hash> {
 	num_events: u32,
 }
 
-impl<Hash: Copy> Events<Hash> {
+// Ignore the Metadata when debug-logging events; it's big and distracting.
+impl<Hash: core::fmt::Debug> core::fmt::Debug for Events<Hash> {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.debug_struct("Events")
+			.field("block_hash", &self.block_hash)
+			.field("event_bytes", &self.event_bytes)
+			.field("start_idx", &self.start_idx)
+			.field("num_events", &self.num_events)
+			.finish()
+	}
+}
+
+impl<Hash: Copy + Decode> Events<Hash> {
 	pub fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
 		// event_bytes is a SCALE encoded vector of events. So, pluck the
 		// compact encoded length from the front, leaving the remaining bytes
@@ -77,7 +87,7 @@ impl<Hash: Copy> Events<Hash> {
 	// use of it with our `FilterEvents` stuff.
 	pub fn iter(
 		&self,
-	) -> impl Iterator<Item = Result<EventDetails, Error>> + Send + Sync + 'static {
+	) -> impl Iterator<Item = Result<EventDetails<Hash>, Error>> + Send + Sync + 'static {
 		// The event bytes ignoring the compact encoded length on the front:
 		let event_bytes = self.event_bytes.clone();
 		let metadata = self.metadata.clone();
@@ -140,9 +150,9 @@ mod tests {
 		},
 		Phase,
 	};
-
 	use codec::Encode;
 	use scale_info::TypeInfo;
+	use sp_core::H256;
 	use test_case::test_case;
 
 	/// [`RawEventDetails`] can be annoying to test, because it contains
@@ -165,7 +175,7 @@ mod tests {
 		// Just for convenience, pass in the metadata type constructed
 		// by the `metadata` function above to simplify caller code.
 		metadata: &Metadata,
-		actual: EventDetails,
+		actual: EventDetails<H256>,
 		expected: TestRawEventDetails,
 	) {
 		let types = &metadata.runtime_metadata().types;

@@ -14,6 +14,7 @@
 mod error;
 mod from_v14_to_v15;
 mod metadata_types;
+mod variant_index;
 
 pub use error::*;
 pub use from_v14_to_v15::v14_to_v15;

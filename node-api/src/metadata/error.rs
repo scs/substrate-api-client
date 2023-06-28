@@ -12,15 +12,19 @@
 */
 
 use alloc::string::String;
-use codec::{Decode, Encode, Error as CodecError};
+use codec::{Decode, Encode};
 
 /// Metadata error originated from inspecting the internal representation of the runtime metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MetadataError {
+	/// The DispatchError type isn't available in the metadata.
+	DispatchErrorNotFound,
 	/// Module is not in metadata.
-	PalletNotFound(String),
+	PalletNameNotFound(String),
 	/// Pallet is not in metadata.
 	PalletIndexNotFound(u8),
+	/// Event type not found in metadata.
+	EventTypeNotFoundInPallet(u8),
 	/// Call is not in metadata.
 	CallNotFound(&'static str),
 	/// Event is not in metadata.
@@ -31,22 +35,14 @@ pub enum MetadataError {
 	StorageNotFound(&'static str),
 	/// Storage type does not match requested type.
 	StorageTypeError,
-	/// Default error.
-	DefaultError(CodecError),
-	/// Failure to decode constant value.
-	ConstantValueError(CodecError),
 	/// Constant is not in metadata.
 	ConstantNotFound(&'static str),
+	/// Variant not found.
+	VariantIndexNotFound(u8),
 	/// Type is not in metadata.
 	TypeNotFound(u32),
-	/// Runtime constant metadata is incompatible with the static one.
-	IncompatibleConstantMetadata(String, String),
-	/// Runtime call metadata is incompatible with the static one.
-	IncompatibleCallMetadata(String, String),
-	/// Runtime storage metadata is incompatible with the static one.
-	IncompatibleStorageMetadata(String, String),
-	/// Runtime metadata is not fully compatible with the static one.
-	IncompatibleMetadata,
+	/// Api is not in metadata.
+	RuntimeApiNotFound(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]

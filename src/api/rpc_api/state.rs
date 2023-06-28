@@ -347,9 +347,8 @@ where
 	) -> Result<C> {
 		let c = self
 			.metadata()
-			.pallet(pallet)?
-			.constants
-			.get(constant)
+			.pallet_by_name_err(pallet)?
+			.constant_by_name(constant)
 			.ok_or(MetadataError::ConstantNotFound(constant))?;
 
 		Ok(Decode::decode(&mut c.value.as_slice())?)

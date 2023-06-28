@@ -6,10 +6,10 @@
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
+//! Event related test utilities used outside this module.
+
 use crate::{Events, Metadata, Phase};
-/// Event related test utilities used outside this module.
-use codec::Encode;
-use codec::{Compact, Decode};
+use codec::{Compact, Decode, Encode};
 use frame_metadata::{
 	v14::{
 		ExtrinsicMetadata as ExtrinsicMetadataV14, PalletEventMetadata as PalletEventMetadataV14,

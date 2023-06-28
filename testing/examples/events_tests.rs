@@ -27,6 +27,8 @@ use substrate_api_client::{
 	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
+type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
+
 /// Check out frame_system::Event::ExtrinsicSuccess:
 #[derive(Decode, Debug)]
 struct ExtrinsicSuccess {
@@ -97,7 +99,7 @@ async fn main() {
 	}
 }
 
-fn assert_assosciated_events_match_expected(events: Vec<EventDetails>) {
+fn assert_assosciated_events_match_expected(events: Vec<EventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");

@@ -49,6 +49,7 @@ dependencies = [
 name = "ac-node-api"
 version = "0.4.0"
 dependencies = [
+ "ac-primitives",
  "bitvec",
  "derive_more",
  "either",
@@ -56,7 +57,7 @@ dependencies = [
  "hex",
  "log",
  "parity-scale-codec",
- "scale-bits",
+ "scale-bits 0.3.0",
  "scale-decode",
  "scale-encode",
  "scale-info",
@@ -764,6 +765,41 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.18",
+]
+
+[[package]]
+name = "darling"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b750cb3417fd1b327431a470f388520309479ab0bf5e323505daf0290cd3850"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "109c1ca6e6b7f82cc233a97004ea8ed7ca123a9af07a8230878fcfda9b158bf0"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4aab4dbc9f7611d8b55048a3a16d2d010c2c8334e46304b40ac1cc14bf3b48e"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -1709,6 +1745,12 @@ checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
 dependencies = [
  "cc",
 ]
+
+[[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "idna"
@@ -4424,7 +4466,7 @@ dependencies = [
 [[package]]
 name = "scale-bits"
 version = "0.3.0"
-source = "git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std#41daa270ae62adcae310b801c82647a772f464e4"
+source = "git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std#24b4b48821322d0b7337dba1e4e3d11441e8a5dd"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -4432,16 +4474,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "scale-bits"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "036575c29af9b6e4866ffb7fa055dbf623fe7a9cc159b33786de6013a6969d89"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "scale-decode"
 version = "0.7.0"
-source = "git+https://github.com/scs/scale-decode.git?branch=no-std#37fefeea18ba6c3e4fbc5309898f7e4344dc08e7"
+source = "git+https://github.com/scs/scale-decode.git?branch=no-std#d9768dc33ab6d3d064c35fbabfe32e03ec605f07"
 dependencies = [
- "derive_more",
  "parity-scale-codec",
  "primitive-types",
- "scale-bits",
+ "scale-bits 0.4.0",
+ "scale-decode-derive",
  "scale-info",
  "smallvec",
+]
+
+[[package]]
+name = "scale-decode-derive"
+version = "0.7.0"
+source = "git+https://github.com/scs/scale-decode.git?branch=no-std#d9768dc33ab6d3d064c35fbabfe32e03ec605f07"
+dependencies = [
+ "darling",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -4452,16 +4516,29 @@ dependencies = [
  "derive_more",
  "parity-scale-codec",
  "primitive-types",
- "scale-bits",
+ "scale-bits 0.3.0",
+ "scale-encode-derive",
  "scale-info",
  "smallvec",
 ]
 
 [[package]]
+name = "scale-encode-derive"
+version = "0.3.0"
+source = "git+https://github.com/scs/scale-encode.git?branch=no-std#1688cf1001530f91c56e5794d072e2b77a81f257"
+dependencies = [
+ "darling",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "scale-info"
-version = "2.7.0"
+version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b569c32c806ec3abdf3b5869fb8bf1e0d275a7c1c9b0b05603d9464632649edf"
+checksum = "ad560913365790f17cbf12479491169f01b9d46d29cfc7422bf8c64bdc61b731"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -4473,9 +4550,9 @@ dependencies = [
 
 [[package]]
 name = "scale-info-derive"
-version = "2.6.0"
+version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53012eae69e5aa5c14671942a5dd47de59d4cdcff8532a6dd0e081faf1119482"
+checksum = "19df9bd9ace6cc2fe19387c96ce677e823e07d017ceed253e7bb3d1d1bd9c73b"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -5554,6 +5631,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
+
+[[package]]
 name = "strum"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6044,9 +6127,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.7",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 

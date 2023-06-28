@@ -1,16 +1,14 @@
-/*
-	Copyright 2021 Integritee AG and Supercomputing Systems AG
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-		http://www.apache.org/licenses/LICENSE-2.0
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
-*/
+// This file was taken from subxt (Parity Technologies (UK))
+// https://github.com/paritytech/subxt/
+// And was adapted by Supercomputing Systems AG.
+//
+// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG.
+// This file is licensed as Apache-2.0
+// see LICENSE for license details.
 
+//! Substrate Dispatch Error representation.
+
+use super::{Error, MetadataError};
 use crate::metadata::Metadata;
 use alloc::{
 	borrow::Cow,
@@ -21,22 +19,14 @@ use codec::{Decode, Encode};
 use core::fmt::Debug;
 use derive_more::From;
 use log::*;
-use scale_info::TypeDef;
-
-// Re-expose the errors we use from other crates here:
-pub use crate::{
-	metadata::{InvalidMetadataError, MetadataError},
-	scale_value::{DecodeError, EncodeError},
-};
-pub use sp_core::crypto::SecretStringError;
-pub use sp_runtime::transaction_validity::TransactionValidityError;
+use scale_decode::{visitor::DecodeAsTypeResult, DecodeAsType};
 
 /// An error dispatching a transaction. See Substrate DispatchError
 //https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L524
 #[derive(Debug, From)]
 pub enum DispatchError {
 	/// Some error occurred.
-	Other(Vec<u8>),
+	Other,
 	/// Failed to lookup some data.
 	CannotLookup,
 	/// A bad origin.
@@ -64,154 +54,127 @@ pub enum DispatchError {
 }
 
 impl DispatchError {
-	/// Attempt to decode a runtime DispatchError
-	pub fn decode_from<'a>(bytes: impl Into<Cow<'a, [u8]>>, metadata: &Metadata) -> Self {
+	/// Attempt to decode a runtime [`DispatchError`].
+	// This function is copied (and adapted) from subxt:
+	// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/error/dispatch_error.rs#L208-L321
+	pub fn decode_from<'a>(
+		bytes: impl Into<Cow<'a, [u8]>>,
+		metadata: Metadata,
+	) -> Result<Self, Error> {
 		let bytes = bytes.into();
-		let dispatch_error_ty_id = match metadata.dispatch_error_ty() {
-			Some(id) => id,
-			None => {
-				warn!("Can't decode error: sp_runtime::DispatchError was not found in Metadata");
-				return DispatchError::Other(bytes.into_owned())
-			},
-		};
+		let dispatch_error_ty_id =
+			metadata.dispatch_error_ty().ok_or(MetadataError::DispatchErrorNotFound)?;
 
-		let dispatch_error_ty = match metadata.types().resolve(dispatch_error_ty_id) {
-			Some(ty) => ty,
-			None => {
-				warn!("Can't decode error: sp_runtime::DispatchError type ID doesn't resolve to a known type");
-				return DispatchError::Other(bytes.into_owned())
-			},
-		};
-
-		let variant = match &dispatch_error_ty.type_def {
-			TypeDef::Variant(var) => var,
-			_ => {
-				warn!("Can't decode error: sp_runtime::DispatchError type is not a Variant");
-				return DispatchError::Other(bytes.into_owned())
-			},
-		};
-
-		let variant_name =
-			variant.variants.iter().find(|v| v.index == bytes[0]).map(|v| v.name.as_str());
-		let name = match variant_name {
-			Some(name) => name,
-			None => {
-				warn!("Can't decode error: sp_runtime::DispatchError does not have a name variant");
-				return DispatchError::Other(bytes.into_owned())
-			},
-		};
-
-		if bytes.len() < 2 {
-			warn!(
-				"Can't decode error: sp_runtime::DispatchError because it contains too few bytes"
-			);
-			return DispatchError::Other(bytes.into_owned())
-		}
-		// The remaining bytes are the specific error to decode:
-		let mut specific_bytes = &bytes[1..];
-
-		match name {
-			"Module" => Self::decode_module_error(specific_bytes, metadata), // We apply custom logic to transform the module error into the outward facing version
-			"Token" => {
-				let token_error = match TokenError::decode(&mut specific_bytes) {
-					Ok(err) => err,
-					Err(_) => {
-						warn!("Can't decode token error: TokenError does not match known formats");
-						return DispatchError::Other(bytes.to_vec())
-					},
-				};
-				DispatchError::Token(token_error)
-			},
-			"Arithmetic" => {
-				let arithmetic_error = match ArithmeticError::decode(&mut specific_bytes) {
-					Ok(err) => err,
-					Err(_) => {
-						warn!("Can't decode arithmetic error: ArithmeticError does not match known formats");
-						return DispatchError::Other(bytes.to_vec())
-					},
-				};
-				DispatchError::Arithmetic(arithmetic_error)
-			},
-			"Transactional" => {
-				let error = match TransactionalError::decode(&mut specific_bytes) {
-					Ok(err) => err,
-					Err(_) => {
-						warn!("Can't decode transactional error: TransactionalError does not match known formats");
-						return DispatchError::Other(bytes.to_vec())
-					},
-				};
-				DispatchError::Transactional(error)
-			},
-			"CannotLookup" => DispatchError::CannotLookup,
-			"BadOrigin" => DispatchError::BadOrigin,
-			"ConsumerRemaining" => DispatchError::ConsumerRemaining,
-			"NoProviders" => DispatchError::NoProviders,
-			"TooManyConsumers" => DispatchError::TooManyConsumers,
-			"Exhausted" => DispatchError::Exhausted,
-			"Corruption" => DispatchError::Corruption,
-			"Unavailable" => DispatchError::Unavailable,
-			_ => {
-				warn!("Can't decode runtime dispatch error: sp_runtime::DispatchError  does not match known formats");
-				DispatchError::Other(bytes.into_owned())
-			},
-		}
-	}
-
-	/// ModuleError is a bit special; we want to support being decoded from either
-	/// a legacy format of 2 bytes, or a newer format of 5 bytes. So, just grab the bytes
-	/// out when decoding to manually work with them.
-	fn decode_module_error(mut bytes: &[u8], metadata: &Metadata) -> Self {
-		// The oldest and second oldest type of error decode to this shape.
-		// The old version is 2 bytes; a pallet and error index.
-		#[derive(Decode)]
-		struct LegacyModuleError {
-			index: u8,
-			error: u8,
+		// The aim is to decode our bytes into roughly this shape. This is copied from
+		// `sp_runtime::DispatchError`; we need the variant names and any inner variant
+		// names/shapes to line up in order for decoding to be successful.
+		#[derive(DecodeAsType)]
+		enum DecodedDispatchError {
+			Other,
+			CannotLookup,
+			BadOrigin,
+			Module(DecodedModuleErrorBytes),
+			ConsumerRemaining,
+			NoProviders,
+			TooManyConsumers,
+			Token(TokenError),
+			Arithmetic(ArithmeticError),
+			Transactional(TransactionalError),
+			Exhausted,
+			Corruption,
+			Unavailable,
 		}
 
-		// The newer case expands the error for forward compat:
-		// The new version is 5 bytes; a pallet and error index and then 3 extra bytes.
-		#[derive(Decode)]
-		struct CurrentModuleError {
-			index: u8,
-			error: [u8; 4],
+		// ModuleError is a bit special; we want to support being decoded from either
+		// a legacy format of 2 bytes, or a newer format of 5 bytes. So, just grab the bytes
+		// out when decoding to manually work with them.
+		struct DecodedModuleErrorBytes(Vec<u8>);
+		struct DecodedModuleErrorBytesVisitor;
+		impl scale_decode::Visitor for DecodedModuleErrorBytesVisitor {
+			type Error = scale_decode::Error;
+			type Value<'scale, 'info> = DecodedModuleErrorBytes;
+			fn unchecked_decode_as_type<'scale, 'info>(
+				self,
+				input: &mut &'scale [u8],
+				_type_id: scale_decode::visitor::TypeId,
+				_types: &'info scale_info::PortableRegistry,
+			) -> DecodeAsTypeResult<Self, Result<Self::Value<'scale, 'info>, Self::Error>> {
+				DecodeAsTypeResult::Decoded(Ok(DecodedModuleErrorBytes(input.to_vec())))
+			}
+		}
+		impl scale_decode::IntoVisitor for DecodedModuleErrorBytes {
+			type Visitor = DecodedModuleErrorBytesVisitor;
+			fn into_visitor() -> Self::Visitor {
+				DecodedModuleErrorBytesVisitor
+			}
 		}
 
-		// try to decode into the new shape, or the old if that doesn't work
-		let err = match CurrentModuleError::decode(&mut bytes) {
-			Ok(e) => e,
-			Err(_) => {
-				let old_e = match LegacyModuleError::decode(&mut bytes) {
-					Ok(err) => err,
-					Err(_) => {
-						warn!("Can't decode module error: sp_runtime::DispatchError does not match known formats");
-						return DispatchError::Other(bytes.to_vec())
-					},
+		// Decode into our temporary error:
+		let decoded_dispatch_err = DecodedDispatchError::decode_as_type(
+			&mut &*bytes,
+			dispatch_error_ty_id,
+			metadata.types(),
+		)?;
+
+		// Convert into the outward-facing error, mainly by handling the Module variant.
+		let dispatch_error = match decoded_dispatch_err {
+			// Mostly we don't change anything from our decoded to our outward-facing error:
+			DecodedDispatchError::Other => DispatchError::Other,
+			DecodedDispatchError::CannotLookup => DispatchError::CannotLookup,
+			DecodedDispatchError::BadOrigin => DispatchError::BadOrigin,
+			DecodedDispatchError::ConsumerRemaining => DispatchError::ConsumerRemaining,
+			DecodedDispatchError::NoProviders => DispatchError::NoProviders,
+			DecodedDispatchError::TooManyConsumers => DispatchError::TooManyConsumers,
+			DecodedDispatchError::Token(val) => DispatchError::Token(val),
+			DecodedDispatchError::Arithmetic(val) => DispatchError::Arithmetic(val),
+			DecodedDispatchError::Transactional(val) => DispatchError::Transactional(val),
+			DecodedDispatchError::Exhausted => DispatchError::Exhausted,
+			DecodedDispatchError::Corruption => DispatchError::Corruption,
+			DecodedDispatchError::Unavailable => DispatchError::Unavailable,
+			// But we apply custom logic to transform the module error into the outward facing version:
+			DecodedDispatchError::Module(module_bytes) => {
+				let module_bytes = module_bytes.0;
+
+				// The old version is 2 bytes; a pallet and error index.
+				// The new version is 5 bytes; a pallet and error index and then 3 extra bytes.
+				let raw = if module_bytes.len() == 2 {
+					RawModuleError {
+						pallet_index: module_bytes[0],
+						error: [module_bytes[1], 0, 0, 0],
+					}
+				} else if module_bytes.len() == 5 {
+					RawModuleError {
+						pallet_index: module_bytes[0],
+						error: [module_bytes[1], module_bytes[2], module_bytes[3], module_bytes[4]],
+					}
+				} else {
+					warn!("Can't decode error sp_runtime::DispatchError: bytes do not match known shapes");
+					// Return _all_ of the bytes; every "unknown" return should be consistent.
+					return Err(Error::Unknown(bytes.to_vec()))
 				};
-				CurrentModuleError { index: old_e.index, error: [old_e.error, 0, 0, 0] }
+
+				let pallet_metadata = metadata.pallet_by_index_err(raw.pallet_index)?;
+				let error_details = pallet_metadata
+					.error_variant_by_index(raw.error[0])
+					.ok_or(MetadataError::ErrorNotFound(raw.pallet_index, raw.error[0]))?;
+
+				// And return our outward-facing version:
+				DispatchError::Module(ModuleError {
+					pallet: pallet_metadata.name().to_string(),
+					error: error_details.name.clone(),
+					description: error_details.docs.clone(),
+					raw,
+				})
 			},
 		};
 
-		let error_details = match metadata.error(err.index, err.error[0]) {
-			Ok(details) => details,
-			Err(_) => {
-				warn!("Can't decode error: sp_runtime::DispatchError::Module details do not match known information");
-				return DispatchError::Other(bytes.to_vec())
-			},
-		};
-
-		DispatchError::Module(ModuleError {
-			pallet: error_details.pallet().to_string(),
-			error: error_details.error().to_string(),
-			description: error_details.docs().to_vec(),
-			error_data: ModuleErrorData { pallet_index: err.index, error: err.error },
-		})
+		Ok(dispatch_error)
 	}
 }
 
 /// An error relating to tokens when dispatching a transaction.
 //https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L607
-#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum TokenError {
 	/// Funds are unavailable.
 	FundsUnavailable,
@@ -235,7 +198,7 @@ pub enum TokenError {
 
 /// An error relating to arithmetic when dispatching a transaction.
 // https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/arithmetic/src/lib.rs#L59
-#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum ArithmeticError {
 	/// Underflow.
 	Underflow,
@@ -247,7 +210,7 @@ pub enum ArithmeticError {
 
 /// An error relating to the transactional layers when dispatching a transaction.
 // https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L496
-#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum TransactionalError {
 	/// Too many transactional layers have been spawned.
 	LimitReached,
@@ -265,21 +228,28 @@ pub struct ModuleError {
 	/// A description of the error.
 	pub description: Vec<String>,
 	/// A byte representation of the error.
-	pub error_data: ModuleErrorData,
+	pub raw: RawModuleError,
+}
+
+impl PartialEq for ModuleError {
+	fn eq(&self, other: &Self) -> bool {
+		// A module error is the same if the raw underlying details are the same.
+		self.raw == other.raw
+	}
 }
 
 /// The error details about a module error that has occurred.
 ///
 /// **Note**: Structure used to obtain the underlying bytes of a ModuleError.
-#[derive(Clone, Debug)]
-pub struct ModuleErrorData {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RawModuleError {
 	/// Index of the pallet that the error came from.
 	pub pallet_index: u8,
 	/// Raw error bytes.
 	pub error: [u8; 4],
 }
 
-impl ModuleErrorData {
+impl RawModuleError {
 	/// Obtain the error index from the underlying byte data.
 	pub fn error_index(&self) -> u8 {
 		// Error index is utilized as the first byte from the error array.

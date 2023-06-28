@@ -37,11 +37,11 @@ mod rpc;
 macro_rules! compose_call {
 ($node_metadata: expr, $pallet: expr, $call_name: expr $(, $args: expr) *) => {
         {
-            let pallet = $node_metadata.pallet($pallet).unwrap().to_owned();
+            let pallet = $node_metadata.pallet_by_name($pallet).unwrap().to_owned();
 
-            let call_index = pallet.call_indexes.get($call_name).unwrap();
+            let call_index = pallet.call_variant_by_name($call_name).unwrap().index;
 
-            ([pallet.index, *call_index as u8] $(, ($args)) *)
+            ([pallet.index(), call_index as u8] $(, ($args)) *)
         }
     };
 }
@@ -93,7 +93,8 @@ macro_rules! compose_extrinsic_with_nonce {
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
 
-            let call = $crate::compose_call!($api.metadata().clone(), $module, $call $(, ($args)) *);
+			let metadata = $api.metadata();
+            let call = $crate::compose_call!(metadata, $module, $call $(, ($args)) *);
             if let Some(signer) = $api.signer() {
                 $crate::compose_extrinsic_offline!(
                     signer,

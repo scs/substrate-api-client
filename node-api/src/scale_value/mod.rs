@@ -1,8 +1,8 @@
 // This file was taken from scale-value (Parity Technologies (UK))
 // https://github.com/paritytech/scale-value/
-// And was adapted by Supercomputing Systems AG and Integritee AG.
+// And was adapted by Supercomputing Systems AG.
 //
-// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG and Integritee AG.
+// Copyright 2019-2022 Parity Technologies (UK) Ltd, Supercomputing Systems AG.
 // This file is licensed as Apache-2.0
 // see LICENSE for license details.
 
@@ -26,7 +26,7 @@ pub use scale_info::PortableRegistry;
 pub mod scale {
 	use super::TypeId;
 	pub use super::{
-		decode::{DecodeError, DecodeValueVisitor},
+		decode::{DecodeValueVisitor, VisitorDecodeError},
 		encode::EncodeError,
 	};
 	use alloc::vec::Vec;
@@ -40,7 +40,7 @@ pub mod scale {
 		data: &mut &[u8],
 		ty_id: TypeId,
 		types: &PortableRegistry,
-	) -> Result<super::Value<TypeId>, DecodeError> {
+	) -> Result<super::Value<TypeId>, VisitorDecodeError> {
 		crate::scale_value::decode::decode_value_as_type(data, ty_id, types)
 	}
 

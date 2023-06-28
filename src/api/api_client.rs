@@ -300,11 +300,10 @@ mod tests {
 		GenericAdditionalParams, GenericExtrinsicParams, PlainTip, PolkadotConfig,
 		SubstrateKitchensinkConfig,
 	};
+	use frame_metadata::{ExtrinsicMetadata, RuntimeMetadata};
+	use scale_info::form::PortableForm;
 	use sp_core::H256;
-	use std::{
-		collections::{BTreeMap, HashMap},
-		fs,
-	};
+	use std::{collections::HashMap, fs};
 
 	fn create_mock_api(
 		genesis_hash: H256,
@@ -353,12 +352,23 @@ mod tests {
 		let runtime_version = RuntimeVersion { spec_version: 10, ..Default::default() };
 		// Update metadata
 		let encoded_metadata: Bytes = fs::read("./ksm_metadata_v14.bin").unwrap().into();
-		let metadata: RuntimeMetadataPrefixed =
+		let runtime_metadata_prefixed: RuntimeMetadataPrefixed =
 			Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap();
-		let metadata = Metadata::try_from(metadata).unwrap();
+		let mut runtime_metadata = match runtime_metadata_prefixed.1 {
+			RuntimeMetadata::V14(ref metadata) => metadata.clone(),
+			_ => unimplemented!(),
+		};
 
-		let mut changed_metadata = metadata.clone();
-		changed_metadata.errors = BTreeMap::default();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		runtime_metadata.extrinsic = ExtrinsicMetadata::<PortableForm> {
+			ty: runtime_metadata.extrinsic.ty,
+			version: 0,
+			signed_extensions: Vec::new(),
+		};
+		let changed_runtime_metadata_prefixed =
+			RuntimeMetadataPrefixed(1635018093, RuntimeMetadata::V14(runtime_metadata));
+		let changed_metadata = Metadata::try_from(changed_runtime_metadata_prefixed).unwrap();
 
 		let data = HashMap::<String, String>::from([
 			(
@@ -375,14 +385,14 @@ mod tests {
 			create_mock_api(Default::default(), Default::default(), changed_metadata, data);
 
 		// Ensure current metadata and runtime version are different.
-		assert_ne!(api.metadata.errors, metadata.errors);
+		assert_ne!(api.metadata.extrinsic(), metadata.extrinsic());
 		assert_ne!(api.runtime_version, runtime_version);
 
 		// Update runtime.
 		api.update_runtime().unwrap();
 
 		// Ensure metadata and runtime version have been updated.
-		assert_eq!(api.metadata.errors, metadata.errors);
+		assert_eq!(api.metadata.extrinsic(), metadata.extrinsic());
 		assert_eq!(api.runtime_version, runtime_version);
 	}
 }

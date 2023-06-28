@@ -32,7 +32,7 @@ pub type EventSubscriptionFor<Client, Hash> =
 
 #[maybe_async::maybe_async(?Send)]
 pub trait FetchEvents {
-	type Hash;
+	type Hash: Decode;
 
 	/// Fetch all block events from node for the given block hash.
 	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
@@ -42,7 +42,7 @@ pub trait FetchEvents {
 		&self,
 		block_hash: Self::Hash,
 		extrinsic_hash: Self::Hash,
-	) -> Result<Vec<EventDetails>>;
+	) -> Result<Vec<EventDetails<Self::Hash>>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -68,7 +68,7 @@ where
 		&self,
 		block_hash: Self::Hash,
 		extrinsic_hash: Self::Hash,
-	) -> Result<Vec<EventDetails>> {
+	) -> Result<Vec<EventDetails<Self::Hash>>> {
 		let extrinsic_index =
 			self.retrieve_extrinsic_index_from_block(block_hash, extrinsic_hash).await?;
 		let block_events = self.fetch_events_from_block(block_hash).await?;
@@ -98,7 +98,7 @@ impl<Subscription, Hash> EventSubscription<Subscription, Hash> {
 
 impl<Subscription, Hash> EventSubscription<Subscription, Hash>
 where
-	Hash: DeserializeOwned + Copy,
+	Hash: DeserializeOwned + Copy + Decode,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
 	/// Wait for the next value from the internal subscription.
@@ -201,7 +201,7 @@ where
 		&self,
 		events: Events<T::Hash>,
 		extrinsic_index: u32,
-	) -> Result<Vec<EventDetails>> {
+	) -> Result<Vec<EventDetails<T::Hash>>> {
 		let extrinsic_event_results = events.iter().filter(|ev| {
 			ev.as_ref()
 				.map_or(true, |ev| ev.phase() == Phase::ApplyExtrinsic(extrinsic_index))
