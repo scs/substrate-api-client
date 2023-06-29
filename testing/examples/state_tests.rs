@@ -98,8 +98,7 @@ async fn main() {
 	let storage_keys = api
 		.get_all_storage_keys_paged_up_to_count(Some(storage_key_prefix), max_keys, None, None)
 		.unwrap();
-	assert!(storage_keys.len() as u32 > 3);
-	assert!(storage_keys.len() as u32 <= max_keys);
+	assert!(storage_keys.len() as u32 = 8);
 
 	let max_keys = 20;
 	let storage_keys = api.get_storage_keys_paged(None, max_keys.clone(), None, None).unwrap();

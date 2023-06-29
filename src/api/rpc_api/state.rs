@@ -306,9 +306,6 @@ where
 				.get_storage_keys_paged(storage_key_prefix.clone(), new_count, new_key, at_block)
 				.await?;
 			storage_keys.append(&mut keys);
-			if keys.len() < STORAGE_KEYS_PAGED_MAX_COUNT as usize {
-				break
-			}
 			still_todo -= new_count;
 			new_key = keys.last().map(|x| x.to_owned());
 		}
