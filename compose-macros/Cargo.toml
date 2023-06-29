@@ -1,6 +1,6 @@
 [package]
 name = "ac-compose-macros"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
