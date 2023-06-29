@@ -9,7 +9,7 @@
 //! Based on https://github.com/paritytech/scale-value/blob/430bfaf8f302dfcfc45d8d63c687628fd9b7fc25/src/scale_impls/encode.rs
 
 use crate::scale_value::{Composite, Primitive, Value, ValueDef, Variant};
-use alloc::{string::ToString, vec::Vec};
+use alloc::{boxed::Box, string::ToString, vec::Vec};
 use codec::{Compact, Encode};
 use scale_encode::{
 	error::{ErrorKind, Kind},
@@ -45,7 +45,9 @@ impl<T> EncodeAsFields for Value<T> {
 	) -> Result<(), Error> {
 		match &self.value {
 			ValueDef::Composite(composite) => composite.encode_as_fields_to(fields, types, out),
-			_ => Err(Error::custom("Cannot encode non-composite Value shape into fields")),
+			_ => Err(Error::new(ErrorKind::Custom(Box::new(
+				"Cannot encode non-composite Value shape into fields".to_string(),
+			)))),
 		}
 	}
 }

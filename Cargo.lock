@@ -57,7 +57,7 @@ dependencies = [
  "hex",
  "log",
  "parity-scale-codec",
- "scale-bits 0.3.0",
+ "scale-bits",
  "scale-decode",
  "scale-encode",
  "scale-info",
@@ -4465,22 +4465,13 @@ dependencies = [
 
 [[package]]
 name = "scale-bits"
-version = "0.3.0"
-source = "git+https://github.com/haerdib/scale-bits.git?branch=bh/no-std#24b4b48821322d0b7337dba1e4e3d11441e8a5dd"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "serde",
-]
-
-[[package]]
-name = "scale-bits"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "036575c29af9b6e4866ffb7fa055dbf623fe7a9cc159b33786de6013a6969d89"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
+ "serde",
 ]
 
 [[package]]
@@ -4490,7 +4481,7 @@ source = "git+https://github.com/scs/scale-decode.git?branch=no-std#d9768dc33ab6
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
- "scale-bits 0.4.0",
+ "scale-bits",
  "scale-decode-derive",
  "scale-info",
  "smallvec",
@@ -4511,12 +4502,11 @@ dependencies = [
 [[package]]
 name = "scale-encode"
 version = "0.3.0"
-source = "git+https://github.com/scs/scale-encode.git?branch=no-std#1688cf1001530f91c56e5794d072e2b77a81f257"
+source = "git+https://github.com/paritytech/scale-encode.git#1d302221cf697f189f46e0ccc1dfd79b36bc524f"
 dependencies = [
- "derive_more",
  "parity-scale-codec",
  "primitive-types",
- "scale-bits 0.3.0",
+ "scale-bits",
  "scale-encode-derive",
  "scale-info",
  "smallvec",
@@ -4525,7 +4515,7 @@ dependencies = [
 [[package]]
 name = "scale-encode-derive"
 version = "0.3.0"
-source = "git+https://github.com/scs/scale-encode.git?branch=no-std#1688cf1001530f91c56e5794d072e2b77a81f257"
+source = "git+https://github.com/paritytech/scale-encode.git#1d302221cf697f189f46e0ccc1dfd79b36bc524f"
 dependencies = [
  "darling",
  "proc-macro-crate",
@@ -4536,9 +4526,9 @@ dependencies = [
 
 [[package]]
 name = "scale-info"
-version = "2.8.0"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad560913365790f17cbf12479491169f01b9d46d29cfc7422bf8c64bdc61b731"
+checksum = "b569c32c806ec3abdf3b5869fb8bf1e0d275a7c1c9b0b05603d9464632649edf"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -4550,9 +4540,9 @@ dependencies = [
 
 [[package]]
 name = "scale-info-derive"
-version = "2.8.0"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19df9bd9ace6cc2fe19387c96ce677e823e07d017ceed253e7bb3d1d1bd9c73b"
+checksum = "53012eae69e5aa5c14671942a5dd47de59d4cdcff8532a6dd0e081faf1119482"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -6127,9 +6117,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "digest 0.10.7",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 

@@ -17,14 +17,14 @@ either = { version = "1.6.1", default-features = false }
 frame-metadata = { version = "15.1", default-features = false, features = ["v14", "v15-unstable", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
+scale-bits = { version = "0.4.0", default-features = false, features = ["scale-info", "serde"] }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # scale
-scale-bits = { default-features = false, features = ["scale-info", "serde"], git = "https://github.com/haerdib/scale-bits.git", branch = "bh/no-std" }
 scale-decode = { default-features = false, features = ["primitive-types", "derive"], git = "https://github.com/scs/scale-decode.git", branch = "no-std" }
-scale-encode = { default-features = false, features = ["bits", "primitive-types", "derive"], git = "https://github.com/scs/scale-encode.git", branch = "no-std" }
+scale-encode = { default-features = false, features = ["bits", "primitive-types", "derive"], git = "https://github.com/paritytech/scale-encode.git" }
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
