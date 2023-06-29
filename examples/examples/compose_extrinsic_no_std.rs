@@ -17,7 +17,6 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use codec::Compact;
-use kitchensink_runtime::AccountId;
 use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, AccountId32, MultiAddress};
@@ -32,7 +31,7 @@ use substrate_api_client::{
 };
 
 type KitchensinkExtrinsicSigner = ExtrinsicSigner<SubstrateKitchensinkConfig>;
-type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
+type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId32>>::ExtrinsicAddress;
 
 type Hash = H256; //<Runtime as FrameSystemConfig>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
@@ -68,6 +67,7 @@ async fn main() {
 	let transaction_version = api.runtime_version().transaction_version;
 	let genesis_hash = api.genesis_hash();
 	let signer_nonce = api.get_nonce().unwrap();
+	let metadata = api.metadata();
 	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
 
 	let recipient: MultiAddress<AccountId32, u32> =
@@ -90,7 +90,7 @@ async fn main() {
 		recipient.clone().into();
 
 	let call = compose_call!(
-		api.metadata(),
+		metadata,
 		"Balances",
 		"transfer_allow_death",
 		recipients_extrinsic_address,
