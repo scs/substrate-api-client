@@ -24,8 +24,8 @@ use sp_runtime::{generic::Era, AccountId32, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, GenericExtrinsicParams,
-		PlainTip, SignExtrinsic, SubstrateKitchensinkConfig,
+		AssetTip, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams,
+		GenericExtrinsicParams, SignExtrinsic, SubstrateKitchensinkConfig,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitExtrinsic,
@@ -38,7 +38,7 @@ type Hash = H256; //<Runtime as FrameSystemConfig>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
 type Balance = u128;
 /// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
-type AdditionalParams = GenericAdditionalParams<PlainTip<Balance>, Hash>;
+type AdditionalParams = GenericAdditionalParams<AssetTip<Balance>, Hash>;
 
 #[tokio::main]
 async fn main() {
@@ -81,7 +81,7 @@ async fn main() {
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
 	let extrinsic_params =
-		GenericExtrinsicParams::<SubstrateKitchensinkConfig, PlainTip<u128>>::new(
+		GenericExtrinsicParams::<SubstrateKitchensinkConfig, AssetTip<u128>>::new(
 			spec_version,
 			transaction_version,
 			signer_nonce,
@@ -104,7 +104,8 @@ async fn main() {
 		recipients_extrinsic_address,
 		Compact(4u32)
 	);
-	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call_new.clone(), extrinsic_params);
+	let xt_no_std =
+		compose_extrinsic_offline!(extrinsic_signer, call_new.clone(), extrinsic_params);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
 
 	// Submit extrinsic (online)
