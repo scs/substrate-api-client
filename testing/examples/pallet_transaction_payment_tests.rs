@@ -40,5 +40,6 @@ async fn main() {
 		.get_fee_details(&encoded_xt.clone().into(), Some(block_hash))
 		.unwrap()
 		.unwrap();
-	let _payment_info = api.get_payment_info(&encoded_xt.into(), Some(block_hash)).unwrap().unwrap();
+	let _payment_info =
+		api.get_payment_info(&encoded_xt.into(), Some(block_hash)).unwrap().unwrap();
 }
