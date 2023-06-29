@@ -45,7 +45,9 @@ impl<T> EncodeAsFields for Value<T> {
 	) -> Result<(), Error> {
 		match &self.value {
 			ValueDef::Composite(composite) => composite.encode_as_fields_to(fields, types, out),
-			_ => Err(Error::custom("Cannot encode non-composite Value shape into fields")),
+			_ => Err(Error::new(ErrorKind::Custom(Box::new(
+				"Cannot encode non-composite Value shape into fields".to_string(),
+			)))),
 		}
 	}
 }
