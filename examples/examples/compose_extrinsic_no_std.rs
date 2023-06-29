@@ -17,7 +17,7 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use codec::Compact;
-use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
+use kitchensink_runtime::AccountId;
 use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, AccountId32, MultiAddress};
@@ -72,9 +72,6 @@ async fn main() {
 
 	let recipient: MultiAddress<AccountId32, u32> =
 		MultiAddress::Id(AccountKeyring::Bob.to_account_id());
-	let recipient_new = AccountKeyring::Bob.to_account_id();
-	//let recipient: MultiAddress<AccountId32, u32> =
-	//	MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
 	// Construct extrinsic without using Api (no_std).
 	let additional_extrinsic_params: AdditionalParams = GenericAdditionalParams::new()
@@ -88,24 +85,18 @@ async fn main() {
 			genesis_hash,
 			additional_extrinsic_params,
 		);
-	//let pallet = api.metadata().pallet("balances").unwrap();
-	//let pallet_index = pallet.index();
-	//let call_index = pallet.call_index("transfer_allow_death").unwrap();
-	let call =
-		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
 
 	let recipients_extrinsic_address: ExtrinsicAddressOf<KitchensinkExtrinsicSigner> =
-		recipient_new.clone().into();
+		recipient.clone().into();
 
-	let call_new = compose_call!(
+	let call = compose_call!(
 		api.metadata(),
 		"Balances",
 		"transfer_allow_death",
 		recipients_extrinsic_address,
 		Compact(4u32)
 	);
-	let xt_no_std =
-		compose_extrinsic_offline!(extrinsic_signer, call_new.clone(), extrinsic_params);
+	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
 
 	// Submit extrinsic (online)
