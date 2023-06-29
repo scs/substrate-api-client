@@ -297,7 +297,7 @@ where
 
 		while still_todo > 0 {
 			let new_count = if still_todo < STORAGE_KEYS_PAGED_MAX_COUNT {
-				still_todo.clone()
+				still_todo
 			} else {
 				STORAGE_KEYS_PAGED_MAX_COUNT
 			};
@@ -309,7 +309,7 @@ where
 			if keys.len() < STORAGE_KEYS_PAGED_MAX_COUNT as usize {
 				break
 			}
-			still_todo = still_todo - new_count.clone();
+			still_todo -= new_count;
 			new_key = keys.last().map(|x| x.to_owned());
 		}
 
