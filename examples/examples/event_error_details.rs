@@ -27,18 +27,6 @@ use substrate_api_client::{
 // To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
-#[derive(Decode)]
-struct TransferEventArgs {
-	_from: AccountId,
-	_to: AccountId,
-	_value: u128,
-}
-
-impl StaticEvent for TransferEventArgs {
-	const PALLET: &'static str = "Balances";
-	const EVENT: &'static str = "Transfer";
-}
-
 #[tokio::main]
 async fn main() {
 	env_logger::init();
