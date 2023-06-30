@@ -17,6 +17,7 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use codec::Compact;
+use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, AccountId32, MultiAddress};
@@ -27,7 +28,7 @@ use substrate_api_client::{
 		GenericExtrinsicParams, SignExtrinsic, SubstrateKitchensinkConfig,
 	},
 	rpc::JsonrpseeClient,
-	Api, GetChainInfo, SubmitExtrinsic,
+	Api, GetChainInfo, SubmitAndWatch, SubmitExtrinsic, XtStatus,
 };
 
 type KitchensinkExtrinsicSigner = ExtrinsicSigner<SubstrateKitchensinkConfig>;
@@ -57,49 +58,71 @@ async fn main() {
 	// Signer is needed to get the nonce
 	api.set_signer(extrinsic_signer.clone());
 
+	let recipient: MultiAddress<AccountId32, u32> =
+		MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
 	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
 
-	// Get information out of Api (online).
-	let spec_version = api.runtime_version().spec_version;
-	let transaction_version = api.runtime_version().transaction_version;
-	let genesis_hash = api.genesis_hash();
-	let signer_nonce = api.get_nonce().unwrap();
-	let metadata = api.metadata();
-	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
-
-	let recipient: MultiAddress<AccountId32, u32> =
-		MultiAddress::Id(AccountKeyring::Bob.to_account_id());
-
 	// Construct extrinsic without using Api (no_std).
 	let additional_extrinsic_params: AdditionalParams = GenericAdditionalParams::new()
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
-	let extrinsic_params =
-		GenericExtrinsicParams::<SubstrateKitchensinkConfig, AssetTip<u128>>::new(
-			spec_version,
-			transaction_version,
-			signer_nonce,
-			genesis_hash,
-			additional_extrinsic_params,
+
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
+
+	let use_no_std = true;
+	let hash = if use_no_std {
+		// Get information out of Api (online).
+		let spec_version = api.runtime_version().spec_version;
+		let transaction_version = api.runtime_version().transaction_version;
+		let genesis_hash = api.genesis_hash();
+		let metadata = api.metadata();
+
+		let extrinsic_params =
+			GenericExtrinsicParams::<SubstrateKitchensinkConfig, AssetTip<u128>>::new(
+				spec_version,
+				transaction_version,
+				signer_nonce,
+				genesis_hash,
+				additional_extrinsic_params,
+			);
+
+		let recipients_extrinsic_address: ExtrinsicAddressOf<KitchensinkExtrinsicSigner> =
+			recipient.clone().into();
+
+		let call = compose_call!(
+			metadata,
+			"Balances",
+			"transfer_allow_death",
+			recipients_extrinsic_address,
+			Compact(4u32)
 		);
+		let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
+		println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
 
-	let recipients_extrinsic_address: ExtrinsicAddressOf<KitchensinkExtrinsicSigner> =
-		recipient.clone().into();
+		// Submit extrinsic (online)
+		let hash = api.submit_extrinsic(xt_no_std);
+		hash.unwrap()
+	} else {
+		// Set the additional params.
+		api.set_additional_params(additional_extrinsic_params);
 
-	let call = compose_call!(
-		metadata,
-		"Balances",
-		"transfer_allow_death",
-		recipients_extrinsic_address,
-		Compact(4u32)
-	);
-	let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
-	println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
+		// Compose the extrinsic (offline).
+		let call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+			dest: recipient,
+			value: 42,
+		});
+		let xt = api.compose_extrinsic_offline(call, signer_nonce);
+		println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
-	// Submit extrinsic (online)
-	let hash = api.submit_extrinsic(xt_no_std);
+		api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+			.unwrap()
+			.block_hash
+			.unwrap()
+	};
 	println!("[+] Extrinsic got included in block {:?}", hash);
 }
