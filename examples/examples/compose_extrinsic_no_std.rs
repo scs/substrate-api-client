@@ -18,27 +18,29 @@
 
 use codec::Compact;
 use kitchensink_runtime::{BalancesCall, RuntimeCall};
-use sp_core::H256;
 use sp_keyring::AccountKeyring;
-use sp_runtime::{generic::Era, AccountId32, MultiAddress};
+use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		AssetTip, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams,
-		GenericExtrinsicParams, SignExtrinsic, SubstrateKitchensinkConfig,
+		config::Config, AssetTip, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams,
+		SignExtrinsic, SubstrateKitchensinkConfig,
 	},
 	rpc::JsonrpseeClient,
-	Api, GetChainInfo, SubmitAndWatch, SubmitExtrinsic, XtStatus,
+	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
 
-type KitchensinkExtrinsicSigner = ExtrinsicSigner<SubstrateKitchensinkConfig>;
-type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId32>>::ExtrinsicAddress;
+type KitchensinkExtrinsicSigner = <SubstrateKitchensinkConfig as Config>::ExtrinsicSigner;
+type AccountId = <SubstrateKitchensinkConfig as Config>::AccountId;
+type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
-type Hash = H256; //<Runtime as FrameSystemConfig>::Hash;
+type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
-type Balance = u128;
+type Balance = <SubstrateKitchensinkConfig as Config>::Balance;
 /// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
 type AdditionalParams = GenericAdditionalParams<AssetTip<Balance>, Hash>;
+
+type Address = <SubstrateKitchensinkConfig as Config>::Address;
 
 #[tokio::main]
 async fn main() {
@@ -55,13 +57,12 @@ async fn main() {
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
 	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
 	let extrinsic_signer = ExtrinsicSigner::<_>::new(signer);
-	// Signer is needed to get the nonce
+	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
-	let recipient: MultiAddress<AccountId32, u32> =
-		MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let recipient: Address = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 
-	// Information for Era for mortal transactions (online).
+	// Get the last finalized header to retrieve information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
 	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
@@ -76,20 +77,21 @@ async fn main() {
 
 	let use_no_std = true;
 	let hash = if use_no_std {
-		// Get information out of Api (online).
+		// Get information out of Api (online). This information could also be set offline in the `no_std`,
+		// but that would need to be static and adapted whenever the node changes.
+		// You can get the information directly from the node runtime file or the api of https://polkadot.js.org.
 		let spec_version = api.runtime_version().spec_version;
 		let transaction_version = api.runtime_version().transaction_version;
 		let genesis_hash = api.genesis_hash();
 		let metadata = api.metadata();
 
-		let extrinsic_params =
-			GenericExtrinsicParams::<SubstrateKitchensinkConfig, AssetTip<u128>>::new(
-				spec_version,
-				transaction_version,
-				signer_nonce,
-				genesis_hash,
-				additional_extrinsic_params,
-			);
+		let extrinsic_params = <SubstrateKitchensinkConfig as Config>::ExtrinsicParams::new(
+			spec_version,
+			transaction_version,
+			signer_nonce,
+			genesis_hash,
+			additional_extrinsic_params,
+		);
 
 		let recipients_extrinsic_address: ExtrinsicAddressOf<KitchensinkExtrinsicSigner> =
 			recipient.clone().into();
@@ -101,12 +103,13 @@ async fn main() {
 			recipients_extrinsic_address,
 			Compact(4u32)
 		);
-		let xt_no_std = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
-		println!("[+] Composed Extrinsic:\n {:?}\n", xt_no_std);
+		let xt = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
+		println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
-		// Submit extrinsic (online)
-		let hash = api.submit_extrinsic(xt_no_std);
-		hash.unwrap()
+		api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+			.unwrap()
+			.block_hash
+			.unwrap()
 	} else {
 		// Set the additional params.
 		api.set_additional_params(additional_extrinsic_params);
