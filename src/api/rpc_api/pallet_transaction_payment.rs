@@ -27,13 +27,13 @@ pub trait GetTransactionPayment {
 
 	async fn get_fee_details(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		at_block: Option<Self::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>>;
 
 	async fn get_payment_info(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		at_block: Option<Self::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>>;
 }
@@ -50,7 +50,7 @@ where
 
 	async fn get_fee_details(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		at_block: Option<Self::Hash>,
 	) -> Result<Option<FeeDetails<Self::Balance>>> {
 		let details: Option<FeeDetails<NumberOrHex>> = self
@@ -67,7 +67,7 @@ where
 
 	async fn get_payment_info(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		at_block: Option<Self::Hash>,
 	) -> Result<Option<RuntimeDispatchInfo<Self::Balance>>> {
 		let res = self

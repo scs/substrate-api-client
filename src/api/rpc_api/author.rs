@@ -48,7 +48,7 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an encoded, opaque extrsinic to the substrate node.
 	/// Returns the extrinsic hash.
-	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash>;
+	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: &Bytes) -> Result<Self::Hash>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -69,10 +69,10 @@ where
 		Signature: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_opaque_extrinsic(extrinsic.encode().into()).await
+		self.submit_opaque_extrinsic(&extrinsic.encode().into()).await
 	}
 
-	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: Bytes) -> Result<Self::Hash> {
+	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: &Bytes) -> Result<Self::Hash> {
 		let hex_encoded_xt = rpc_params![encoded_extrinsic];
 		debug!("sending extrinsic: {:?}", hex_encoded_xt);
 		let xt_hash = self.client().request("author_submitExtrinsic", hex_encoded_xt).await?;
@@ -101,7 +101,7 @@ pub trait SubmitAndWatch {
 	/// watch the extrinsic progress.
 	async fn submit_and_watch_opaque_extrinsic(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>;
 
 	/// Submit an extrinsic and watch it until the desired status
@@ -133,7 +133,7 @@ pub trait SubmitAndWatch {
 	/// This method is blocking.
 	async fn submit_and_watch_opaque_extrinsic_until(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
@@ -176,7 +176,7 @@ pub trait SubmitAndWatchUntilSuccess {
 	/// This method is blocking.
 	async fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
@@ -200,12 +200,12 @@ where
 		Signature: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_and_watch_opaque_extrinsic(extrinsic.encode().into()).await
+		self.submit_and_watch_opaque_extrinsic(&extrinsic.encode().into()).await
 	}
 
 	async fn submit_and_watch_opaque_extrinsic(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>> {
 		self.client()
 			.subscribe(
@@ -227,13 +227,13 @@ where
 		Signature: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_and_watch_opaque_extrinsic_until(extrinsic.encode().into(), watch_until)
+		self.submit_and_watch_opaque_extrinsic_until(&extrinsic.encode().into(), watch_until)
 			.await
 	}
 
 	async fn submit_and_watch_opaque_extrinsic_until(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
 		let tx_hash = T::Hasher::hash_of(&encoded_extrinsic.0);
@@ -285,7 +285,7 @@ where
 		SignedExtra: Encode,
 	{
 		self.submit_and_watch_opaque_extrinsic_until_success(
-			extrinsic.encode().into(),
+			&extrinsic.encode().into(),
 			wait_for_finalized,
 		)
 		.await
@@ -293,7 +293,7 @@ where
 
 	async fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
-		encoded_extrinsic: Bytes,
+		encoded_extrinsic: &Bytes,
 		wait_for_finalized: bool,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
 		let xt_status = match wait_for_finalized {
