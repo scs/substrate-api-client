@@ -18,7 +18,7 @@
 use codec::Encode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::DefaultAssetConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
+	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
 	GetChainInfo, GetTransactionPayment,
 };
 
@@ -27,7 +27,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<DefaultAssetConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(alice_pair.into());
 
 	let bob = AccountKeyring::Bob.to_account_id();

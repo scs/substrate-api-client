@@ -17,9 +17,9 @@ use core::fmt::Debug;
 
 /// Default set of commonly used types by Substrate kitchensink runtime.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct DefaultAssetConfig {}
+pub struct AssetRuntimeConfig {}
 
-impl Config for DefaultAssetConfig {
+impl Config for AssetRuntimeConfig {
 	type Index = u32;
 	type BlockNumber = u32;
 	type Hash = H256;

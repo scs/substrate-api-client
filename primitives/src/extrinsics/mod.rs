@@ -217,7 +217,7 @@ fn encode_with_vec_prefix<T: Encode, F: Fn(&mut Vec<u8>)>(encoder: F) -> Vec<u8>
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::DefaultAssetConfig;
+	use crate::AssetRuntimeConfig;
 	use extrinsic_params::{GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
 	use node_template_runtime::{BalancesCall, RuntimeCall, SignedExtra};
 	use sp_core::{crypto::Ss58Codec, Pair, H256 as Hash};
@@ -233,7 +233,7 @@ mod tests {
 		let tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
 			.era(Era::mortal(8, 0), Hash::from([0u8; 32]));
 
-		let default_extra = GenericExtrinsicParams::<DefaultAssetConfig, PlainTip<u128>>::new(
+		let default_extra = GenericExtrinsicParams::<AssetRuntimeConfig, PlainTip<u128>>::new(
 			0,
 			0,
 			0u32,
