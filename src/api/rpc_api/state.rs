@@ -94,12 +94,12 @@ pub trait GetStorage {
 
 	/// Retrieve the keys with prefix with pagination support.
 	/// Call the RPC substrate storage_keys_paged, which limits the number of returned keys.
-	/// See https://github.com/paritytech/substrate/blob/9f6fecfeea15345c983629af275b1f1702a50004/client/rpc/src/state/mod.rs#L54
 	///
 	/// Up to `count` keys will be returned. If `count` is too big, an error will be returned
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
+	// See https://github.com/paritytech/substrate/blob/9f6fecfeea15345c983629af275b1f1702a50004/client/rpc/src/state/mod.rs#L54
 	async fn get_storage_keys_paged_limited(
 		&self,
 		prefix: Option<StorageKey>,
