@@ -8,15 +8,12 @@
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/polkadot.rs
 
 use crate::{
-	config::WithExtrinsicParams, Config, GenericExtrinsicParams, PlainTip,
-	SubstrateKitchensinkConfig,
+	config::WithExtrinsicParams, Config, DefaultAssetConfig, GenericExtrinsicParams, PlainTip,
 };
 
 /// Default set of commonly used types by Polkadot nodes.
-pub type PolkadotConfig = WithExtrinsicParams<
-	SubstrateKitchensinkConfig,
-	PlainTipExtrinsicParams<SubstrateKitchensinkConfig>,
->;
+pub type DefaultPlainConfig =
+	WithExtrinsicParams<DefaultAssetConfig, PlainTipExtrinsicParams<DefaultAssetConfig>>;
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees.

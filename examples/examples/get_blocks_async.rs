@@ -18,7 +18,7 @@
 
 #[cfg(not(feature = "sync-examples"))]
 use substrate_api_client::{
-	ac_primitives::SubstrateKitchensinkConfig,
+	ac_primitives::DefaultAssetConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetChainInfo, SubscribeChain,
 };
@@ -30,7 +30,7 @@ async fn main() {
 	println!("Please compile this example with `--no-default-features` for it to run properly.")
 }
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the DefaultAssetConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 #[cfg(not(feature = "sync-examples"))]
@@ -40,7 +40,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<SubstrateKitchensinkConfig, _>::new(client).await.unwrap();
+	let api = Api::<DefaultAssetConfig, _>::new(client).await.unwrap();
 
 	let (genesis_block, header_hash, signed_block) = futures::future::try_join3(
 		api.get_genesis_block(),

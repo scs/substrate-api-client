@@ -138,7 +138,7 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::SubstrateKitchensinkConfig;
+	use crate::DefaultAssetConfig;
 	use node_template_runtime::Signature;
 	use sp_core::sr25519;
 	use sp_keyring::AccountKeyring;
@@ -146,7 +146,7 @@ mod tests {
 	#[test]
 	fn test_extrinsic_signer_clone() {
 		let pair = AccountKeyring::Alice.pair();
-		let signer = ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(pair);
+		let signer = ExtrinsicSigner::<DefaultAssetConfig>::new(pair);
 
 		let _signer2 = signer.clone();
 	}
@@ -167,8 +167,8 @@ mod tests {
 		)
 		.unwrap();
 
-		let es_converted: ExtrinsicSigner<SubstrateKitchensinkConfig> = alice.clone().into();
-		let es_new = ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(alice.clone());
+		let es_converted: ExtrinsicSigner<DefaultAssetConfig> = alice.clone().into();
+		let es_new = ExtrinsicSigner::<DefaultAssetConfig>::new(alice.clone());
 
 		assert_eq!(es_converted.signer.public(), es_new.signer.public());
 	}
