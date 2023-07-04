@@ -64,7 +64,7 @@ fn main() {
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api
-		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock)
 		.unwrap()
 		.block_hash
 		.unwrap();
