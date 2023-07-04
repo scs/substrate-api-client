@@ -22,11 +22,11 @@ use sp_runtime::traits::{
 
 use crate::{extrinsic_params, SignExtrinsic};
 
-pub use default_asset_config::*;
-pub use default_plain_config::*;
+pub use asset_runtime_config::*;
+pub use default_runtime_config::*;
 
-pub mod default_asset_config;
-pub mod default_plain_config;
+pub mod asset_runtime_config;
+pub mod default_runtime_config;
 
 /// Runtime types.
 pub trait Config {
