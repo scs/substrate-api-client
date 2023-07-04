@@ -76,7 +76,7 @@ async fn main() {
 	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").unwrap();
 	let max_keys = 3;
 	let storage_keys = api
-		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
+		.get_storage_keys_paged_limited(Some(storage_key_prefix), max_keys, None, None)
 		.unwrap();
 	assert_eq!(storage_keys.len() as u32, max_keys);
 	// Get the storage values that belong to the retrieved storage keys.
@@ -91,7 +91,7 @@ async fn main() {
 	let storage_double_map_key_prefix =
 		api.get_storage_double_map_key_prefix("Staking", "ErasStakers", 0).unwrap();
 	let double_map_storage_keys = api
-		.get_storage_keys_paged(Some(storage_double_map_key_prefix), max_keys, None, None)
+		.get_storage_keys_paged_limited(Some(storage_double_map_key_prefix), max_keys, None, None)
 		.unwrap();
 
 	// Get the storage values that belong to the retrieved storage keys.

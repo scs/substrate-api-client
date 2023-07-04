@@ -20,6 +20,7 @@ use ac_node_api::MetadataError;
 use ac_primitives::config::Config;
 use alloc::{borrow::ToOwned, string::String, vec, vec::Vec};
 use codec::{Decode, Encode};
+use core::cmp;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_storage::{StorageChangeSet, StorageData, StorageKey};
@@ -99,7 +100,7 @@ pub trait GetStorage {
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	async fn get_storage_keys_paged(
+	async fn get_storage_keys_paged_limited(
 		&self,
 		prefix: Option<StorageKey>,
 		count: u32,
@@ -113,7 +114,7 @@ pub trait GetStorage {
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	///
 	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
-	async fn get_all_storage_keys_paged_up_to_count(
+	async fn get_storage_keys_paged(
 		&self,
 		prefix: Option<StorageKey>,
 		count: u32,
@@ -267,7 +268,7 @@ where
 		}
 	}
 
-	async fn get_storage_keys_paged(
+	async fn get_storage_keys_paged_limited(
 		&self,
 		storage_key_prefix: Option<StorageKey>,
 		count: u32,
@@ -284,7 +285,7 @@ where
 		Ok(storage)
 	}
 
-	async fn get_all_storage_keys_paged_up_to_count(
+	async fn get_storage_keys_paged(
 		&self,
 		storage_key_prefix: Option<StorageKey>,
 		count: u32,
@@ -292,22 +293,26 @@ where
 		at_block: Option<Self::Hash>,
 	) -> Result<Vec<StorageKey>> {
 		let mut storage_keys: Vec<StorageKey> = Vec::new();
-		let mut still_todo = count;
-		let mut new_key = start_key;
+		let mut keys_left_to_fetch = count;
+		let mut new_start_key = start_key;
 
-		while still_todo > 0 {
-			let new_count = if still_todo < STORAGE_KEYS_PAGED_MAX_COUNT {
-				still_todo
-			} else {
-				STORAGE_KEYS_PAGED_MAX_COUNT
-			};
-
+		while keys_left_to_fetch > 0 {
+			let new_count = cmp::min(STORAGE_KEYS_PAGED_MAX_COUNT, keys_left_to_fetch);
 			let mut keys = self
-				.get_storage_keys_paged(storage_key_prefix.clone(), new_count, new_key, at_block)
+				.get_storage_keys_paged_limited(
+					storage_key_prefix.clone(),
+					new_count,
+					new_start_key,
+					at_block,
+				)
 				.await?;
+			let num_keys = keys.len() as u32;
 			storage_keys.append(&mut keys);
-			still_todo -= new_count;
-			new_key = keys.last().map(|x| x.to_owned());
+			if num_keys < new_count {
+				break
+			}
+			keys_left_to_fetch -= new_count;
+			new_start_key = keys.last().map(|x| x.to_owned());
 		}
 
 		Ok(storage_keys)

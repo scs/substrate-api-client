@@ -90,22 +90,25 @@ async fn main() {
 	let _constants: Balance = api.get_constant("Balances", "ExistentialDeposit").unwrap();
 
 	let max_keys = 2003;
-	let result =
-		api.get_storage_keys_paged(Some(storage_key_prefix.clone()), max_keys.clone(), None, None);
+	let result = api.get_storage_keys_paged_limited(
+		Some(storage_key_prefix.clone()),
+		max_keys.clone(),
+		None,
+		None,
+	);
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("count exceeds maximum value"));
 
 	let storage_keys = api
-		.get_all_storage_keys_paged_up_to_count(Some(storage_key_prefix), max_keys, None, None)
+		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
 		.unwrap();
-	assert!(storage_keys.len() as u32 > 3);
-	assert!(storage_keys.len() as u32 <= max_keys);
+	assert_eq!(storage_keys.len() as u32, 13);
 
 	let max_keys = 20;
-	let storage_keys = api.get_storage_keys_paged(None, max_keys.clone(), None, None).unwrap();
+	let storage_keys =
+		api.get_storage_keys_paged_limited(None, max_keys.clone(), None, None).unwrap();
 	assert_eq!(storage_keys.len() as u32, max_keys);
 
-	let storage_keys =
-		api.get_all_storage_keys_paged_up_to_count(None, max_keys, None, None).unwrap();
+	let storage_keys = api.get_storage_keys_paged(None, max_keys, None, None).unwrap();
 	assert_eq!(storage_keys.len() as u32, max_keys);
 }
