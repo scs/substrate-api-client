@@ -21,24 +21,23 @@ use std::{thread, time::Duration};
 use substrate_api_client::{
 	ac_node_api::EventDetails,
 	ac_primitives::{
-		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
-		SubstrateKitchensinkConfig,
+		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
 	},
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
-type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateKitchensinkConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
+type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	api.set_signer(ExtrinsicSigner::new(alice_pair));
 

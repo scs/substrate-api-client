@@ -20,20 +20,20 @@ use kitchensink_runtime::AccountId;
 use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{Config, ExtrinsicSigner, SubstrateKitchensinkConfig},
+	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage,
 };
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 type AccountInfo = GenericAccountInfo<
-	<SubstrateKitchensinkConfig as Config>::Index,
-	<SubstrateKitchensinkConfig as Config>::AccountData,
+	<AssetRuntimeConfig as Config>::Index,
+	<AssetRuntimeConfig as Config>::AccountData,
 >;
 
-type Balance = <SubstrateKitchensinkConfig as Config>::Balance;
+type Balance = <AssetRuntimeConfig as Config>::Balance;
 
 #[tokio::main]
 async fn main() {
@@ -41,7 +41,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	// get some plain storage value
 	let result: Balance = api.get_storage("Balances", "TotalIssuance", None).unwrap().unwrap();

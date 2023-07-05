@@ -17,9 +17,9 @@ use core::fmt::Debug;
 
 /// Default set of commonly used types by Substrate kitchensink runtime.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct SubstrateKitchensinkConfig {}
+pub struct AssetRuntimeConfig {}
 
-impl Config for SubstrateKitchensinkConfig {
+impl Config for AssetRuntimeConfig {
 	type Index = u32;
 	type BlockNumber = u32;
 	type Hash = H256;
@@ -41,3 +41,9 @@ impl Config for SubstrateKitchensinkConfig {
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees.
 pub type AssetTipExtrinsicParams<T> = GenericExtrinsicParams<T, AssetTip<<T as Config>::Balance>>;
+
+#[deprecated(
+	since = "0.14.0",
+	note = "Please use `AssetRuntimeConfig` instead, this will be removed in the next release."
+)]
+pub type SubstrateKitchensinkConfig = AssetRuntimeConfig;

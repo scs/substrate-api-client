@@ -20,7 +20,7 @@ use frame_support::dispatch::DispatchInfo;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::StaticEvent,
-	ac_primitives::{ExtrinsicSigner, SubstrateKitchensinkConfig},
+	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SystemApi,
 };
@@ -41,7 +41,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::new(alice_pair));
 
 	let alice = AccountKeyring::Alice.to_account_id();

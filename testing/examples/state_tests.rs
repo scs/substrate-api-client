@@ -22,12 +22,12 @@ use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::AccountKeyring;
 use sp_staking::EraIndex;
 use substrate_api_client::{
-	ac_primitives::{Config, SubstrateKitchensinkConfig},
+	ac_primitives::{AssetRuntimeConfig, Config},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, GetStorage,
 };
 
-type KitchensinkConfig = SubstrateKitchensinkConfig;
+type KitchensinkConfig = AssetRuntimeConfig;
 type Balance = <KitchensinkConfig as Config>::Balance;
 type AccountData = GenericAccountData<Balance>;
 type ErasStakers = Exposure<

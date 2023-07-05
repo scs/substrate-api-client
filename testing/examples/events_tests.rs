@@ -21,13 +21,13 @@ use kitchensink_runtime::RuntimeEvent;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::{EventDetails, StaticEvent},
-	ac_primitives::{Config, ExtrinsicSigner, SubstrateKitchensinkConfig},
+	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
-type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
+type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
 #[derive(Decode, Debug)]
@@ -45,8 +45,8 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(alice_pair));
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice_pair));
 
 	let bob = AccountKeyring::Bob.to_account_id();
 
@@ -72,7 +72,7 @@ async fn main() {
 	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
 		let event_records = event_subscription
-			.next_events::<RuntimeEvent, <SubstrateKitchensinkConfig as Config>::Hash>()
+			.next_events::<RuntimeEvent, <AssetRuntimeConfig as Config>::Hash>()
 			.unwrap()
 			.unwrap();
 		for event_record in &event_records {

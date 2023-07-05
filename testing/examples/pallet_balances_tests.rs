@@ -16,14 +16,14 @@
 //! Tests for the pallet balances interface functions.
 
 use substrate_api_client::{
-	ac_primitives::SubstrateKitchensinkConfig, rpc::JsonrpseeClient, Api, GetBalance,
+	ac_primitives::AssetRuntimeConfig, rpc::JsonrpseeClient, Api, GetBalance,
 };
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	let _ed = api.get_existential_deposit().unwrap();
 }

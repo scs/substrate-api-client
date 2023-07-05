@@ -22,20 +22,20 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{
-		ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, SubstrateKitchensinkConfig,
+		AssetRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
 		UncheckedExtrinsicV4,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<SubstrateKitchensinkConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
@@ -49,7 +49,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::new(sudoer));
 
 	// Set the recipient of newly issued funds.

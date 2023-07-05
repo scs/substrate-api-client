@@ -20,12 +20,12 @@ use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{ExtrinsicSigner, GenericAdditionalParams, SubstrateKitchensinkConfig},
+	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, GenericAdditionalParams},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 #[tokio::main]
@@ -38,8 +38,8 @@ async fn main() {
 	// Api::new(..) is not actually an offline call, but retrieves metadata and other information from the node.
 	// If this is not acceptable, use the Api::new_offline(..) function instead. There are no examples for this,
 	// because of the constantly changing substrate node. But check out our unit tests - there are Apis created with `new_offline`.
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(signer));
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(signer));
 
 	// Information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

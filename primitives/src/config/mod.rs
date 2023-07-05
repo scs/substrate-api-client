@@ -22,11 +22,11 @@ use sp_runtime::traits::{
 
 use crate::{extrinsic_params, SignExtrinsic};
 
-pub use polkadot::*;
-pub use substrate_kitchensink::*;
+pub use asset_runtime_config::*;
+pub use default_runtime_config::*;
 
-pub mod polkadot;
-pub mod substrate_kitchensink;
+pub mod asset_runtime_config;
+pub mod default_runtime_config;
 
 /// Runtime types.
 pub trait Config {
@@ -128,17 +128,17 @@ pub trait Config {
 		+ DeserializeOwned;
 }
 
-/// Take a type implementing [`Config`] (eg [`SubstrateConfig`]), and some type which describes the
+/// Take a type implementing [`Config`] (eg [`AssetRuntimeConfig`]), and some type which describes the
 /// additional and extra parameters to pass to an extrinsic (see [`ExtrinsicParams`]),
 /// and returns a type implementing [`Config`] with those new [`ExtrinsicParams`].
 ///
 /// # Example
 ///
 /// ```
-/// use ac_primitives::{ SubstrateKitchensinkConfig, WithExtrinsicParams, PlainTipExtrinsicParams };
+/// use ac_primitives::{ AssetRuntimeConfig, WithExtrinsicParams, PlainTipExtrinsicParams };
 ///
-/// // This is how PolkadotConfig is implemented:
-/// type PolkadotConfig = WithExtrinsicParams<SubstrateKitchensinkConfig, PlainTipExtrinsicParams<SubstrateKitchensinkConfig>>;
+/// // This is how DefaultRuntimeConfig is implemented:
+/// type DefaultRuntimeConfig = WithExtrinsicParams<AssetRuntimeConfig, PlainTipExtrinsicParams<AssetRuntimeConfig>>;
 /// ```
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct WithExtrinsicParams<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> {

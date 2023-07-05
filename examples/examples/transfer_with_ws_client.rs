@@ -21,13 +21,13 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::{ExtrinsicSigner, SubstrateKitchensinkConfig},
+	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::WsRpcClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 fn main() {
@@ -43,8 +43,8 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::with_default_url();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<SubstrateKitchensinkConfig>::new(alice.clone()));
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice.clone()));
 
 	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

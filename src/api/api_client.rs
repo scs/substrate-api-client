@@ -34,7 +34,7 @@ use sp_version::RuntimeVersion;
 ///
 /// ```no_run
 /// use substrate_api_client::{
-///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, ac_primitives::SubstrateKitchensinkConfig
+///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, ac_primitives::AssetRuntimeConfig
 /// };
 /// use serde::de::DeserializeOwned;
 /// use ac_primitives::RpcParams;
@@ -78,7 +78,7 @@ use sp_version::RuntimeVersion;
 /// }
 ///
 /// let client = MyClient::new();
-/// let _api = Api::<SubstrateKitchensinkConfig,MyClient>::new(client);
+/// let _api = Api::<AssetRuntimeConfig,MyClient>::new(client);
 ///
 /// ```
 #[derive(Clone)]
@@ -297,8 +297,8 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_primitives::{
-		GenericAdditionalParams, GenericExtrinsicParams, PlainTip, PolkadotConfig,
-		SubstrateKitchensinkConfig,
+		AssetRuntimeConfig, DefaultRuntimeConfig, GenericAdditionalParams, GenericExtrinsicParams,
+		PlainTip,
 	};
 	use frame_metadata::{ExtrinsicMetadata, RuntimeMetadata};
 	use scale_info::form::PortableForm;
@@ -310,7 +310,7 @@ mod tests {
 		runtime_version: RuntimeVersion,
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<PolkadotConfig, RpcClientMock> {
+	) -> Api<DefaultRuntimeConfig, RpcClientMock> {
 		let client = RpcClientMock::new(data);
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}
@@ -335,14 +335,13 @@ mod tests {
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
 
-		let expected_params =
-			GenericExtrinsicParams::<SubstrateKitchensinkConfig, PlainTip<u128>>::new(
-				runtime_version.spec_version,
-				runtime_version.transaction_version,
-				nonce,
-				genesis_hash,
-				Default::default(),
-			);
+		let expected_params = GenericExtrinsicParams::<AssetRuntimeConfig, PlainTip<u128>>::new(
+			runtime_version.spec_version,
+			runtime_version.transaction_version,
+			nonce,
+			genesis_hash,
+			Default::default(),
+		);
 
 		assert_eq!(expected_params, retrieved_params)
 	}

@@ -16,7 +16,7 @@
 //! Tests for the chain rpc interface functions.
 
 use substrate_api_client::{
-	ac_primitives::SubstrateKitchensinkConfig,
+	ac_primitives::AssetRuntimeConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetChainInfo, SubscribeChain,
 };
@@ -25,7 +25,7 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	// GetChainInfo
 	let finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

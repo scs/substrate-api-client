@@ -225,7 +225,7 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::PolkadotConfig;
+	use ac_primitives::DefaultRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
@@ -249,7 +249,7 @@ mod tests {
 	fn create_mock_api(
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<PolkadotConfig, RpcClientMock> {
+	) -> Api<DefaultRuntimeConfig, RpcClientMock> {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();
@@ -374,9 +374,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <PolkadotConfig as Config>::Hasher::hash_of(&xt1.0);
-		let xt_hash2 = <PolkadotConfig as Config>::Hasher::hash_of(&xt2.0);
-		let xt_hash3 = <PolkadotConfig as Config>::Hasher::hash_of(&xt3.0);
+		let xt_hash1 = <DefaultRuntimeConfig as Config>::Hasher::hash_of(&xt1.0);
+		let xt_hash2 = <DefaultRuntimeConfig as Config>::Hasher::hash_of(&xt2.0);
+		let xt_hash3 = <DefaultRuntimeConfig as Config>::Hasher::hash_of(&xt3.0);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };

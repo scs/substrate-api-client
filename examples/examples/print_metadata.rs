@@ -16,9 +16,9 @@
 //! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
 //! debugging tool.
 
-use substrate_api_client::{ac_primitives::SubstrateKitchensinkConfig, rpc::JsonrpseeClient, Api};
+use substrate_api_client::{ac_primitives::AssetRuntimeConfig, rpc::JsonrpseeClient, Api};
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the SubstrateKitchensinkConfig
+// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
 // ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
 
 #[tokio::main]
@@ -27,7 +27,7 @@ async fn main() {
 
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	let meta = api.metadata().clone();
 
