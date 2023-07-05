@@ -106,13 +106,23 @@ pub trait SubmitAndWatch {
 
 	/// Submit an extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
-	/// When status is InBlock or Finalized, the triggered events are listed in the report.
-	/// Returns and error if the extrinsic was not successfully executed.
+	///
+	/// If watched until `InBlock` or `Finalized`, this function will
+	/// return an error if the extrinsic was not successfully executed.
 	/// If it was successful, a report containing the following is returned:
 	/// - extrinsic hash
 	/// - hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic (only for InBlock or Finalized)
+	///
+	/// If not watched until at least `InBlock`, this function will not know if the extrinsic
+	/// has been executed on chain or not and will therefore not return an error if execution fails..
+	/// An error will be returned, if the extrinsic has failed to be sent or if it has not been
+	/// included into the transaction pool of the node.
+	/// If no error occurs, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - last known extrinsic (transaction) status
+	///
 	/// This method is blocking.
 	async fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
@@ -127,13 +137,23 @@ pub trait SubmitAndWatch {
 
 	/// Submit an encoded, opaque extrinsic until the desired status
 	/// is reached, if no error is encountered previously.
-	/// When status is InBlock or Finalized, the triggered events are listed in the report.
-	/// Returns and error if the extrinsic was not successfully executed.
+	///
+	/// If watched until `InBlock` or `Finalized`, this function will
+	/// return an error if the extrinsic was not successfully executed.
 	/// If it was successful, a report containing the following is returned:
 	/// - extrinsic hash
 	/// - hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic (only for InBlock or Finalized)
+	///
+	/// If not watched until at least `InBlock`, this function will not know if the extrinsic
+	/// has been executed on chain or not and will therefore not return an error if execution fails..
+	/// An error will be returned, if the extrinsic has failed to be sent or if it has not been
+	/// included into the transaction pool of the node.
+	/// If no error occurs, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - last known extrinsic (transaction) status
+	///
 	/// This method is blocking.
 	async fn submit_and_watch_opaque_extrinsic_until(
 		&self,
