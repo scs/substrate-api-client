@@ -26,7 +26,7 @@ use serde::de::DeserializeOwned;
 use sp_storage::{StorageChangeSet, StorageData, StorageKey};
 
 /// Default substrate value of maximum number of keys returned.
-/// See https://github.com/paritytech/substrate/blob/9f6fecfeea15345c983629af275b1f1702a50004/client/rpc/src/state/mod.rs#L54
+// See https://github.com/paritytech/substrate/blob/9f6fecfeea15345c983629af275b1f1702a50004/client/rpc/src/state/mod.rs#L54
 const STORAGE_KEYS_PAGED_MAX_COUNT: u32 = 1000;
 
 pub type StorageChangeSetSubscriptionFor<Client, Hash> =
