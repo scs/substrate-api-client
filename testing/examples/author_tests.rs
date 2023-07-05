@@ -67,11 +67,10 @@ async fn main() {
 
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt2 = api.balance_transfer_allow_death(bob.clone(), 1000);
-	let report = api
-		.submit_and_watch_extrinsic_until_without_events(xt2, XtStatus::Ready)
-		.unwrap();
+	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
 	assert!(report.block_hash.is_none());
-	println!("Success: submit_and_watch_extrinsic_until_without_events Ready");
+	assert!(report.events.is_none());
+	println!("Success: submit_and_watch_extrinsic_until Ready");
 
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt3 = api.balance_transfer_allow_death(bob.clone(), 1000);
