@@ -18,11 +18,16 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::MetadataError;
 use ac_primitives::config::Config;
-use alloc::{string::String, vec, vec::Vec};
+use alloc::{borrow::ToOwned, string::String, vec, vec::Vec};
 use codec::{Decode, Encode};
+use core::cmp;
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_storage::{StorageChangeSet, StorageData, StorageKey};
+
+/// Default substrate value of maximum number of keys returned.
+// See https://github.com/paritytech/substrate/blob/9f6fecfeea15345c983629af275b1f1702a50004/client/rpc/src/state/mod.rs#L54
+const STORAGE_KEYS_PAGED_MAX_COUNT: u32 = 1000;
 
 pub type StorageChangeSetSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<StorageChangeSet<Hash>>;
@@ -88,6 +93,23 @@ pub trait GetStorage {
 	) -> Result<Option<V>>;
 
 	/// Retrieve the keys with prefix with pagination support.
+	/// Call the RPC substrate storage_keys_paged, which limits the number of returned keys.
+	///
+	/// Up to `count` keys will be returned. If `count` is too big, an error will be returned
+	/// If `start_key` is passed, return next keys in storage in lexicographic order.
+	///
+	/// `at_block`: the state is queried at this block, set to `None` to get the state from the latest known block.
+	// See https://github.com/paritytech/substrate/blob/9f6fecfeea15345c983629af275b1f1702a50004/client/rpc/src/state/mod.rs#L54
+	async fn get_storage_keys_paged_limited(
+		&self,
+		prefix: Option<StorageKey>,
+		count: u32,
+		start_key: Option<StorageKey>,
+		at_block: Option<Self::Hash>,
+	) -> Result<Vec<StorageKey>>;
+
+	/// Retrieve up to `count` keys. Support prefix and pagination support.
+	/// The number of keys returned is not limited. For big numbers, the rpc calls will be made several times.
 	/// Up to `count` keys will be returned.
 	/// If `start_key` is passed, return next keys in storage in lexicographic order.
 	///
@@ -246,7 +268,7 @@ where
 		}
 	}
 
-	async fn get_storage_keys_paged(
+	async fn get_storage_keys_paged_limited(
 		&self,
 		storage_key_prefix: Option<StorageKey>,
 		count: u32,
@@ -261,6 +283,39 @@ where
 			)
 			.await?;
 		Ok(storage)
+	}
+
+	async fn get_storage_keys_paged(
+		&self,
+		storage_key_prefix: Option<StorageKey>,
+		count: u32,
+		start_key: Option<StorageKey>,
+		at_block: Option<Self::Hash>,
+	) -> Result<Vec<StorageKey>> {
+		let mut storage_keys: Vec<StorageKey> = Vec::new();
+		let mut keys_left_to_fetch = count;
+		let mut new_start_key = start_key;
+
+		while keys_left_to_fetch > 0 {
+			let new_count = cmp::min(STORAGE_KEYS_PAGED_MAX_COUNT, keys_left_to_fetch);
+			let mut keys = self
+				.get_storage_keys_paged_limited(
+					storage_key_prefix.clone(),
+					new_count,
+					new_start_key,
+					at_block,
+				)
+				.await?;
+			let num_keys = keys.len() as u32;
+			storage_keys.append(&mut keys);
+			if num_keys < new_count {
+				break
+			}
+			keys_left_to_fetch -= new_count;
+			new_start_key = keys.last().map(|x| x.to_owned());
+		}
+
+		Ok(storage_keys)
 	}
 
 	async fn get_opaque_storage_by_key(
