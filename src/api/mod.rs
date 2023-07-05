@@ -25,8 +25,8 @@ pub use api_client::Api;
 pub use error::{Error, Result};
 pub use rpc_api::{
 	FetchEvents, GetAccountInformation, GetBalance, GetChainInfo, GetStorage,
-	GetTransactionPayment, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic,
-	SubscribeChain, SubscribeEvents, SystemApi,
+	GetTransactionPayment, SubmitAndWatch, SubmitExtrinsic, SubscribeChain, SubscribeEvents,
+	SystemApi,
 };
 
 pub mod api_client;

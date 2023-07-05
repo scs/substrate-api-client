@@ -21,7 +21,7 @@ use substrate_api_client::{
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatchUntilSuccess, XtStatus,
+	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 // To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig

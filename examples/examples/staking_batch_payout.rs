@@ -19,7 +19,7 @@ use substrate_api_client::{
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
-	Api, GetStorage, SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;

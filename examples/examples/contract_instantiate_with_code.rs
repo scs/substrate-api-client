@@ -21,7 +21,7 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::primitives::AssetRuntimeConfig, ac_node_api::StaticEvent,
 	ac_primitives::ExtrinsicSigner, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
-	SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	SubmitAndWatch, XtStatus,
 };
 
 // To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig

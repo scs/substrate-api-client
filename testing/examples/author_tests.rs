@@ -25,7 +25,7 @@ use substrate_api_client::{
 	},
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
+	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
 type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
