@@ -163,7 +163,10 @@ pub trait SubmitAndWatchUntilSuccess {
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic
 	/// This method is blocking.
-	#[deprecated(note = "please use `submit_and_watch_extrinsic_until` instead")]
+	#[deprecated(
+		since = "0.14.0",
+		note = "please use `submit_and_watch_extrinsic_until` instead, this will be removed in the next release."
+	)]
 	async fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
@@ -185,7 +188,10 @@ pub trait SubmitAndWatchUntilSuccess {
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic
 	/// This method is blocking.
-	#[deprecated(note = "please use `submit_and_watch_opaque_extrinsic_until` instead")]
+	#[deprecated(
+		since = "0.14.0",
+		note = "please use `submit_and_watch_opaque_extrinsic_until` instead, this will be removed in the next release."
+	)]
 	async fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
 		encoded_extrinsic: &Bytes,
