@@ -113,11 +113,11 @@ pub trait SubmitAndWatch {
 	/// - extrinsic hash
 	/// - hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
-	/// - associated events of the extrinsic (only for InBlock or Finalized)
+	/// - associated events of the extrinsic
 	///
 	/// If not watched until at least `InBlock`, this function will not know if the extrinsic
-	/// has been executed on chain or not and will therefore not return an error if execution fails..
-	/// An error will be returned, if the extrinsic has failed to be sent or if it has not been
+	/// has been executed on chain or not and will therefore not return an error if execution fails.
+	/// An error will be returned if the extrinsic has failed to be sent or if it has not been
 	/// included into the transaction pool of the node.
 	/// If no error occurs, a report containing the following is returned:
 	/// - extrinsic hash
@@ -190,7 +190,7 @@ pub trait SubmitAndWatch {
 	/// Submit an encoded, opaque extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
 	/// The events are not fetched. So no events are listed in the report.
-	/// To fetch the triggered events, please use submit_and_watch_opaque_extrinsic_until_success.
+	/// To fetch the triggered events, please use submit_and_watch_opaque_extrinsic_until.
 	/// Upon success, a report containing the following information is returned:
 	/// - extrinsic hash
 	/// - if watched until at least `InBlock`:
