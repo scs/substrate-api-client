@@ -25,8 +25,8 @@ pub use api_client::Api;
 pub use error::{Error, Result};
 pub use rpc_api::{
 	FetchEvents, GetAccountInformation, GetBalance, GetChainInfo, GetStorage,
-	GetTransactionPayment, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic,
-	SubscribeChain, SubscribeEvents, SystemApi,
+	GetTransactionPayment, SubmitAndWatch, SubmitExtrinsic, SubscribeChain, SubscribeEvents,
+	SystemApi,
 };
 
 pub mod api_client;
@@ -64,7 +64,7 @@ impl<Hash: Decode> ExtrinsicReport<Hash> {
 /// Simplified TransactionStatus to allow the user to choose until when to watch
 /// an extrinsic.
 // Indexes must match the TransactionStatus::as_u8 from below.
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Eq, Copy, Clone)]
 pub enum XtStatus {
 	Ready = 1,
 	Broadcast = 2,

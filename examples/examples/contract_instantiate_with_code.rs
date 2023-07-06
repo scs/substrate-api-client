@@ -21,7 +21,7 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::primitives::AssetRuntimeConfig, ac_node_api::StaticEvent,
 	ac_primitives::ExtrinsicSigner, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
-	SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	SubmitAndWatch, XtStatus,
 };
 
 // To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
@@ -69,7 +69,7 @@ async fn main() {
 	);
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
-	let report = api.submit_and_watch_extrinsic_until_success(xt, false).unwrap();
+	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).unwrap();
 	println!("[+] Extrinsic is in Block. Hash: {:?}\n", report.block_hash.unwrap());
 
 	println!("[+] Waiting for the contracts.Instantiated event");
@@ -89,6 +89,8 @@ async fn main() {
 	let xt = api.contract_call(contract.into(), 500_000, 500_000, vec![0u8]);
 
 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).unwrap();
+	let report = api
+		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::Finalized)
+		.unwrap();
 	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }

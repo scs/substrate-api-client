@@ -25,7 +25,7 @@ use substrate_api_client::{
 	},
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, SubmitAndWatch, SubmitAndWatchUntilSuccess, SubmitExtrinsic, TransactionStatus, XtStatus,
+	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
 type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
@@ -69,28 +69,29 @@ async fn main() {
 	let xt2 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
 	assert!(report.block_hash.is_none());
+	assert!(report.events.is_none());
 	println!("Success: submit_and_watch_extrinsic_until Ready");
 
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt3 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	// The xt is not broadcast - we only have one node running. Therefore, InBlock is returned.
 	let _some_hash = api
-		.submit_and_watch_extrinsic_until(xt3, XtStatus::Broadcast)
+		.submit_and_watch_extrinsic_until_without_events(xt3, XtStatus::Broadcast)
 		.unwrap()
 		.block_hash
 		.unwrap();
-	println!("Success: submit_and_watch_extrinsic_until Broadcast");
+	println!("Success: submit_and_watch_extrinsic_until_without_events Broadcast");
 
 	let api2 = api.clone();
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt4 = api2.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_in_block_handle = thread::spawn(move || {
 		let _block_hash = api2
-			.submit_and_watch_extrinsic_until(xt4, XtStatus::InBlock)
+			.submit_and_watch_extrinsic_until_without_events(xt4, XtStatus::InBlock)
 			.unwrap()
 			.block_hash
 			.unwrap();
-		println!("Success: submit_and_watch_extrinsic_until InBlock");
+		println!("Success: submit_and_watch_extrinsic_until_without_events InBlock");
 	});
 
 	let api3 = api.clone();
@@ -98,11 +99,11 @@ async fn main() {
 	let xt5 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_finalized_handle = thread::spawn(move || {
 		let _block_hash = api3
-			.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized)
+			.submit_and_watch_extrinsic_until_without_events(xt5, XtStatus::Finalized)
 			.unwrap()
 			.block_hash
 			.unwrap();
-		println!("Success: submit_and_watch_extrinsic_until Finalized");
+		println!("Success: submit_and_watch_extrinsic_until_without_events Finalized");
 	});
 
 	// Test Success.
@@ -110,7 +111,7 @@ async fn main() {
 	let xt6 = api.balance_transfer_allow_death(bob, 1000);
 
 	let events = api
-		.submit_and_watch_extrinsic_until_success(xt6, false)
+		.submit_and_watch_extrinsic_until(xt6, XtStatus::InBlock)
 		.unwrap()
 		.events
 		.unwrap();

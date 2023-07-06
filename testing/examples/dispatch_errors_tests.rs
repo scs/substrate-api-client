@@ -21,7 +21,7 @@ use substrate_api_client::{
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatchUntilSuccess,
+	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]
@@ -49,7 +49,7 @@ async fn main() {
 	//Can only be called by root
 	let xt = api.balance_force_set_balance(MultiAddress::Id(alice.clone()), 10);
 
-	let result = api.submit_and_watch_extrinsic_until_success(xt, false);
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("BadOrigin"));
 	println!("[+] BadOrigin error: Bob can't force set balance");
@@ -57,7 +57,7 @@ async fn main() {
 	//BelowMinimum
 	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice_signer));
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(one.clone()), 999999);
-	let result = api.submit_and_watch_extrinsic_until_success(xt, false);
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("(BelowMinimum"));
 	println!("[+] BelowMinimum error: balance (999999) is below the existential deposit");

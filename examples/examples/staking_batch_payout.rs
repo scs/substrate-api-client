@@ -19,7 +19,7 @@ use substrate_api_client::{
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
-	Api, GetStorage, SubmitAndWatch, SubmitAndWatchUntilSuccess, XtStatus,
+	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;
@@ -71,7 +71,7 @@ async fn main() {
 	// Sidenote: We could theoretically force a new era with sudo, but this takes at least 10 minutes ( = 1 epoch) in the
 	// kitchensink rutime. We don't want to wait that long.
 	let payout_staker_xt = api.payout_stakers(0, validator_stash);
-	let result = api.submit_and_watch_extrinsic_until_success(payout_staker_xt, false);
+	let result = api.submit_and_watch_extrinsic_until(payout_staker_xt, XtStatus::InBlock);
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("InvalidEraToReward"));
 
@@ -130,7 +130,9 @@ async fn main() {
 			num_of_unclaimed_payouts -= tx_limit_in_current_batch;
 			let batch_xt = api.batch(payout_calls);
 
-			let report = api.submit_and_watch_extrinsic_until(batch_xt, XtStatus::InBlock).unwrap();
+			let report = api
+				.submit_and_watch_extrinsic_until_without_events(batch_xt, XtStatus::InBlock)
+				.unwrap();
 			results.push(format!("{report:?}"));
 		}
 		println!("{:?}", results);

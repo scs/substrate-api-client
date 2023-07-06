@@ -106,11 +106,23 @@ pub trait SubmitAndWatch {
 
 	/// Submit an extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
-	/// Upon success, a report containing the following information is returned:
+	///
+	/// If watched until `InBlock` or `Finalized`, this function will
+	/// return an error if the extrinsic was not successfully executed.
+	/// If it was successful, a report containing the following is returned:
 	/// - extrinsic hash
-	/// - if watched until at least `InBlock`:
-	///   hash of the block the extrinsic was included in
+	/// - hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
+	/// - associated events of the extrinsic
+	///
+	/// If not watched until at least `InBlock`, this function will not know if the extrinsic
+	/// has been executed on chain or not and will therefore not return an error if execution fails.
+	/// An error will be returned if the extrinsic has failed to be sent or if it has not been
+	/// included into the transaction pool of the node.
+	/// If no error occurs, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - last known extrinsic (transaction) status
+	///
 	/// This method is blocking.
 	async fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
@@ -123,15 +135,69 @@ pub trait SubmitAndWatch {
 		Signature: Encode,
 		SignedExtra: Encode;
 
-	/// Submit an encoded, opaque extrinsic and watch it until the desired status
+	/// Submit an encoded, opaque extrinsic until the desired status
 	/// is reached, if no error is encountered previously.
+	///
+	/// If watched until `InBlock` or `Finalized`, this function will
+	/// return an error if the extrinsic was not successfully executed.
+	/// If it was successful, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - hash of the block the extrinsic was included in
+	/// - last known extrinsic (transaction) status
+	/// - associated events of the extrinsic (only for InBlock or Finalized)
+	///
+	/// If not watched until at least `InBlock`, this function will not know if the extrinsic
+	/// has been executed on chain or not and will therefore not return an error if execution fails..
+	/// An error will be returned, if the extrinsic has failed to be sent or if it has not been
+	/// included into the transaction pool of the node.
+	/// If no error occurs, a report containing the following is returned:
+	/// - extrinsic hash
+	/// - last known extrinsic (transaction) status
+	///
+	/// This method is blocking.
+	async fn submit_and_watch_opaque_extrinsic_until(
+		&self,
+		encoded_extrinsic: &Bytes,
+		watch_until: XtStatus,
+	) -> Result<ExtrinsicReport<Self::Hash>>;
+
+	/// Submit an extrinsic and watch it until the desired status
+	/// is reached, if no error is encountered previously.
+	/// The events are not fetched. So no events are listed in the report.
+	/// To fetch the triggered events, please use submit_and_watch_extrinsic_until.
 	/// Upon success, a report containing the following information is returned:
 	/// - extrinsic hash
 	/// - if watched until at least `InBlock`:
 	///   hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
 	/// This method is blocking.
-	async fn submit_and_watch_opaque_extrinsic_until(
+	async fn submit_and_watch_extrinsic_until_without_events<
+		Address,
+		Call,
+		Signature,
+		SignedExtra,
+	>(
+		&self,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		watch_until: XtStatus,
+	) -> Result<ExtrinsicReport<Self::Hash>>
+	where
+		Address: Encode,
+		Call: Encode,
+		Signature: Encode,
+		SignedExtra: Encode;
+
+	/// Submit an encoded, opaque extrinsic and watch it until the desired status
+	/// is reached, if no error is encountered previously.
+	/// The events are not fetched. So no events are listed in the report.
+	/// To fetch the triggered events, please use submit_and_watch_opaque_extrinsic_until.
+	/// Upon success, a report containing the following information is returned:
+	/// - extrinsic hash
+	/// - if watched until at least `InBlock`:
+	///   hash of the block the extrinsic was included in
+	/// - last known extrinsic (transaction) status
+	/// This method is blocking.
+	async fn submit_and_watch_opaque_extrinsic_until_without_events(
 		&self,
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
@@ -153,6 +219,10 @@ pub trait SubmitAndWatchUntilSuccess {
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic
 	/// This method is blocking.
+	#[deprecated(
+		since = "0.14.0",
+		note = "please use `SubmitAndWatch::submit_and_watch_extrinsic_until` instead, this will be removed in the next release."
+	)]
 	async fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
@@ -174,6 +244,10 @@ pub trait SubmitAndWatchUntilSuccess {
 	/// - last known extrinsic (transaction) status
 	/// - associated events of the extrinsic
 	/// This method is blocking.
+	#[deprecated(
+		since = "0.14.0",
+		note = "please use `SubmitAndWatch::submit_and_watch_opaque_extrinsic_until` instead, this will be removed in the next release."
+	)]
 	async fn submit_and_watch_opaque_extrinsic_until_success(
 		&self,
 		encoded_extrinsic: &Bytes,
@@ -185,7 +259,7 @@ pub trait SubmitAndWatchUntilSuccess {
 impl<T, Client> SubmitAndWatch for Api<T, Client>
 where
 	T: Config,
-	Client: Subscribe,
+	Client: Subscribe + Request,
 {
 	type Client = Client;
 	type Hash = T::Hash;
@@ -232,6 +306,52 @@ where
 	}
 
 	async fn submit_and_watch_opaque_extrinsic_until(
+		&self,
+		encoded_extrinsic: &Bytes,
+		watch_until: XtStatus,
+	) -> Result<ExtrinsicReport<Self::Hash>> {
+		let mut report = self
+			.submit_and_watch_opaque_extrinsic_until_without_events(encoded_extrinsic, watch_until)
+			.await?;
+
+		if watch_until < XtStatus::InBlock {
+			return Ok(report)
+		}
+		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
+		let extrinsic_events =
+			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
+		// Ensure that the extrins has been successful. If not, return an error.
+		for event in &extrinsic_events {
+			event.check_if_failed()?;
+		}
+		report.events = Some(extrinsic_events);
+		Ok(report)
+	}
+
+	async fn submit_and_watch_extrinsic_until_without_events<
+		Address,
+		Call,
+		Signature,
+		SignedExtra,
+	>(
+		&self,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		watch_until: XtStatus,
+	) -> Result<ExtrinsicReport<Self::Hash>>
+	where
+		Address: Encode,
+		Call: Encode,
+		Signature: Encode,
+		SignedExtra: Encode,
+	{
+		self.submit_and_watch_opaque_extrinsic_until_without_events(
+			&extrinsic.encode().into(),
+			watch_until,
+		)
+		.await
+	}
+
+	async fn submit_and_watch_opaque_extrinsic_until_without_events(
 		&self,
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
@@ -284,11 +404,13 @@ where
 		Signature: Encode,
 		SignedExtra: Encode,
 	{
-		self.submit_and_watch_opaque_extrinsic_until_success(
-			&extrinsic.encode().into(),
-			wait_for_finalized,
-		)
-		.await
+		let xt_status = match wait_for_finalized {
+			true => XtStatus::Finalized,
+			false => XtStatus::InBlock,
+		};
+
+		self.submit_and_watch_opaque_extrinsic_until(&extrinsic.encode().into(), xt_status)
+			.await
 	}
 
 	async fn submit_and_watch_opaque_extrinsic_until_success(
@@ -300,18 +422,7 @@ where
 			true => XtStatus::Finalized,
 			false => XtStatus::InBlock,
 		};
-		let mut report = self
-			.submit_and_watch_opaque_extrinsic_until(encoded_extrinsic, xt_status)
-			.await?;
 
-		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
-		let extrinsic_events =
-			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
-		// Ensure that the extrins has been successful. If not, return an error.
-		for event in &extrinsic_events {
-			event.check_if_failed()?;
-		}
-		report.events = Some(extrinsic_events);
-		Ok(report)
+		self.submit_and_watch_opaque_extrinsic_until(encoded_extrinsic, xt_status).await
 	}
 }
