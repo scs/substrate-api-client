@@ -1,9 +1,5 @@
 # substrate-api-client
 
-<p align="center">
-<img src=./web3_foundation_grants_badge_black.svg width = 400>
-</p>
-
 substrate-api-client is a library written in Rust for connecting to the substrate's RPC interface via WebSockets allowing to
 
 * Compose extrinsics, send them (asynchronously and synchronously) and subscribe to updates (synchronously).
@@ -149,7 +145,14 @@ Parity offers a Rust client with similar functionality: https://github.com/parit
 
 ## Acknowledgements
 
-The development of substrate-api-client is financed by [web3 foundation](https://web3.foundation/)'s grant programme.
+The development of the substrate-api-client has been financed by:
+
+- [web3 foundation](https://github.com/w3f/General-Grants-Program/blob/master/grants/speculative/substrate-api-client.md)
+- [Integritee](https://integritee.network/)
+- Kusama Treasury, see our maintenance proposals for:
+  - [Nov-22 to Jan-23](https://kusama.polkassembly.io/treasury/237)
+  - [Feb-23 to Apr-23](https://kusama.polkassembly.io/treasury/267)
+  - [May-23 to Jul-23](https://kusama.polkassembly.io/treasury/312)
 
 We also thank the teams at
 
