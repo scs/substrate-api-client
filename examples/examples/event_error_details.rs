@@ -13,11 +13,9 @@
 	limitations under the License.
 */
 
-use codec::Decode;
 use sp_keyring::AccountKeyring;
-use sp_runtime::{AccountId32 as AccountId, MultiAddress};
+use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_node_api::StaticEvent,
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
