@@ -287,6 +287,7 @@ where
 				rpc_params![encoded_extrinsic],
 				"author_unsubmitAndWatchExtrinsic",
 			)
+			.await
 			.map_err(|e| e.into())
 	}
 
@@ -360,12 +361,12 @@ where
 		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic).await?;
 
-		while let Some(transaction_status) = subscription.next() {
+		while let Some(transaction_status) = subscription.next().await {
 			let transaction_status = transaction_status?;
 			match transaction_status.is_expected() {
 				Ok(_) =>
 					if transaction_status.reached_status(watch_until) {
-						subscription.unsubscribe()?;
+						subscription.unsubscribe().await?;
 						let block_hash = transaction_status.get_maybe_block_hash();
 						return Ok(ExtrinsicReport::new(
 							tx_hash,
@@ -375,7 +376,7 @@ where
 						))
 					},
 				Err(e) => {
-					subscription.unsubscribe()?;
+					subscription.unsubscribe().await?;
 					return Err(e)
 				},
 			}

@@ -156,15 +156,17 @@ where
 		Ok(blocks)
 	}
 }
+#[maybe_async::maybe_async(?Send)]
 pub trait SubscribeChain {
 	type Client: Subscribe;
 	type Header: DeserializeOwned;
 
-	fn subscribe_finalized_heads(
+	async fn subscribe_finalized_heads(
 		&self,
 	) -> Result<<Self::Client as Subscribe>::Subscription<Self::Header>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<T, Client> SubscribeChain for Api<T, Client>
 where
 	T: Config,
@@ -173,7 +175,7 @@ where
 	type Client = Client;
 	type Header = T::Header;
 
-	fn subscribe_finalized_heads(
+	async fn subscribe_finalized_heads(
 		&self,
 	) -> Result<<Self::Client as Subscribe>::Subscription<Self::Header>> {
 		debug!("subscribing to finalized heads");
@@ -183,6 +185,7 @@ where
 				rpc_params![],
 				"chain_unsubscribeFinalizedHeads",
 			)
+			.await
 			.map_err(|e| e.into())
 	}
 }

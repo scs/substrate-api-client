@@ -103,10 +103,11 @@ where
 {
 	/// Wait for the next value from the internal subscription.
 	/// Upon encounter, it retrieves and decodes the expected `EventRecord`.
-	pub fn next_events<RuntimeEvent: Decode, Topic: Decode>(
+	#[maybe_async::maybe_async(?Send)]
+	pub async fn next_events<RuntimeEvent: Decode, Topic: Decode>(
 		&mut self,
 	) -> Option<Result<Vec<EventRecord<RuntimeEvent, Topic>>>> {
-		let change_set = match self.subscription.next()? {
+		let change_set = match self.subscription.next().await? {
 			Ok(set) => set,
 			Err(e) => return Some(Err(Error::RpcClient(e))),
 		};
@@ -123,8 +124,9 @@ where
 	//
 	// On the contrary to `next_events` this function only needs up-to-date metadata
 	// and is therefore updateable during runtime.
-	pub fn next_events_from_metadata(&mut self) -> Option<Result<Events<Hash>>> {
-		let change_set = match self.subscription.next()? {
+	#[maybe_async::maybe_async(?Send)]
+	pub async fn next_events_from_metadata(&mut self) -> Option<Result<Events<Hash>>> {
+		let change_set = match self.subscription.next().await? {
 			Ok(set) => set,
 			Err(e) => return Some(Err(Error::RpcClient(e))),
 		};
@@ -140,19 +142,22 @@ where
 	}
 
 	/// Unsubscribe from the internal subscription.
-	pub fn unsubscribe(self) -> Result<()> {
-		self.subscription.unsubscribe().map_err(|e| e.into())
+	#[maybe_async::maybe_async(?Send)]
+	pub async fn unsubscribe(self) -> Result<()> {
+		self.subscription.unsubscribe().await.map_err(|e| e.into())
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 pub trait SubscribeEvents {
 	type Client: Subscribe;
 	type Hash: DeserializeOwned;
 
 	/// Subscribe to events.
-	fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>>;
+	async fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<T, Client> SubscribeEvents for Api<T, Client>
 where
 	T: Config,
@@ -161,11 +166,12 @@ where
 	type Client = Client;
 	type Hash = T::Hash;
 
-	fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>> {
+	async fn subscribe_events(&self) -> Result<EventSubscriptionFor<Self::Client, Self::Hash>> {
 		let key = crate::storage_key("System", "Events");
 		let subscription = self
 			.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.await
 			.map(|sub| EventSubscription::new(sub, self.metadata().clone()))?;
 		Ok(subscription)
 	}

@@ -34,11 +34,11 @@ impl<Notification> WsSubscriptionWrapper<Notification> {
 	}
 }
 
-// Support async: #278 (careful with no_std compatibility).
+#[maybe_async::maybe_async(?Send)]
 impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 	for WsSubscriptionWrapper<Notification>
 {
-	fn next(&mut self) -> Option<Result<Notification>> {
+	async fn next(&mut self) -> Option<Result<Notification>> {
 		let notification = match self.receiver.recv() {
 			Ok(notif) => notif,
 			// Sender was disconnected, therefore no further messages are to be expected.
@@ -47,7 +47,7 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 		Some(serde_json::from_str(&notification).map_err(|e| e.into()))
 	}
 
-	fn unsubscribe(self) -> Result<()> {
+	async fn unsubscribe(self) -> Result<()> {
 		self.ws_sender.clone().shutdown()?;
 		Ok(())
 	}

@@ -409,17 +409,20 @@ where
 		Ok(Decode::decode(&mut c.value.as_slice())?)
 	}
 }
+
+#[maybe_async::maybe_async(?Send)]
 pub trait SubscribeState {
 	type Client: Subscribe;
 	type Hash: DeserializeOwned;
 
-	fn subscribe_state(
+	async fn subscribe_state(
 		&self,
 		pallet: &str,
 		storage_key: &str,
 	) -> Result<StorageChangeSetSubscriptionFor<Self::Client, Self::Hash>>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<T, Client> SubscribeState for Api<T, Client>
 where
 	T: Config,
@@ -428,7 +431,7 @@ where
 	type Client = Client;
 	type Hash = T::Hash;
 
-	fn subscribe_state(
+	async fn subscribe_state(
 		&self,
 		pallet: &str,
 		storage_key_name: &str,
@@ -437,6 +440,7 @@ where
 		let key = crate::storage_key(pallet, storage_key_name);
 		self.client()
 			.subscribe("state_subscribeStorage", rpc_params![vec![key]], "state_unsubscribeStorage")
+			.await
 			.map_err(|e| e.into())
 	}
 }

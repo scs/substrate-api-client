@@ -49,12 +49,13 @@ pub trait Request {
 }
 
 /// Trait to be implemented by the ws-client for subscribing to the substrate node.
+#[maybe_async::maybe_async(?Send)]
 pub trait Subscribe {
 	type Subscription<Notification>: HandleSubscription<Notification>
 	where
 		Notification: DeserializeOwned;
 
-	fn subscribe<Notification: DeserializeOwned>(
+	async fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: RpcParams,
@@ -64,6 +65,7 @@ pub trait Subscribe {
 
 /// Trait to use the full functionality of jsonrpseee Subscription type
 /// without actually enforcing it.
+#[maybe_async::maybe_async(?Send)]
 pub trait HandleSubscription<Notification: DeserializeOwned> {
 	/// Returns the next notification from the stream.
 	/// This may return `None` if the subscription has been terminated,
@@ -72,10 +74,10 @@ pub trait HandleSubscription<Notification: DeserializeOwned> {
 	/// **Note:** This has an identical signature to the [`StreamExt::next`]
 	/// method (and delegates to that). Import [`StreamExt`] if you'd like
 	/// access to other stream combinator methods.
-	fn next(&mut self) -> Option<Result<Notification>>;
+	async fn next(&mut self) -> Option<Result<Notification>>;
 
 	/// Unsubscribe and consume the subscription.
-	fn unsubscribe(self) -> Result<()>;
+	async fn unsubscribe(self) -> Result<()>;
 }
 
 pub fn to_json_req(method: &str, params: RpcParams) -> Result<String> {

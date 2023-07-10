@@ -58,9 +58,10 @@ impl JsonrpseeClient {
 #[maybe_async::async_impl(?Send)]
 impl Request for JsonrpseeClient {
 	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		// Support async: #278
-		let future = self.inner.request(method, RpcParamsWrapper(params)).await;
-		future.map_err(|e| Error::Client(Box::new(e)))
+		self.inner
+			.request(method, RpcParamsWrapper(params))
+			.await
+			.map_err(|e| Error::Client(Box::new(e)))
 	}
 }
 #[maybe_async::sync_impl]
@@ -71,6 +72,25 @@ impl Request for JsonrpseeClient {
 	}
 }
 
+#[maybe_async::async_impl(?Send)]
+impl Subscribe for JsonrpseeClient {
+	type Subscription<Notification> = SubscriptionWrapper<Notification> where Notification: DeserializeOwned;
+
+	async fn subscribe<Notification: DeserializeOwned>(
+		&self,
+		sub: &str,
+		params: RpcParams,
+		unsub: &str,
+	) -> Result<Self::Subscription<Notification>> {
+		self.inner
+			.subscribe(sub, RpcParamsWrapper(params), unsub)
+			.await
+			.map(|sub| sub.into())
+			.map_err(|e| Error::Client(Box::new(e)))
+	}
+}
+
+#[maybe_async::sync_impl(?Send)]
 impl Subscribe for JsonrpseeClient {
 	type Subscription<Notification> = SubscriptionWrapper<Notification> where Notification: DeserializeOwned;
 

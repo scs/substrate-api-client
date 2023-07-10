@@ -56,10 +56,11 @@ impl Request for WsRpcClient {
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl Subscribe for WsRpcClient {
 	type Subscription<Notification> = WsSubscriptionWrapper<Notification> where Notification: DeserializeOwned;
 
-	fn subscribe<Notification: DeserializeOwned>(
+	async fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: RpcParams,

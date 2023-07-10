@@ -78,9 +78,9 @@ async fn main() {
 
 	// This part is still executed synchronously
 	println!("Subscribing to finalized heads");
-	let mut subscription = api.subscribe_finalized_heads().unwrap();
+	let mut subscription = api.subscribe_finalized_heads().await.unwrap();
 	for _ in 0..5 {
-		let head = subscription.next().unwrap().unwrap();
+		let head = subscription.next().await.unwrap().unwrap();
 		println!("Got new Block {:?}", head);
 	}
 }
