@@ -11,7 +11,7 @@ use crate::{
 	config::WithExtrinsicParams, AssetRuntimeConfig, Config, GenericExtrinsicParams, PlainTip,
 };
 
-/// Commonly used config of Substrate and Polkadot nodes.
+/// Standard runtime config for Substrate and Polkadot nodes.
 pub type DefaultRuntimeConfig =
 	WithExtrinsicParams<AssetRuntimeConfig, PlainTipExtrinsicParams<AssetRuntimeConfig>>;
 

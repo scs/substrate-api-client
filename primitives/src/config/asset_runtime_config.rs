@@ -15,7 +15,7 @@ use crate::{
 use codec::{Decode, Encode};
 use core::fmt::Debug;
 
-/// Commonly used config of Substrate runtimes that use the asset pallet.
+/// Standard runtime config for Substrate and Polkadot nodes that use the asset pallet.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct AssetRuntimeConfig {}
 
