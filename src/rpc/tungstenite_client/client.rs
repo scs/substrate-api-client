@@ -64,10 +64,11 @@ impl Request for TungsteniteRpcClient {
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl Subscribe for TungsteniteRpcClient {
 	type Subscription<Notification> = TungsteniteSubscriptionWrapper<Notification> where Notification: DeserializeOwned;
 
-	fn subscribe<Notification: DeserializeOwned>(
+	async fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: RpcParams,

@@ -32,10 +32,11 @@ impl<Notification> TungsteniteSubscriptionWrapper<Notification> {
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 	for TungsteniteSubscriptionWrapper<Notification>
 {
-	fn next(&mut self) -> Option<Result<Notification>> {
+	async fn next(&mut self) -> Option<Result<Notification>> {
 		let notification = match self.receiver.recv() {
 			Ok(notif) => notif,
 			// Sender was disconnected, therefore no further messages are to be expected.
@@ -44,7 +45,7 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 		Some(serde_json::from_str(&notification).map_err(|e| e.into()))
 	}
 
-	fn unsubscribe(self) -> Result<()> {
+	async fn unsubscribe(self) -> Result<()> {
 		// TODO: Nicer unsubscription.
 		// We close ungracefully: Simply drop the receiver. This will turn
 		// into an error on the sender side, terminating the websocket polling
