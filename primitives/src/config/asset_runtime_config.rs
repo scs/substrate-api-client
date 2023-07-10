@@ -2,7 +2,7 @@
 // This file is dual-licensed as Apache-2.0 or GPL-3.0.
 // see LICENSE for license details.
 
-//! Substrate specific configuration
+//! Default set of commonly used types by Substrate and Polkadot nodes that use the asset pallet.
 //!
 //! This file is mostly subxt.
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/substrate.rs
@@ -15,7 +15,7 @@ use crate::{
 use codec::{Decode, Encode};
 use core::fmt::Debug;
 
-/// Default set of commonly used types by Substrate kitchensink runtime.
+/// Standard runtime config for Substrate and Polkadot nodes that use the asset pallet.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct AssetRuntimeConfig {}
 
