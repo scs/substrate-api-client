@@ -68,6 +68,7 @@ async fn main() {
 	let xt2 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
 	assert!(report.block_hash.is_none());
+	assert!(matches!(report.status, TransactionStatus::Ready));
 	assert!(report.events.is_none());
 	println!("Success: submit_and_watch_extrinsic_until Ready");
 
@@ -76,6 +77,7 @@ async fn main() {
 	let report = api.submit_and_watch_extrinsic_until(xt3, XtStatus::Broadcast).unwrap();
 	// The xt is not broadcast - we only have one node running. Therefore, InBlock is returned.
 	assert!(report.block_hash.is_some());
+	assert!(matches!(report.status, TransactionStatus::InBlock(_)));
 	// But we still don't fetch events, since we originally only waited for Broadcast.
 	assert!(report.events.is_none());
 	println!("Success: submit_and_watch_extrinsic_until Broadcast");
@@ -86,6 +88,7 @@ async fn main() {
 	let until_in_block_handle = thread::spawn(move || {
 		let report = api2.submit_and_watch_extrinsic_until(xt4, XtStatus::InBlock).unwrap();
 		assert!(report.block_hash.is_some());
+		assert!(matches!(report.status, TransactionStatus::InBlock(_)));
 		assert_assosciated_events_match_expected(report.events.unwrap());
 		println!("Success: submit_and_watch_extrinsic_until InBlock");
 	});
@@ -94,12 +97,9 @@ async fn main() {
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt5 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_finalized_handle = thread::spawn(move || {
-		let report = api3
-			.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized)
-			.unwrap()
-			.block_hash
-			.unwrap();
+		let report = api3.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized).unwrap();
 		assert!(report.block_hash.is_some());
+		assert!(matches!(report.status, TransactionStatus::Finalized(_)));
 		assert_assosciated_events_match_expected(report.events.unwrap());
 		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
