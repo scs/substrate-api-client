@@ -321,7 +321,8 @@ where
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
-		// Ensure that the extrins has been successful. If not, return an error.
+
+		// Ensure that the extrinsic has been successful. If not, return an error.
 		for event in &extrinsic_events {
 			event.check_if_failed()?;
 		}
