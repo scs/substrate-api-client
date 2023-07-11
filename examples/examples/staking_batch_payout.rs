@@ -130,9 +130,7 @@ async fn main() {
 			num_of_unclaimed_payouts -= tx_limit_in_current_batch;
 			let batch_xt = api.batch(payout_calls);
 
-			let report = api
-				.submit_and_watch_extrinsic_until_without_events(batch_xt, XtStatus::InBlock)
-				.unwrap();
+			let report = api.submit_and_watch_extrinsic_until(batch_xt, XtStatus::InBlock).unwrap();
 			results.push(format!("{report:?}"));
 		}
 		println!("{:?}", results);

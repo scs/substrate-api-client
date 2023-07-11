@@ -61,7 +61,7 @@ async fn main() {
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.
-	let result = api.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock);
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	println!("Returned Result {:?}", result);
 	match result {
 		Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)) => {
