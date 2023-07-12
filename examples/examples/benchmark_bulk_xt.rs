@@ -15,9 +15,6 @@
 
 //! This example floods the node with a series of transactions.
 
-// run this against test node with
-// > substrate-test-node --dev --execution native --ws-port 9979 -ltxpool=debug
-
 use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -26,8 +23,10 @@ use substrate_api_client::{
 	Api, SubmitExtrinsic,
 };
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
-// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
+// Therefore, we need to use the `AssetRuntimeConfig` in this example.
+// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
+// you most likely should use `DefaultRuntimeConfig` instead.
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes

@@ -27,8 +27,10 @@ use substrate_api_client::{
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
-// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
+// Therefore, we need to use the `AssetRuntimeConfig` in this example.
+// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
+// you most likely should use `DefaultRuntimeConfig` instead.
 
 fn main() {
 	env_logger::init();
