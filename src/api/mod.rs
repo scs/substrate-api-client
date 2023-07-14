@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use sp_core::Bytes;
 
 pub use api_client::Api;
-pub use error::{Error, Result};
+pub use error::{Error, ExtrinsicError, ExtrinsicResult, Result};
 pub use rpc_api::{
 	FetchEvents, GetAccountInformation, GetBalance, GetChainInfo, GetStorage,
 	GetTransactionPayment, SubmitAndWatch, SubmitExtrinsic, SubscribeChain, SubscribeEvents,

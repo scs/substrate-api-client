@@ -15,12 +15,13 @@
 
 */
 
-use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError};
+use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError, ExtrinsicReport};
 use ac_node_api::{
 	error::DispatchError,
 	metadata::{InvalidMetadataError, MetadataError},
 };
 use alloc::boxed::Box;
+use codec::Decode;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -40,14 +41,10 @@ pub enum Error {
 	NodeApi(ac_node_api::error::Error),
 	/// Encode / Decode Error.
 	Codec(codec::Error),
-	/// Could not convert NumberOrHex with try_from.
-	TryFromIntError,
-	/// Node Api Dispatch Error.
-	Dispatch(DispatchError),
 	/// Encountered unexpected tx status during watch process.
 	UnexpectedTxStatus(UnexpectedTxStatus),
-	/// Could not send update because the Stream has been closed unexpectedly.
-	NoStream,
+	/// Could not convert NumberOrHex with try_from.
+	TryFromIntError,
 	/// Could not find the expected extrinsic.
 	ExtrinsicNotFound,
 	/// Could not find the expected block hash.
@@ -56,4 +53,26 @@ pub enum Error {
 	BlockNotFound,
 	/// Any custom Error.
 	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
+}
+
+pub type ExtrinsicResult<T, Hash> = core::result::Result<T, ExtrinsicError<Hash>>;
+
+/// Error Type returned upon submission error.
+#[derive(Debug, derive_more::From)]
+pub enum ExtrinsicError<Hash: Decode> {
+	/// Extrinsic was not successfully executed onchain.
+	FailedExtrinsic(FailedExtrinsicError<Hash>),
+	/// Api Error.
+	ApiError(Error),
+	/// Rpc Client Error.
+	RpcClient(RpcClientError),
+	/// Could not send update because the Stream has been closed unexpectedly.
+	NoStream,
+}
+
+/// Encountered unexpected tx status during watch process.
+#[derive(Debug)]
+pub struct FailedExtrinsicError<Hash: Decode> {
+	pub dispatch_error: DispatchError,
+	pub report: ExtrinsicReport<Hash>,
 }

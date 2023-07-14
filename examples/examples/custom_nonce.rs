@@ -22,7 +22,7 @@ use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, GenericAdditionalParams},
 	rpc::JsonrpseeClient,
-	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
+	Api, Error, ExtrinsicError, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
 // To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig.
@@ -64,7 +64,7 @@ async fn main() {
 	let result = api.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock);
 	println!("Returned Result {:?}", result);
 	match result {
-		Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)) => {
+		Err(ExtrinsicError::ApiError(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future))) => {
 			// All good, we expected a Future Error.
 		},
 		_ => panic!("Expected a future error"),
