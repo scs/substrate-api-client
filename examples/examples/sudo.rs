@@ -81,7 +81,7 @@ async fn main() {
 		.unwrap();
 	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
 
-	// Ensure the extrinisc has been executed.
+	// Ensure the extrinsic has been executed.
 	let recipient_new_balance = api.get_account_data(&recipient).unwrap().unwrap().free;
 	assert_eq!(recipient_new_balance, new_balance);
 }

@@ -74,10 +74,10 @@ async fn main() {
 
 	println!("[+] Waiting for the contracts.Instantiated event");
 
-	let assosciated_contract_events = report.events.unwrap();
+	let associated_contract_events = report.events.unwrap();
 
 	let contract_instantiated_events: Vec<ContractInstantiatedEventArgs> =
-		assosciated_contract_events
+		associated_contract_events
 			.iter()
 			.filter_map(|event| event.as_event().unwrap())
 			.collect();

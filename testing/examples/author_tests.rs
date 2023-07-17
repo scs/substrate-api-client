@@ -43,7 +43,7 @@ async fn main() {
 
 	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
 
-	// Submit extrinisc.
+	// Submit extrinsic.
 	let xt0 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let _tx_hash = api.submit_extrinsic(xt0).unwrap();
 
@@ -116,14 +116,14 @@ async fn main() {
 		.events
 		.unwrap();
 	println!("Extrinsic got successfully included in Block!");
-	assert_assosciated_events_match_expected(events);
+	assert_associated_events_match_expected(events);
 
 	watch_handle.join().unwrap();
 	until_in_block_handle.join().unwrap();
 	until_finalized_handle.join().unwrap();
 }
 
-fn assert_assosciated_events_match_expected(events: Vec<EventDetails<Hash>>) {
+fn assert_associated_events_match_expected(events: Vec<EventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");

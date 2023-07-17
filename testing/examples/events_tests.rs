@@ -57,16 +57,16 @@ async fn main() {
 	assert!(!events.is_empty());
 	println!("{events:?}");
 
-	// Submit a test-extrinisc to test `fetch_events_for_extrinsic`.
+	// Submit a test-extrinsic to test `fetch_events_for_extrinsic`.
 	let xt = api.balance_transfer_allow_death(bob.into(), 1000);
 	let report = api
 		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock)
 		.unwrap();
 
-	let extrinisc_events = api
+	let extrinsic_events = api
 		.fetch_events_for_extrinsic(report.extrinsic_hash, report.block_hash.unwrap())
 		.unwrap();
-	assert_assosciated_events_match_expected(extrinisc_events);
+	assert_associated_events_match_expected(extrinsic_events);
 
 	// Subscribe to system events.
 	let mut event_subscription = api.subscribe_events().unwrap();
@@ -101,7 +101,7 @@ async fn main() {
 	}
 }
 
-fn assert_assosciated_events_match_expected(events: Vec<EventDetails<Hash>>) {
+fn assert_associated_events_match_expected(events: Vec<EventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");

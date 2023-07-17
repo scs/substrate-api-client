@@ -31,7 +31,7 @@ pub mod api;
 pub mod extrinsic;
 pub mod rpc;
 
-/// Returns the concacenated 128 bit hash of the given module and specific storage key
+/// Returns the concatenated 128 bit hash of the given module and specific storage key
 /// as a full Substrate StorageKey.
 pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
 	let mut key = twox_128(module.as_bytes()).to_vec();
