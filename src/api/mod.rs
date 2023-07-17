@@ -44,7 +44,7 @@ pub struct ExtrinsicReport<Hash: Decode> {
 	pub block_hash: Option<Hash>,
 	// Last known Transaction Status.
 	pub status: TransactionStatus<Hash, Hash>,
-	// Events assosciated to the extrinsic.
+	// Events associated to the extrinsic.
 	// Only available if explicitly stated, because
 	// extra node queries are necessary to fetch the events.
 	pub events: Option<Vec<EventDetails<Hash>>>,

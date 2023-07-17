@@ -37,7 +37,7 @@ pub trait FetchEvents {
 	/// Fetch all block events from node for the given block hash.
 	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
 
-	/// Fetch all assosciated events for a given extrinsic hash and block hash.
+	/// Fetch all associated events for a given extrinsic hash and block hash.
 	async fn fetch_events_for_extrinsic(
 		&self,
 		block_hash: Self::Hash,
@@ -296,19 +296,18 @@ mod tests {
 			],
 		);
 		let mut event_details = block_events.iter();
-		let _not_assosciated_event_details1 = event_details.next().unwrap().unwrap();
-		let assosciated_event_details2 = event_details.next().unwrap().unwrap();
-		let assosciated_event_details3 = event_details.next().unwrap().unwrap();
-		let _not_assosciated_event_details4 = event_details.next().unwrap().unwrap();
+		let _not_associated_event_details1 = event_details.next().unwrap().unwrap();
+		let associated_event_details2 = event_details.next().unwrap().unwrap();
+		let associated_event_details3 = event_details.next().unwrap().unwrap();
+		let _not_associated_event_details4 = event_details.next().unwrap().unwrap();
 		assert!(event_details.next().is_none());
 
 		let api = create_mock_api(metadata, Default::default());
 
-		let assosciated_events =
-			api.filter_extrinsic_events(block_events, extrinsic_index).unwrap();
-		assert_eq!(assosciated_events.len(), 2);
-		assert_eq!(assosciated_events[0].index(), assosciated_event_details2.index());
-		assert_eq!(assosciated_events[1].index(), assosciated_event_details3.index());
+		let associated_events = api.filter_extrinsic_events(block_events, extrinsic_index).unwrap();
+		assert_eq!(associated_events.len(), 2);
+		assert_eq!(associated_events[0].index(), associated_event_details2.index());
+		assert_eq!(associated_events[1].index(), associated_event_details3.index());
 	}
 
 	#[test_case(SupportedMetadataVersions::V14)]
