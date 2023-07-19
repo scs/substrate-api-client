@@ -206,11 +206,23 @@ where
 
 		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
+}
 
+pub trait UpdateRuntime {
+	fn update_runtime(&mut self) -> Result<()>;
+}
+
+impl<T, Client> UpdateRuntime for Api<T, Client>
+where
+	T: Config,
+	Client: Request,
+	//Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
+	//Runtime: FrameSystemConfig,
+{
 	/// Updates the runtime and metadata of the api via node query.
 	// Ideally, this function is called if a substrate update runtime event is encountered.
 	#[maybe_async::sync_impl]
-	pub fn update_runtime(&mut self) -> Result<()> {
+	fn update_runtime(&mut self) -> Result<()> {
 		let metadata = Self::get_metadata(&self.client)?;
 		let runtime_version = Self::get_runtime_version(&self.client)?;
 
@@ -225,7 +237,7 @@ where
 	/// Updates the runtime and metadata of the api via node query.
 	/// Ideally, this function is called if a substrate update runtime event is encountered.
 	#[maybe_async::async_impl]
-	pub async fn update_runtime(&mut self) -> Result<()> {
+	async fn update_runtime(&mut self) -> Result<()> {
 		let metadata_future = Self::get_metadata(&self.client);
 		let runtime_version_future = Self::get_runtime_version(&self.client);
 
