@@ -22,7 +22,7 @@ To execute the examples, a running substrate node is needed. You can download a 
 or run the kitchensink-node with docker:
 
 ```
-docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --ws-external --rpc-external
+docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --dev --rpc-external
 ```
 
 For more information, please refer to the [substrate](https://github.com/paritytech/substrate) repository.
