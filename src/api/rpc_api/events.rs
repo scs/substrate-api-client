@@ -20,7 +20,7 @@ use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
 use ac_primitives::config::Config;
 use alloc::{vec, vec::Vec};
-use codec::{Decode, Encode};
+use codec::Decode;
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
