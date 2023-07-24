@@ -358,7 +358,7 @@ where
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
-		let tx_hash = T::Hasher::hash_of(&encoded_extrinsic.0);
+		let tx_hash = T::Hasher::hash(encoded_extrinsic);
 		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic).await?;
 

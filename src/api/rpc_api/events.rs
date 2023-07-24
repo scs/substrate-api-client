@@ -194,7 +194,7 @@ where
 			.extrinsics()
 			.iter()
 			.position(|xt| {
-				let xt_hash = T::Hasher::hash_of(&xt.encode());
+				let xt_hash = T::Hasher::hash_of(&xt);
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
