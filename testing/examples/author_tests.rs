@@ -89,7 +89,7 @@ async fn main() {
 		let report = api2.submit_and_watch_extrinsic_until(xt4, XtStatus::InBlock).unwrap();
 		assert!(report.block_hash.is_some());
 		assert!(matches!(report.status, TransactionStatus::InBlock(_)));
-		assert_assosciated_events_match_expected(report.events.unwrap());
+		assert_associated_events_match_expected(report.events.unwrap());
 		println!("Success: submit_and_watch_extrinsic_until InBlock");
 	});
 
@@ -100,7 +100,7 @@ async fn main() {
 		let report = api3.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized).unwrap();
 		assert!(report.block_hash.is_some());
 		assert!(matches!(report.status, TransactionStatus::Finalized(_)));
-		assert_assosciated_events_match_expected(report.events.unwrap());
+		assert_associated_events_match_expected(report.events.unwrap());
 		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
 

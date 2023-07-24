@@ -103,7 +103,7 @@ async fn main() {
 			println!("[+] The following events were thrown when the extrinsic was executed: {extrinsic_events:?}");
 
 			assert!(matches!(extrinsic_status, TransactionStatus::InBlock(_block_hash)));
-			assert_assosciated_events_match_expected(extrinsic_events);
+			assert_associated_events_match_expected(extrinsic_events);
 		},
 		Err(e) => {
 			panic!("Expected the transfer to succeed. Instead, it failed due to {e:?}");
@@ -117,7 +117,7 @@ async fn main() {
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
 }
 
-fn assert_assosciated_events_match_expected(events: Vec<EventDetails<Hash>>) {
+fn assert_associated_events_match_expected(events: Vec<EventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");
