@@ -121,6 +121,8 @@ async fn main() {
 		.submit_and_watch_extrinsic_until_without_events(xt7, XtStatus::InBlock)
 		.unwrap();
 	println!("Extrinsic got successfully included in Block!");
+	assert!(report.block_hash.is_some());
+	assert!(report.events.is_none());
 
 	watch_handle.join().unwrap();
 	until_in_block_handle.join().unwrap();
