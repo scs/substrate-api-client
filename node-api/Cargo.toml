@@ -18,13 +18,11 @@ frame-metadata = { version = "15.1", default-features = false, features = ["v14"
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
 scale-bits = { version = "0.4.0", default-features = false, features = ["scale-info", "serde"] }
+scale-decode = { version = "0.8.0", default-features = false, features = ["primitive-types", "derive"] }
+scale-encode = { version = "0.4.0", default-features = false, features = ["bits", "primitive-types", "derive"] }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
-
-# scale
-scale-decode = { default-features = false, features = ["primitive-types", "derive"], git = "https://github.com/scs/scale-decode.git", branch = "no-std" }
-scale-encode = { default-features = false, features = ["bits", "primitive-types", "derive"], git = "https://github.com/paritytech/scale-encode.git" }
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }

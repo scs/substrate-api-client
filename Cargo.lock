@@ -4476,8 +4476,9 @@ dependencies = [
 
 [[package]]
 name = "scale-decode"
-version = "0.7.0"
-source = "git+https://github.com/scs/scale-decode.git?branch=no-std#d9768dc33ab6d3d064c35fbabfe32e03ec605f07"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea509715113edab351e1f4d51fba6b186653259049a1155b52e2e994dd2f0e6d"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
@@ -4489,8 +4490,9 @@ dependencies = [
 
 [[package]]
 name = "scale-decode-derive"
-version = "0.7.0"
-source = "git+https://github.com/scs/scale-decode.git?branch=no-std#d9768dc33ab6d3d064c35fbabfe32e03ec605f07"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66c9d7a1341497e9d016722144310de3dc6c933909c0376017c88f65092fff37"
 dependencies = [
  "darling",
  "proc-macro-crate",
@@ -4501,8 +4503,9 @@ dependencies = [
 
 [[package]]
 name = "scale-encode"
-version = "0.3.0"
-source = "git+https://github.com/paritytech/scale-encode.git#1d302221cf697f189f46e0ccc1dfd79b36bc524f"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f6f51bc8cd927dab2f4567b1a8a8e9d7fd5d0866f2dbc7c84fc97cfa9383a26"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
@@ -4514,8 +4517,9 @@ dependencies = [
 
 [[package]]
 name = "scale-encode-derive"
-version = "0.3.0"
-source = "git+https://github.com/paritytech/scale-encode.git#1d302221cf697f189f46e0ccc1dfd79b36bc524f"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f28be1877787156a2df01be3c029b92bdffa6b6a9748d4996e383fff218c88f3"
 dependencies = [
  "darling",
  "proc-macro-crate",
@@ -6117,9 +6121,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.7",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
