@@ -104,7 +104,7 @@ async fn main() {
 		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
 
-	// Test some _watch_untils_without_events. One is enough, because it is test implicitly by `submit_and_watch_extrinsic_until`
+	// Test some _watch_untils_without_events. One is enough, because it is tested implicitly by `submit_and_watch_extrinsic_until`
 	// as internal call.
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt6 = api.balance_transfer_allow_death(bob.clone(), 1000);
