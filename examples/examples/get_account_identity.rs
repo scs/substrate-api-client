@@ -33,8 +33,10 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
 type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 
-// To test this example in CI, we run it against the Substrate kitchensink node. Therefore, we use the AssetRuntimeConfig
-// ! Careful: Most runtimes uses plain as tips, they need a polkadot config.
+// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
+// Therefore, we need to use the `AssetRuntimeConfig` in this example.
+// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
+// you most likely should use `DefaultRuntimeConfig` instead.
 
 #[tokio::main]
 async fn main() {
@@ -65,7 +67,7 @@ async fn main() {
 
 	// Send and watch extrinsic until InBlock.
 	let _block_hash = api
-		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()
 		.block_hash
 		.unwrap();

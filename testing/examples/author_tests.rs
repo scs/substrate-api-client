@@ -63,60 +63,66 @@ async fn main() {
 		println!("Success: submit_and_watch_extrinsic");
 	});
 
-	// Test different _watch_untils.
-
+	// Test different _watch_untils with events
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt2 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
 	assert!(report.block_hash.is_none());
+	assert!(matches!(report.status, TransactionStatus::Ready));
 	assert!(report.events.is_none());
 	println!("Success: submit_and_watch_extrinsic_until Ready");
 
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt3 = api.balance_transfer_allow_death(bob.clone(), 1000);
+	let report = api.submit_and_watch_extrinsic_until(xt3, XtStatus::Broadcast).unwrap();
 	// The xt is not broadcast - we only have one node running. Therefore, InBlock is returned.
-	let _some_hash = api
-		.submit_and_watch_extrinsic_until_without_events(xt3, XtStatus::Broadcast)
-		.unwrap()
-		.block_hash
-		.unwrap();
-	println!("Success: submit_and_watch_extrinsic_until_without_events Broadcast");
+	assert!(report.block_hash.is_some());
+	assert!(matches!(report.status, TransactionStatus::InBlock(_)));
+	// But we still don't fetch events, since we originally only waited for Broadcast.
+	assert!(report.events.is_none());
+	println!("Success: submit_and_watch_extrinsic_until Broadcast");
 
 	let api2 = api.clone();
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt4 = api2.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_in_block_handle = thread::spawn(move || {
-		let _block_hash = api2
-			.submit_and_watch_extrinsic_until_without_events(xt4, XtStatus::InBlock)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("Success: submit_and_watch_extrinsic_until_without_events InBlock");
+		let report = api2.submit_and_watch_extrinsic_until(xt4, XtStatus::InBlock).unwrap();
+		assert!(report.block_hash.is_some());
+		assert!(matches!(report.status, TransactionStatus::InBlock(_)));
+		assert_associated_events_match_expected(report.events.unwrap());
+		println!("Success: submit_and_watch_extrinsic_until InBlock");
 	});
 
 	let api3 = api.clone();
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt5 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_finalized_handle = thread::spawn(move || {
-		let _block_hash = api3
-			.submit_and_watch_extrinsic_until_without_events(xt5, XtStatus::Finalized)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("Success: submit_and_watch_extrinsic_until_without_events Finalized");
+		let report = api3.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized).unwrap();
+		assert!(report.block_hash.is_some());
+		assert!(matches!(report.status, TransactionStatus::Finalized(_)));
+		assert_associated_events_match_expected(report.events.unwrap());
+		println!("Success: submit_and_watch_extrinsic_until Finalized");
 	});
 
-	// Test Success.
+	// Test some _watch_untils_without_events. One is enough, because it is tested implicitly by `submit_and_watch_extrinsic_until`
+	// as internal call.
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
-	let xt6 = api.balance_transfer_allow_death(bob, 1000);
+	let xt6 = api.balance_transfer_allow_death(bob.clone(), 1000);
+	let report = api
+		.submit_and_watch_extrinsic_until_without_events(xt6, XtStatus::Ready)
+		.unwrap();
+	assert!(report.block_hash.is_none());
+	assert!(report.events.is_none());
+	println!("Success: submit_and_watch_extrinsic_until_without_events Ready!");
 
-	let events = api
-		.submit_and_watch_extrinsic_until(xt6, XtStatus::InBlock)
-		.unwrap()
-		.events
+	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	let xt7 = api.balance_transfer_allow_death(bob, 1000);
+	let report = api
+		.submit_and_watch_extrinsic_until_without_events(xt7, XtStatus::InBlock)
 		.unwrap();
 	println!("Extrinsic got successfully included in Block!");
-	assert_associated_events_match_expected(events);
+	assert!(report.block_hash.is_some());
+	assert!(report.events.is_none());
 
 	watch_handle.join().unwrap();
 	until_in_block_handle.join().unwrap();
