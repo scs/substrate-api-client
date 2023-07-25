@@ -6,7 +6,7 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", features = [
+codec = { package = "parity-scale-codec", version = "3.6.1", features = [
     'derive',
 ] }
 serde_json = { version = "1.0.79" }

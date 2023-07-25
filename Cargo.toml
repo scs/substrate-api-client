@@ -25,7 +25,7 @@ members = [
 [dependencies]
 # crates.io no_std
 async-trait = "0.1.68"
-codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
 frame-metadata = { version = "15.1", default-features = false, features = ["v14", "v15-unstable", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
