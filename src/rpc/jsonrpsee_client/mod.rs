@@ -39,7 +39,7 @@ impl JsonrpseeClient {
 	}
 
 	pub fn with_default_url() -> Result<Self> {
-		Self::new("ws://127.0.0.1:9970")
+		Self::new("ws://127.0.0.1:9944")
 	}
 
 	pub async fn async_new(url: &str) -> Result<Self> {
