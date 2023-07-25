@@ -20,7 +20,7 @@ use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
 use ac_primitives::config::Config;
 use alloc::{vec, vec::Vec};
-use codec::{Decode, Encode};
+use codec::Decode;
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
@@ -37,7 +37,7 @@ pub trait FetchEvents {
 	/// Fetch all block events from node for the given block hash.
 	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
 
-	/// Fetch all assosciated events for a given extrinsic hash and block hash.
+	/// Fetch all associated events for a given extrinsic hash and block hash.
 	async fn fetch_events_for_extrinsic(
 		&self,
 		block_hash: Self::Hash,
@@ -188,7 +188,7 @@ where
 			.extrinsics()
 			.iter()
 			.position(|xt| {
-				let xt_hash = T::Hasher::hash_of(&xt.encode());
+				let xt_hash = T::Hasher::hash_of(&xt);
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
@@ -374,9 +374,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <PolkadotConfig as Config>::Hasher::hash_of(&xt1.0);
-		let xt_hash2 = <PolkadotConfig as Config>::Hasher::hash_of(&xt2.0);
-		let xt_hash3 = <PolkadotConfig as Config>::Hasher::hash_of(&xt3.0);
+		let xt_hash1 = <PolkadotConfig as Config>::Hasher::hash(&xt1.0);
+		let xt_hash2 = <PolkadotConfig as Config>::Hasher::hash(&xt2.0);
+		let xt_hash3 = <PolkadotConfig as Config>::Hasher::hash(&xt3.0);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };
