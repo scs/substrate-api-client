@@ -20,7 +20,7 @@ use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
 use ac_primitives::config::Config;
 use alloc::{vec, vec::Vec};
-use codec::{Decode, Encode};
+use codec::Decode;
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
@@ -194,7 +194,7 @@ where
 			.extrinsics()
 			.iter()
 			.position(|xt| {
-				let xt_hash = T::Hasher::hash_of(&xt.encode());
+				let xt_hash = T::Hasher::hash_of(&xt);
 				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
 				extrinsic_hash == xt_hash
 			})
@@ -379,9 +379,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <DefaultRuntimeConfig as Config>::Hasher::hash_of(&xt1.0);
-		let xt_hash2 = <DefaultRuntimeConfig as Config>::Hasher::hash_of(&xt2.0);
-		let xt_hash3 = <DefaultRuntimeConfig as Config>::Hasher::hash_of(&xt3.0);
+		let xt_hash1 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt1);
+		let xt_hash2 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt2);
+		let xt_hash3 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt3);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };

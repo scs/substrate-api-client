@@ -16,6 +16,7 @@
 //! Tests for the author rpc interface functions.
 
 use kitchensink_runtime::AccountId;
+use sp_core::{Encode, H256};
 use sp_keyring::AccountKeyring;
 use std::{thread, time::Duration};
 use substrate_api_client::{
@@ -66,7 +67,9 @@ async fn main() {
 	// Test different _watch_untils with events
 	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
 	let xt2 = api.balance_transfer_allow_death(bob.clone(), 1000);
+	let extrinsic_hash: H256 = sp_core::blake2_256(&xt2.encode()).into();
 	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
+	assert_eq!(extrinsic_hash, report.extrinsic_hash);
 	assert!(report.block_hash.is_none());
 	assert!(matches!(report.status, TransactionStatus::Ready));
 	assert!(report.events.is_none());
