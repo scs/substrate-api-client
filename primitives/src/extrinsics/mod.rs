@@ -20,6 +20,7 @@
 use alloc::{format, vec::Vec};
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
+use scale_info::TypeInfo;
 use sp_runtime::traits::Extrinsic;
 
 pub use extrinsic_params::{
@@ -67,6 +68,11 @@ impl<Address, Call, Signature, SignedExtra>
 
 impl<Address, Call, Signature, SignedExtra> Extrinsic
 	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
+where
+	Address: TypeInfo,
+	Signature: TypeInfo,
+	Call: TypeInfo,
+	SignedExtra: TypeInfo,
 {
 	type Call = Call;
 

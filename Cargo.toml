@@ -25,7 +25,7 @@ members = [
 [dependencies]
 # crates.io no_std
 async-trait = "0.1.68"
-codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ['derive'] }
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
 frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
@@ -44,12 +44,12 @@ tungstenite = { version = "0.18.0", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # substrate std / wasm only
-frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+frame-support = { optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # local deps
 ac-compose-macros = { path = "compose-macros", default-features = false }
@@ -59,7 +59,7 @@ ac-primitives = { path = "primitives", default-features = false }
 
 [dev-dependencies]
 ac-node-api = { path = "node-api", features = ["mocks"] }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 
 [features]

@@ -6,7 +6,7 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", features = [
+codec = { package = "parity-scale-codec", version = "3.6.1", features = [
     'derive',
 ] }
 serde_json = { version = "1.0.79" }
@@ -14,19 +14,19 @@ tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 wabt = "0.10.0"
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+frame-support = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+kitchensink-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-core = { features = [
     "full_crypto",
-], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+pallet-identity = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+pallet-staking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # local deps
 substrate-api-client = { path = "..", features = [

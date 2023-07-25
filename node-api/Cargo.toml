@@ -11,7 +11,7 @@ categories = ["no-std"]
 
 [dependencies]
 bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
-codec = { package = "parity-scale-codec", version = "3.2.1", features = ["derive", "bit-vec"], default-features = false }
+codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive", "bit-vec"], default-features = false }
 derive_more = { version = "0.99.17" }
 either = { version = "1.6.1", default-features = false }
 frame-metadata = { version = "15.1", default-features = false, features = ["v14", "serde_full", "decode"] }
@@ -22,12 +22,12 @@ serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # substrate
-sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+sp-core = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # need to add this for `no_std`
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "polkadot-v0.9.43" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate.git", features = ["full_crypto"], branch = "polkadot-v1.0.0" }
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # local
 ac-primitives = { path = "../primitives", default-features = false }
