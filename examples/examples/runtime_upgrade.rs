@@ -41,7 +41,7 @@ where
 		Self { subscription }
 	}
 
-	async fn detect_runtime_upgrade(&mut self) {
+	async fn detect_runtime_upgrade(&mut self) -> bool {
 		'outer: loop {
 			let event_records =
 				self.subscription.next_events::<RuntimeEvent, Hash>().await.unwrap().unwrap();
@@ -49,16 +49,17 @@ where
 				match &event_record.event {
 					RuntimeEvent::System(system_event) => match &system_event {
 						frame_system::Event::CodeUpdated => {
-							println!("********** Detected a runtime upgrade");
+							// Runtime Upgrade happened --> resolve the future
 							break 'outer
 						},
-						_ => println!("********** Received a RuntimeEvent"),
+						_ => (),
 					},
-					_ => println!("********** Received some unspecified event"),
+					_ => (),
 				}
 			}
 		}
 		//self.subscription.unsubscribe().unwrap();
+		true
 	}
 }
 
@@ -81,17 +82,19 @@ async fn main() {
 
 	tokio::spawn(async move {
 		tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-		token.cancel();
-		println!("canceling token");
+		cloned_token.cancel();
+		println!("Canceling wait for runtime upgrade");
 	});
 
-	select! {
-		_ = cloned_token.cancelled() => {
-			println!("cancelled");
+	let runtime_upgrade_detected = select! {
+		_ = token.cancelled() => {
+			false
 		},
-		_ = detector_future => (),
+		_ = detector_future => {
+			api.update_runtime().await.unwrap();
+			true
+		},
 	};
-
-	api.update_runtime().await.unwrap();
+	println!("Detected runtime upgrade: {runtime_upgrade_detected}");
 	println!("New spec_version: {}", api.spec_version());
 }
