@@ -208,10 +208,14 @@ where
 	}
 }
 
+#[maybe_async::maybe_async(?Send)]
 pub trait UpdateRuntime {
-	fn update_runtime(&mut self) -> Result<()>;
+	/// Updates the runtime and metadata of the api via node query.
+	/// Ideally, this function is called if a substrate update runtime event is encountered.
+	async fn update_runtime(&mut self) -> Result<()>;
 }
 
+#[maybe_async::maybe_async(?Send)]
 impl<T, Client> UpdateRuntime for Api<T, Client>
 where
 	T: Config,
@@ -219,8 +223,6 @@ where
 	//Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
 	//Runtime: FrameSystemConfig,
 {
-	/// Updates the runtime and metadata of the api via node query.
-	// Ideally, this function is called if a substrate update runtime event is encountered.
 	#[maybe_async::sync_impl]
 	fn update_runtime(&mut self) -> Result<()> {
 		let metadata = Self::get_metadata(&self.client)?;
@@ -234,9 +236,7 @@ where
 		Ok(())
 	}
 
-	/// Updates the runtime and metadata of the api via node query.
-	/// Ideally, this function is called if a substrate update runtime event is encountered.
-	#[maybe_async::async_impl]
+	#[maybe_async::async_impl(?Send)]
 	async fn update_runtime(&mut self) -> Result<()> {
 		let metadata_future = Self::get_metadata(&self.client);
 		let runtime_version_future = Self::get_runtime_version(&self.client);

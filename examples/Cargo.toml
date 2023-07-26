@@ -31,3 +31,6 @@ substrate-api-client = { path = "..", default-features = false, features = ["jso
 [features]
 default = ["sync-examples"]
 sync-examples = ["substrate-api-client/std", "substrate-api-client/sync-api"]
+
+[dependencies]
+tokio-util = "0.7.8"

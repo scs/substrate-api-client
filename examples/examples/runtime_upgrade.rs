@@ -21,6 +21,8 @@ use substrate_api_client::{
 	rpc_api::EventSubscriptionFor,
 	Api, SubscribeEvents,
 };
+use tokio::select;
+use tokio_util::sync::CancellationToken;
 
 struct RuntimeUpdateDetector<T, Client>
 where
@@ -42,7 +44,7 @@ where
 	async fn detect_runtime_upgrade(&mut self) {
 		'outer: loop {
 			let event_records =
-				self.subscription.next_events::<RuntimeEvent, Hash>().unwrap().unwrap();
+				self.subscription.next_events::<RuntimeEvent, Hash>().await.unwrap().unwrap();
 			for event_record in &event_records {
 				match &event_record.event {
 					RuntimeEvent::System(system_event) => match &system_event {
@@ -66,14 +68,30 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 
-	let subscription = api.subscribe_events().unwrap();
+	let subscription = api.subscribe_events().await.unwrap();
 	let mut upgrade_detector: RuntimeUpdateDetector<AssetRuntimeConfig, JsonrpseeClient> =
 		RuntimeUpdateDetector::new(subscription);
-	println!("spec_version: {}", api.spec_version());
-	let detector = upgrade_detector.detect_runtime_upgrade();
-	detector.await;
-	api.update_runtime().unwrap();
-	println!("spec_version: {}", api.spec_version());
+	println!("Current spec_version: {}", api.spec_version());
+	let detector_future = upgrade_detector.detect_runtime_upgrade();
+
+	let token = CancellationToken::new();
+	let cloned_token = token.clone();
+
+	tokio::spawn(async move {
+		tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+		token.cancel();
+		println!("canceling token");
+	});
+
+	select! {
+		_ = cloned_token.cancelled() => {
+			println!("cancelled");
+		},
+		_ = detector_future => (),
+	};
+
+	api.update_runtime().await.unwrap();
+	println!("New spec_version: {}", api.spec_version());
 }
