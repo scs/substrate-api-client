@@ -30,7 +30,8 @@ where
 		Self { subscription }
 	}
 
-	pub async fn detect_runtime_upgrade(&mut self) -> bool {
+	#[maybe_async::maybe_async(?Send)]
+	pub async fn detect_runtime_update(&mut self) -> bool {
 		'outer: loop {
 			let event_records =
 				self.subscription.next_events_from_metadata().await.unwrap().unwrap();
@@ -41,7 +42,6 @@ where
 				}
 			}
 		}
-		//self.subscription.unsubscribe().unwrap();
 		true
 	}
 }

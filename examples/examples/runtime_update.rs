@@ -11,7 +11,7 @@
 	limitations under the License.
 */
 
-//! Example that shows how to detect a runtime upgrade and afterwards upgrade the metadata.
+//! Example that shows how to detect a runtime update and afterwards update the metadata.
 use substrate_api_client::{
 	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector, Api, SubscribeEvents,
@@ -19,6 +19,7 @@ use substrate_api_client::{
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
+#[cfg(not(feature = "sync-examples"))]
 #[tokio::main]
 async fn main() {
 	env_logger::init();
@@ -28,10 +29,10 @@ async fn main() {
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 
 	let subscription = api.subscribe_events().await.unwrap();
-	let mut upgrade_detector: RuntimeUpdateDetector<AssetRuntimeConfig, JsonrpseeClient> =
+	let mut update_detector: RuntimeUpdateDetector<AssetRuntimeConfig, JsonrpseeClient> =
 		RuntimeUpdateDetector::new(subscription);
 	println!("Current spec_version: {}", api.spec_version());
-	let detector_future = upgrade_detector.detect_runtime_upgrade();
+	let detector_future = update_detector.detect_runtime_update();
 
 	let token = CancellationToken::new();
 	let cloned_token = token.clone();
@@ -39,10 +40,10 @@ async fn main() {
 	tokio::spawn(async move {
 		tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 		cloned_token.cancel();
-		println!("Canceling wait for runtime upgrade");
+		println!("Canceling wait for runtime update");
 	});
 
-	let runtime_upgrade_detected = select! {
+	let runtime_update_detected = select! {
 		_ = token.cancelled() => {
 			false
 		},
@@ -51,6 +52,27 @@ async fn main() {
 			true
 		},
 	};
-	println!("Detected runtime upgrade: {runtime_upgrade_detected}");
+	println!("Detected runtime update: {runtime_update_detected}");
+	println!("New spec_version: {}", api.spec_version());
+}
+
+#[cfg(feature = "sync-examples")]
+#[tokio::main]
+async fn main() {
+	env_logger::init();
+
+	// Initialize the api.
+	let client = JsonrpseeClient::with_default_url().unwrap();
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+
+	let subscription = api.subscribe_events().unwrap();
+	let mut update_detector: RuntimeUpdateDetector<AssetRuntimeConfig, JsonrpseeClient> =
+		RuntimeUpdateDetector::new(subscription);
+	println!("Current spec_version: {}", api.spec_version());
+	let runtime_update_detected = update_detector.detect_runtime_update();
+
+	api.update_runtime().unwrap();
+
+	println!("Detected runtime update: {runtime_update_detected}");
 	println!("New spec_version: {}", api.spec_version());
 }
