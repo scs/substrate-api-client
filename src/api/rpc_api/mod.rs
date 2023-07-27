@@ -13,7 +13,7 @@
 
 pub use self::{
 	author::*, chain::*, events::*, frame_system::*, pallet_balances::*,
-	pallet_transaction_payment::*, state::*,
+	pallet_transaction_payment::*, runtime_update::*, state::*,
 };
 
 pub mod author;
@@ -22,4 +22,5 @@ pub mod events;
 pub mod frame_system;
 pub mod pallet_balances;
 pub mod pallet_transaction_payment;
+pub mod runtime_update;
 pub mod state;

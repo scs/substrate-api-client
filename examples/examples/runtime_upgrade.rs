@@ -12,56 +12,12 @@
 */
 
 //! Example that shows how to detect a runtime upgrade and afterwards upgrade the metadata.
-use kitchensink_runtime::RuntimeEvent;
-use sp_core::H256 as Hash;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config},
-	api_client::UpdateRuntime,
-	rpc::{JsonrpseeClient, Subscribe},
-	rpc_api::EventSubscriptionFor,
-	Api, SubscribeEvents,
+	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient,
+	rpc_api::RuntimeUpdateDetector, Api, SubscribeEvents,
 };
 use tokio::select;
 use tokio_util::sync::CancellationToken;
-
-struct RuntimeUpdateDetector<T, Client>
-where
-	T: Config,
-	Client: Subscribe,
-{
-	subscription: EventSubscriptionFor<Client, T::Hash>,
-}
-
-impl<T, Client> RuntimeUpdateDetector<T, Client>
-where
-	T: Config,
-	Client: Subscribe,
-{
-	fn new(subscription: EventSubscriptionFor<Client, T::Hash>) -> Self {
-		Self { subscription }
-	}
-
-	async fn detect_runtime_upgrade(&mut self) -> bool {
-		'outer: loop {
-			let event_records =
-				self.subscription.next_events::<RuntimeEvent, Hash>().await.unwrap().unwrap();
-			for event_record in &event_records {
-				match &event_record.event {
-					RuntimeEvent::System(system_event) => match &system_event {
-						frame_system::Event::CodeUpdated => {
-							// Runtime Upgrade happened --> resolve the future
-							break 'outer
-						},
-						_ => (),
-					},
-					_ => (),
-				}
-			}
-		}
-		//self.subscription.unsubscribe().unwrap();
-		true
-	}
-}
 
 #[tokio::main]
 async fn main() {
