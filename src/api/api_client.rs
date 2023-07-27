@@ -220,8 +220,6 @@ impl<T, Client> UpdateRuntime for Api<T, Client>
 where
 	T: Config,
 	Client: Request,
-	//Params: ExtrinsicParams<Runtime::Index, Runtime::Hash>,
-	//Runtime: FrameSystemConfig,
 {
 	#[maybe_async::sync_impl]
 	fn update_runtime(&mut self) -> Result<()> {

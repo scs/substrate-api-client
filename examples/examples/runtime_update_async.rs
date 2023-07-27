@@ -13,11 +13,16 @@
 
 //! Example that shows how to detect a runtime update and afterwards update the metadata.
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient,
-	rpc_api::RuntimeUpdateDetector, Api, SubscribeEvents,
+	ac_primitives::{AssetRuntimeConfig, Config},
+	api_client::UpdateRuntime,
+	rpc::JsonrpseeClient,
+	rpc_api::RuntimeUpdateDetector,
+	Api, SubscribeEvents,
 };
 use tokio::select;
 use tokio_util::sync::CancellationToken;
+
+type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[cfg(feature = "sync-examples")]
 #[tokio::main]
@@ -35,7 +40,7 @@ async fn main() {
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 
 	let subscription = api.subscribe_events().await.unwrap();
-	let mut update_detector: RuntimeUpdateDetector<AssetRuntimeConfig, JsonrpseeClient> =
+	let mut update_detector: RuntimeUpdateDetector<Hash, JsonrpseeClient> =
 		RuntimeUpdateDetector::new(subscription);
 	println!("Current spec_version: {}", api.spec_version());
 	let detector_future = update_detector.detect_runtime_update();

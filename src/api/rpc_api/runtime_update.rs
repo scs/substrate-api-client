@@ -10,35 +10,35 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-use crate::{
-	ac_primitives::Config, api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor, Result,
-};
+use crate::{api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor, Result};
 use alloc::sync::Arc;
+use codec::Decode;
 use core::sync::atomic::{AtomicBool, Ordering};
+use serde::de::DeserializeOwned;
 
 /// Struct to support waiting for runtime updates
-pub struct RuntimeUpdateDetector<T, Client>
+pub struct RuntimeUpdateDetector<Hash, Client>
 where
-	T: Config,
+	Hash: DeserializeOwned + Copy + Decode,
 	Client: Subscribe,
 {
-	subscription: EventSubscriptionFor<Client, T::Hash>,
+	subscription: EventSubscriptionFor<Client, Hash>,
 	external_cancellation: Option<Arc<AtomicBool>>,
 }
 
-impl<T, Client> RuntimeUpdateDetector<T, Client>
+impl<Hash, Client> RuntimeUpdateDetector<Hash, Client>
 where
-	T: Config,
+	Hash: DeserializeOwned + Copy + Decode,
 	Client: Subscribe,
 {
-	pub fn new(subscription: EventSubscriptionFor<Client, T::Hash>) -> Self {
+	pub fn new(subscription: EventSubscriptionFor<Client, Hash>) -> Self {
 		Self { subscription, external_cancellation: None }
 	}
 
 	/// Provide the `RuntimeUpdateDetector` with the additional option to cancel the waiting
 	/// from the outside
 	pub fn new_with_cancellation(
-		subscription: EventSubscriptionFor<Client, T::Hash>,
+		subscription: EventSubscriptionFor<Client, Hash>,
 		cancellation: Arc<AtomicBool>,
 	) -> Self {
 		Self { subscription, external_cancellation: Some(cancellation) }

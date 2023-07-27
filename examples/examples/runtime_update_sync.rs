@@ -18,9 +18,14 @@ use core::{
 };
 use std::{sync::Arc, thread};
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient,
-	rpc_api::RuntimeUpdateDetector, Api, SubscribeEvents,
+	ac_primitives::{AssetRuntimeConfig, Config},
+	api_client::UpdateRuntime,
+	rpc::JsonrpseeClient,
+	rpc_api::RuntimeUpdateDetector,
+	Api, SubscribeEvents,
 };
+
+type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[cfg(not(feature = "sync-examples"))]
 #[tokio::main]
@@ -39,7 +44,7 @@ async fn main() {
 
 	let subscription = api.subscribe_events().unwrap();
 	let cancellation = Arc::new(AtomicBool::new(false));
-	let mut update_detector: RuntimeUpdateDetector<AssetRuntimeConfig, JsonrpseeClient> =
+	let mut update_detector: RuntimeUpdateDetector<Hash, JsonrpseeClient> =
 		RuntimeUpdateDetector::new_with_cancellation(subscription, cancellation.clone());
 
 	println!("Current spec_version: {}", api.spec_version());
