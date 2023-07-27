@@ -16,7 +16,9 @@
 //! Very simple example that shows how to pretty print the metadata. Has proven to be a helpful
 //! debugging tool.
 
-use substrate_api_client::{ac_primitives::AssetRuntimeConfig, rpc::JsonrpseeClient, Api};
+use substrate_api_client::{
+	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient, Api,
+};
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
