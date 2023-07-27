@@ -11,8 +11,8 @@
 	limitations under the License.
 */
 use crate::{ac_primitives::Config, rpc::Subscribe, rpc_api::EventSubscriptionFor};
+use alloc::sync::Arc;
 use core::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 
 pub struct RuntimeUpdateDetector<T, Client>
 where
