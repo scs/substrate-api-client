@@ -45,7 +45,7 @@ async fn main() {
 	println!("Current spec_version: {}", api.spec_version());
 
 	let handler = thread::spawn(move || {
-		let runtime_update_detected = update_detector.detect_runtime_update();
+		let runtime_update_detected = update_detector.detect_runtime_update().unwrap();
 		println!("Detected runtime update: {runtime_update_detected}");
 	});
 
