@@ -100,7 +100,6 @@ async fn main() {
 			println!("[+] Extrinsic with hash {extrinsic_hash:?} was successfully executed.",);
 			println!("[+] Extrinsic got included in block with hash {block_hash:?}");
 			println!("[+] Watched extrinsic until it reached the status {extrinsic_status:?}");
-			println!("[+] The following events were thrown when the extrinsic was executed: {extrinsic_events:?}");
 
 			assert!(matches!(extrinsic_status, TransactionStatus::InBlock(_block_hash)));
 			assert_associated_events_match_expected(extrinsic_events);
