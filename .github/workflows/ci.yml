@@ -136,6 +136,7 @@ jobs:
           compose_extrinsic_offline,
           custom_nonce,
           check_extrinsic_events,
+          test_long_xt,
           get_account_identity,
           get_blocks_async,
           get_storage,
