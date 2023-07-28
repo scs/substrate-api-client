@@ -249,7 +249,7 @@ mod tests {
 		CheckWeight,
 	};
 	use node_template_runtime::{
-		BalancesCall, Runtime, RuntimeCall, SignedExtra, UncheckedExtrinsic,
+		BalancesCall, Runtime, RuntimeCall, SignedExtra, SystemCall, UncheckedExtrinsic, VERSION,
 	};
 	use pallet_transaction_payment::ChargeTransactionPayment;
 	use sp_core::{crypto::Ss58Codec, Pair, H256 as Hash};
@@ -258,6 +258,9 @@ mod tests {
 		generic::Era, testing::sr25519, traits::Hash as HashTrait, AccountId32, MultiAddress,
 		MultiSignature,
 	};
+
+	type PlainTipExtrinsicParams =
+		GenericExtrinsicParams<crate::DefaultRuntimeConfig, PlainTip<u128>>;
 
 	#[test]
 	fn encode_decode_roundtrip_works() {
@@ -317,7 +320,7 @@ mod tests {
 	}
 
 	#[test]
-	fn enocding_does_not_differ_from_substrate() {
+	fn xt_hash_matches_substrate_impl() {
 		// Crate the call
 		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
 		let bob = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
@@ -343,7 +346,6 @@ mod tests {
 			CheckWeight::<Runtime>::new(),
 			ChargeTransactionPayment::<Runtime>::from(fee),
 		);
-		let api_client_sigend_extra = GenericSignedExtra::new(era, nonce, fee);
 
 		let substrate_extrinsic = UncheckedExtrinsic::new_signed(
 			call.clone(),
@@ -352,9 +354,88 @@ mod tests {
 			substrate_signed_extra,
 		);
 
-		let api_client_extrinsic =
-			UncheckedExtrinsicV4::new_signed(call, alice, signature, api_client_sigend_extra);
+		let additional_tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
+			.era(era, Hash::zero())
+			.tip(fee);
 
+		let extrinsic_params = PlainTipExtrinsicParams::new(
+			VERSION.spec_version,
+			VERSION.transaction_version,
+			nonce,
+			Hash::zero(),
+			additional_tx_params,
+		);
+
+		let api_client_extrinsic = UncheckedExtrinsicV4::new_signed(
+			call,
+			alice,
+			signature,
+			extrinsic_params.signed_extra(),
+		);
+
+		println!("{substrate_extrinsic:?}");
+		println!("{api_client_extrinsic:?}");
+		assert_eq!(
+			<Runtime as frame_system::Config>::Hashing::hash_of(&substrate_extrinsic),
+			<Runtime as frame_system::Config>::Hashing::hash_of(&api_client_extrinsic)
+		)
+	}
+
+	#[test]
+	fn xt_hash_matches_substrate_impl_large_xt() {
+		// Crate the call
+		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
+
+		let code: Vec<u8> = include_bytes!("test-runtime.compact.wasm").to_vec();
+		let call = RuntimeCall::System(SystemCall::set_code { code });
+
+		// Create Signature
+		let msg = &b"test-message"[..];
+		let (pair, _) = sr25519::Pair::generate();
+		let signature = MultiSignature::from(pair.sign(msg));
+
+		// Create SignedExtra
+		let era = Era::Immortal;
+		let nonce = 10;
+		let fee = 100;
+		let substrate_signed_extra: SignedExtra = (
+			CheckNonZeroSender::<Runtime>::new(),
+			CheckSpecVersion::<Runtime>::new(),
+			CheckTxVersion::<Runtime>::new(),
+			CheckGenesis::<Runtime>::new(),
+			CheckEra::<Runtime>::from(era),
+			CheckNonce::<Runtime>::from(nonce),
+			CheckWeight::<Runtime>::new(),
+			ChargeTransactionPayment::<Runtime>::from(fee),
+		);
+		let substrate_extrinsic = UncheckedExtrinsic::new_signed(
+			call.clone(),
+			alice.clone(),
+			signature.clone(),
+			substrate_signed_extra,
+		);
+
+		let additional_tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
+			.era(era, Hash::zero())
+			.tip(fee);
+
+		let extrinsic_params = PlainTipExtrinsicParams::new(
+			VERSION.spec_version,
+			VERSION.transaction_version,
+			nonce,
+			Hash::zero(),
+			additional_tx_params,
+		);
+
+		let api_client_extrinsic = UncheckedExtrinsicV4::new_signed(
+			call,
+			alice,
+			signature,
+			extrinsic_params.signed_extra(),
+		);
+
+		println!("{substrate_extrinsic:?}");
+		println!("{api_client_extrinsic:?}");
 		assert_eq!(
 			<Runtime as frame_system::Config>::Hashing::hash_of(&substrate_extrinsic),
 			<Runtime as frame_system::Config>::Hashing::hash_of(&api_client_extrinsic)
