@@ -58,8 +58,7 @@ where
 				.subscription
 				.next_events_from_metadata()
 				.await
-				.ok_or(Error::Other("Error receiving events".into()))?;
-			let event_records = event_records?;
+				.ok_or(Error::Other("Error receiving events".into()))??;
 			let event_iter = event_records.iter();
 			for event in event_iter {
 				if event?.is_code_update() {

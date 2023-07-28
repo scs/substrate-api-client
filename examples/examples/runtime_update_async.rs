@@ -48,12 +48,15 @@ async fn main() {
 	let token = CancellationToken::new();
 	let cloned_token = token.clone();
 
+	// To prevent blocking forever we create another future that cancels the
+	// wait after some time
 	tokio::spawn(async move {
 		tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 		cloned_token.cancel();
 		println!("Cancelling wait for runtime update");
 	});
 
+	// Wait for one of the futures to resolve and check which one resolved
 	let runtime_update_detected = select! {
 		_ = token.cancelled() => {
 			false
