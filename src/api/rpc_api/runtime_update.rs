@@ -45,7 +45,7 @@ where
 	}
 
 	/// Returns true if a runtime update was detected, false if the wait was cancelled
-	/// In principle this method only returns/resolves once a runtime update is detected
+	/// If not cancelled, this method only returns/resolves once a runtime update is detected.
 	#[maybe_async::maybe_async(?Send)]
 	pub async fn detect_runtime_update(&mut self) -> Result<bool> {
 		'outer: loop {
