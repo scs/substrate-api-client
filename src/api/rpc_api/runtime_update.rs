@@ -16,7 +16,7 @@ use codec::Decode;
 use core::sync::atomic::{AtomicBool, Ordering};
 use serde::de::DeserializeOwned;
 
-/// Struct to support waiting for runtime updates
+/// Struct to support waiting for runtime updates.
 pub struct RuntimeUpdateDetector<Hash, Client>
 where
 	Hash: DeserializeOwned + Copy + Decode,
