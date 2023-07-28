@@ -229,7 +229,7 @@ impl<Hash: Decode> EventDetails<Hash> {
 		Ok(())
 	}
 
-	/// Checks if the event represents a code update (runtime update)
+	/// Checks if the event represents a code update (runtime update).
 	pub fn is_code_update(&self) -> bool {
 		self.pallet_name() == "System" && self.variant_name() == "CodeUpdated"
 	}
