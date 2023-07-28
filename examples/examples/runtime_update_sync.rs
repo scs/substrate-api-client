@@ -39,6 +39,27 @@ async fn main() {
 	println!("This example is for sync use-cases. Please see runtime_update_async.rs for the async implementation.")
 }
 
+pub fn send_code_update_extrinsic(
+	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
+) {
+	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+
+	// this call can only be called by sudo
+	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
+	let weight: Weight = 0.into();
+	let xt: UncheckedExtrinsicV4<_, _, _, _> =
+		compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
+
+	// send and watch extrinsic until finalized
+	println!("Sending extrinsic to trigger runtime update");
+	let block_hash = api
+		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		.unwrap()
+		.block_hash
+		.unwrap();
+	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
+}
+
 #[cfg(feature = "sync-examples")]
 #[tokio::main]
 async fn main() {
@@ -58,28 +79,14 @@ async fn main() {
 	println!("Current spec_version: {}", api.spec_version());
 
 	let handler = thread::spawn(move || {
+		// Wait for potential runtime update events
 		let runtime_update_detected = update_detector.detect_runtime_update().unwrap();
 		println!("Detected runtime update: {runtime_update_detected}");
 	});
 
 	// Execute an actual runtime update
 	{
-		let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
-
-		// this call can only be called by sudo
-		let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
-		let weight: Weight = 0.into();
-		let xt: UncheckedExtrinsicV4<_, _, _, _> =
-			compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
-
-		// send and watch extrinsic until finalized
-		println!("Sending extrinsic to trigger runtime update");
-		let block_hash = api
-			.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
+		send_code_update_extrinsic(&api);
 	}
 
 	// Sleep for some time in order to wait for a runtime update

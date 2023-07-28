@@ -43,6 +43,8 @@ async fn main() {
 	let mut update_detector: RuntimeUpdateDetector<Hash, JsonrpseeClient> =
 		RuntimeUpdateDetector::new(subscription);
 	println!("Current spec_version: {}", api.spec_version());
+
+	// Create future that informs about runtime update events
 	let detector_future = update_detector.detect_runtime_update();
 
 	let token = CancellationToken::new();
