@@ -16,15 +16,21 @@ use core::{
 	sync::atomic::{AtomicBool, Ordering},
 	time::Duration,
 };
+use sp_keyring::AccountKeyring;
+use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_compose_macros::{compose_call, compose_extrinsic},
+	ac_primitives::{
+		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, UncheckedExtrinsicV4,
+	},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
-	Api, SubscribeEvents,
+	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
+type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
 type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[cfg(not(feature = "sync-examples"))]
@@ -41,6 +47,16 @@ async fn main() {
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let sudoer = AccountKeyring::Alice.pair();
+	api.set_signer(ExtrinsicSigner::new(sudoer));
+
+	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+
+	// this call can only be called by sudo
+	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
+	let weight: Weight = 0.into();
+	let xt: UncheckedExtrinsicV4<_, _, _, _> =
+		compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
 
 	let subscription = api.subscribe_events().unwrap();
 	let cancellation = Arc::new(AtomicBool::new(false));
@@ -48,15 +64,25 @@ async fn main() {
 		RuntimeUpdateDetector::new_with_cancellation(subscription, cancellation.clone());
 
 	println!("Current spec_version: {}", api.spec_version());
+	assert!(api.spec_version() != 268);
 
 	let handler = thread::spawn(move || {
 		let runtime_update_detected = update_detector.detect_runtime_update().unwrap();
 		println!("Detected runtime update: {runtime_update_detected}");
 	});
 
-	thread::sleep(Duration::from_secs(5));
-	cancellation.store(true, Ordering::SeqCst);
+	{
+		// send and watch extrinsic until finalized
+		println!("Sending extrinsic to trigger runtime update");
+		let tx_hash = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
+		// Sleep for some time in order to wait for a runtime update
+		// If no update happens we cancel the wait
+		thread::sleep(Duration::from_secs(5));
+		cancellation.store(true, Ordering::SeqCst);
+	}
+
 	handler.join().unwrap();
 	api.update_runtime().unwrap();
 	println!("New spec_version: {}", api.spec_version());
+	assert!(api.spec_version() == 1268);
 }
