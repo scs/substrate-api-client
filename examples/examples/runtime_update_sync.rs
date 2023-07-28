@@ -64,7 +64,7 @@ async fn main() {
 		RuntimeUpdateDetector::new_with_cancellation(subscription, cancellation.clone());
 
 	println!("Current spec_version: {}", api.spec_version());
-	assert!(api.spec_version() != 268);
+	assert!(api.spec_version() != 1268);
 
 	let handler = thread::spawn(move || {
 		let runtime_update_detected = update_detector.detect_runtime_update().unwrap();
