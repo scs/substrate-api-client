@@ -192,6 +192,12 @@ where
 	}
 }
 
+/// A payload that has been signed for an unchecked extrinsics.
+///
+/// Note that the payload that we sign to produce unchecked extrinsic signature
+/// is going to be different than the `SignaturePayload` - so the thing the extrinsic
+/// actually contains.
+// https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L192-L197
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct SignedPayload<Call, SignedExtra, AdditionalSigned>(
 	(Call, SignedExtra, AdditionalSigned),
@@ -203,6 +209,7 @@ where
 	SignedExtra: Encode,
 	AdditionalSigned: Encode,
 {
+	/// Create new `SignedPayload` from raw components.
 	pub fn from_raw(call: Call, extra: SignedExtra, additional_signed: AdditionalSigned) -> Self {
 		Self((call, extra, additional_signed))
 	}
@@ -278,5 +285,17 @@ impl<Balance> From<Balance> for AssetTip<Balance> {
 impl From<AssetTip<u128>> for u128 {
 	fn from(tip: AssetTip<u128>) -> Self {
 		tip.tip
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use sp_core::hashing::blake2_256;
+
+	#[test]
+	fn encode_blake2_256_works_as_expected() {
+		let bytes = "afaefafe1204udanfai9lfadmlk9aömlsa".as_bytes();
+		assert_eq!(&blake2_256(bytes)[..], &BlakeTwo256::hash(bytes)[..]);
 	}
 }
