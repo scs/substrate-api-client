@@ -321,21 +321,21 @@ mod tests {
 
 	#[test]
 	fn xt_hash_matches_substrate_impl() {
-		// Crate the call
+		// Define extrinsic params.
 		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
 		let bob = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
 		let call =
 			RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: bob, value: 42 });
 
-		// Create Signature
 		let msg = &b"test-message"[..];
 		let (pair, _) = sr25519::Pair::generate();
 		let signature = MultiSignature::from(pair.sign(msg));
 
-		// Create SignedExtra
 		let era = Era::Immortal;
 		let nonce = 10;
 		let fee = 100;
+
+		// Create Substrate extrinsic.
 		let substrate_signed_extra: SignedExtra = (
 			CheckNonZeroSender::<Runtime>::new(),
 			CheckSpecVersion::<Runtime>::new(),
@@ -354,10 +354,10 @@ mod tests {
 			substrate_signed_extra,
 		);
 
+		// Create api-client extrinsic.
 		let additional_tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
 			.era(era, Hash::zero())
 			.tip(fee);
-
 		let extrinsic_params = PlainTipExtrinsicParams::new(
 			VERSION.spec_version,
 			VERSION.transaction_version,
@@ -365,7 +365,6 @@ mod tests {
 			Hash::zero(),
 			additional_tx_params,
 		);
-
 		let api_client_extrinsic = UncheckedExtrinsicV4::new_signed(
 			call,
 			alice,
@@ -373,8 +372,6 @@ mod tests {
 			extrinsic_params.signed_extra(),
 		);
 
-		println!("{substrate_extrinsic:?}");
-		println!("{api_client_extrinsic:?}");
 		assert_eq!(
 			<Runtime as frame_system::Config>::Hashing::hash_of(&substrate_extrinsic),
 			<Runtime as frame_system::Config>::Hashing::hash_of(&api_client_extrinsic)
@@ -383,21 +380,19 @@ mod tests {
 
 	#[test]
 	fn xt_hash_matches_substrate_impl_large_xt() {
-		// Crate the call
+		// Define xt parameters,
 		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
-
 		let code: Vec<u8> = include_bytes!("test-runtime.compact.wasm").to_vec();
 		let call = RuntimeCall::System(SystemCall::set_code { code });
 
-		// Create Signature
 		let msg = &b"test-message"[..];
 		let (pair, _) = sr25519::Pair::generate();
 		let signature = MultiSignature::from(pair.sign(msg));
-
-		// Create SignedExtra
 		let era = Era::Immortal;
 		let nonce = 10;
 		let fee = 100;
+
+		// Create Substrate extrinsic.
 		let substrate_signed_extra: SignedExtra = (
 			CheckNonZeroSender::<Runtime>::new(),
 			CheckSpecVersion::<Runtime>::new(),
@@ -415,6 +410,7 @@ mod tests {
 			substrate_signed_extra,
 		);
 
+		// Define api-client extrinsic.
 		let additional_tx_params = GenericAdditionalParams::<PlainTip<u128>, Hash>::new()
 			.era(era, Hash::zero())
 			.tip(fee);
@@ -434,8 +430,6 @@ mod tests {
 			extrinsic_params.signed_extra(),
 		);
 
-		println!("{substrate_extrinsic:?}");
-		println!("{api_client_extrinsic:?}");
 		assert_eq!(
 			<Runtime as frame_system::Config>::Hashing::hash_of(&substrate_extrinsic),
 			<Runtime as frame_system::Config>::Hashing::hash_of(&api_client_extrinsic)
