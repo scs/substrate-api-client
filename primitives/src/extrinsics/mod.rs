@@ -17,6 +17,7 @@
 
 //! Primitives for substrate extrinsics.
 
+use crate::OpaqueExtrinsic;
 use alloc::{format, vec::Vec};
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
@@ -38,11 +39,15 @@ pub mod signer;
 const V4: u8 = 4;
 
 /// Mirrors the currently used Extrinsic format (V4) from substrate. Has less traits and methods though.
-/// The SingedExtra used does not need to implement SingedExtension here.
+/// The SignedExtra used does not need to implement SignedExtension here.
 // see https://github.com/paritytech/substrate/blob/7d233c2446b5a60662400a0a4bcfb78bb3b79ff7/primitives/runtime/src/generic/unchecked_extrinsic.rs
 #[derive(Clone, Eq, PartialEq)]
 pub struct UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra> {
+	/// The signature, address, number of extrinsics have come before from
+	/// the same signer and an era describing the longevity of this transaction,
+	/// if this is a signed extrinsic.
 	pub signature: Option<(Address, Signature, SignedExtra)>,
+	/// The function that should be called.
 	pub function: Call,
 }
 
@@ -103,6 +108,7 @@ where
 	}
 }
 
+// https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L289C5-L320
 impl<Address, Call, Signature, SignedExtra> Encode
 	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 where
@@ -127,6 +133,7 @@ where
 	}
 }
 
+// https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L250-L287
 impl<Address, Call, Signature, SignedExtra> Decode
 	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 where
@@ -173,6 +180,7 @@ where
 	}
 }
 
+// https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L346-L357
 impl<'a, Address, Call, Signature, SignedExtra> serde::Deserialize<'a>
 	for UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>
 where
@@ -188,6 +196,23 @@ where
 		let r = impl_serde::serialize::deserialize(de)?;
 		Decode::decode(&mut &r[..])
 			.map_err(|e| serde::de::Error::custom(format!("Decode error: {e}")))
+	}
+}
+
+// https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L376-L390
+impl<Address, Call, Signature, Extra> From<UncheckedExtrinsicV4<Address, Call, Signature, Extra>>
+	for OpaqueExtrinsic
+where
+	Address: Encode,
+	Signature: Encode,
+	Call: Encode,
+	Extra: Encode,
+{
+	fn from(extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, Extra>) -> Self {
+		Self::from_bytes(extrinsic.encode().as_slice()).expect(
+			"both OpaqueExtrinsic and UncheckedExtrinsic have encoding that is compatible with \
+				raw Vec<u8> encoding; qed",
+		)
 	}
 }
 
@@ -219,9 +244,20 @@ mod tests {
 	use super::*;
 	use crate::AssetRuntimeConfig;
 	use extrinsic_params::{GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
-	use node_template_runtime::{BalancesCall, RuntimeCall, SignedExtra};
+	use frame_system::{
+		CheckEra, CheckGenesis, CheckNonZeroSender, CheckNonce, CheckSpecVersion, CheckTxVersion,
+		CheckWeight,
+	};
+	use node_template_runtime::{
+		BalancesCall, Runtime, RuntimeCall, SignedExtra, UncheckedExtrinsic,
+	};
+	use pallet_transaction_payment::ChargeTransactionPayment;
 	use sp_core::{crypto::Ss58Codec, Pair, H256 as Hash};
-	use sp_runtime::{generic::Era, testing::sr25519, AccountId32, MultiAddress, MultiSignature};
+	use sp_keyring::AccountKeyring;
+	use sp_runtime::{
+		generic::Era, testing::sr25519, traits::Hash as HashTrait, AccountId32, MultiAddress,
+		MultiSignature,
+	};
 
 	#[test]
 	fn encode_decode_roundtrip_works() {
@@ -278,5 +314,50 @@ mod tests {
 		> = serde_json::from_str(&json).expect("deserializing failed");
 		let call = extrinsic.function;
 		assert_eq!(call, call1);
+	}
+
+	#[test]
+	fn enocding_does_not_differ_from_substrate() {
+		// Crate the call
+		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
+		let bob = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+		let call =
+			RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: bob, value: 42 });
+
+		// Create Signature
+		let msg = &b"test-message"[..];
+		let (pair, _) = sr25519::Pair::generate();
+		let signature = MultiSignature::from(pair.sign(msg));
+
+		// Create SignedExtra
+		let era = Era::Immortal;
+		let nonce = 10;
+		let fee = 100;
+		let substrate_signed_extra: SignedExtra = (
+			CheckNonZeroSender::<Runtime>::new(),
+			CheckSpecVersion::<Runtime>::new(),
+			CheckTxVersion::<Runtime>::new(),
+			CheckGenesis::<Runtime>::new(),
+			CheckEra::<Runtime>::from(era),
+			CheckNonce::<Runtime>::from(nonce),
+			CheckWeight::<Runtime>::new(),
+			ChargeTransactionPayment::<Runtime>::from(fee),
+		);
+		let api_client_sigend_extra = GenericSignedExtra::new(era, nonce, fee);
+
+		let substrate_extrinsic = UncheckedExtrinsic::new_signed(
+			call.clone(),
+			alice.clone(),
+			signature.clone(),
+			substrate_signed_extra,
+		);
+
+		let api_client_extrinsic =
+			UncheckedExtrinsicV4::new_signed(call, alice, signature, api_client_sigend_extra);
+
+		assert_eq!(
+			<Runtime as frame_system::Config>::Hashing::hash_of(&substrate_extrinsic),
+			<Runtime as frame_system::Config>::Hashing::hash_of(&api_client_extrinsic)
+		)
 	}
 }

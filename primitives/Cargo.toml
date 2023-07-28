@@ -39,6 +39,7 @@ pallet-staking = { optional = true, git = "https://github.com/paritytech/substra
 [dev-dependencies]
 node-template-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-transaction-payment = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [features]
 default = ["std"]
