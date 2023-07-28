@@ -36,7 +36,7 @@ where
 	}
 
 	/// Provide the `RuntimeUpdateDetector` with the additional option to cancel the waiting
-	/// from the outside
+	/// from the outside.
 	pub fn new_with_cancellation(
 		subscription: EventSubscriptionFor<Client, Hash>,
 		cancellation: Arc<AtomicBool>,
