@@ -36,6 +36,7 @@ async fn main() {
 	println!("This example is for async use-cases. Please see runtime_update_sync.rs for the sync implementation.")
 }
 
+#[cfg(not(feature = "sync-examples"))]
 pub async fn send_code_update_extrinsic(
 	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
 ) {
