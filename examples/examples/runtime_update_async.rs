@@ -12,22 +12,50 @@
 */
 
 //! Example that shows how to detect a runtime update and afterwards update the metadata.
+use sp_keyring::AccountKeyring;
+use sp_weights::Weight;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_compose_macros::{compose_call, compose_extrinsic},
+	ac_primitives::{
+		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, UncheckedExtrinsicV4,
+	},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
-	Api, SubscribeEvents,
+	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
+type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
 type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[cfg(feature = "sync-examples")]
 #[tokio::main]
 async fn main() {
 	println!("This example is for async use-cases. Please see runtime_update_sync.rs for the sync implementation.")
+}
+
+pub async fn send_code_update_extrinsic(
+	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
+) {
+	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+
+	// this call can only be called by sudo
+	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
+	let weight: Weight = 0.into();
+	let xt: UncheckedExtrinsicV4<_, _, _, _> =
+		compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
+
+	// send and watch extrinsic until finalized
+	println!("Sending extrinsic to trigger runtime update");
+	let block_hash = api
+		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		.await
+		.unwrap()
+		.block_hash
+		.unwrap();
+	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
 }
 
 #[cfg(not(feature = "sync-examples"))]
@@ -38,6 +66,8 @@ async fn main() {
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let sudoer = AccountKeyring::Alice.pair();
+	api.set_signer(ExtrinsicSigner::new(sudoer));
 
 	let subscription = api.subscribe_events().await.unwrap();
 	let mut update_detector: RuntimeUpdateDetector<Hash, JsonrpseeClient> =
@@ -57,6 +87,8 @@ async fn main() {
 		cloned_token.cancel();
 		println!("Cancelling wait for runtime update");
 	});
+
+	send_code_update_extrinsic(&api).await;
 
 	// Wait for one of the futures to resolve and check which one resolved
 	let runtime_update_detected = select! {
