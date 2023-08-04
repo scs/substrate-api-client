@@ -16,9 +16,7 @@ use sp_keyring::AccountKeyring;
 use sp_weights::Weight;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{
-		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, UncheckedExtrinsicV4,
-	},
+	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
@@ -45,8 +43,7 @@ pub async fn send_code_update_extrinsic(
 	// this call can only be called by sudo
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
 	let weight: Weight = 0.into();
-	let xt: UncheckedExtrinsicV4<_, _, _, _> =
-		compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
+	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
 
 	// send and watch extrinsic until finalized
 	println!("Sending extrinsic to trigger runtime update");
@@ -103,4 +100,6 @@ async fn main() {
 	};
 	println!("Detected runtime update: {runtime_update_detected}");
 	println!("New spec_version: {}", api.spec_version());
+	assert!(api.spec_version() == 1268);
+	assert!(runtime_update_detected);
 }

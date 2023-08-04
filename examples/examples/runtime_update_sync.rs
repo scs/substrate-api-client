@@ -21,9 +21,7 @@ use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{
-		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, UncheckedExtrinsicV4,
-	},
+	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
@@ -47,8 +45,7 @@ pub fn send_code_update_extrinsic(
 	// Create a sudo `set_code` call.
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
 	let weight: Weight = 0.into();
-	let xt: UncheckedExtrinsicV4<_, _, _, _> =
-		compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
+	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
 
 	println!("Sending extrinsic to trigger runtime update");
 	let block_hash = api
@@ -81,6 +78,7 @@ async fn main() {
 		// Wait for potential runtime update events
 		let runtime_update_detected = update_detector.detect_runtime_update().unwrap();
 		println!("Detected runtime update: {runtime_update_detected}");
+		assert!(runtime_update_detected);
 	});
 
 	// Execute an actual runtime update
