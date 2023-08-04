@@ -45,7 +45,6 @@ pub async fn send_code_update_extrinsic(
 	let weight: Weight = 0.into();
 	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
 
-	// send and watch extrinsic until finalized
 	println!("Sending extrinsic to trigger runtime update");
 	let block_hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
