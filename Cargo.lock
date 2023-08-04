@@ -40,8 +40,10 @@ dependencies = [
  "sp-keyring",
  "sp-runtime",
  "sp-version",
+ "sp-weights",
  "substrate-api-client",
  "tokio",
+ "tokio-util",
  "wabt",
 ]
 

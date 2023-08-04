@@ -24,6 +24,7 @@ sp-core = { features = ["full_crypto"], git = "https://github.com/paritytech/sub
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-runtime = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-version = { git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 # local deps
 substrate-api-client = { path = "..", default-features = false, features = ["jsonrpsee-client", "tungstenite-client", "ws-client", "staking-xt", "contracts-xt"] }
@@ -31,3 +32,6 @@ substrate-api-client = { path = "..", default-features = false, features = ["jso
 [features]
 default = ["sync-examples"]
 sync-examples = ["substrate-api-client/std", "substrate-api-client/sync-api"]
+
+[dependencies]
+tokio-util = "0.7.8"

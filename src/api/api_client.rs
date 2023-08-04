@@ -206,11 +206,23 @@ where
 
 		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
+}
 
+#[maybe_async::maybe_async(?Send)]
+pub trait UpdateRuntime {
 	/// Updates the runtime and metadata of the api via node query.
-	// Ideally, this function is called if a substrate update runtime event is encountered.
+	/// Ideally, this function is called if a substrate update runtime event is encountered.
+	async fn update_runtime(&mut self) -> Result<()>;
+}
+
+#[maybe_async::maybe_async(?Send)]
+impl<T, Client> UpdateRuntime for Api<T, Client>
+where
+	T: Config,
+	Client: Request,
+{
 	#[maybe_async::sync_impl]
-	pub fn update_runtime(&mut self) -> Result<()> {
+	fn update_runtime(&mut self) -> Result<()> {
 		let metadata = Self::get_metadata(&self.client)?;
 		let runtime_version = Self::get_runtime_version(&self.client)?;
 
@@ -222,10 +234,8 @@ where
 		Ok(())
 	}
 
-	/// Updates the runtime and metadata of the api via node query.
-	/// Ideally, this function is called if a substrate update runtime event is encountered.
-	#[maybe_async::async_impl]
-	pub async fn update_runtime(&mut self) -> Result<()> {
+	#[maybe_async::async_impl(?Send)]
+	async fn update_runtime(&mut self) -> Result<()> {
 		let metadata_future = Self::get_metadata(&self.client);
 		let runtime_version_future = Self::get_runtime_version(&self.client);
 
