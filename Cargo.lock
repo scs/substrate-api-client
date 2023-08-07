@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "ac-compose-macros"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "ac-primitives",
  "log",
@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "ac-examples"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "env_logger",
  "frame-support",
@@ -49,7 +49,7 @@ dependencies = [
 
 [[package]]
 name = "ac-node-api"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "ac-primitives",
  "bitvec",
@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "ac-primitives"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "frame-system",
  "impl-serde",
@@ -103,7 +103,7 @@ dependencies = [
 
 [[package]]
 name = "ac-testing"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5905,7 +5905,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-api-client"
-version = "0.13.0"
+version = "0.14.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
