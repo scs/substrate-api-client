@@ -80,7 +80,7 @@ async fn main() {
 	// To prevent blocking forever we create another future that cancels the
 	// wait after some time
 	tokio::spawn(async move {
-		tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+		tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 		cloned_token.cancel();
 		println!("Cancelling wait for runtime update");
 	});
