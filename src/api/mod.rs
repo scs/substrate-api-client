@@ -16,10 +16,10 @@
 */
 
 use ac_node_api::EventDetails;
+use ac_primitives::Bytes;
 use alloc::{string::String, vec::Vec};
 use codec::Decode;
 use serde::{Deserialize, Serialize};
-use sp_core::Bytes;
 
 pub use api_client::Api;
 pub use error::{Error, Result};

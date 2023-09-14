@@ -18,7 +18,7 @@
 
 #[cfg(not(feature = "sync-examples"))]
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::DefaultRuntimeConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetChainInfo, SubscribeChain,
 };
@@ -31,7 +31,7 @@ async fn main() {
 }
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
+// Therefore, we need to use the `DefaultRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
 // you most likely should use `DefaultRuntimeConfig` instead.
 
@@ -41,8 +41,8 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize the api.
-	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let client = JsonrpseeClient::new("wss://rococo.api.integritee.network:443").unwrap();
+	let api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 
 	let (genesis_block, header_hash, signed_block) = futures::future::try_join3(
 		api.get_genesis_block(),

@@ -18,14 +18,12 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
-use ac_primitives::config::Config;
+use ac_primitives::{config::Config, Block, Hasher, StorageChangeSet};
 use alloc::{vec, vec::Vec};
 use codec::Decode;
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
-use sp_runtime::traits::{Block as BlockHash, Hash as HashTrait};
-use sp_storage::StorageChangeSet;
 
 pub type EventSubscriptionFor<Client, Hash> =
 	EventSubscription<<Client as Subscribe>::Subscription<StorageChangeSet<Hash>>, Hash>;
@@ -231,18 +229,13 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::DefaultRuntimeConfig;
+	use ac_primitives::{Bytes, DefaultRuntimeConfig, RuntimeVersion, SignedBlock, StorageData};
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
-	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
-	use sp_runtime::{
-		generic::{Block, SignedBlock},
-		AccountId32, MultiAddress,
-	};
-	use sp_storage::StorageData;
-	use sp_version::RuntimeVersion;
+	use sp_core::{crypto::Ss58Codec, sr25519, H256};
+	use sp_runtime::{generic::Block, AccountId32, MultiAddress};
 	use std::{collections::HashMap, fs};
 	use test_case::test_case;
 

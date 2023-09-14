@@ -8,12 +8,14 @@
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/substrate.rs
 
 use crate::{
-	config::Config, sr25519, types::AccountData, AccountId32, AssetTip, BlakeTwo256, Block,
-	ExtrinsicSigner, GenericExtrinsicParams, Header, MultiAddress, MultiSignature, OpaqueExtrinsic,
-	H256,
+	config::Config, types::AccountData, AssetTip, BlakeTwo256, ExtrinsicSigner,
+	GenericExtrinsicParams, SubstrateBlock, SubstrateHeader, SubstrateOpaqueExtrinsic,
 };
 use codec::{Decode, Encode};
 use core::fmt::Debug;
+pub use primitive_types::{H256, U256};
+use sp_core::sr25519;
+use sp_runtime::{AccountId32, MultiAddress, MultiSignature};
 
 /// Standard runtime config for Substrate and Polkadot nodes that use the asset pallet.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
@@ -27,12 +29,12 @@ impl Config for AssetRuntimeConfig {
 	type Address = MultiAddress<Self::AccountId, u32>;
 	type Signature = MultiSignature;
 	type Hasher = BlakeTwo256;
-	type Header = Header<Self::BlockNumber, BlakeTwo256>;
+	type Header = SubstrateHeader<Self::BlockNumber, BlakeTwo256>;
 	type AccountData = AccountData<Self::Balance>;
 	type ExtrinsicParams = AssetTipExtrinsicParams<Self>;
 	type CryptoKey = sr25519::Pair;
 	type ExtrinsicSigner = ExtrinsicSigner<Self>;
-	type Block = Block<Self::Header, OpaqueExtrinsic>;
+	type Block = SubstrateBlock<Self::Header, SubstrateOpaqueExtrinsic>;
 	type Balance = u128;
 	type ContractCurrency = u128;
 	type StakingBalance = u128;
