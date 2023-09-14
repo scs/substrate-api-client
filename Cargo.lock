@@ -69,7 +69,6 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-storage",
  "test-case",
 ]
 
@@ -5575,8 +5574,6 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-storage",
- "sp-version",
  "test-case",
  "tungstenite",
  "url",

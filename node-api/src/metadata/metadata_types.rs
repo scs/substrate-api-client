@@ -12,6 +12,7 @@ use crate::{
 	metadata::{v14_to_v15, variant_index::VariantIndex, InvalidMetadataError, MetadataError},
 	storage::GetStorageTypes,
 };
+use ac_primitives::StorageKey;
 use alloc::{
 	collections::btree_map::BTreeMap,
 	string::{String, ToString},
@@ -26,7 +27,6 @@ use frame_metadata::{
 	RuntimeMetadata, RuntimeMetadataPrefixed, META_RESERVED,
 };
 use scale_info::{form::PortableForm, PortableRegistry, Type, Variant};
-use sp_storage::StorageKey;
 
 #[cfg(feature = "std")]
 use serde::Serialize;

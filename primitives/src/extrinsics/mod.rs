@@ -17,7 +17,7 @@
 
 //! Primitives for substrate extrinsics.
 
-use crate::OpaqueExtrinsic;
+use crate::SubstrateOpaqueExtrinsic as OpaqueExtrinsic;
 use alloc::{format, vec::Vec};
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
