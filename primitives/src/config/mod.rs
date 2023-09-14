@@ -32,7 +32,7 @@ pub trait Config {
 	/// transactions associated with a sender account.
 	/// This type enforces the (de)serialization implementation
 	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
-	type Index: Debug + Copy + DeserializeOwned + AtLeast32Bit + Decode;
+	type Index: Default + Debug + Copy + DeserializeOwned + AtLeast32Bit + Decode;
 
 	/// The block number type used by the runtime.
 	type BlockNumber: Debug
