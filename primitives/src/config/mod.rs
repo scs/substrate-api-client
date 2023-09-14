@@ -43,7 +43,8 @@ pub trait Config {
 		+ DeserializeOwned
 		+ core::hash::Hash
 		+ core::str::FromStr
-		+ Into<u64>;
+		+ Into<u64>
+		+ AtLeast32BitUnsigned;
 
 	/// The output of the `Hashing` function.
 	type Hash: Debug
