@@ -15,7 +15,7 @@ ac-primitives = { path = "../primitives", default-features = false, optional = t
 substrate-api-client = { path = "..", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
 
 # substrate dependencies
-sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 [features]
 # It is better to test the no-std crates standalone (don't enable both features at the same time) because dependency
