@@ -34,7 +34,7 @@ pub trait Config {
 	/// transactions associated with a sender account.
 	/// This type enforces the (de)serialization implementation
 	/// also in no-std mode (unlike substrates MaybeSerializeDeserialize).
-	type Index: Debug + Copy + DeserializeOwned + AtLeast32Bit + Decode;
+	type Index: Default + Debug + Copy + DeserializeOwned + AtLeast32Bit + Decode;
 
 	/// The block number type used by the runtime.
 	type BlockNumber: Debug
@@ -45,7 +45,8 @@ pub trait Config {
 		+ DeserializeOwned
 		+ core::hash::Hash
 		+ core::str::FromStr
-		+ Into<u64>;
+		+ Into<u64>
+		+ AtLeast32BitUnsigned;
 
 	/// The output of the `Hashing` function.
 	type Hash: Debug
