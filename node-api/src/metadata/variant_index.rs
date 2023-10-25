@@ -45,7 +45,7 @@ impl VariantIndex {
 		variant_id: Option<u32>,
 		types: &PortableRegistry,
 	) -> Option<&[Variant<PortableForm>]> {
-		let Some(variant_id) = variant_id else { return None };
+		let variant_id = variant_id?;
 		let TypeDef::Variant(v) = &types.resolve(variant_id)?.type_def else { return None };
 		Some(&v.variants)
 	}
