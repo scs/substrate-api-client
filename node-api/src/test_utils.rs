@@ -63,23 +63,7 @@ pub fn metadata_with_version<E: TypeInfo + 'static>(
 ) -> Metadata {
 	let runtime_metadata: RuntimeMetadataPrefixed = match version {
 		SupportedMetadataVersions::V14 => {
-			let pallets = vec![PalletMetadataV14 {
-				name: "Test",
-				storage: None,
-				calls: None,
-				event: Some(PalletEventMetadataV14 { ty: meta_type::<E>() }),
-				constants: vec![],
-				error: None,
-				index: 0,
-			}];
-
-			let extrinsic = ExtrinsicMetadataV14 {
-				ty: meta_type::<()>(),
-				version: 0,
-				signed_extensions: vec![],
-			};
-			let v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
-			v14.into()
+			create_dummy_runtime_v14::<E>().into()
 		},
 		SupportedMetadataVersions::V15 => {
 			let pallets = vec![PalletMetadataV15 {
@@ -132,4 +116,111 @@ pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> 
 	let mut all_event_bytes = Compact(num_events).encode();
 	all_event_bytes.extend(event_bytes);
 	Events::new(metadata, H256::default(), all_event_bytes)
+}
+
+
+fn create_dummy_runtime_v14<E: TypeInfo + 'static>() -> RuntimeMetadataV14 {
+	let pallets = vec![PalletMetadataV14 {
+		name: "Test",
+		storage: None,
+		calls: None,
+		event: Some(PalletEventMetadataV14 { ty: meta_type::<E>() }),
+		constants: vec![],
+		error: None,
+		index: 0,
+	}];
+
+	let extrinsic = ExtrinsicMetadataV14 {
+		ty: meta_type::<()>(),
+		version: 0,
+		signed_extensions: vec![],
+	};
+
+	let mut v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
+
+	// Register types that are needed for v14 -> v15 conversion.
+	let extrinsic_type = scale_info::Type {
+		path: scale_info::Path {
+			segments: vec![
+				"primitives".to_string(),
+				"runtime".to_string(),
+				"generic".to_string(),
+				"UncheckedExtrinsic".to_string(),
+			],
+		},
+		type_params: vec![
+			scale_info::TypeParameter::<scale_info::form::PortableForm> {
+				name: "Address".to_string(),
+				ty: Some(0.into()),
+			},
+			scale_info::TypeParameter::<scale_info::form::PortableForm> {
+				name: "Call".to_string(),
+				ty: Some(0.into()),
+			},
+			scale_info::TypeParameter::<scale_info::form::PortableForm> {
+				name: "Signature".to_string(),
+				ty: Some(0.into()),
+			},
+			scale_info::TypeParameter::<scale_info::form::PortableForm> {
+				name: "Extra".to_string(),
+				ty: Some(0.into()),
+			},
+		],
+		type_def: scale_info::TypeDef::Composite(scale_info::TypeDefComposite { fields: vec![] }),
+		docs: vec![],
+	};
+	let new_type_id = v14.types.types.len() as u32;
+	v14.types.types.push(scale_info::PortableType {
+		id: new_type_id,
+		ty: extrinsic_type,
+	});
+	v14.extrinsic.ty = new_type_id.into();
+
+	let runtime_call_type = scale_info::Type {
+		path: scale_info::Path {
+			segments: vec![
+				"RuntimeError".to_string(),
+			],
+		},
+		type_params: vec![],
+		type_def: scale_info::TypeDef::Variant(scale_info::TypeDefVariant { variants: vec![] }),
+		docs: vec![],
+	};
+	v14.types.types.push(scale_info::PortableType {
+		id: v14.types.types.len() as u32,
+		ty: runtime_call_type,
+	});
+
+	let runtime_call_type = scale_info::Type {
+		path: scale_info::Path {
+			segments: vec![
+				"RuntimeCall".to_string(),
+			],
+		},
+		type_params: vec![],
+		type_def: scale_info::TypeDef::Variant(scale_info::TypeDefVariant { variants: vec![] }),
+		docs: vec![],
+	};
+	v14.types.types.push(scale_info::PortableType {
+		id: v14.types.types.len() as u32,
+		ty: runtime_call_type,
+	});
+
+	let runtime_call_type = scale_info::Type {
+		path: scale_info::Path {
+			segments: vec![
+				"RuntimeEvent".to_string(),
+			],
+		},
+		type_params: vec![],
+		type_def: scale_info::TypeDef::Variant(scale_info::TypeDefVariant { variants: vec![] }),
+		docs: vec![],
+	};
+	v14.types.types.push(scale_info::PortableType {
+		id: v14.types.types.len() as u32,
+		ty: runtime_call_type,
+	});
+
+	v14
+
 }

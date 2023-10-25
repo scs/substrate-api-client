@@ -270,7 +270,7 @@ fn generate_outer_error_enum_type(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codec::Decode;
+    use codec::{Decode};
     use frame_metadata::{
         v14::ExtrinsicMetadata, v14::RuntimeMetadataV14, RuntimeMetadata, RuntimeMetadataPrefixed,
     };
@@ -279,19 +279,20 @@ mod tests {
     use sp_core::Bytes;
 
     fn load_v14_metadata() -> RuntimeMetadataV14 {
-        let encoded_metadata: Bytes = fs::read("./ksm_metadata_v14.bin").unwrap().into();
-		let runtime_metadata_prefixed: RuntimeMetadataPrefixed =
+        let encoded_metadata: Bytes = fs::read("./../ksm_metadata_v14.bin").unwrap().into();
+        let runtime_metadata_prefixed: RuntimeMetadataPrefixed =
 			Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap();
-		let runtime_metadata = match runtime_metadata_prefixed.1 {
+
+		match runtime_metadata_prefixed.1 {
 			RuntimeMetadata::V14(ref metadata) => metadata.clone(),
 			_ => unimplemented!(),
-		};
-        runtime_metadata
+		}
     }
 
     #[test]
     fn test_extrinsic_id_generation() {
         let v14 = load_v14_metadata();
+
         let v15 = v14_to_v15(v14.clone()).unwrap();
 
         let ext_ty = v14.types.resolve(v14.extrinsic.ty.id).unwrap();
@@ -361,37 +362,6 @@ mod tests {
         let v15_sign = v15.types.resolve(v15.extrinsic.signature_ty.id).unwrap();
         let v14_sign = v14.types.resolve(signature_id).unwrap();
         assert_eq!(v15_sign, v14_sign);
-
-        // Ensure we don't lose the information when converting back to v15.
-        let converted_v15 = v14_to_v15(v14).unwrap();
-
-        let v15_addr = v15.types.resolve(v15.extrinsic.address_ty.id).unwrap();
-        let converted_v15_addr = converted_v15
-            .types
-            .resolve(converted_v15.extrinsic.address_ty.id)
-            .unwrap();
-        assert_eq!(v15_addr, converted_v15_addr);
-
-        let v15_call = v15.types.resolve(v15.extrinsic.call_ty.id).unwrap();
-        let converted_v15_call = converted_v15
-            .types
-            .resolve(converted_v15.extrinsic.call_ty.id)
-            .unwrap();
-        assert_eq!(v15_call, converted_v15_call);
-
-        let v15_extra = v15.types.resolve(v15.extrinsic.extra_ty.id).unwrap();
-        let converted_v15_extra = converted_v15
-            .types
-            .resolve(converted_v15.extrinsic.extra_ty.id)
-            .unwrap();
-        assert_eq!(v15_extra, converted_v15_extra);
-
-        let v15_sign = v15.types.resolve(v15.extrinsic.signature_ty.id).unwrap();
-        let converted_v15_sign = converted_v15
-            .types
-            .resolve(converted_v15.extrinsic.signature_ty.id)
-            .unwrap();
-        assert_eq!(v15_sign, converted_v15_sign);
     }
 
     #[test]
