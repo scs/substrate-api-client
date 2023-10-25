@@ -16,8 +16,9 @@ use frame_metadata::{
 		PalletMetadata as PalletMetadataV14, RuntimeMetadataV14,
 	},
 	v15::{
-		ExtrinsicMetadata as ExtrinsicMetadataV15, PalletEventMetadata as PalletEventMetadataV15,
-		PalletMetadata as PalletMetadataV15, RuntimeMetadataV15, OuterEnums, CustomMetadata,
+		CustomMetadata, ExtrinsicMetadata as ExtrinsicMetadataV15, OuterEnums,
+		PalletEventMetadata as PalletEventMetadataV15, PalletMetadata as PalletMetadataV15,
+		RuntimeMetadataV15,
 	},
 	RuntimeMetadataPrefixed,
 };
@@ -62,9 +63,7 @@ pub fn metadata_with_version<E: TypeInfo + 'static>(
 	version: SupportedMetadataVersions,
 ) -> Metadata {
 	let runtime_metadata: RuntimeMetadataPrefixed = match version {
-		SupportedMetadataVersions::V14 => {
-			create_dummy_runtime_v14::<E>().into()
-		},
+		SupportedMetadataVersions::V14 => create_dummy_runtime_v14::<E>().into(),
 		SupportedMetadataVersions::V15 => {
 			let pallets = vec![PalletMetadataV15 {
 				name: "Test",
@@ -85,9 +84,20 @@ pub fn metadata_with_version<E: TypeInfo + 'static>(
 				extra_ty: meta_type::<()>(),
 				signed_extensions: vec![],
 			};
-			let outer_enums = OuterEnums{call_enum_ty:  meta_type::<()>(), event_enum_ty:  meta_type::<()>(), error_enum_ty: meta_type::<()>()};
-			let custom = CustomMetadata{ map: Default::default() };
-			let v15 = RuntimeMetadataV15::new(pallets, extrinsic, meta_type::<()>(), vec![], outer_enums, custom);
+			let outer_enums = OuterEnums {
+				call_enum_ty: meta_type::<()>(),
+				event_enum_ty: meta_type::<()>(),
+				error_enum_ty: meta_type::<()>(),
+			};
+			let custom = CustomMetadata { map: Default::default() };
+			let v15 = RuntimeMetadataV15::new(
+				pallets,
+				extrinsic,
+				meta_type::<()>(),
+				vec![],
+				outer_enums,
+				custom,
+			);
 			v15.into()
 		},
 	};
@@ -118,7 +128,6 @@ pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> 
 	Events::new(metadata, H256::default(), all_event_bytes)
 }
 
-
 fn create_dummy_runtime_v14<E: TypeInfo + 'static>() -> RuntimeMetadataV14 {
 	let pallets = vec![PalletMetadataV14 {
 		name: "Test",
@@ -130,11 +139,8 @@ fn create_dummy_runtime_v14<E: TypeInfo + 'static>() -> RuntimeMetadataV14 {
 		index: 0,
 	}];
 
-	let extrinsic = ExtrinsicMetadataV14 {
-		ty: meta_type::<()>(),
-		version: 0,
-		signed_extensions: vec![],
-	};
+	let extrinsic =
+		ExtrinsicMetadataV14 { ty: meta_type::<()>(), version: 0, signed_extensions: vec![] };
 
 	let mut v14 = RuntimeMetadataV14::new(pallets, extrinsic, meta_type::<()>());
 
@@ -170,57 +176,40 @@ fn create_dummy_runtime_v14<E: TypeInfo + 'static>() -> RuntimeMetadataV14 {
 		docs: vec![],
 	};
 	let new_type_id = v14.types.types.len() as u32;
-	v14.types.types.push(scale_info::PortableType {
-		id: new_type_id,
-		ty: extrinsic_type,
-	});
+	v14.types
+		.types
+		.push(scale_info::PortableType { id: new_type_id, ty: extrinsic_type });
 	v14.extrinsic.ty = new_type_id.into();
 
 	let runtime_call_type = scale_info::Type {
-		path: scale_info::Path {
-			segments: vec![
-				"RuntimeError".to_string(),
-			],
-		},
+		path: scale_info::Path { segments: vec!["RuntimeError".to_string()] },
 		type_params: vec![],
 		type_def: scale_info::TypeDef::Variant(scale_info::TypeDefVariant { variants: vec![] }),
 		docs: vec![],
 	};
-	v14.types.types.push(scale_info::PortableType {
-		id: v14.types.types.len() as u32,
-		ty: runtime_call_type,
-	});
+	v14.types
+		.types
+		.push(scale_info::PortableType { id: v14.types.types.len() as u32, ty: runtime_call_type });
 
 	let runtime_call_type = scale_info::Type {
-		path: scale_info::Path {
-			segments: vec![
-				"RuntimeCall".to_string(),
-			],
-		},
+		path: scale_info::Path { segments: vec!["RuntimeCall".to_string()] },
 		type_params: vec![],
 		type_def: scale_info::TypeDef::Variant(scale_info::TypeDefVariant { variants: vec![] }),
 		docs: vec![],
 	};
-	v14.types.types.push(scale_info::PortableType {
-		id: v14.types.types.len() as u32,
-		ty: runtime_call_type,
-	});
+	v14.types
+		.types
+		.push(scale_info::PortableType { id: v14.types.types.len() as u32, ty: runtime_call_type });
 
 	let runtime_call_type = scale_info::Type {
-		path: scale_info::Path {
-			segments: vec![
-				"RuntimeEvent".to_string(),
-			],
-		},
+		path: scale_info::Path { segments: vec!["RuntimeEvent".to_string()] },
 		type_params: vec![],
 		type_def: scale_info::TypeDef::Variant(scale_info::TypeDefVariant { variants: vec![] }),
 		docs: vec![],
 	};
-	v14.types.types.push(scale_info::PortableType {
-		id: v14.types.types.len() as u32,
-		ty: runtime_call_type,
-	});
+	v14.types
+		.types
+		.push(scale_info::PortableType { id: v14.types.types.len() as u32, ty: runtime_call_type });
 
 	v14
-
 }

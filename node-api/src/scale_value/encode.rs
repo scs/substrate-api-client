@@ -205,9 +205,7 @@ fn encode_composite<T>(
 
 // skip into the target type past any newtype wrapper like things:
 fn find_single_entry_with_same_repr(type_id: u32, types: &PortableRegistry) -> u32 {
-	let Some(ty) = types.resolve(type_id) else {
-        return type_id
-    };
+	let Some(ty) = types.resolve(type_id) else { return type_id };
 	match &ty.type_def {
 		TypeDef::Tuple(tuple) if tuple.fields.len() == 1 =>
 			find_single_entry_with_same_repr(tuple.fields[0].id, types),

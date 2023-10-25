@@ -57,5 +57,4 @@ pub enum MetadataConversionError {
 	TypeNameNotFound(String),
 	// Path not found.
 	InvalidTypePath(String),
-
 }
