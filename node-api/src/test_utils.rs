@@ -17,7 +17,7 @@ use frame_metadata::{
 	},
 	v15::{
 		ExtrinsicMetadata as ExtrinsicMetadataV15, PalletEventMetadata as PalletEventMetadataV15,
-		PalletMetadata as PalletMetadataV15, RuntimeMetadataV15,
+		PalletMetadata as PalletMetadataV15, RuntimeMetadataV15, OuterEnums, CustomMetadata,
 	},
 	RuntimeMetadataPrefixed,
 };
@@ -94,11 +94,16 @@ pub fn metadata_with_version<E: TypeInfo + 'static>(
 			}];
 
 			let extrinsic = ExtrinsicMetadataV15 {
-				ty: meta_type::<()>(),
 				version: 0,
+				address_ty: meta_type::<()>(),
+				call_ty: meta_type::<()>(),
+				signature_ty: meta_type::<()>(),
+				extra_ty: meta_type::<()>(),
 				signed_extensions: vec![],
 			};
-			let v15 = RuntimeMetadataV15::new(pallets, extrinsic, meta_type::<()>(), vec![]);
+			let outer_enums = OuterEnums{call_enum_ty:  meta_type::<()>(), event_enum_ty:  meta_type::<()>(), error_enum_ty: meta_type::<()>()};
+			let custom = CustomMetadata{ map: Default::default() };
+			let v15 = RuntimeMetadataV15::new(pallets, extrinsic, meta_type::<()>(), vec![], outer_enums, custom);
 			v15.into()
 		},
 	};

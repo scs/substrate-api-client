@@ -18,7 +18,7 @@
 use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError};
 use ac_node_api::{
 	error::DispatchError,
-	metadata::{InvalidMetadataError, MetadataError},
+	metadata::{MetadataConversionError, MetadataError},
 };
 use alloc::boxed::Box;
 
@@ -35,7 +35,7 @@ pub enum Error {
 	/// Metadata Error.
 	Metadata(MetadataError),
 	/// Invalid Metadata Error.
-	InvalidMetadata(InvalidMetadataError),
+	InvalidMetadata(MetadataConversionError),
 	/// Node Api Error.
 	NodeApi(ac_node_api::error::Error),
 	/// Encode / Decode Error.
