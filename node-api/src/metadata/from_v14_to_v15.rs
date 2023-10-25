@@ -180,17 +180,13 @@ fn generate_outer_enums(
 ) -> Result<v15::OuterEnums<scale_info::form::PortableForm>, MetadataConversionError> {
 	let find_type = |name: &str| {
 		metadata.types.types.iter().find_map(|ty| {
-			let Some(ident) = ty.ty.path.ident() else {
-				return None
-			};
+			let Some(ident) = ty.ty.path.ident() else { return None };
 
 			if ident != name {
 				return None
 			}
 
-			let TypeDef::Variant(_) = &ty.ty.type_def else {
-				return None
-			};
+			let TypeDef::Variant(_) = &ty.ty.type_def else { return None };
 
 			Some((ty.id, ty.ty.path.segments.clone()))
 		})
@@ -232,9 +228,7 @@ fn generate_outer_error_enum_type(
 		.pallets
 		.iter()
 		.filter_map(|pallet| {
-			let Some(error) = &pallet.error else {
-				return None
-			};
+			let Some(error) = &pallet.error else { return None };
 
 			let path = format!("{}Error", pallet.name);
 			let ty = error.ty.id.into();
