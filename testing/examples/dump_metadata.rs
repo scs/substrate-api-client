@@ -6,7 +6,7 @@ use substrate_api_client::{
 };
 
 // Simple file to dump new metdata as a file.
-// Run with: cargo un -p ac-testing --example dump_metadata
+// Run with: cargo run -p ac-testing --example dump_metadata
 
 #[tokio::main]
 async fn main() {
