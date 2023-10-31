@@ -23,9 +23,7 @@ pub struct VariantIndex {
 impl VariantIndex {
 	/// Build indexes from the optional variant ID.
 	pub fn build(variant_id: Option<u32>, types: &PortableRegistry) -> Self {
-		let Some(variants) = Self::get(variant_id, types) else {
-            return Self::empty()
-        };
+		let Some(variants) = Self::get(variant_id, types) else { return Self::empty() };
 
 		let mut by_name = BTreeMap::new();
 		let mut by_index = BTreeMap::new();
@@ -47,12 +45,8 @@ impl VariantIndex {
 		variant_id: Option<u32>,
 		types: &PortableRegistry,
 	) -> Option<&[Variant<PortableForm>]> {
-		let Some(variant_id) = variant_id else {
-            return None
-        };
-		let TypeDef::Variant(v) = &types.resolve(variant_id)?.type_def else {
-            return None
-        };
+		let variant_id = variant_id?;
+		let TypeDef::Variant(v) = &types.resolve(variant_id)?.type_def else { return None };
 		Some(&v.variants)
 	}
 

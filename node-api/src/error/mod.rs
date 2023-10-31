@@ -13,7 +13,7 @@ use core::fmt::Debug;
 use derive_more::From;
 
 // Re-expose the errors we use from other crates here:
-pub use crate::metadata::{InvalidMetadataError, MetadataError};
+pub use crate::metadata::{MetadataConversionError, MetadataError};
 pub use scale_decode::Error as DecodeError;
 pub use scale_encode::Error as EncodeError;
 pub use sp_core::crypto::SecretStringError;
@@ -34,7 +34,7 @@ pub enum Error {
 	/// Secret string error.
 	SecretString(SecretStringError),
 	/// Invalid metadata error
-	InvalidMetadata(InvalidMetadataError),
+	InvalidMetadata(MetadataConversionError),
 	/// Invalid metadata error
 	Metadata(MetadataError),
 	/// Runtime error.

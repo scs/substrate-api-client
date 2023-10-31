@@ -39,18 +39,22 @@ pub enum MetadataError {
 	ConstantNotFound(&'static str),
 	/// Variant not found.
 	VariantIndexNotFound(u8),
-	/// Type is not in metadata.
-	TypeNotFound(u32),
 	/// Api is not in metadata.
 	RuntimeApiNotFound(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
-pub enum InvalidMetadataError {
+pub enum MetadataConversionError {
 	InvalidPrefix,
 	InvalidVersion,
 	/// Type is missing from type registry.
 	MissingType(u32),
 	/// Type was not variant/enum type.
 	TypeDefNotVariant(u32),
+	/// Type is not in metadata.
+	TypeNotFound(u32),
+	/// Type Name is not in metadata.
+	TypeNameNotFound(String),
+	// Path not found.
+	InvalidTypePath(String),
 }

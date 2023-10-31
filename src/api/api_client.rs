@@ -310,7 +310,7 @@ mod tests {
 		AssetRuntimeConfig, DefaultRuntimeConfig, GenericAdditionalParams, GenericExtrinsicParams,
 		PlainTip,
 	};
-	use frame_metadata::{ExtrinsicMetadata, RuntimeMetadata};
+	use frame_metadata::{v14::ExtrinsicMetadata, RuntimeMetadata};
 	use scale_info::form::PortableForm;
 	use sp_core::H256;
 	use std::{collections::HashMap, fs};

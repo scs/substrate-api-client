@@ -55,7 +55,7 @@ dependencies = [
  "bitvec",
  "derive_more",
  "either",
- "frame-metadata 15.1.0",
+ "frame-metadata",
  "hex",
  "log",
  "parity-scale-codec",
@@ -1680,18 +1680,6 @@ dependencies = [
 
 [[package]]
 name = "frame-metadata"
-version = "15.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "878babb0b136e731cc77ec2fd883ff02745ff21e6fb662729953d44923df009c"
-dependencies = [
- "cfg-if 1.0.0",
- "parity-scale-codec",
- "scale-info",
- "serde",
-]
-
-[[package]]
-name = "frame-metadata"
 version = "16.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87cf1549fba25a6fcac22785b61698317d958e96cac72a59102ea45b9ae64692"
@@ -1711,7 +1699,7 @@ dependencies = [
  "bitflags 1.3.2",
  "docify",
  "environmental",
- "frame-metadata 16.0.0",
+ "frame-metadata",
  "frame-support-procedural",
  "impl-trait-for-tuples",
  "k256",
@@ -5879,7 +5867,7 @@ name = "sp-metadata-ir"
 version = "0.1.0"
 source = "git+https://github.com/paritytech/polkadot-sdk.git?branch=master#6079b6dd3aaba56ef257111fda74a57a800f16d0"
 dependencies = [
- "frame-metadata 16.0.0",
+ "frame-metadata",
  "parity-scale-codec",
  "scale-info",
  "sp-std",
@@ -6295,7 +6283,7 @@ dependencies = [
  "ac-primitives",
  "async-trait",
  "derive_more",
- "frame-metadata 15.1.0",
+ "frame-metadata",
  "frame-support",
  "futures",
  "hex",

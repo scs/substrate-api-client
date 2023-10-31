@@ -9,7 +9,7 @@
 //! Handle substrate chain metadata.
 
 use crate::{
-	metadata::{v14_to_v15, variant_index::VariantIndex, InvalidMetadataError, MetadataError},
+	metadata::{v14_to_v15, variant_index::VariantIndex, MetadataConversionError, MetadataError},
 	storage::GetStorageTypes,
 };
 use alloc::{
@@ -329,17 +329,17 @@ struct RuntimeApiMetadataInner {
 
 // Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/from_into/v15.rs
 impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
-	type Error = InvalidMetadataError;
+	type Error = MetadataConversionError;
 
 	fn try_from(m: RuntimeMetadataPrefixed) -> Result<Self, Self::Error> {
 		if m.0 != META_RESERVED {
-			return Err(InvalidMetadataError::InvalidPrefix)
+			return Err(MetadataConversionError::InvalidPrefix)
 		}
 
 		let m = match m.1 {
-			RuntimeMetadata::V14(meta) => v14_to_v15(meta),
+			RuntimeMetadata::V14(meta) => v14_to_v15(meta)?,
 			RuntimeMetadata::V15(meta) => meta,
-			_ => return Err(InvalidMetadataError::InvalidVersion),
+			_ => return Err(MetadataConversionError::InvalidVersion),
 		};
 
 		let mut pallets = BTreeMap::new();
