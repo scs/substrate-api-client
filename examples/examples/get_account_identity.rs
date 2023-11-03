@@ -17,7 +17,7 @@
 
 use frame_support::traits::Currency;
 use kitchensink_runtime::Runtime as KitchensinkRuntime;
-use pallet_identity::{Data, IdentityInfo, Registration};
+use pallet_identity::{simple::IdentityInfo, Data, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -31,7 +31,8 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::Balance;
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
-type MaxAdditionalFieldsOf<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
+type MaxAdditionalFields<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
+type IdentityInformation<T> = <T as pallet_identity::Config>::IdentityInformation;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
@@ -49,7 +50,7 @@ async fn main() {
 	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(signer.clone()));
 
 	// Fill Identity storage.
-	let info = IdentityInfo::<MaxAdditionalFieldsOf<KitchensinkRuntime>> {
+	let info = IdentityInfo::<MaxAdditionalFields<KitchensinkRuntime>> {
 		additional: Default::default(),
 		display: Data::Keccak256(H256::random().into()),
 		legal: Data::None,
@@ -73,11 +74,11 @@ async fn main() {
 		.unwrap();
 
 	// Get the storage value from the pallet. Check out the pallet itself to know it's type:
-	// see https://github.com/paritytech/substrate/blob/e6768a3bd553ddbed12fe1a0e4a2ef8d4f8fdf52/frame/identity/src/lib.rs#L167
+	// see https://github.com/paritytech/polkadot-sdk/blob/91851951856b8effe627fb1d151fe336a51eef2d/substrate/frame/identity/src/lib.rs#L170
 	type RegistrationType = Registration<
 		BalanceOf<KitchensinkRuntime>,
 		MaxRegistrarsOf<KitchensinkRuntime>,
-		MaxAdditionalFieldsOf<KitchensinkRuntime>,
+		IdentityInformation<KitchensinkRuntime>,
 	>;
 
 	let registration: RegistrationType = api
