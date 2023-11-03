@@ -118,7 +118,7 @@ impl HandleMessage for SubscriptionHandler {
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
 		if value["error"]["message"].is_string() {
-			result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?);
+			let _ result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?);
 			out.close(CloseCode::Normal)?;
 			return Ok(())
 		}
@@ -141,20 +141,6 @@ impl HandleMessage for SubscriptionHandler {
 				},
 			},
 		};
-
-		// let result = if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
-		// 	result.send(serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?)
-		// } else if let Some(error) = value["error"].as_str() {
-		// 	info!("Error {}", error);
-		// 	result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?)
-		// } else {
-		// 	// Id string is accepted, since it is the immediate response to a subscription message.
-		// 	error!(
-		// 		"Got subscription id {}",
-		// 		serde_json::to_string(&value["result"]).map_err(Box::new)?
-		// 	);
-		// 	Ok(())
-		// };
 
 		if let Err(e) = send_result {
 			// This may happen if the receiver has unsubscribed.
