@@ -118,7 +118,7 @@ impl HandleMessage for SubscriptionHandler {
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
 		if value["error"]["message"].is_string() {
-			let _ result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?);
+			let _ = result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?);
 			out.close(CloseCode::Normal)?;
 			return Ok(())
 		}
