@@ -115,20 +115,23 @@ impl HandleMessage for SubscriptionHandler {
 		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
-		match value["id"].as_str() {
-			Some(_idstr) => {
-				warn!("Expected subscription, but received an id response instead: {:?}", value);
-			},
-			None => {
-				let answer = serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?;
+		// We currently do not differentiate between different subscription Ids, we simply
+		// forward them all to the user.
+		if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
+			let message = serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?;
+			if let Err(e) = result.send(message) {
+				// This may happen if the receiver has unsubscribed.
+				trace!("SendError: {}. will close ws", e);
+				out.close(CloseCode::Normal)?;
+			}
+		} else if let Some(error_message) = value["error"]["message"].as_str() {
+			if let Err(e) = result.send(error_message.to_string()) {
+				// This may happen if the receiver has unsubscribed.
+				trace!("SendError: {}. will close ws", e);
+				out.close(CloseCode::Normal)?;
+			}
+		}
 
-				if let Err(e) = result.send(answer) {
-					// This may happen if the receiver has unsubscribed.
-					trace!("SendError: {}. will close ws", e);
-					out.close(CloseCode::Normal)?;
-				}
-			},
-		};
 		Ok(())
 	}
 }

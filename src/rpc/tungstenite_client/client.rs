@@ -151,15 +151,15 @@ fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result
 	debug!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
-	match value["id"].as_str() {
-		Some(_idstr) => {
-			warn!("Expected subscription, but received an id response instead: {:?}", value);
-		},
-		None => {
-			let message = serde_json::to_string(&value["params"]["result"])?;
-			result_in.send(message)?;
-		},
-	};
+	// We currently do not differentiate between different subscription Ids, we simply
+	// forward them all to the user.
+	if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
+		let message = serde_json::to_string(&value["params"]["result"])?;
+		result_in.send(message)?;
+	} else if let Some(error_message) = value["error"]["message"].as_str() {
+		result_in.send(error_message.to_string())?;
+	}
+
 	Ok(())
 }
 
