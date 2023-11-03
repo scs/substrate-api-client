@@ -117,12 +117,6 @@ impl HandleMessage for SubscriptionHandler {
 		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
-		if value["error"]["message"].is_string() {
-			let _ = result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?);
-			out.close(CloseCode::Normal)?;
-			return Ok(())
-		}
-
 		let mut send_result = Ok(());
 		match self.subscription_id.clone() {
 			Some(id) => {
@@ -137,7 +131,13 @@ impl HandleMessage for SubscriptionHandler {
 			None => match value["result"].as_str() {
 				Some(id) => self.subscription_id = Some(id.to_string()),
 				None => {
-					send_result = result.send(format!("Received unexpected response:  {}", msg));
+					let message = match value["error"]["message"].is_string() {
+						true => serde_json::to_string(&value["error"]).map_err(Box::new)?,
+						false => format!("Received unexpected response:  {}", msg),
+					};
+					let _ = result.send(message);
+					out.close(CloseCode::Normal)?;
+					return Ok(())
 				},
 			},
 		};
