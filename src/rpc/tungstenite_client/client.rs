@@ -168,7 +168,7 @@ fn send_message_to_client(
 	message: &str,
 	subscription_id: &str,
 ) -> Result<()> {
-	error!("got on_subscription_msg {}", message);
+	info!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
 	if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
