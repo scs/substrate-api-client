@@ -114,7 +114,7 @@ impl HandleMessage for SubscriptionHandler {
 		let out = &context.out;
 		let msg = &context.msg;
 
-		error!("got on_subscription_msg {}", msg);
+		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
 		if value["error"]["message"].is_string() {

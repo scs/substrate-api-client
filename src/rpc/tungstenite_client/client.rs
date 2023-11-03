@@ -141,8 +141,6 @@ fn subscribe_to_server(
 	let subcription_id = match value["result"].as_str() {
 		Some(id) => id,
 		None => {
-			error!("response: {:?} ", value["error"]);
-
 			let message = match value["error"]["message"].is_string() {
 				true => serde_json::to_string(&value["error"])?,
 				false => format!("Received unexpected response:  {}", msg),
