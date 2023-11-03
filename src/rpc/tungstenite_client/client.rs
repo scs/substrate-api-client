@@ -148,16 +148,18 @@ pub fn do_reconnect(error: &RpcClientError) -> bool {
 }
 
 fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result<()> {
-	debug!("got on_subscription_msg {}", message);
+	error!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
 	// We currently do not differentiate between different subscription Ids, we simply
 	// forward them all to the user.
 	if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
-		let message = serde_json::to_string(&value["params"]["result"])?;
-		result_in.send(message)?;
-	} else if let Some(error_message) = value["error"]["message"].as_str() {
-		result_in.send(error_message.to_string())?;
+		result_in.send(serde_json::to_string(&value["params"]["result"])?)?;
+	} else if let Some(_error) = value["error"].as_str() {
+		result_in.send(serde_json::to_string(&value["error"]["message"])?)?;
+	} else {
+		// Id string is accepted, since it is the immediate response to a subscription message.
+		error!("Got subscription id {}", serde_json::to_string(&value["result"])?);
 	}
 
 	Ok(())
