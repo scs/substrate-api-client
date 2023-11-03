@@ -33,7 +33,7 @@ pub(crate) trait HandleMessage {
 	type ThreadMessage;
 	type Context;
 
-	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()>;
+	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()>;
 }
 
 // Clippy says request is never used, even though it is..
@@ -83,7 +83,7 @@ impl HandleMessage for RequestHandler {
 	type ThreadMessage = RpcMessage;
 	type Context = MessageContext<Self::ThreadMessage>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()> {
+	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
@@ -101,13 +101,15 @@ impl HandleMessage for RequestHandler {
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub(crate) struct SubscriptionHandler {}
+pub(crate) struct SubscriptionHandler {
+	subscription_id: Option<String>,
+}
 
 impl HandleMessage for SubscriptionHandler {
 	type ThreadMessage = String;
 	type Context = MessageContext<Self::ThreadMessage>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()> {
+	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
@@ -115,23 +117,46 @@ impl HandleMessage for SubscriptionHandler {
 		error!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
 
-		// We currently do not differentiate between different subscription Ids, we simply
-		// forward them all to the user.
-		let result = if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
-			result.send(serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?)
-		} else if let Some(error) = value["error"].as_str() {
-			info!("Error {}", error);
-			result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?)
-		} else {
-			// Id string is accepted, since it is the immediate response to a subscription message.
-			error!(
-				"Got subscription id {}",
-				serde_json::to_string(&value["result"]).map_err(Box::new)?
-			);
-			Ok(())
+		if value["error"]["message"].is_string() {
+			result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?);
+			out.close(CloseCode::Normal)?;
+			return Ok(())
+		}
+
+		let mut send_result = Ok(());
+		match self.subscription_id.clone() {
+			Some(id) => {
+				if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
+					if id == msg_subscription_id {
+						send_result = result.send(
+							serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?,
+						);
+					}
+				}
+			},
+			None => match value["result"].as_str() {
+				Some(id) => self.subscription_id = Some(id.to_string()),
+				None => {
+					send_result = result.send(format!("Received unexpected response:  {}", msg));
+				},
+			},
 		};
 
-		if let Err(e) = result {
+		// let result = if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
+		// 	result.send(serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?)
+		// } else if let Some(error) = value["error"].as_str() {
+		// 	info!("Error {}", error);
+		// 	result.send(serde_json::to_string(&value["error"]).map_err(Box::new)?)
+		// } else {
+		// 	// Id string is accepted, since it is the immediate response to a subscription message.
+		// 	error!(
+		// 		"Got subscription id {}",
+		// 		serde_json::to_string(&value["result"]).map_err(Box::new)?
+		// 	);
+		// 	Ok(())
+		// };
+
+		if let Err(e) = send_result {
 			// This may happen if the receiver has unsubscribed.
 			trace!("SendError: {}. will close ws", e);
 			out.close(CloseCode::Normal)?;

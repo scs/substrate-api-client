@@ -134,9 +134,27 @@ fn subscribe_to_server(
 	// Subscribe to server
 	socket.send(Message::Text(json_req))?;
 
+	// Read the first message response - must be the subscription id.
+	let msg = read_until_text_message(&mut socket)?;
+	let value: Value = serde_json::from_str(&msg)?;
+
+	let subcription_id = match value["result"].as_str() {
+		Some(id) => id,
+		None => {
+			error!("response: {:?} ", value["error"]);
+
+			let message = match value["error"]["message"].is_string() {
+				true => serde_json::to_string(&value["error"])?,
+				false => format!("Received unexpected response:  {}", msg),
+			};
+			result_in.send(message)?;
+			return Ok(())
+		},
+	};
+
 	loop {
 		let msg = read_until_text_message(&mut socket)?;
-		send_message_to_client(result_in.clone(), msg.as_str())?;
+		send_message_to_client(result_in.clone(), &msg, subcription_id)?;
 	}
 }
 
@@ -147,19 +165,18 @@ pub fn do_reconnect(error: &RpcClientError) -> bool {
 	)
 }
 
-fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result<()> {
+fn send_message_to_client(
+	result_in: ThreadOut<String>,
+	message: &str,
+	subscription_id: &str,
+) -> Result<()> {
 	error!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
-	// We currently do not differentiate between different subscription Ids, we simply
-	// forward them all to the user.
-	if let Some(_subscription_id) = value["params"]["subscription"].as_str() {
-		result_in.send(serde_json::to_string(&value["params"]["result"])?)?;
-	} else if let Some(_error) = value["error"].as_str() {
-		result_in.send(serde_json::to_string(&value["error"]["message"])?)?;
-	} else {
-		// Id string is accepted, since it is the immediate response to a subscription message.
-		error!("Got subscription id {}", serde_json::to_string(&value["result"])?);
+	if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
+		if subscription_id == msg_subscription_id {
+			result_in.send(serde_json::to_string(&value["params"]["result"])?)?;
+		}
 	}
 
 	Ok(())

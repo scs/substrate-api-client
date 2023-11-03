@@ -42,10 +42,7 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 			// Sender was disconnected, therefore no further messages are to be expected.
 			Err(_e) => return None,
 		};
-		Some(
-			serde_json::from_str(&notification)
-				.map_err(|_| Error::UnexpectedResponse(notification)),
-		)
+		Some(serde_json::from_str(&notification).map_err(|_| Error::ExtrinsicFailed(notification)))
 	}
 
 	async fn unsubscribe(self) -> Result<()> {
