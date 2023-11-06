@@ -112,41 +112,58 @@ impl HandleMessage for SubscriptionHandler {
 	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
-		let msg = &context.msg;
+		let msg = &context.msg.as_text()?;
 
 		info!("got on_subscription_msg {}", msg);
-		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
+		let value: serde_json::Value = serde_json::from_str(msg).map_err(Box::new)?;
 
-		let mut send_result = Ok(());
-		match self.subscription_id.clone() {
-			Some(id) => {
-				if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
-					if id == msg_subscription_id {
-						send_result = result.send(
-							serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?,
-						);
-					}
+		let send_result = match self.subscription_id.as_ref() {
+			Some(id) => handle_subscription_message(result, &value, id),
+			None => {
+				self.subscription_id = get_subscription_id(&value);
+				if self.subscription_id.is_none() {
+					send_error_response(result, &value, msg)
+				} else {
+					Ok(())
 				}
-			},
-			None => match value["result"].as_str() {
-				Some(id) => self.subscription_id = Some(id.to_string()),
-				None => {
-					let message = match value["error"]["message"].is_string() {
-						true => serde_json::to_string(&value["error"]).map_err(Box::new)?,
-						false => format!("Received unexpected response:  {}", msg),
-					};
-					let _ = result.send(message);
-					out.close(CloseCode::Normal)?;
-					return Ok(())
-				},
 			},
 		};
 
 		if let Err(e) = send_result {
 			// This may happen if the receiver has unsubscribed.
-			trace!("SendError: {}. will close ws", e);
+			trace!("SendError: {:?}. will close ws", e);
 			out.close(CloseCode::Normal)?;
 		};
 		Ok(())
 	}
+}
+
+fn handle_subscription_message(
+	result: &ThreadOut<String>,
+	value: &serde_json::Value,
+	subscription_id: &str,
+) -> Result<(), RpcClientError> {
+	if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
+		if subscription_id == msg_subscription_id {
+			result.send(serde_json::to_string(&value["params"]["result"])?)?;
+		}
+	}
+	Ok(())
+}
+
+fn get_subscription_id(value: &serde_json::Value) -> Option<String> {
+	value["result"].as_str().map(|id| id.to_string())
+}
+
+fn send_error_response(
+	result: &ThreadOut<String>,
+	value: &serde_json::Value,
+	original_message: &str,
+) -> Result<(), RpcClientError> {
+	let message = match value["error"]["message"].is_string() {
+		true => serde_json::to_string(&value["error"])?,
+		false => format!("Received unexpected response:  {}", original_message),
+	};
+	result.send(message)?;
+	Ok(())
 }
