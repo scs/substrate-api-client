@@ -19,7 +19,6 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_node_api::error::{DispatchError, TokenError},
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
 	extrinsic::BalancesExtrinsics,
 	rpc::WsRpcClient,
@@ -53,7 +52,7 @@ fn main() {
 
 	// Check for successful extrinisc
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2);
-	let block_hash = api
+	let _block_hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()
 		.block_hash
