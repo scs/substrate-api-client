@@ -44,10 +44,7 @@ fn main() {
 	// Check for failed extrinsic failed onchain
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1);
 	let result = api.submit_and_watch_extrinsic_until(xt.clone(), XtStatus::InBlock);
-	match result {
-		Ok(_) => panic!("Expected an error"),
-		Err(e) => assert_eq!(e, DispatchError::Token(TokenError::FundsUnavailable)),
-	};
+	assert!(format!("{:?}", result).contains("DispatchError::Token(TokenError::FundsUnavailable)"));
 
 	// Check directly failed extrinsic (before actually submitted to a block)
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
