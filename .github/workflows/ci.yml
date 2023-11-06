@@ -153,8 +153,10 @@ jobs:
           pallet_balances_tests,
           pallet_transaction_payment_tests,
           state_tests,
+          tungstenite_client_test,
+          state_tests,
           runtime_update_sync,
-          runtime_update_async,
+          ws_client_test,
         ]
     steps:
       - uses: actions/checkout@v3
