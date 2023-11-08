@@ -157,7 +157,7 @@ jobs:
           ws_client_test,
           state_tests,
           runtime_update_sync,
-          runtime_update_async
+          runtime_update_async,
         ]
     steps:
       - uses: actions/checkout@v3
