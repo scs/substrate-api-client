@@ -15,7 +15,7 @@
 
 */
 use crate::rpc::{
-	to_json_req, tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
+	helpers, to_json_req, tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
 	Error as RpcClientError, Request, Result, Subscribe,
 };
 use ac_primitives::RpcParams;
@@ -138,13 +138,10 @@ fn subscribe_to_server(
 	let msg = read_until_text_message(&mut socket)?;
 	let value: Value = serde_json::from_str(&msg)?;
 
-	let subcription_id = match value["result"].as_str() {
+	let subcription_id = match helpers::read_subscription_id(&value) {
 		Some(id) => id,
 		None => {
-			let message = match value["error"]["message"].is_string() {
-				true => serde_json::to_string(&value["error"])?,
-				false => format!("Received unexpected response:  {}", msg),
-			};
+			let message = helpers::read_error_message(&value, &msg);
 			result_in.send(message)?;
 			return Ok(())
 		},
@@ -152,7 +149,7 @@ fn subscribe_to_server(
 
 	loop {
 		let msg = read_until_text_message(&mut socket)?;
-		send_message_to_client(result_in.clone(), &msg, subcription_id)?;
+		send_message_to_client(result_in.clone(), &msg, &subcription_id)?;
 	}
 }
 
@@ -171,10 +168,8 @@ fn send_message_to_client(
 	info!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
-	if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
-		if subscription_id == msg_subscription_id {
-			result_in.send(serde_json::to_string(&value["params"]["result"])?)?;
-		}
+	if helpers::subscription_id_matches(&value, subscription_id) {
+		result_in.send(serde_json::to_string(&value["params"]["result"])?)?;
 	}
 
 	Ok(())

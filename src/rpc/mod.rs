@@ -35,6 +35,7 @@ pub use jsonrpsee_client::JsonrpseeClient;
 pub mod jsonrpsee_client;
 
 pub mod error;
+mod helpers;
 
 pub use error::{Error, Result};
 
