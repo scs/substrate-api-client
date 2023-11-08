@@ -15,7 +15,7 @@
 
 */
 
-use crate::rpc::Error as RpcClientError;
+use crate::rpc::{helpers, Error as RpcClientError};
 use log::*;
 use std::{fmt::Debug, sync::mpsc::Sender as ThreadOut};
 use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
@@ -120,7 +120,7 @@ impl HandleMessage for SubscriptionHandler {
 		let send_result = match self.subscription_id.as_ref() {
 			Some(id) => handle_subscription_message(result, &value, id),
 			None => {
-				self.subscription_id = get_subscription_id(&value);
+				self.subscription_id = helpers::read_subscription_id(&value);
 				if self.subscription_id.is_none() {
 					send_error_response(result, &value, msg)
 				} else {
@@ -143,27 +143,17 @@ fn handle_subscription_message(
 	value: &serde_json::Value,
 	subscription_id: &str,
 ) -> Result<(), RpcClientError> {
-	if let Some(msg_subscription_id) = value["params"]["subscription"].as_str() {
-		if subscription_id == msg_subscription_id {
-			result.send(serde_json::to_string(&value["params"]["result"])?)?;
-		}
+	if helpers::subscription_id_matches(value, subscription_id) {
+		result.send(serde_json::to_string(&value["params"]["result"])?)?;
 	}
 	Ok(())
-}
-
-fn get_subscription_id(value: &serde_json::Value) -> Option<String> {
-	value["result"].as_str().map(|id| id.to_string())
 }
 
 fn send_error_response(
 	result: &ThreadOut<String>,
 	value: &serde_json::Value,
-	original_message: &str,
+	msg: &str,
 ) -> Result<(), RpcClientError> {
-	let message = match value["error"]["message"].is_string() {
-		true => serde_json::to_string(&value["error"])?,
-		false => format!("Received unexpected response:  {}", original_message),
-	};
-	result.send(message)?;
+	result.send(helpers::read_error_message(value, msg))?;
 	Ok(())
 }
