@@ -15,7 +15,7 @@
 
 */
 
-use crate::rpc::{HandleSubscription, Result};
+use crate::rpc::{Error, HandleSubscription, Result};
 use core::marker::PhantomData;
 use serde::de::DeserializeOwned;
 use std::sync::mpsc::Receiver;
@@ -42,7 +42,7 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 			// Sender was disconnected, therefore no further messages are to be expected.
 			Err(_e) => return None,
 		};
-		Some(serde_json::from_str(&notification).map_err(|e| e.into()))
+		Some(serde_json::from_str(&notification).map_err(|_| Error::ExtrinsicFailed(notification)))
 	}
 
 	async fn unsubscribe(self) -> Result<()> {

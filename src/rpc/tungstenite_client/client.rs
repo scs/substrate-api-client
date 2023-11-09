@@ -15,7 +15,7 @@
 
 */
 use crate::rpc::{
-	to_json_req, tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
+	helpers, to_json_req, tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
 	Error as RpcClientError, Request, Result, Subscribe,
 };
 use ac_primitives::RpcParams;
@@ -134,9 +134,22 @@ fn subscribe_to_server(
 	// Subscribe to server
 	socket.send(Message::Text(json_req))?;
 
+	// Read the first message response - must be the subscription id.
+	let msg = read_until_text_message(&mut socket)?;
+	let value: Value = serde_json::from_str(&msg)?;
+
+	let subcription_id = match helpers::read_subscription_id(&value) {
+		Some(id) => id,
+		None => {
+			let message = helpers::read_error_message(&value, &msg);
+			result_in.send(message)?;
+			return Ok(())
+		},
+	};
+
 	loop {
 		let msg = read_until_text_message(&mut socket)?;
-		send_message_to_client(result_in.clone(), msg.as_str())?;
+		send_message_to_client(result_in.clone(), &msg, &subcription_id)?;
 	}
 }
 
@@ -147,19 +160,18 @@ pub fn do_reconnect(error: &RpcClientError) -> bool {
 	)
 }
 
-fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result<()> {
-	debug!("got on_subscription_msg {}", message);
+fn send_message_to_client(
+	result_in: ThreadOut<String>,
+	message: &str,
+	subscription_id: &str,
+) -> Result<()> {
+	info!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
-	match value["id"].as_str() {
-		Some(_idstr) => {
-			warn!("Expected subscription, but received an id response instead: {:?}", value);
-		},
-		None => {
-			let message = serde_json::to_string(&value["params"]["result"])?;
-			result_in.send(message)?;
-		},
-	};
+	if helpers::subscription_id_matches(&value, subscription_id) {
+		result_in.send(serde_json::to_string(&value["params"]["result"])?)?;
+	}
+
 	Ok(())
 }
 

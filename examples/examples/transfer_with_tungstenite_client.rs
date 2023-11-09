@@ -55,8 +55,22 @@ fn main() {
 	let bob_balance = api.get_account_data(&bob.into()).unwrap().unwrap_or_default().free;
 	println!("[+] Bob's Free Balance is {}\n", bob_balance);
 
-	// Generate extrinsic.
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), 1000000000000);
+	// We first generate an extrinsic that will fail to be executed due to missing funds.
+	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1);
+	println!(
+		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
+		alice.public(),
+		bob
+	);
+	println!("[+] Composed extrinsic: {:?}\n", xt);
+
+	// Send and watch extrinsic until it fails onchain.
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
+	assert!(result.is_err());
+	println!("[+] Extrinsic did not get included due to: {:?}\n", result);
+
+	// This time, we generate an extrinsic that will succeed.
+	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2);
 	println!(
 		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
 		alice.public(),
@@ -70,7 +84,7 @@ fn main() {
 		.unwrap()
 		.block_hash
 		.unwrap();
-	println!("[+] Extrinsic got included. Hash: {:?}\n", block_hash);
+	println!("[+] Extrinsic got included. Block Hash: {:?}\n", block_hash);
 
 	// Verify that Bob's free Balance increased.
 	let bob_new_balance = api.get_account_data(&bob.into()).unwrap().unwrap().free;

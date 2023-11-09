@@ -50,7 +50,7 @@ impl WsRpcClient {
 impl Request for WsRpcClient {
 	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
 		let json_req = to_json_req(method, params)?;
-		let response = self.direct_rpc_request(json_req, RequestHandler::default())??;
+		let response = self.direct_rpc_request(json_req, RequestHandler)??;
 		let deserialized_value: R = serde_json::from_str(&response)?;
 		Ok(deserialized_value)
 	}

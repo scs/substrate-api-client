@@ -35,6 +35,8 @@ pub use jsonrpsee_client::JsonrpseeClient;
 pub mod jsonrpsee_client;
 
 pub mod error;
+#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
+mod helpers;
 
 pub use error::{Error, Result};
 

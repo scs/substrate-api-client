@@ -15,7 +15,7 @@
 
 */
 
-use crate::rpc::Error as RpcClientError;
+use crate::rpc::{helpers, Error as RpcClientError};
 use log::*;
 use std::{fmt::Debug, sync::mpsc::Sender as ThreadOut};
 use ws::{CloseCode, Handler, Handshake, Message, Result as WsResult, Sender};
@@ -33,7 +33,7 @@ pub(crate) trait HandleMessage {
 	type ThreadMessage;
 	type Context;
 
-	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()>;
+	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()>;
 }
 
 // Clippy says request is never used, even though it is..
@@ -83,7 +83,7 @@ impl HandleMessage for RequestHandler {
 	type ThreadMessage = RpcMessage;
 	type Context = MessageContext<Self::ThreadMessage>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()> {
+	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
 		let msg = &context.msg;
@@ -101,34 +101,59 @@ impl HandleMessage for RequestHandler {
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub(crate) struct SubscriptionHandler {}
+pub(crate) struct SubscriptionHandler {
+	subscription_id: Option<String>,
+}
 
 impl HandleMessage for SubscriptionHandler {
 	type ThreadMessage = String;
 	type Context = MessageContext<Self::ThreadMessage>;
 
-	fn handle_message(&self, context: &mut Self::Context) -> WsResult<()> {
+	fn handle_message(&mut self, context: &mut Self::Context) -> WsResult<()> {
 		let result = &context.result;
 		let out = &context.out;
-		let msg = &context.msg;
+		let msg = &context.msg.as_text()?;
 
 		info!("got on_subscription_msg {}", msg);
-		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
+		let value: serde_json::Value = serde_json::from_str(msg).map_err(Box::new)?;
 
-		match value["id"].as_str() {
-			Some(_idstr) => {
-				warn!("Expected subscription, but received an id response instead: {:?}", value);
-			},
+		let send_result = match self.subscription_id.as_ref() {
+			Some(id) => handle_subscription_message(result, &value, id),
 			None => {
-				let answer = serde_json::to_string(&value["params"]["result"]).map_err(Box::new)?;
-
-				if let Err(e) = result.send(answer) {
-					// This may happen if the receiver has unsubscribed.
-					trace!("SendError: {}. will close ws", e);
-					out.close(CloseCode::Normal)?;
+				self.subscription_id = helpers::read_subscription_id(&value);
+				if self.subscription_id.is_none() {
+					send_error_response(result, &value, msg)
+				} else {
+					Ok(())
 				}
 			},
 		};
+
+		if let Err(e) = send_result {
+			// This may happen if the receiver has unsubscribed.
+			trace!("SendError: {:?}. will close ws", e);
+			out.close(CloseCode::Normal)?;
+		};
 		Ok(())
 	}
+}
+
+fn handle_subscription_message(
+	result: &ThreadOut<String>,
+	value: &serde_json::Value,
+	subscription_id: &str,
+) -> Result<(), RpcClientError> {
+	if helpers::subscription_id_matches(value, subscription_id) {
+		result.send(serde_json::to_string(&value["params"]["result"])?)?;
+	}
+	Ok(())
+}
+
+fn send_error_response(
+	result: &ThreadOut<String>,
+	value: &serde_json::Value,
+	msg: &str,
+) -> Result<(), RpcClientError> {
+	result.send(helpers::read_error_message(value, msg))?;
+	Ok(())
 }

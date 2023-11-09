@@ -13,8 +13,6 @@
 	limitations under the License.
 */
 
-//! Very simple example that shows how to use a predefined extrinsic from the extrinsic module.
-
 use sp_core::{
 	crypto::{Pair, Ss58Codec},
 	sr25519,
@@ -27,66 +25,38 @@ use substrate_api_client::{
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
-
 fn main() {
-	env_logger::init();
-
-	// Alice's seed: subkey inspect //Alice.
+	// Setup
 	let alice: sr25519::Pair = Pair::from_string(
 		"0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
 		None,
 	)
 	.unwrap();
-	println!("signer account: {}", alice.public().to_ss58check());
-
-	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::with_default_url();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice.clone()));
 
-	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
 		.unwrap();
 	let bob_balance = api.get_account_data(&bob.into()).unwrap().unwrap_or_default().free;
-	println!("[+] Bob's Free Balance is {}\n", bob_balance);
 
-	// We first generate an extrinsic that will fail to be executed due to missing funds.
+	// Check for failed extrinsic failed onchain
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1);
-	println!(
-		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
-		alice.public(),
-		bob
-	);
-	println!("[+] Composed extrinsic: {:?}\n", xt);
+	let result = api.submit_and_watch_extrinsic_until(xt.clone(), XtStatus::InBlock);
+	assert!(format!("{:?}", result).contains("FundsUnavailable"));
 
-	// Send and watch extrinsic until it fails onchain.
+	// Check directly failed extrinsic (before actually submitted to a block)
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	assert!(result.is_err());
-	println!("[+] Extrinsic did not get included due to: {:?}\n", result);
+	assert!(format!("{:?}", result).contains("ExtrinsicFailed"));
 
-	// This time, we generate an extrinsic that will succeed.
+	// Check for successful extrinisc
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2);
-	println!(
-		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
-		alice.public(),
-		bob
-	);
-	println!("[+] Composed extrinsic: {:?}\n", xt);
-
-	// Send and watch extrinsic until in block.
-	let block_hash = api
+	let _block_hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()
 		.block_hash
 		.unwrap();
-	println!("[+] Extrinsic got included. Block Hash: {:?}\n", block_hash);
-
-	// Verify that Bob's free Balance increased.
 	let bob_new_balance = api.get_account_data(&bob.into()).unwrap().unwrap().free;
-	println!("[+] Bob's Free Balance is now {}\n", bob_new_balance);
 	assert!(bob_new_balance > bob_balance);
 }

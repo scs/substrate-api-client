@@ -22,6 +22,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
 	SerdeJson(serde_json::error::Error),
+	ExtrinsicFailed(String),
 	MpscSend(String),
 	InvalidUrl(String),
 	RecvError(String),
