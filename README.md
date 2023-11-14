@@ -149,10 +149,12 @@ The development of the substrate-api-client has been financed by:
 
 - [web3 foundation](https://github.com/w3f/General-Grants-Program/blob/master/grants/speculative/substrate-api-client.md)
 - [Integritee](https://integritee.network/)
-- Kusama Treasury, see our maintenance proposals for:
-  - [Nov-22 to Jan-23](https://kusama.polkassembly.io/treasury/237)
-  - [Feb-23 to Apr-23](https://kusama.polkassembly.io/treasury/267)
-  - [May-23 to Jul-23](https://kusama.polkassembly.io/treasury/312)
+- Kusama Treasury:
+  - [Maintenance Nov-22 to Jan-23](https://kusama.polkassembly.io/treasury/237)
+  - [Maintenance Feb-23 to Apr-23](https://kusama.polkassembly.io/treasury/267)
+  - [Maintenance May-23 to Jul-23](https://kusama.polkassembly.io/treasury/312)
+- Polkadot Treasury:
+  - [Maintenance Sep-23 to Dec-23](https://polkadot.polkassembly.io/referenda/118)
 
 We also thank the teams at
 
