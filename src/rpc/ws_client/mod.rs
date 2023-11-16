@@ -59,7 +59,7 @@ where
 	MessageHandler::Context: From<MessageContext<MessageHandler::ThreadMessage>>,
 {
 	fn on_open(&mut self, _: Handshake) -> WsResult<()> {
-		info!("sending request: {}", self.request);
+		trace!("sending request: {}", self.request);
 		self.out.send(self.request.clone())?;
 		Ok(())
 	}
@@ -91,7 +91,7 @@ impl HandleMessage for RequestHandler {
 		out.close(CloseCode::Normal)
 			.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
 
-		info!("Got get_request_msg {}", msg);
+		trace!("Got get_request_msg {}", msg);
 		let result_str = serde_json::from_str(msg.as_text()?)
 			.map(|v: serde_json::Value| v["result"].to_string())
 			.map_err(RpcClientError::SerdeJson);
@@ -114,7 +114,7 @@ impl HandleMessage for SubscriptionHandler {
 		let out = &context.out;
 		let msg = &context.msg.as_text()?;
 
-		info!("got on_subscription_msg {}", msg);
+		trace!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value = serde_json::from_str(msg).map_err(Box::new)?;
 
 		let send_result = match self.subscription_id.as_ref() {

@@ -92,7 +92,7 @@ impl TungsteniteRpcClient {
 
 		let msg = read_until_text_message(&mut socket)?;
 
-		debug!("Got get_request_msg {}", msg);
+		trace!("Got get_request_msg {}", msg);
 		let result_str =
 			serde_json::from_str(msg.as_str()).map(|v: Value| v["result"].to_string())?;
 		Ok(result_str)
@@ -165,7 +165,7 @@ fn send_message_to_client(
 	message: &str,
 	subscription_id: &str,
 ) -> Result<()> {
-	info!("got on_subscription_msg {}", message);
+	trace!("got on_subscription_msg {}", message);
 	let value: Value = serde_json::from_str(message)?;
 
 	if helpers::subscription_id_matches(&value, subscription_id) {
@@ -193,10 +193,7 @@ fn attempt_connection_until(url: &Url, max_attempts: u8) -> Result<(MySocket, Re
 fn read_until_text_message(socket: &mut MySocket) -> Result<String> {
 	loop {
 		match socket.read()? {
-			Message::Text(s) => {
-				debug!("receive text: {:?}", s);
-				break Ok(s)
-			},
+			Message::Text(s) => break Ok(s),
 			Message::Binary(_) => {
 				debug!("skip binary msg");
 			},
