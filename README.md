@@ -51,16 +51,18 @@ Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 The following examples can be found in the [examples](/examples/examples) folder:
 
 * [benchmark_bulk_xt](/examples/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
+* [check_extrinsic_events](/examples/examples/check_extrinsic_events.rs): Check and react according to events associated to an extrinsic.
 * [compose_extrinsic_offline](/examples/examples/compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
-* [custom_nonce](/examples/examples/custom_nonce.rs): Compose an with a custom nonce.
 * [contract_instantiate_with_code](/examples/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
-* [event_callback](/examples/examples/event_callback.rs): Subscribe and react on events.
-* [event_error_details](/examples/examples/event_error_details.rs): Listen to error events from the node to determine if an extrinsic was successful or not.
-* [get_account_identity](/examples/examples/get_account_identit.rs): Create an custom Unchecked Extrinsic to set an account identity and retrieve it afterwards with a getter.
-* [get_block](/examples/examples/get_block.rs): Read header, block and signed block from storage.
+* [custom_nonce](/examples/examples/custom_nonce.rs): Compose an with a custom nonce.
+* [get_account_identity](/examples/examples/get_account_identity.rs): Create an custom Unchecked Extrinsic to set an account identity and retrieve it afterwards with a getter.
+* [get_block_async](/examples/examples/get_block_async.rs): Read header, block and signed block from storage.
 * [get_storage](/examples/examples/get_storage.rs): Read storage values.
 * [print_metadata](/examples/examples/print_metadata.rs): Print the metadata of the node in a readable way.
+* [runtime_update_async](/src/examples/examples/runtime_update_async.rs): How to do an runtime upgrade asynchronously.
+* [runtime_update_sync](/src/examples/examples/runtime_update_sync.rs): How to do an runtime upgrade synchronously.
 * [staking_batch_payout](/src/examples/examples/staking_batch_payout.rs): Batch reward payout for validator.
+* [subscribe_events](/examples/examples/subscribe_events.rs): Subscribe and react on events.
 * [sudo](/examples/examples/sudo.rs): Create and send a sudo wrapped call.
 * [transfer_with_tungstenite_client](/examples/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
