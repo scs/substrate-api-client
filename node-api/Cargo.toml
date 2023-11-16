@@ -30,7 +30,7 @@ sp-runtime = { default-features = false, features = ["serde"], git = "https://gi
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # need to add this for `no_std`
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", features = ["full_crypto"], branch = "master" }
+sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local
