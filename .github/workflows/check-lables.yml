@@ -21,3 +21,13 @@ jobs:
             if [[  "$MATCH" == '[]' ]]; then
                 exit 1
             fi
+        - name: F Label check
+          env:
+            enforced_labels: "F0-miscellaneous,F1-security,F2-bug,F3-test,F4-documentation,F5-refactor,F6-optimization,F7-enhancement,F8-newfeature,F9-dependencies"
+          run: |
+            MATCH=$(jq -cn '${{ toJSON(github.event.pull_request.labels.*.name) }} as $USER_LABELS |
+            ${{ toJSON(env.enforced_labels)  }} | split(",") as $LABELS |
+            $USER_LABELS - ($USER_LABELS - $LABELS)')
+            if [[  "$MATCH" == '[]' ]]; then
+                exit 1
+            fi

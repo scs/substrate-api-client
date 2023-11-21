@@ -8,10 +8,12 @@ categories:
       - 'E2-breaksapi'
   - title: ' 🌈 Features'
     labels:
+      - 'F6-optimization'
       - 'F8-newfeature'
       - 'F7-enhancement'
   - title: '🐛 Bug Fixes'
     labels:
+      - 'F1-security'
       - 'F2-bug'
   - title: ' Miscellaneous '
     collapse-after: 5
