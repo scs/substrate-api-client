@@ -49,7 +49,7 @@ async fn main() {
 	let _tx_hash = api.submit_extrinsic(xt0).unwrap();
 
 	// Submit and watch.
-	thread::sleep(Duration::from_secs(6)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let api1 = api.clone();
 	let xt1 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let watch_handle = thread::spawn(move || {
@@ -65,7 +65,7 @@ async fn main() {
 	});
 
 	// Test different _watch_untils with events
-	thread::sleep(Duration::from_secs(2)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let xt2 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let extrinsic_hash: H256 = sp_core::blake2_256(&xt2.encode()).into();
 	let report = api.submit_and_watch_extrinsic_until(xt2, XtStatus::Ready).unwrap();
@@ -75,7 +75,7 @@ async fn main() {
 	assert!(report.events.is_none());
 	println!("Success: submit_and_watch_extrinsic_until Ready");
 
-	thread::sleep(Duration::from_secs(2)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let xt3 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let report = api.submit_and_watch_extrinsic_until(xt3, XtStatus::Finalized).unwrap();
 	// The xt is not broadcast - we only have one node running. Therefore, InBlock is returned.
@@ -86,7 +86,7 @@ async fn main() {
 	println!("Success: submit_and_watch_extrinsic_until Broadcast");
 
 	let api2 = api.clone();
-	thread::sleep(Duration::from_secs(2)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let xt4 = api2.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_in_block_handle = thread::spawn(move || {
 		let report = api2.submit_and_watch_extrinsic_until(xt4, XtStatus::Finalized).unwrap();
@@ -97,7 +97,7 @@ async fn main() {
 	});
 
 	let api3 = api.clone();
-	thread::sleep(Duration::from_secs(2)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let xt5 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let until_finalized_handle = thread::spawn(move || {
 		let report = api3.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized).unwrap();
@@ -109,14 +109,14 @@ async fn main() {
 
 	// Test some _watch_untils_without_events. One is enough, because it is tested implicitly by `submit_and_watch_extrinsic_until`
 	// as internal call.
-	thread::sleep(Duration::from_secs(2)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let xt6 = api.balance_transfer_allow_death(bob.clone(), 1000);
 	let report = api
 		.submit_and_watch_extrinsic_until_without_events(xt6, XtStatus::Finalized)
 		.unwrap();
 	println!("Success: submit_and_watch_extrinsic_until_without_events Ready!");
 
-	thread::sleep(Duration::from_secs(2)); // Wait a little to avoid transaction too low priority error.
+	thread::sleep(Duration::from_secs(5)); // Wait a little to avoid transaction too low priority error.
 	let xt7 = api.balance_transfer_allow_death(bob, 1000);
 	let report = api
 		.submit_and_watch_extrinsic_until_without_events(xt7, XtStatus::Finalized)
