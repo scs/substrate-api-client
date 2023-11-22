@@ -147,17 +147,8 @@ pub fn do_reconnect(error: &RpcClientError) -> bool {
 	)
 }
 
-<<<<<<< HEAD
-fn send_message_to_client(
-	result_in: ThreadOut<String>,
-	message: &str,
-	subscription_id: &str,
-) -> Result<()> {
-	trace!("got on_subscription_msg {}", message);
-=======
 fn send_message_to_client(result_in: ThreadOut<String>, message: &str) -> Result<()> {
 	debug!("got on_subscription_msg {}", message);
->>>>>>> parent of be3e1f7... Add subscription ID recognition to tungstenite and ws-rpc client (#662)
 	let value: Value = serde_json::from_str(message)?;
 
 	match value["id"].as_str() {

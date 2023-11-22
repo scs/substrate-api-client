@@ -112,13 +112,8 @@ impl HandleMessage for SubscriptionHandler {
 		let out = &context.out;
 		let msg = &context.msg;
 
-<<<<<<< HEAD
-		trace!("got on_subscription_msg {}", msg);
-		let value: serde_json::Value = serde_json::from_str(msg).map_err(Box::new)?;
-=======
 		info!("got on_subscription_msg {}", msg);
 		let value: serde_json::Value = serde_json::from_str(msg.as_text()?).map_err(Box::new)?;
->>>>>>> parent of be3e1f7... Add subscription ID recognition to tungstenite and ws-rpc client (#662)
 
 		match value["id"].as_str() {
 			Some(_idstr) => {
