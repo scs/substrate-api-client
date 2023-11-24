@@ -48,6 +48,10 @@ async fn main() {
 		value: 1000,
 	});
 	let nonce = api.get_nonce().unwrap();
+	let call_to_fail = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+		dest: bob.clone(),
+		value: 100000000000000000000000,
+	});
 
 	// Submit and watch.
 	let api1 = api.clone();
@@ -93,8 +97,14 @@ async fn main() {
 		println!("Success: submit_and_watch_extrinsic_until InBlock");
 	});
 
+	let api7 = api.clone();
+	let xt7 = api.compose_extrinsic_offline(call_to_fail.clone(), nonce + 4);
+	let until_in_block_handle = thread::spawn(move || {
+		let report = api7.submit_and_watch_extrinsic_until(xt7, XtStatus::Ready).unwrap();
+	});
+
 	let api3 = api.clone();
-	let xt5 = api.compose_extrinsic_offline(call.clone(), nonce + 4);
+	let xt5 = api.compose_extrinsic_offline(call.clone(), nonce + 5);
 	let until_finalized_handle = thread::spawn(move || {
 		let report = api3.submit_and_watch_extrinsic_until(xt5, XtStatus::Finalized).unwrap();
 		assert!(report.block_hash.is_some());
@@ -105,13 +115,13 @@ async fn main() {
 
 	// Test some _watch_untils_without_events. One is enough, because it is tested implicitly by `submit_and_watch_extrinsic_until`
 	// as internal call.
-	let xt6 = api.compose_extrinsic_offline(call.clone(), nonce + 5);
+	let xt6 = api.compose_extrinsic_offline(call.clone(), nonce + 6);
 	let report = api
 		.submit_and_watch_extrinsic_until_without_events(xt6, XtStatus::Finalized)
 		.unwrap();
 	println!("Success: submit_and_watch_extrinsic_until_without_events Ready!");
 
-	let xt7 = api.compose_extrinsic_offline(call.clone(), nonce + 6);
+	let xt7 = api.compose_extrinsic_offline(call.clone(), nonce + 7);
 	let report = api
 		.submit_and_watch_extrinsic_until_without_events(xt7, XtStatus::Finalized)
 		.unwrap();
