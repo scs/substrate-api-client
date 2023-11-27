@@ -24,6 +24,8 @@ use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
+#[cfg(not(feature = "sync-api"))]
+use alloc::boxed::Box;
 use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 

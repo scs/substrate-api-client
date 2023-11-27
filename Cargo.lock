@@ -6340,6 +6340,7 @@ dependencies = [
  "frame-metadata",
  "frame-support",
  "futures",
+ "futures-util",
  "hex",
  "jsonrpsee",
  "kitchensink-runtime",
