@@ -28,12 +28,12 @@ async-trait = "0.1.68"
 codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
 frame-metadata = { version = "16.0", default-features = false, features = ["current", "serde_full", "decode"] }
+futures-util = { version = "0.3", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 maybe-async = { version = "0.2.7" }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.79", default-features = false }
-futures-util = { version = "0.3",  default-features = false}
 
 
 # crates.io std only
