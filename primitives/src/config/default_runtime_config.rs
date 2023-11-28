@@ -18,9 +18,3 @@ pub type DefaultRuntimeConfig =
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees.
 pub type PlainTipExtrinsicParams<T> = GenericExtrinsicParams<T, PlainTip<<T as Config>::Balance>>;
-
-#[deprecated(
-	since = "0.14.0",
-	note = "Please use `DefaultRuntimeConfig` instead, this will be removed in the next release."
-)]
-pub type PolkadotConfig = DefaultRuntimeConfig;

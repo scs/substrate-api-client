@@ -49,13 +49,6 @@ pub struct Metadata {
 }
 
 impl Metadata {
-	/// Access a pallet given its name.
-	#[deprecated(note = "please use `pallet_by_name` or `pallet_by_name_err` instead")]
-	pub fn pallet(&self, pallet_name: &str) -> Result<PalletMetadata<'_>, MetadataError> {
-		self.pallet_by_name(pallet_name)
-			.ok_or_else(|| MetadataError::PalletNameNotFound(pallet_name.to_string()))
-	}
-
 	/// An iterator over all of the available pallets.
 	pub fn pallets(&self) -> impl Iterator<Item = PalletMetadata<'_>> {
 		self.pallets.values().map(|inner| PalletMetadata { inner, types: self.types() })

@@ -211,57 +211,6 @@ pub trait SubmitAndWatch {
 }
 
 #[maybe_async::maybe_async(?Send)]
-pub trait SubmitAndWatchUntilSuccess {
-	type Client: Subscribe;
-	type Hash: Decode;
-
-	/// Submit an extrinsic and watch it until
-	/// - wait_for_finalized = false => InBlock
-	/// - wait_for_finalized = true => Finalized
-	/// Returns and error if the extrinsic was not successfully executed.
-	/// If it was successful, a report containing the following is returned:
-	/// - extrinsic hash
-	/// - hash of the block the extrinsic was included in
-	/// - last known extrinsic (transaction) status
-	/// - associated events of the extrinsic
-	/// This method is blocking.
-	#[deprecated(
-		since = "0.14.0",
-		note = "please use `SubmitAndWatch::submit_and_watch_extrinsic_until` instead, this will be removed in the next release."
-	)]
-	async fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
-		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Self::Hash>>
-	where
-		Address: Encode,
-		Call: Encode,
-		Signature: Encode,
-		SignedExtra: Encode;
-
-	/// Submit an encoded, opaque extrinsic and watch it until
-	/// - wait_for_finalized = false => InBlock
-	/// - wait_for_finalized = true => Finalized
-	/// Returns and error if the extrinsic was not successfully executed.
-	/// If it was successful, a report containing the following is returned:
-	/// - extrinsic hash
-	/// - hash of the block the extrinsic was included in
-	/// - last known extrinsic (transaction) status
-	/// - associated events of the extrinsic
-	/// This method is blocking.
-	#[deprecated(
-		since = "0.14.0",
-		note = "please use `SubmitAndWatch::submit_and_watch_opaque_extrinsic_until` instead, this will be removed in the next release."
-	)]
-	async fn submit_and_watch_opaque_extrinsic_until_success(
-		&self,
-		encoded_extrinsic: &Bytes,
-		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Self::Hash>>;
-}
-
-#[maybe_async::maybe_async(?Send)]
 impl<T, Client> SubmitAndWatch for Api<T, Client>
 where
 	T: Config,
@@ -389,48 +338,5 @@ where
 			}
 		}
 		Err(Error::NoStream)
-	}
-}
-
-#[maybe_async::maybe_async(?Send)]
-impl<T, Client> SubmitAndWatchUntilSuccess for Api<T, Client>
-where
-	T: Config,
-	Client: Subscribe + Request,
-{
-	type Client = Client;
-	type Hash = T::Hash;
-
-	async fn submit_and_watch_extrinsic_until_success<Address, Call, Signature, SignedExtra>(
-		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Self::Hash>>
-	where
-		Address: Encode,
-		Call: Encode,
-		Signature: Encode,
-		SignedExtra: Encode,
-	{
-		let xt_status = match wait_for_finalized {
-			true => XtStatus::Finalized,
-			false => XtStatus::InBlock,
-		};
-
-		self.submit_and_watch_opaque_extrinsic_until(&extrinsic.encode().into(), xt_status)
-			.await
-	}
-
-	async fn submit_and_watch_opaque_extrinsic_until_success(
-		&self,
-		encoded_extrinsic: &Bytes,
-		wait_for_finalized: bool,
-	) -> Result<ExtrinsicReport<Self::Hash>> {
-		let xt_status = match wait_for_finalized {
-			true => XtStatus::Finalized,
-			false => XtStatus::InBlock,
-		};
-
-		self.submit_and_watch_opaque_extrinsic_until(encoded_extrinsic, xt_status).await
 	}
 }
