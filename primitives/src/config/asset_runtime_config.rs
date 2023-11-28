@@ -41,9 +41,3 @@ impl Config for AssetRuntimeConfig {
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in asset fees.
 pub type AssetTipExtrinsicParams<T> = GenericExtrinsicParams<T, AssetTip<<T as Config>::Balance>>;
-
-#[deprecated(
-	since = "0.14.0",
-	note = "Please use `AssetRuntimeConfig` instead, this will be removed in the next release."
-)]
-pub type SubstrateKitchensinkConfig = AssetRuntimeConfig;
