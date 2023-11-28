@@ -27,11 +27,16 @@ sp-version = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
-substrate-api-client = { path = "..", default-features = false, features = ["jsonrpsee-client", "tungstenite-client", "ws-client", "staking-xt", "contracts-xt"] }
+substrate-api-client = { path = "..", default-features = false, features = ["jsonrpsee-client", "staking-xt", "contracts-xt"] }
 
 [features]
 default = ["sync-examples"]
-sync-examples = ["substrate-api-client/std", "substrate-api-client/sync-api"]
+sync-examples = [
+    "substrate-api-client/std",
+    "substrate-api-client/sync-api",
+    "substrate-api-client/tungstenite-client",
+    "substrate-api-client/ws-client",
+]
 
 [dependencies]
 tokio-util = "0.7.8"

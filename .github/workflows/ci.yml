@@ -41,6 +41,16 @@ jobs:
                 cargo build --release -p test-no-std --features node-api,
                 cargo build --release -p test-no-std --features primitives,
 
+                 # Check build of stand-alone features.
+                cargo check --no-default-features,
+                cargo check --no-default-features --features sync-api,
+                cargo check --no-default-features --features jsonrpsee-client,
+                cargo check --no-default-features --features tungstenite-client,
+                cargo check --no-default-features --features ws-client,
+                cargo check --no-default-features --features staking-xt,
+                cargo check --no-default-features --features contracts-xt,
+                cargo check --no-default-features --features std,
+
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
 

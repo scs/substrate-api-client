@@ -15,6 +15,8 @@ use crate::{
 	rpc::Request,
 };
 use ac_primitives::config::Config;
+#[cfg(not(feature = "sync-api"))]
+use alloc::boxed::Box;
 
 /// Interface to common calls of the substrate balances pallet.
 #[maybe_async::maybe_async(?Send)]

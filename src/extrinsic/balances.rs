@@ -25,6 +25,8 @@ use ac_primitives::{
 	UncheckedExtrinsicV4,
 };
 use alloc::borrow::ToOwned;
+#[cfg(not(feature = "sync-api"))]
+use alloc::boxed::Box;
 use codec::{Compact, Encode};
 
 pub const BALANCES_MODULE: &str = "Balances";

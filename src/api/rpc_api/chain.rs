@@ -18,6 +18,8 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::config::Config;
+#[cfg(not(feature = "sync-api"))]
+use alloc::boxed::Box;
 use alloc::vec::Vec;
 use log::*;
 use serde::de::DeserializeOwned;

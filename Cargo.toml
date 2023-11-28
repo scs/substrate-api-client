@@ -28,11 +28,13 @@ async-trait = "0.1.68"
 codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
 derive_more = { version = "0.99.5" }
 frame-metadata = { version = "16.0", default-features = false, features = ["current", "serde_full", "decode"] }
+futures-util = { version = "0.3", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 log = { version = "0.4.14", default-features = false }
 maybe-async = { version = "0.2.7" }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.79", default-features = false }
+
 
 # crates.io std only
 url = { version = "2.0.0", optional = true }
@@ -71,27 +73,35 @@ default = ["std", "jsonrpsee-client", "sync-api"]
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
-# If this is active all the code compiles in synchronous mode. Otherwise `async` is supported.
+
+# If this is active all the code compiles in synchronous mode. If not selected, code will compile to async mode.
 sync-api = ["ac-compose-macros/sync-api", "maybe-async/is_sync"]
+
 # Use the `jsonrpsee` crate for websocket communication. Does provide sync and async support but needs a tokio runtime.
 # Provides convenience functions such as subscription callbacks.
 # Most examples use the `jsonrpsee` feature and can be used for reference.
 jsonrpsee-client = ["std", "jsonrpsee", "futures"]
+
 # Use the `tungstenite` crate for websocket communication. No async support but has some reconnection capabilities.
 # See the example `transfer_with_tungstenite_client` on how to use it.
-tungstenite-client = ["std", "tungstenite"]
+tungstenite-client = ["std", "tungstenite", "sync-api"]
+
 # Use the `ws` crate for websocket communication. No async support.
 # Establishes a new connection for each request and therefore is limited in terms of performance.
 # See the example `transfer_with_ws_client` on how to use it.
-ws-client = ["std", "ws"]
+ws-client = ["std", "ws", "sync-api"]
+
 # Enables functionality that helps to create extrinsics for `pallet-staking`.
 # See the `StakingExtrinsics` trait and the `staking_batch_payout` example to get an understanding
 # of the functionality this feature provides
 staking-xt = ["std", "ac-primitives/staking-xt"]
+
 # Enables functionality that helps to create extrinsics for `pallet-contracts`.
 # See the `ContractsExtrinsics` trait and the `contract_instantiate_with_code` example to get an understanding
 # of the functionality this feature provides.
 contracts-xt = ["std", "ac-primitives/contracts-xt"]
+
+# Enables all std features of dependencies in case of std build.
 std = [
     # crates.io no_std
     "codec/std",
@@ -100,6 +110,7 @@ std = [
     "log/std",
     "serde/std",
     "serde_json/std",
+    "futures-util/std",
     # crates.io std only
     "url",
     # substrate no_std

@@ -19,13 +19,14 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{Config, ExtrinsicParams, SignExtrinsic};
+#[cfg(not(feature = "sync-api"))]
+use alloc::boxed::Box;
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
 use sp_core::Bytes;
 use sp_version::RuntimeVersion;
-
 /// Api to talk with substrate-nodes
 ///
 /// It is generic over the `Request` trait, so you can use any rpc-backend you like.
@@ -180,7 +181,7 @@ where
 		let metadata_future = Self::get_metadata(&client);
 		let runtime_version_future = Self::get_runtime_version(&client);
 
-		let (genesis_hash, metadata, runtime_version) = futures::future::try_join3(
+		let (genesis_hash, metadata, runtime_version) = futures_util::future::try_join3(
 			genesis_hash_future,
 			metadata_future,
 			runtime_version_future,
@@ -240,7 +241,7 @@ where
 		let runtime_version_future = Self::get_runtime_version(&self.client);
 
 		let (metadata, runtime_version) =
-			futures::future::try_join(metadata_future, runtime_version_future).await?;
+			futures_util::future::try_join(metadata_future, runtime_version_future).await?;
 
 		debug!("Metadata: {:?}", metadata);
 		info!("Runtime Version: {:?}", runtime_version);
