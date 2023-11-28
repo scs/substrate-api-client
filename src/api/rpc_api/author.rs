@@ -89,6 +89,8 @@ pub trait SubmitAndWatch {
 
 	/// Submit an extrinsic an return a Subscription
 	/// to watch the extrinsic progress.
+	///
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
@@ -101,6 +103,8 @@ pub trait SubmitAndWatch {
 
 	/// Submit an encoded, opaque extrinsic an return a Subscription to
 	/// watch the extrinsic progress.
+	///
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: &Bytes,
@@ -125,7 +129,7 @@ pub trait SubmitAndWatch {
 	/// - extrinsic hash
 	/// - last known extrinsic (transaction) status
 	///
-	/// This method is blocking.
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
@@ -156,7 +160,7 @@ pub trait SubmitAndWatch {
 	/// - extrinsic hash
 	/// - last known extrinsic (transaction) status
 	///
-	/// This method is blocking.
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_opaque_extrinsic_until(
 		&self,
 		encoded_extrinsic: &Bytes,
@@ -172,7 +176,8 @@ pub trait SubmitAndWatch {
 	/// - if watched until at least `InBlock`:
 	///   hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
-	/// This method is blocking.
+	///
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_extrinsic_until_without_events<
 		Address,
 		Call,
@@ -198,7 +203,8 @@ pub trait SubmitAndWatch {
 	/// - if watched until at least `InBlock`:
 	///   hash of the block the extrinsic was included in
 	/// - last known extrinsic (transaction) status
-	/// This method is blocking.
+	///
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_opaque_extrinsic_until_without_events(
 		&self,
 		encoded_extrinsic: &Bytes,
