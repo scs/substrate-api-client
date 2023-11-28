@@ -14,9 +14,8 @@
 */
 
 //! This example shows two special ways to create an extrinsic:
-//! - Use the compose_extrinsic_offline macro which generates an extrinsic
-//! without asking the node for nonce and does not need to know the metadata
-//! - Compose an extrinsic in a no_std environment
+//! - Compose an extrinsic in a no_std environment that works without having acces to an `Api` instance
+//! - Compose an extrinsic without asking the node for nonce and without knowing the metadata
 
 use codec::Compact;
 use kitchensink_runtime::{BalancesCall, RuntimeCall};
@@ -56,12 +55,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	// Api::new(..) is not actually an offline call, but retrieves metadata and other information from the node.
-	// If this is not acceptable, use the Api::new_offline(..) function instead. There are no examples for this,
-	// because of the constantly changing substrate node. But check out our unit tests - there are Apis created with `new_offline`.
-	//
-	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
-	// runtimes, the PlainTipExtrinsicParams needs to be used.
+
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	let extrinsic_signer = ExtrinsicSigner::<AssetRuntimeConfig>::new(signer);
 	// Signer is needed to set the nonce and sign the extrinsic.
@@ -79,11 +73,10 @@ async fn main() {
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
 
-	let signer_nonce = api.get_nonce().unwrap();
-	println!("[+] Alice's Account Nonce is {}\n", signer_nonce);
-
-	let use_no_std = true;
-	let hash = if use_no_std {
+	println!("Compose extrinsic in no_std environment (No Api instance)");
+	{
+		let signer_nonce = api.get_nonce().unwrap();
+		println!("[+] Alice's Account Nonce is {}", signer_nonce);
 		// Get information out of Api (online). This information could also be set offline in the `no_std`,
 		// but that would need to be static and adapted whenever the node changes.
 		// You can get the information directly from the node runtime file or the api of https://polkadot.js.org.
@@ -111,13 +104,21 @@ async fn main() {
 			Compact(4u32)
 		);
 		let xt = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
-		println!("[+] Composed Extrinsic:\n {:?}\n", xt);
+		println!("[+] Composed Extrinsic:\n {:?}", xt);
 
-		api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		let hash = api
+			.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 			.unwrap()
 			.block_hash
-			.unwrap()
-	} else {
+			.unwrap();
+		println!("[+] Extrinsic got included in block {:?}", hash);
+	}
+	println!();
+
+	println!("Compose extrinsic offline");
+	{
+		let signer_nonce = api.get_nonce().unwrap();
+		println!("[+] Alice's Account Nonce is {}", signer_nonce);
 		// Set the additional params.
 		api.set_additional_params(additional_extrinsic_params);
 
@@ -127,12 +128,13 @@ async fn main() {
 			value: 42,
 		});
 		let xt = api.compose_extrinsic_offline(call, signer_nonce);
-		println!("[+] Composed Extrinsic:\n {:?}\n", xt);
+		println!("[+] Composed Extrinsic:\n {:?}", xt);
 
-		api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		let hash = api
+			.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 			.unwrap()
 			.block_hash
-			.unwrap()
-	};
-	println!("[+] Extrinsic got included in block {:?}", hash);
+			.unwrap();
+		println!("[+] Extrinsic got included in block {:?}", hash);
+	}
 }
