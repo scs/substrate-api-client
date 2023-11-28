@@ -13,8 +13,10 @@
 	limitations under the License.
 */
 
-//! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
+//! This example shows two special ways to create an extrinsic:
+//! - Use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
+//! - Compose an extrinsic in a no_std environment
 
 use codec::Compact;
 use kitchensink_runtime::{BalancesCall, RuntimeCall};
@@ -23,24 +25,29 @@ use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		config::Config, AssetTip, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams,
-		SignExtrinsic, SubstrateKitchensinkConfig,
+		config::Config, AssetRuntimeConfig, AssetTip, ExtrinsicParams, ExtrinsicSigner,
+		GenericAdditionalParams, SignExtrinsic,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
 
-type KitchensinkExtrinsicSigner = <SubstrateKitchensinkConfig as Config>::ExtrinsicSigner;
-type AccountId = <SubstrateKitchensinkConfig as Config>::AccountId;
+type AssetExtrinsicSigner = <AssetRuntimeConfig as Config>::ExtrinsicSigner;
+type AccountId = <AssetRuntimeConfig as Config>::AccountId;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
-type Hash = <SubstrateKitchensinkConfig as Config>::Hash;
+type Hash = <AssetRuntimeConfig as Config>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
-type Balance = <SubstrateKitchensinkConfig as Config>::Balance;
+type Balance = <AssetRuntimeConfig as Config>::Balance;
 /// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
 type AdditionalParams = GenericAdditionalParams<AssetTip<Balance>, Hash>;
 
-type Address = <SubstrateKitchensinkConfig as Config>::Address;
+type Address = <AssetRuntimeConfig as Config>::Address;
+
+// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
+// Therefore, we need to use the `AssetRuntimeConfig` in this example.
+// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
+// you most likely should use `DefaultRuntimeConfig` instead.
 
 #[tokio::main]
 async fn main() {
@@ -55,8 +62,8 @@ async fn main() {
 	//
 	// ! Careful: AssetTipExtrinsicParams is used here, because the substrate kitchensink runtime uses assets as tips. But for most
 	// runtimes, the PlainTipExtrinsicParams needs to be used.
-	let mut api = Api::<SubstrateKitchensinkConfig, _>::new(client).unwrap();
-	let extrinsic_signer = ExtrinsicSigner::<_>::new(signer);
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<AssetRuntimeConfig>::new(signer);
 	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
@@ -85,7 +92,7 @@ async fn main() {
 		let genesis_hash = api.genesis_hash();
 		let metadata = api.metadata();
 
-		let extrinsic_params = <SubstrateKitchensinkConfig as Config>::ExtrinsicParams::new(
+		let extrinsic_params = <AssetRuntimeConfig as Config>::ExtrinsicParams::new(
 			spec_version,
 			transaction_version,
 			signer_nonce,
@@ -93,7 +100,7 @@ async fn main() {
 			additional_extrinsic_params,
 		);
 
-		let recipients_extrinsic_address: ExtrinsicAddressOf<KitchensinkExtrinsicSigner> =
+		let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
 			recipient.clone().into();
 
 		let call = compose_call!(
