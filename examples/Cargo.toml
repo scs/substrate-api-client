@@ -31,7 +31,12 @@ substrate-api-client = { path = "..", default-features = false, features = ["jso
 
 [features]
 default = ["sync-examples"]
-sync-examples = ["substrate-api-client/std", "substrate-api-client/sync-api", "substrate-api-client/tungstenite-client", "substrate-api-client/ws-client" ]
+sync-examples = [
+    "substrate-api-client/std",
+    "substrate-api-client/sync-api",
+    "substrate-api-client/tungstenite-client",
+    "substrate-api-client/ws-client",
+]
 
 [dependencies]
 tokio-util = "0.7.8"
