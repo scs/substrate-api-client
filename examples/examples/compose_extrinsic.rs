@@ -74,17 +74,21 @@ async fn main() {
 		.tip(0);
 
 	println!("Compose extrinsic in no_std environment (No Api instance)");
-	{
-		let signer_nonce = api.get_nonce().unwrap();
-		println!("[+] Alice's Account Nonce is {}", signer_nonce);
-		// Get information out of Api (online). This information could also be set offline in the `no_std`,
-		// but that would need to be static and adapted whenever the node changes.
-		// You can get the information directly from the node runtime file or the api of https://polkadot.js.org.
-		let spec_version = api.runtime_version().spec_version;
-		let transaction_version = api.runtime_version().transaction_version;
-		let genesis_hash = api.genesis_hash();
-		let metadata = api.metadata();
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Alice's Account Nonce is {}", signer_nonce);
+	// Get information out of Api (online). This information could also be set offline in the `no_std`,
+	// but that would need to be static and adapted whenever the node changes.
+	// You can get the information directly from the node runtime file or the api of https://polkadot.js.org.
+	let spec_version = api.runtime_version().spec_version;
+	let transaction_version = api.runtime_version().transaction_version;
+	let genesis_hash = api.genesis_hash();
+	let metadata = api.metadata();
 
+	let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
+		recipient.clone().into();
+
+	// Construct an extrinsic using only functionality available in no_std
+	let xt = {
 		let extrinsic_params = <AssetRuntimeConfig as Config>::ExtrinsicParams::new(
 			spec_version,
 			transaction_version,
@@ -93,9 +97,6 @@ async fn main() {
 			additional_extrinsic_params,
 		);
 
-		let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
-			recipient.clone().into();
-
 		let call = compose_call!(
 			metadata,
 			"Balances",
@@ -103,22 +104,25 @@ async fn main() {
 			recipients_extrinsic_address,
 			Compact(4u32)
 		);
-		let xt = compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params);
-		println!("[+] Composed Extrinsic:\n {:?}", xt);
+		compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params)
+	};
 
-		let hash = api
-			.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("[+] Extrinsic got included in block {:?}", hash);
-	}
+	println!("[+] Composed Extrinsic:\n {:?}", xt);
+	let hash = api
+		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		.unwrap()
+		.block_hash
+		.unwrap();
+	println!("[+] Extrinsic got included in block {:?}", hash);
+
 	println!();
 
 	println!("Compose extrinsic offline");
-	{
-		let signer_nonce = api.get_nonce().unwrap();
-		println!("[+] Alice's Account Nonce is {}", signer_nonce);
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Alice's Account Nonce is {}", signer_nonce);
+
+	// Construct an extrinsic offline
+	let xt = {
 		// Set the additional params.
 		api.set_additional_params(additional_extrinsic_params);
 
@@ -127,14 +131,14 @@ async fn main() {
 			dest: recipient,
 			value: 42,
 		});
-		let xt = api.compose_extrinsic_offline(call, signer_nonce);
-		println!("[+] Composed Extrinsic:\n {:?}", xt);
+		api.compose_extrinsic_offline(call, signer_nonce)
+	};
 
-		let hash = api
-			.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
-			.unwrap()
-			.block_hash
-			.unwrap();
-		println!("[+] Extrinsic got included in block {:?}", hash);
-	}
+	println!("[+] Composed Extrinsic:\n {:?}", xt);
+	let hash = api
+		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		.unwrap()
+		.block_hash
+		.unwrap();
+	println!("[+] Extrinsic got included in block {:?}", hash);
 }
