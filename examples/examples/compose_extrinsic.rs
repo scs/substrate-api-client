@@ -74,8 +74,6 @@ async fn main() {
 		.tip(0);
 
 	println!("Compose extrinsic in no_std environment (No Api instance)");
-	let signer_nonce = api.get_nonce().unwrap();
-	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 	// Get information out of Api (online). This information could also be set offline in the `no_std`,
 	// but that would need to be static and adapted whenever the node changes.
 	// You can get the information directly from the node runtime file or the api of https://polkadot.js.org.
@@ -83,6 +81,8 @@ async fn main() {
 	let transaction_version = api.runtime_version().transaction_version;
 	let genesis_hash = api.genesis_hash();
 	let metadata = api.metadata();
+	let signer_nonce = api.get_nonce().unwrap();
+	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
 	let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
 		recipient.clone().into();
@@ -108,7 +108,7 @@ async fn main() {
 	};
 
 	println!("[+] Composed Extrinsic:\n {:?}", xt);
-        // To send the extrinsic to the node, we need an rpc client which is only available within std-environment. If you want to operate a rpc client in your own no-std environment, take a look at https://github.com/scs/substrate-api-client#rpc-client on how to implement one yourself.
+	// To send the extrinsic to the node, we need an rpc client which is only available within std-environment. If you want to operate a rpc client in your own no-std environment, take a look at https://github.com/scs/substrate-api-client#rpc-client on how to implement one yourself.
 	let hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()
@@ -122,7 +122,7 @@ async fn main() {
 	let signer_nonce = api.get_nonce().unwrap();
 	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
-	// Construct an extrinsic offline (without any calls to the node) with the help of the api client. For example, this allows you to set your own nonce (to achieve future calls or construct an extrsinic that must be sent at a later time). 
+	// Construct an extrinsic offline (without any calls to the node) with the help of the api client. For example, this allows you to set your own nonce (to achieve future calls or construct an extrsinic that must be sent at a later time).
 	let xt = {
 		// Set the additional params.
 		api.set_additional_params(additional_extrinsic_params);
