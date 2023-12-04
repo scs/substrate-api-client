@@ -68,7 +68,7 @@ async fn main() {
 	let header = api.get_header(Some(last_finalized_header_hash)).unwrap().unwrap();
 	let period = 5;
 
-	// Construct extrinsic without using Api (no_std).
+	// Construct extrinsic params needed for the extrinsic construction. For more information on what these parameters mean, take a look at Substrate docs: https://docs.substrate.io/reference/transaction-format/.
 	let additional_extrinsic_params: AdditionalParams = GenericAdditionalParams::new()
 		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
 		.tip(0);
@@ -108,6 +108,7 @@ async fn main() {
 	};
 
 	println!("[+] Composed Extrinsic:\n {:?}", xt);
+        // To send the extrinsic to the node, we need an rpc client which is only available within std-environment. If you want to operate a rpc client in your own no-std environment, take a look at https://github.com/scs/substrate-api-client#rpc-client on how to implement one yourself.
 	let hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()
@@ -121,7 +122,7 @@ async fn main() {
 	let signer_nonce = api.get_nonce().unwrap();
 	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
-	// Construct an extrinsic offline
+	// Construct an extrinsic offline (without any calls to the node) with the help of the api client. For example, this allows you to set your own nonce (to achieve future calls or construct an extrsinic that must be sent at a later time). 
 	let xt = {
 		// Set the additional params.
 		api.set_additional_params(additional_extrinsic_params);
