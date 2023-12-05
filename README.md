@@ -175,7 +175,7 @@ _In alphabetical order_
 
 
 ## FAQ
-1. Q: Everything compiles but my Substrate node does not accept my extrinsic or returns an error even if the extrinsic should be correct.
+1. Q: Everything compiles but the Substrate node does not accept my extrinsic or returns an error even if the extrinsic should be correct.
 
     A: First, ensure the api-client and the Substrate node have a matching version. E.g. if you're running your node on `release-polkadot-v1.2.0`, checkout and compile a matching branch of the api-client. We are using the same naming scheme as Parity does. Please note: Not all Polkadot releases are published for all api-client releases. Which Polkadot releases are supported by which api-client release are noted in the [release notes](https://github.com/scs/substrate-api-client/releases). Don't find the release-match you're looking for? Feel free to request it via an issue.
 
@@ -187,6 +187,6 @@ _In alphabetical order_
 
     Ensure you're using a matching config. If you do not use default parameters as configured in one of the provided configs, you must provide your own config that implements the [Config trait](https://github.com/scs/substrate-api-client/blob/master/primitives/src/config/mod.rs).
 
-3. Q: I want to retrieve a state from my node via the api-client, but I do not get the expected value respective the decoding fails. How come?
+3. Q: I want to retrieve a state from a substrate node via the api-client, but I do not get the expected value respective the decoding fails. How come?
 
     A: When specifying your own state query, you must provide the return type of the state you're trying to retrieve. This is because the api-client only gets bytes from the node and must be able to deserialize these properly. That is not possible without knowing the type to decode to. This type may be for example a simple `u64` for retrieving the `Balance` of an account. But careful: Often, but depending on the pallet configuration, the node returns an additional  `Option`. So it's rather an `Option<u64>` than a simple `u64`. Possible pallet configurations are `OptionQuery`, `ResultQuery` and `ValueQuery` (see the [substrate docs "Handling query return values"](https://docs.substrate.io/build/runtime-storage/) for more information). Please check your pallet configuration and adapt the expected return type accordingly in the api-client. And always remember to match the type to your Runtime! If you're fetching events for example, ensure it's the event type provided by your node runtime, not by any other.
