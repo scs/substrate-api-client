@@ -143,7 +143,7 @@ jobs:
         os: [ ubuntu-latest ]
         example: [
           benchmark_bulk_xt,
-          compose_extrinsic_offline,
+          compose_extrinsic,
           custom_nonce,
           check_extrinsic_events,
           get_account_identity,
