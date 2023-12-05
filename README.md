@@ -177,7 +177,7 @@ _In alphabetical order_
 ## FAQ
 1. Q: Everything compiles but the Substrate node does not accept my extrinsic or returns an error even if the extrinsic should be correct.
 
-    A: First, ensure the api-client and the Substrate node have a matching version. E.g. if you're running your node on `release-polkadot-v1.2.0`, checkout and compile a matching branch of the api-client. We are using the same naming scheme as Parity does. Please note: Not all Polkadot releases are published for all api-client releases. Which Polkadot releases are supported by which api-client release are noted in the [release notes](https://github.com/scs/substrate-api-client/releases). Don't find the release-match you're looking for? Feel free to request it via an issue.
+    A: First, ensure the api-client and the Substrate node have a matching version. E.g. if the node is running on `release-polkadot-v1.2.0`, checkout and compile a matching branch of the api-client. We are using the same naming scheme as Parity does. Please note: Not all Polkadot releases are published for all api-client releases. Which Polkadot releases are supported by which api-client release are noted in the [release notes](https://github.com/scs/substrate-api-client/releases). Don't find the release-match you're looking for? Feel free to request it via an issue.
 
 2. Q: I get the error `Bad input data provided to validate_transaction` from the node when submitting an extrinsic. Even though I made sure the api-client and Polkadot releases are matching.
 
