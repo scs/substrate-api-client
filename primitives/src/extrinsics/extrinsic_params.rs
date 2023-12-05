@@ -48,7 +48,7 @@ impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 
 /// Default AdditionalSigned fields of a Polkadot/Substrate node.
 /// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
-// The order and types can must match the one defined in the runtime.
+// The order and types must match the one defined in the runtime.
 // Example: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
 // The `AdditionalSigned` is the tuple returned from the call SignedExtra::additional_signed().
 // Each member defined in the `SignedExtra` on the node side implements the trait `SignedExtension`, which

@@ -52,7 +52,7 @@ The following examples can be found in the [examples](/examples/examples) folder
 
 * [benchmark_bulk_xt](/examples/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
 * [check_extrinsic_events](/examples/examples/check_extrinsic_events.rs): Check and react according to events associated to an extrinsic.
-* [compose_extrinsic_offline](/examples/examples/compose_extrinsic_offline.rs): Compose an extrinsic without interacting with the node.
+* [compose_extrinsic](/examples/examples/compose_extrinsic.rs): Compose an extrinsic without interacting with the node or in no_std mode.
 * [contract_instantiate_with_code](/examples/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
 * [custom_nonce](/examples/examples/custom_nonce.rs): Compose an with a custom nonce.
 * [get_account_identity](/examples/examples/get_account_identity.rs): Create an custom Unchecked Extrinsic to set an account identity and retrieve it afterwards with a getter.
