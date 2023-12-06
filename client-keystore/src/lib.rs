@@ -470,7 +470,7 @@ impl KeystoreInner {
 	/// Returns `None` if the keystore only exists in-memory and there isn't any path to provide.
 	fn key_file_path(&self, public: &[u8], key_type: KeyTypeId) -> Option<PathBuf> {
 		let mut buf = self.path.as_ref()?.clone();
-		let key_type = array_bytes::bytes2hex("", &key_type.0);
+		let key_type = array_bytes::bytes2hex("", key_type.0);
 		let key = array_bytes::bytes2hex("", public);
 		buf.push(key_type + key.as_str());
 		Some(buf)
