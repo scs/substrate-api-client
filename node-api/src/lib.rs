@@ -29,7 +29,6 @@ pub use scale_decode::DecodeAsType;
 pub mod error;
 pub mod events;
 pub mod metadata;
-pub mod scale_value;
 pub mod storage;
 
 #[cfg(any(feature = "mocks", test))]
