@@ -48,7 +48,9 @@ impl JsonrpseeClient {
 			.build(uri)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))?;
-		let client = ClientBuilder::default().build_with_tokio(tx, rx);
+		let client = ClientBuilder::default()
+			.max_buffer_capacity_per_subscription(4096)
+			.build_with_tokio(tx, rx);
 		Ok(Self { inner: Arc::new(client) })
 	}
 }
