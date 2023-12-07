@@ -49,7 +49,7 @@ impl JsonrpseeClient {
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))?;
 		let client = ClientBuilder::default()
-			.max_notifs_per_subscription(4096)
+			.max_buffer_capacity_per_subscription(4096)
 			.build_with_tokio(tx, rx);
 		Ok(Self { inner: Arc::new(client) })
 	}
@@ -64,6 +64,7 @@ impl Request for JsonrpseeClient {
 			.map_err(|e| Error::Client(Box::new(e)))
 	}
 }
+
 #[maybe_async::sync_impl]
 impl Request for JsonrpseeClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
