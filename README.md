@@ -174,3 +174,22 @@ _In alphabetical order_
 - [Integritee Network](https://github.com/integritee-network)
 - [Litentry](https://github.com/litentry)
 - [Polkadex](https://github.com/Polkadex-Substrate)
+
+
+## FAQ
+1. Q: Everything compiles but the Substrate node does not accept my extrinsic or returns an error even if the extrinsic should be correct.
+
+    A: First, ensure the api-client and the Substrate node have a matching version. E.g. if the node is running on `release-polkadot-v1.2.0`, checkout and compile a matching branch of the api-client. We are using the same naming scheme as Parity does. Please note: Not all Polkadot releases are published for all api-client releases. Which Polkadot releases are supported by which api-client release are noted in the [release notes](https://github.com/scs/substrate-api-client/releases). Don't find the release-match you're looking for? Feel free to request it via an issue.
+
+2. Q: I get the error `Bad input data provided to validate_transaction` from the node when submitting an extrinsic. Even though I made sure the api-client and Polkadot releases are matching.
+
+    A: Every extrinsic contains some node specific data. The tips for example may be provided by the `Asset` pallet or, by default, by the `Balances` pallet. The current api-client does not have access to this information. Therefore, these config data must be configured manually. Currently, there are two pre-defined Runtime Configs which should match most of the Substrate nodes:
+    - [Asset Runtime Config](https://github.com/scs/substrate-api-client/blob/master/primitives/src/config/asset_runtime_config.rs): This matches most nodes config that use the `Asset` pallet.
+    - [Default Runtime Config](https://github.com/scs/substrate-api-client/blob/master/primitives/src/config/default_runtime_config.rs): This matches most of node runtimes that do not use the `Asset` pallet. The config, apart from the tip parameter, equals the [asset runtime config](https://github.com/scs/substrate-api-client/blob/master/primitives/src/config/asset_runtime_config.rs).
+
+    Ensure you're using a matching config. If you do not use default parameters as configured in one of the provided configs, you must provide your own config that implements the [Config trait](https://github.com/scs/substrate-api-client/blob/master/primitives/src/config/mod.rs).
+
+3. Q: I want to query a state from a substrate node via the api-client, but I do not get the expected value, respective the decoding fails. How come?
+
+    A: When specifying your own state query, you must provide the return type of the state you're trying to retrieve. This is because the api-client only gets bytes from the node and must be able to deserialize these properly. That is not possible without knowing the type to decode to. This type may be for example a simple `u64` for retrieving the `Balance` of an account. But careful: If you're looking at the pallet code and its return type, don't forget to take the Query type into consideration. The `OptionQuery` for example automatically wraps the return type into an `Option` (see the [substrate docs "Handling query return values"](https://docs.substrate.io/build/runtime-storage/) for more information). Alternatively, you can always double check via [polkadot.js](https://polkadot.js.org/).
+	If you're importing a value directly from the runtime, as it's done in this [example](https://github.com/scs/substrate-api-client/blob/fb108a7d1994705bbca50233e3bc66cec3726523/examples/examples/subscribe_events.rs#L25-L27), remember to adapt it to the node you are querying from.
