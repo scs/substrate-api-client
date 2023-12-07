@@ -15,12 +15,15 @@
 
 //! This example floods the node with a series of transactions.
 
+use codec::Encode;
 use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
+use sp_core::{Bytes, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
+	ac_compose_macros::rpc_params,
 	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic},
-	rpc::JsonrpseeClient,
-	Api, SubmitExtrinsic,
+	rpc::{JsonrpseeClient, Request},
+	Api,
 };
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
@@ -55,16 +58,23 @@ async fn main() {
 	// waiting for the response of the node.
 	let mut nonce = api.get_nonce().unwrap();
 	let first_nonce = nonce;
-	while nonce < first_nonce + 500 {
-		// Compose a balance extrinsic.
-		let call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
-			dest: recipient.clone(),
-			value: 1_000_000,
-		});
-		let xt = api.compose_extrinsic_offline(call, nonce);
 
+	// Compose a balance extrinsic.
+	let call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+		dest: recipient.clone(),
+		value: 1_000_000,
+	});
+
+	while nonce < first_nonce + 60 {
+		// Create the extrinsic.
+		let xt = api.compose_extrinsic_offline(call.clone(), nonce);
+		let xt_bytes: Bytes = xt.encode().into();
+		let hex_encoded_xt = rpc_params![xt_bytes];
 		println!("Sending extrinsic with nonce {}", nonce);
-		let _tx_hash = api.submit_extrinsic(xt).unwrap();
+
+		// Send the extrinsic with jsonrpsee
+		let _xt_hash: H256 =
+			api.client().request("author_submitExtrinsic", hex_encoded_xt).unwrap();
 
 		nonce += 1;
 	}
