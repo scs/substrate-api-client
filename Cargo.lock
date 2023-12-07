@@ -55,7 +55,7 @@ dependencies = [
  "bitvec",
  "derive_more",
  "either",
- "frame-metadata",
+ "frame-metadata 16.0.0",
  "hex",
  "log",
  "parity-scale-codec",
@@ -63,6 +63,7 @@ dependencies = [
  "scale-decode",
  "scale-encode",
  "scale-info",
+ "scale-value",
  "serde",
  "serde_json",
  "sp-application-crypto",
@@ -1699,6 +1700,17 @@ dependencies = [
 
 [[package]]
 name = "frame-metadata"
+version = "15.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "878babb0b136e731cc77ec2fd883ff02745ff21e6fb662729953d44923df009c"
+dependencies = [
+ "cfg-if 1.0.0",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
+name = "frame-metadata"
 version = "16.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87cf1549fba25a6fcac22785b61698317d958e96cac72a59102ea45b9ae64692"
@@ -1718,7 +1730,7 @@ dependencies = [
  "bitflags 1.3.2",
  "docify",
  "environmental",
- "frame-metadata",
+ "frame-metadata 16.0.0",
  "frame-support-procedural",
  "impl-trait-for-tuples",
  "k256",
@@ -5160,10 +5172,11 @@ dependencies = [
 
 [[package]]
 name = "scale-decode"
-version = "0.8.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea509715113edab351e1f4d51fba6b186653259049a1155b52e2e994dd2f0e6d"
+checksum = "7caaf753f8ed1ab4752c6afb20174f03598c664724e0e32628e161c21000ff76"
 dependencies = [
+ "derive_more",
  "parity-scale-codec",
  "primitive-types",
  "scale-bits",
@@ -5174,9 +5187,9 @@ dependencies = [
 
 [[package]]
 name = "scale-decode-derive"
-version = "0.8.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66c9d7a1341497e9d016722144310de3dc6c933909c0376017c88f65092fff37"
+checksum = "d3475108a1b62c7efd1b5c65974f30109a598b2f45f23c9ae030acb9686966db"
 dependencies = [
  "darling",
  "proc-macro-crate",
@@ -5187,10 +5200,11 @@ dependencies = [
 
 [[package]]
 name = "scale-encode"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f6f51bc8cd927dab2f4567b1a8a8e9d7fd5d0866f2dbc7c84fc97cfa9383a26"
+checksum = "6d70cb4b29360105483fac1ed567ff95d65224a14dd275b6303ed0a654c78de5"
 dependencies = [
+ "derive_more",
  "parity-scale-codec",
  "primitive-types",
  "scale-bits",
@@ -5201,9 +5215,9 @@ dependencies = [
 
 [[package]]
 name = "scale-encode-derive"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f28be1877787156a2df01be3c029b92bdffa6b6a9748d4996e383fff218c88f3"
+checksum = "995491f110efdc6bea96d6a746140e32bfceb4ea47510750a5467295a4707a25"
 dependencies = [
  "darling",
  "proc-macro-crate",
@@ -5236,6 +5250,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "scale-value"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58223c7691bf0bd46b43c9aea6f0472d1067f378d574180232358d7c6e0a8089"
+dependencies = [
+ "derive_more",
+ "either",
+ "frame-metadata 15.1.0",
+ "parity-scale-codec",
+ "scale-bits",
+ "scale-decode",
+ "scale-encode",
+ "scale-info",
 ]
 
 [[package]]
@@ -5919,7 +5949,7 @@ name = "sp-metadata-ir"
 version = "0.1.0"
 source = "git+https://github.com/paritytech/polkadot-sdk.git?branch=master#f1bfc08038252caf7f1225f668b4518a6149bb24"
 dependencies = [
- "frame-metadata",
+ "frame-metadata 16.0.0",
  "parity-scale-codec",
  "scale-info",
  "sp-std",
@@ -6342,7 +6372,7 @@ dependencies = [
  "ac-primitives",
  "async-trait",
  "derive_more",
- "frame-metadata",
+ "frame-metadata 16.0.0",
  "frame-support",
  "futures",
  "futures-util",

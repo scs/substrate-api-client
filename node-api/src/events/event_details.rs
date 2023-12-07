@@ -11,13 +11,13 @@
 use crate::{
 	error::{DispatchError, Error},
 	metadata::{MetadataError, PalletMetadata},
-	scale_value::{Composite, TypeId},
 	Metadata, Phase, StaticEvent,
 };
 use alloc::{sync::Arc, vec::Vec};
 use codec::Decode;
 use log::*;
 use scale_decode::DecodeAsFields;
+use scale_value::{scale::TypeId, Composite};
 
 /// The event details.
 /// Based on subxt EventDetails.
