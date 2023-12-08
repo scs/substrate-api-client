@@ -81,6 +81,10 @@ impl Request for JsonrpseeClient {
 		let handle = Handle::current();
 		let client = self.inner.clone();
 		let method_string = method.to_string();
+
+		// The inner jsonrpsee client must not deserialize to the `R` value, because the return value must
+		// implement `Send`. But we do not want to enforce the `R` value to implment this simply because we need
+		// to de-async something. Therefore, the deserialization must happen outside of the newly spawned thread.
 		let string_answer: Value = std::thread::spawn(move || {
 			handle.block_on(client.request(&method_string, RpcParamsWrapper(params)))
 		})
