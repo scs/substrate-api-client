@@ -55,23 +55,15 @@ impl JsonrpseeClient {
 			.build_with_tokio(tx, rx);
 		Ok(Self { inner: Arc::new(client) })
 	}
-
-	async fn inner_request<R: DeserializeOwned>(
-		&self,
-		method: &str,
-		params: RpcParams,
-	) -> Result<R> {
-		self.inner
-			.request(method, RpcParamsWrapper(params))
-			.await
-			.map_err(|e| Error::Client(Box::new(e)))
-	}
 }
 
 #[maybe_async::async_impl(?Send)]
 impl Request for JsonrpseeClient {
 	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		self.inner_request(method, params)
+		self.inner
+			.request(method, RpcParamsWrapper(params))
+			.await
+			.map_err(|e| Error::Client(Box::new(e)))
 	}
 }
 
