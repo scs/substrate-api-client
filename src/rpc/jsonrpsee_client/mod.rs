@@ -12,6 +12,7 @@
 */
 
 use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
+use core::marker::Send;
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
@@ -21,8 +22,9 @@ use jsonrpsee::{
 	},
 };
 use serde::de::DeserializeOwned;
-use serde_json::value::RawValue;
+use serde_json::{value::RawValue, Value};
 use std::sync::Arc;
+use tokio::{runtime::Handle, sync::oneshot};
 
 pub use subscription::SubscriptionWrapper;
 
@@ -53,11 +55,12 @@ impl JsonrpseeClient {
 			.build_with_tokio(tx, rx);
 		Ok(Self { inner: Arc::new(client) })
 	}
-}
 
-#[maybe_async::async_impl(?Send)]
-impl Request for JsonrpseeClient {
-	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+	async fn inner_request<R: DeserializeOwned>(
+		&self,
+		method: &str,
+		params: RpcParams,
+	) -> Result<R> {
 		self.inner
 			.request(method, RpcParamsWrapper(params))
 			.await
@@ -65,11 +68,28 @@ impl Request for JsonrpseeClient {
 	}
 }
 
+#[maybe_async::async_impl(?Send)]
+impl Request for JsonrpseeClient {
+	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
+		self.inner_request(method, params)
+	}
+}
+
 #[maybe_async::sync_impl]
 impl Request for JsonrpseeClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		block_on(self.inner.request(method, RpcParamsWrapper(params)))
-			.map_err(|e| Error::Client(Box::new(e)))
+		let handle = Handle::current();
+		let client = self.inner.clone();
+		let method_string = method.to_string();
+		let string_answer: Value = std::thread::spawn(move || {
+			handle.block_on(client.request(&method_string, RpcParamsWrapper(params)))
+		})
+		.join()
+		.unwrap()
+		.map_err(|e| Error::Client(Box::new(e)))?;
+
+		let deserialized_value: R = serde_json::from_value(string_answer)?;
+		Ok(deserialized_value)
 	}
 }
 
