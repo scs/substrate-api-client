@@ -14,7 +14,7 @@
 use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
 use futures::executor::block_on;
 use jsonrpsee::{
-	client_transport::ws::{Uri, WsTransportClientBuilder},
+	client_transport::ws::{Url, WsTransportClientBuilder},
 	core::{
 		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
 		traits::ToRpcParams,
@@ -44,7 +44,7 @@ impl JsonrpseeClient {
 	}
 
 	pub async fn async_new(url: &str) -> Result<Self> {
-		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
+		let uri: Url = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
 			.build(uri)
 			.await
