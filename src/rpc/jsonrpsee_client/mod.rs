@@ -85,6 +85,9 @@ impl Request for JsonrpseeClient {
 		// The inner jsonrpsee client must not deserialize to the `R` value, because the return value must
 		// implement `Send`. But we do not want to enforce the `R` value to implment this simply because we need
 		// to de-async something. Therefore, the deserialization must happen outside of the newly spawned thread.
+		// We need to spawn a new thread because tokio does not allow the blocking of an asynchronous thread is not allowed:
+		// ERROR: Cannot block the current thread from within a runtime.
+		// This happens because a function attempted to block the current thread while the thread is being used to drive asynchronous tasks.
 		let string_answer: Value = std::thread::spawn(move || {
 			handle.block_on(client.request(&method_string, RpcParamsWrapper(params)))
 		})
