@@ -12,7 +12,6 @@
 */
 
 use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
-use core::marker::Send;
 use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
@@ -24,7 +23,7 @@ use jsonrpsee::{
 use serde::de::DeserializeOwned;
 use serde_json::{value::RawValue, Value};
 use std::sync::Arc;
-use tokio::{runtime::Handle, sync::oneshot};
+use tokio::runtime::Handle;
 
 pub use subscription::SubscriptionWrapper;
 
