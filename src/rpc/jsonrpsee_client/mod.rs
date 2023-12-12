@@ -69,24 +69,33 @@ impl Request for JsonrpseeClient {
 #[maybe_async::sync_impl]
 impl Request for JsonrpseeClient {
 	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		let handle = Handle::current();
+		let handle = match Handle::try_current() {
+			Ok(handle) => handle,
+			Err(_) => {
+				// We are not inside a tokio runtime, so lets start one.
+				let rt =
+					tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+				rt.handle().clone()
+			},
+		};
+
 		let client = self.inner.clone();
 		let method_string = method.to_string();
 
 		// The inner jsonrpsee client must not deserialize to the `R` value, because the return value must
 		// implement `Send`. But we do not want to enforce the `R` value to implement this solely because we need
 		// to de-async something. Therefore, the deserialization must happen outside of the newly spawned thread.
-		// We need to spawn a new thread because tokio does not allow the blocking of an asynchronous thread:
+		// We need to spawn a new thread because tokio does not allow the blocking of the main thread:
 		// ERROR: Cannot block the current thread from within a runtime.
 		// This happens because a function attempted to block the current thread while the thread is being used to drive asynchronous tasks.
-		let string_answer: Value = std::thread::spawn(move || {
+		let answer: Value = std::thread::spawn(move || {
 			handle.block_on(client.request(&method_string, RpcParamsWrapper(params)))
 		})
 		.join()
 		.unwrap()
 		.map_err(|e| Error::Client(Box::new(e)))?;
 
-		let deserialized_value: R = serde_json::from_value(string_answer)?;
+		let deserialized_value: R = serde_json::from_value(answer)?;
 		Ok(deserialized_value)
 	}
 }
