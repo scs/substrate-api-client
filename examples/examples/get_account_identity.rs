@@ -16,8 +16,8 @@
 //! Example to show how to get the account identity display name from the identity pallet.
 
 use frame_support::traits::Currency;
-use kitchensink_runtime::Runtime as KitchensinkRuntime;
-use pallet_identity::{simple::IdentityInfo, Data, Registration};
+use kitchensink_runtime::{MaxAdditionalFields, Runtime as KitchensinkRuntime};
+use pallet_identity::{legacy::IdentityInfo, Data, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
@@ -31,7 +31,6 @@ type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::Balance;
 type MaxRegistrarsOf<T> = <T as pallet_identity::Config>::MaxRegistrars;
-type MaxAdditionalFields<T> = <T as pallet_identity::Config>::MaxAdditionalFields;
 type IdentityInformation<T> = <T as pallet_identity::Config>::IdentityInformation;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
@@ -50,7 +49,7 @@ async fn main() {
 	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(signer.clone()));
 
 	// Fill Identity storage.
-	let info = IdentityInfo::<MaxAdditionalFields<KitchensinkRuntime>> {
+	let info = IdentityInfo::<MaxAdditionalFields> {
 		additional: Default::default(),
 		display: Data::Keccak256(H256::random().into()),
 		legal: Data::None,
