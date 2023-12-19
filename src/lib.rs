@@ -38,3 +38,19 @@ pub fn storage_key(module: &str, storage_key_name: &str) -> StorageKey {
 	key.extend(twox_128(storage_key_name.as_bytes()));
 	StorageKey(key)
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use ac_primitives::{DefaultRuntimeConfig, ExtrinsicSigner};
+	use rpc::TungsteniteRpcClient;
+	use sp_keyring::AccountKeyring;
+
+	#[test]
+	fn test_extrinsic_signer_conversion() {
+		let client = TungsteniteRpcClient::with_default_url(1);
+		let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
+		let signer = AccountKeyring::Alice.pair();
+		api.set_signer(ExtrinsicSigner::<DefaultRuntimeConfig>::new(signer));
+	}
+}

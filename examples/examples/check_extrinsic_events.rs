@@ -16,7 +16,7 @@
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::EventDetails,
-	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner},
+	ac_primitives::{AssetRuntimeConfig, Config},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,

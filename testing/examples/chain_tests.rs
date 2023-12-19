@@ -17,7 +17,7 @@
 
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{DefaultRuntimeConfig, ExtrinsicSigner},
+	ac_primitives::AssetRuntimeConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetChainInfo, SubscribeChain,
 };
@@ -26,9 +26,7 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
-	let signer = AccountKeyring::Alice.pair();
-	api.set_signer(ExtrinsicSigner::<DefaultRuntimeConfig>::new(signer));
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	// GetChainInfo
 	let finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
