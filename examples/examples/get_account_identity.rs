@@ -22,7 +22,7 @@ use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, UncheckedExtrinsicV4},
+	ac_primitives::{AssetRuntimeConfig, UncheckedExtrinsicV4},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
 };

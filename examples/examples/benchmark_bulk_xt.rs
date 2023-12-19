@@ -18,9 +18,7 @@
 use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{
-		DefaultRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
-	},
+	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic},
 	rpc::JsonrpseeClient,
 	Api, SubmitExtrinsic,
 };
@@ -30,6 +28,11 @@ use substrate_api_client::{
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
 // you most likely should use `DefaultRuntimeConfig` instead.
 
+// Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
+// This way, the types don't have to be reassigned with every usage of this type and makes
+// the code better readable.
+type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
+
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
 // AccountId type of the `SignExtrinsic` trait.
@@ -37,8 +40,32 @@ type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::Extrinsi
 
 #[tokio::main]
 async fn main() {
-	let alice_signer = AccountKeyring::Alice.pair();
+	env_logger::init();
+
+	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
+	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(GenericExtrinsicSigner::<DefaultRuntimeConfig>::new(alice_signer));
+	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	api.set_signer(signer.into());
+
+	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
+	// We use a manual nonce input here, because otherwise the api retrieves the nonce via getter and needs
+	// to wait for the response of the node (and the actual execution of the previous extrinsic).
+	// But because we want to spam the node with extrinsic, we simple monotonically increase the nonce, without
+	// waiting for the response of the node.
+	let mut nonce = api.get_nonce().unwrap();
+	let first_nonce = nonce;
+	while nonce < first_nonce + 500 {
+		// Compose a balance extrinsic.
+		let call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+			dest: recipient.clone(),
+			value: 1_000_000,
+		});
+		let xt = api.compose_extrinsic_offline(call, nonce);
+
+		println!("Sending extrinsic with nonce {}", nonce);
+		let _tx_hash = api.submit_extrinsic(xt).unwrap();
+
+		nonce += 1;
+	}
 }
