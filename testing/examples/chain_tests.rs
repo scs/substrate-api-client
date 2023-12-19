@@ -15,7 +15,6 @@
 
 //! Tests for the chain rpc interface functions.
 
-use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_primitives::AssetRuntimeConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
@@ -26,7 +25,7 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
 	// GetChainInfo
 	let finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
