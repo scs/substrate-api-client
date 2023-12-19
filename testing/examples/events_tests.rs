@@ -21,7 +21,7 @@ use kitchensink_runtime::RuntimeEvent;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::{EventDetails, StaticEvent},
-	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner},
+	ac_primitives::{AssetRuntimeConfig, Config},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
@@ -46,7 +46,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice_pair));
+	api.set_signer(alice_pair.into());
 
 	let bob = AccountKeyring::Bob.to_account_id();
 

@@ -40,7 +40,7 @@ async fn main() {
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 
-	api.set_signer(ExtrinsicSigner::new(alice_pair));
+	api.set_signer(alice_pair.into());
 
 	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
 

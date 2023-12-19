@@ -49,7 +49,7 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<_>::new(signer));
+	api.set_signer(signer.into());
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 

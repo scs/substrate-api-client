@@ -65,7 +65,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
-	api.set_signer(ExtrinsicSigner::new(sudoer));
+	api.set_signer(sudoer.into());
 
 	let subscription = api.subscribe_events().unwrap();
 	let cancellation = Arc::new(AtomicBool::new(false));

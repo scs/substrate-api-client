@@ -21,9 +21,7 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
-	extrinsic::BalancesExtrinsics,
-	rpc::TungsteniteRpcClient,
+	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
@@ -46,7 +44,7 @@ fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = TungsteniteRpcClient::with_default_url(100);
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice.clone()));
+	api.set_signer(alice.clone().into());
 
 	// Retrieve bobs current balance.
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

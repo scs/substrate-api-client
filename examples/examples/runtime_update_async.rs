@@ -25,7 +25,6 @@ use substrate_api_client::{
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
-type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
 type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[cfg(feature = "sync-examples")]
@@ -64,7 +63,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
-	api.set_signer(ExtrinsicSigner::new(sudoer));
+	api.set_signer(sudoer.into());
 
 	let subscription = api.subscribe_events().await.unwrap();
 	let mut update_detector: RuntimeUpdateDetector<Hash, JsonrpseeClient> =
