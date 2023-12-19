@@ -13,7 +13,8 @@
 	limitations under the License.
 */
 
-//! Tests for the chain rpc interface functions.
+//! Tests for the chain rpc interface functions, including testing the DefaultRuntimeConfig
+//! and Signer generation for the DefaultRuntimeConfig.
 
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
