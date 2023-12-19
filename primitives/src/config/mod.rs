@@ -20,7 +20,7 @@ use sp_runtime::traits::{
 	MaybeSerializeDeserialize,
 };
 
-use crate::{extrinsic_params, SignExtrinsic};
+use crate::{extrinsic_params, ExtrinsicSigner, SignExtrinsic};
 
 pub use asset_runtime_config::*;
 pub use default_runtime_config::*;
@@ -160,7 +160,7 @@ impl<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> Config
 	type AccountData = T::AccountData;
 	type ExtrinsicParams = E;
 	type CryptoKey = T::CryptoKey;
-	type ExtrinsicSigner = T::ExtrinsicSigner;
+	type ExtrinsicSigner = ExtrinsicSigner<Self>;
 	type Block = T::Block;
 	type Balance = T::Balance;
 	type ContractCurrency = T::ContractCurrency;
