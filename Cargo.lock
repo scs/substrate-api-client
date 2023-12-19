@@ -6386,7 +6386,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-core",
- "sp-keyring",
  "sp-runtime",
  "sp-runtime-interface",
  "sp-storage",
