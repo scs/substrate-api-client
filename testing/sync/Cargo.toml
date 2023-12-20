@@ -1,0 +1,16 @@
+[package]
+name = "ac-testing-sync"
+version = "0.3.2"
+authors = ["Supercomputing Systems AG <info@scs.ch>"]
+license = "Apache-2.0"
+edition = "2021"
+
+[dev-dependencies]
+# Substrate dependencies
+sp-application-crypto = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+
+# local deps
+substrate-api-client = { path = "../..", default-features = false, features = ["tungstenite-client", "ws-client"] }
+substrate-client-keystore = { path = "../../client-keystore" }

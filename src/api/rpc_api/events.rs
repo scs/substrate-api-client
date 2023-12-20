@@ -236,6 +236,7 @@ mod tests {
 	use ac_primitives::DefaultRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
+	use futures::executor::block_on;
 	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
 	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
@@ -346,7 +347,7 @@ mod tests {
 
 		let api = create_mock_api(metadata, data);
 
-		let fetched_events = api.fetch_events_from_block(H256::random()).unwrap();
+		let fetched_events = block_on(api.fetch_events_from_block(H256::random())).unwrap();
 
 		assert_eq!(fetched_events.event_bytes(), block_events.event_bytes());
 	}
@@ -396,9 +397,15 @@ mod tests {
 		let api = create_mock_api(metadata, data);
 		let block_hash = H256::default();
 
-		let index1 = api.retrieve_extrinsic_index_from_block(block_hash, xt_hash1).unwrap();
-		let index2 = api.retrieve_extrinsic_index_from_block(block_hash, xt_hash2).unwrap();
-		let index3 = api.retrieve_extrinsic_index_from_block(block_hash, xt_hash3).unwrap();
+		let (index1, index2, index3) = block_on(async {
+			futures::future::try_join3(
+				api.retrieve_extrinsic_index_from_block(block_hash, xt_hash1),
+				api.retrieve_extrinsic_index_from_block(block_hash, xt_hash2),
+				api.retrieve_extrinsic_index_from_block(block_hash, xt_hash3),
+			)
+			.await
+			.unwrap()
+		});
 
 		assert_eq!(index1, 0);
 		assert_eq!(index2, 1);

@@ -30,58 +30,6 @@ use sp_version::RuntimeVersion;
 /// Api to talk with substrate-nodes
 ///
 /// It is generic over the `Request` trait, so you can use any rpc-backend you like.
-///
-/// # Custom Client Example
-///
-/// ```no_run
-/// use substrate_api_client::{
-///     Api, rpc::Request, rpc::Error as RpcClientError,  XtStatus, rpc::Result as RpcResult, ac_primitives::AssetRuntimeConfig
-/// };
-/// use serde::de::DeserializeOwned;
-/// use ac_primitives::RpcParams;
-/// use serde_json::{Value, json};
-/// ;
-/// ///
-/// struct MyClient {
-///     // pick any request crate, such as ureq::Agent
-///     _inner: (),
-/// }
-///
-/// impl MyClient {
-///     pub fn new() -> Self {
-///         Self {
-///             _inner: (),
-///         }
-///     }
-///
-///     pub fn send_json<R>(
-///         &self,
-///         _path: String,
-///         _json: Value,
-///     ) -> Result<R, RpcClientError> {
-///         // Send json to node via web socket connection.
-///         todo!()
-///     }
-/// }
-///
-/// impl Request for MyClient {
-///     fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R, RpcClientError> {
-///         let jsonreq = json!({
-///         "method": method,
-///         "params": params.to_json_value()?,
-///         "jsonrpc": "2.0",
-///         "id": "1",
-///         });
-///         let json_value = self.send_json::<Value>("".into(), jsonreq)?;
-///         let value = serde_json::from_value(json_value)?;
-///         Ok(value)
-///     }
-/// }
-///
-/// let client = MyClient::new();
-/// let _api = Api::<AssetRuntimeConfig,MyClient>::new(client);
-///
-/// ```
 #[derive(Clone)]
 pub struct Api<T: Config, Client> {
 	signer: Option<T::ExtrinsicSigner>,
@@ -312,6 +260,7 @@ mod tests {
 		PlainTip,
 	};
 	use frame_metadata::{v14::ExtrinsicMetadata, RuntimeMetadata};
+	use futures::executor;
 	use scale_info::form::PortableForm;
 	use sp_core::H256;
 	use std::{collections::HashMap, fs};
@@ -399,7 +348,7 @@ mod tests {
 		assert_ne!(api.runtime_version, runtime_version);
 
 		// Update runtime.
-		api.update_runtime().unwrap();
+		executor::block_on(api.update_runtime()).unwrap();
 
 		// Ensure metadata and runtime version have been updated.
 		assert_eq!(api.metadata.extrinsic(), metadata.extrinsic());

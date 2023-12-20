@@ -1,0 +1,18 @@
+[package]
+name = "ac-examples-sync"
+version = "0.4.2"
+license = "Apache-2.0"
+edition = "2021"
+
+[dev-dependencies]
+env_logger = "0.10.0"
+log = "0.4.14"
+
+# Substrate dependencies
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+
+# local deps
+substrate-api-client = { path = "../..", default-features = false, features = ["tungstenite-client", "ws-client"] }

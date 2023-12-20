@@ -12,7 +12,6 @@
 */
 
 use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
-use futures::executor::block_on;
 use jsonrpsee::{
 	client_transport::ws::{Uri, WsTransportClientBuilder},
 	core::{
@@ -34,15 +33,11 @@ pub struct JsonrpseeClient {
 }
 
 impl JsonrpseeClient {
-	pub fn new(url: &str) -> Result<Self> {
-		block_on(Self::async_new(url))
+	pub async fn with_default_url() -> Result<Self> {
+		Self::new("ws://127.0.0.1:9944").await
 	}
 
-	pub fn with_default_url() -> Result<Self> {
-		Self::new("ws://127.0.0.1:9944")
-	}
-
-	pub async fn async_new(url: &str) -> Result<Self> {
+	pub async fn new(url: &str) -> Result<Self> {
 		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
 			.build(uri)
@@ -64,13 +59,6 @@ impl Request for JsonrpseeClient {
 			.map_err(|e| Error::Client(Box::new(e)))
 	}
 }
-#[maybe_async::sync_impl]
-impl Request for JsonrpseeClient {
-	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R> {
-		block_on(self.inner.request(method, RpcParamsWrapper(params)))
-			.map_err(|e| Error::Client(Box::new(e)))
-	}
-}
 
 #[maybe_async::async_impl(?Send)]
 impl Subscribe for JsonrpseeClient {
@@ -85,22 +73,6 @@ impl Subscribe for JsonrpseeClient {
 		self.inner
 			.subscribe(sub, RpcParamsWrapper(params), unsub)
 			.await
-			.map(|sub| sub.into())
-			.map_err(|e| Error::Client(Box::new(e)))
-	}
-}
-
-#[maybe_async::sync_impl(?Send)]
-impl Subscribe for JsonrpseeClient {
-	type Subscription<Notification> = SubscriptionWrapper<Notification> where Notification: DeserializeOwned;
-
-	fn subscribe<Notification: DeserializeOwned>(
-		&self,
-		sub: &str,
-		params: RpcParams,
-		unsub: &str,
-	) -> Result<Self::Subscription<Notification>> {
-		block_on(self.inner.subscribe(sub, RpcParamsWrapper(params), unsub))
 			.map(|sub| sub.into())
 			.map_err(|e| Error::Client(Box::new(e)))
 	}

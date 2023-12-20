@@ -54,19 +54,19 @@ jobs:
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
 
-                # Test for async compilation
-                cargo build --no-default-features --features "std jsonrpsee-client",
-                # Compile async examples separately to enable async-mode
-                cargo build --release -p ac-examples --example get_blocks_async --no-default-features,
-                cargo build --release -p ac-examples --example runtime_update_async --no-default-features,
+                # Compile examples and integration test separately to ensure features are not cross-imported
+                cargo test --release -p ac-examples-async,
+                cargo test --release -p ac-examples-sync,
+                cargo test --release -p ac-testing-async,
+                cargo test --release -p ac-testing-sync,
 
                 # Clippy
                 cargo clippy -- -D warnings,
                 cargo clippy --no-default-features -- -D warnings,
                 cargo clippy --all-features --examples -- -D warnings,
 
-                # Run tests and build examples
-                cargo test --release --workspace --all-features --exclude test-no-std,
+                # Run unit tests
+                cargo test --release,
 
                 # Fmt
                 cargo fmt --all -- --check
@@ -148,7 +148,7 @@ jobs:
           custom_nonce,
           check_extrinsic_events,
           get_account_identity,
-          get_blocks_async,
+          get_blocks,
           get_storage,
           print_metadata,
           staking_batch_payout,
