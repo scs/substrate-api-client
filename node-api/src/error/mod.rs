@@ -8,7 +8,7 @@
 
 //! General node-api Error implementation.
 
-use alloc::{string::String, vec::Vec};
+use alloc::{boxed::Box, string::String, vec::Vec};
 use core::fmt::Debug;
 use derive_more::From;
 
@@ -40,9 +40,9 @@ pub enum Error {
 	/// Runtime error.
 	Runtime(DispatchError),
 	/// Error decoding to a [`crate::dynamic::Value`].
-	DecodeValue(DecodeError),
+	DecodeValue(Box<DecodeError>),
 	/// Error encoding from a [`crate::dynamic::Value`].
-	EncodeValue(EncodeError),
+	EncodeValue(Box<EncodeError>),
 	/// The bytes representing an error that we were unable to decode.
 	Unknown(Vec<u8>),
 	/// Other error.
@@ -52,5 +52,17 @@ pub enum Error {
 impl From<&str> for Error {
 	fn from(error: &str) -> Self {
 		Error::Other(error.into())
+	}
+}
+
+impl From<DecodeError> for Error {
+	fn from(error: DecodeError) -> Self {
+		Error::DecodeValue(Box::new(error))
+	}
+}
+
+impl From<EncodeError> for Error {
+	fn from(error: EncodeError) -> Self {
+		Error::EncodeValue(Box::new(error))
 	}
 }
