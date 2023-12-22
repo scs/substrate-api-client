@@ -18,10 +18,8 @@
 use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
-	extrinsic::BalancesExtrinsics,
-	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
+	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
+	GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]
@@ -45,7 +43,7 @@ async fn main() {
 	println!("[+] One's Free Balance is {}\n", balance_of_one);
 
 	//BadOrigin
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(bob_signer));
+	api.set_signer(bob_signer.into());
 	//Can only be called by root
 	let xt = api.balance_force_set_balance(MultiAddress::Id(alice.clone()), 10);
 
@@ -55,7 +53,7 @@ async fn main() {
 	println!("[+] BadOrigin error: Bob can't force set balance");
 
 	//BelowMinimum
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice_signer));
+	api.set_signer(alice_signer.into());
 	let xt = api.balance_transfer_allow_death(MultiAddress::Id(one.clone()), 999999);
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	assert!(result.is_err());

@@ -22,7 +22,7 @@ use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, UncheckedExtrinsicV4},
+	ac_primitives::{AssetRuntimeConfig, UncheckedExtrinsicV4},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
@@ -46,7 +46,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let signer = AccountKeyring::Alice.pair();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(signer.clone()));
+	api.set_signer(signer.clone().into());
 
 	// Fill Identity storage.
 	let info = IdentityInfo::<MaxAdditionalFields> {

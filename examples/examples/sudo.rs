@@ -52,7 +52,7 @@ async fn main() {
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::new(sudoer));
+	api.set_signer(sudoer.into());
 
 	// Set the recipient of newly issued funds.
 	let recipient = AccountKeyring::Bob.to_account_id();

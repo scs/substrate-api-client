@@ -13,10 +13,12 @@
 	limitations under the License.
 */
 
-//! Tests for the chain rpc interface functions.
+//! Tests for the chain rpc interface functions, including testing the DefaultRuntimeConfig
+//! and Signer generation for the DefaultRuntimeConfig.
 
+use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::{DefaultRuntimeConfig, ExtrinsicSigner},
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, GetChainInfo, SubscribeChain,
 };
@@ -25,7 +27,9 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().unwrap();
-	let api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
+	let signer = AccountKeyring::Alice.pair();
+	api.set_signer(ExtrinsicSigner::<DefaultRuntimeConfig>::new(signer));
 
 	// GetChainInfo
 	let finalized_header_hash = api.get_finalized_head().unwrap().unwrap();

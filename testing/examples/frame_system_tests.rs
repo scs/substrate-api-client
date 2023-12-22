@@ -19,10 +19,8 @@ use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::StaticEvent,
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
-	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SystemApi,
+	ac_node_api::StaticEvent, ac_primitives::AssetRuntimeConfig, rpc::JsonrpseeClient, Api,
+	GetAccountInformation, SystemApi,
 };
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
@@ -42,7 +40,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::new(alice_pair));
+	api.set_signer(alice_pair.into());
 
 	let alice = AccountKeyring::Alice.to_account_id();
 

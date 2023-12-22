@@ -20,7 +20,7 @@ use kitchensink_runtime::AccountId;
 use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner},
+	ac_primitives::{AssetRuntimeConfig, Config},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage,
 };
@@ -66,7 +66,7 @@ async fn main() {
 
 	// get Alice's AccountNonce with api.get_nonce()
 	let signer = AccountKeyring::Alice.pair();
-	api.set_signer(ExtrinsicSigner::<_>::new(signer));
+	api.set_signer(signer.into());
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().unwrap());
 
 	println!(

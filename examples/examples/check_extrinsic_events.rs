@@ -16,7 +16,7 @@
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::EventDetails,
-	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner},
+	ac_primitives::{AssetRuntimeConfig, Config},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
@@ -37,7 +37,7 @@ async fn main() {
 	let alice_signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice_signer));
+	api.set_signer(alice_signer.into());
 
 	let alice = AccountKeyring::Alice.to_account_id();
 	let balance_of_alice = api.get_account_data(&alice).unwrap().unwrap().free;

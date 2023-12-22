@@ -19,10 +19,8 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner},
-	extrinsic::BalancesExtrinsics,
-	rpc::WsRpcClient,
-	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
+	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::WsRpcClient, Api,
+	GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 fn main() {
@@ -34,7 +32,7 @@ fn main() {
 	.unwrap();
 	let client = WsRpcClient::with_default_url();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(alice.clone()));
+	api.set_signer(alice.clone().into());
 
 	let bob = sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
 		.unwrap();

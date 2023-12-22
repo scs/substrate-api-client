@@ -46,7 +46,7 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::new(signer));
+	api.set_signer(signer.into());
 
 	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
 	// We use a manual nonce input here, because otherwise the api retrieves the nonce via getter and needs

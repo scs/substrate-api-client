@@ -21,14 +21,13 @@ use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner},
+	ac_primitives::{AssetRuntimeConfig, Config},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
 	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
-type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
 type Hash = <AssetRuntimeConfig as Config>::Hash;
 
 #[cfg(not(feature = "sync-examples"))]
@@ -65,7 +64,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
-	api.set_signer(ExtrinsicSigner::new(sudoer));
+	api.set_signer(sudoer.into());
 
 	let subscription = api.subscribe_events().unwrap();
 	let cancellation = Arc::new(AtomicBool::new(false));

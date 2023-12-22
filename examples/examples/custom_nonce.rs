@@ -20,7 +20,7 @@ use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, GenericAdditionalParams},
+	ac_primitives::{AssetRuntimeConfig, GenericAdditionalParams},
 	rpc::JsonrpseeClient,
 	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
@@ -38,7 +38,7 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().unwrap();
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
-	api.set_signer(ExtrinsicSigner::<AssetRuntimeConfig>::new(signer));
+	api.set_signer(signer.into());
 
 	// Information for Era for mortal transactions.
 	let last_finalized_header_hash = api.get_finalized_head().unwrap().unwrap();
