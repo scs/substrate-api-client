@@ -61,7 +61,8 @@ jobs:
                 cargo build --release -p ac-examples --example runtime_update_async --no-default-features,
 
                 # Clippy
-                cargo clippy --workspace --exclude test-no-std -- -D warnings,
+                cargo clippy -- -D warnings,
+                cargo clippy --no-default-features -- -D warnings,
                 cargo clippy --all-features --examples -- -D warnings,
 
                 # Run tests and build examples
