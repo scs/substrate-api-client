@@ -18,7 +18,7 @@
 //! Re-defintion of substrate primitives.
 //! Needed because substrate pallets compile to wasm in no_std.
 
-use alloc::string::String;
+use alloc::{string::String, vec::Vec};
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
@@ -299,3 +299,63 @@ pub enum ChainType {
 /// Arbitrary properties defined in chain spec as a JSON object
 // https://github.com/paritytech/substrate/blob/c172d0f683fab3792b90d876fd6ca27056af9fe9/client/chain-spec/src/lib.rs#L215-L216
 pub type Properties = serde_json::map::Map<String, serde_json::Value>;
+
+// Merkle-mountain-range primitives. sp-mmr-primitives does not seem to be no-std compatible as of now.
+// Might be caused by the thiserror import in the toml. Parity probably will accept a PR if opened.
+
+/// A type-safe wrapper for the concrete leaf type.
+///
+/// This structure serves merely to avoid passing raw `Vec<u8>` around.
+/// It must be `Vec<u8>`-encoding compatible.
+// https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L138-L146
+#[derive(codec::Encode, codec::Decode, PartialEq, Eq, TypeInfo, Clone)]
+pub struct EncodableOpaqueLeaf(pub Vec<u8>);
+
+/// An MMR proof data for a group of leaves.
+// https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L351-L360
+#[derive(codec::Encode, codec::Decode, RuntimeDebug, Clone, PartialEq, Eq, TypeInfo)]
+pub struct Proof<Hash> {
+	/// The indices of the leaves the proof is for.
+	pub leaf_indices: Vec<LeafIndex>,
+	/// Number of leaves in MMR, when the proof was generated.
+	pub leaf_count: NodeIndex,
+	/// Proof elements (hashes of siblings of inner nodes on the path to the leaf).
+	pub items: Vec<Hash>,
+}
+
+/// A type to describe leaf position in the MMR.
+///
+/// Note this is different from [`NodeIndex`], which can be applied to
+/// both leafs and inner nodes. Leafs will always have consecutive `LeafIndex`,
+/// but might be actually at different positions in the MMR `NodeIndex`.
+// https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L45
+pub type LeafIndex = u64;
+/// A type to describe node position in the MMR (node index).
+// https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L138-L146
+pub type NodeIndex = u64;
+
+/// Merkle Mountain Range operation error.
+// https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L362-L396
+#[derive(codec::Encode, codec::Decode, PartialEq, Eq, TypeInfo, RuntimeDebug)]
+pub enum MmrError {
+	/// Error during translation of a block number into a leaf index.
+	InvalidNumericOp,
+	/// Error while pushing new node.
+	Push,
+	/// Error getting the new root.
+	GetRoot,
+	/// Error committing changes.
+	Commit,
+	/// Error during proof generation.
+	GenerateProof,
+	/// Proof verification error.
+	Verify,
+	/// Leaf not found in the storage.
+	LeafNotFound,
+	/// Mmr Pallet not included in runtime
+	PalletNotIncluded,
+	/// Cannot find the requested leaf index
+	InvalidLeafIndex,
+	/// The provided best know block number is invalid.
+	InvalidBestKnownBlock,
+}
