@@ -10,41 +10,25 @@
 
 use crate::{
 	error::{DispatchError, Error},
+	events::RawEventDetails,
 	metadata::{MetadataError, PalletMetadata},
 	Metadata, Phase, StaticEvent,
 };
-use alloc::{sync::Arc, vec::Vec};
-use codec::Decode;
-use log::*;
+use alloc::sync::Arc;
+use codec::{Decode, Encode};
 use scale_decode::DecodeAsFields;
 use scale_value::{scale::TypeId, Composite};
 
-/// The event details.
-/// Based on subxt EventDetails.
-/// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L197-L216
+/// The event details with the associated metadata.
+// Based on subxt EventDetails.
+// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L197-L216
 #[derive(Debug, Clone)]
-pub struct EventDetails<Hash: Decode> {
-	phase: Phase,
-	/// The index of the event in the list of events in a given block.
-	index: u32,
-	all_bytes: Arc<[u8]>,
-	// start of the bytes (phase, pallet/variant index and then fields and then topic to follow).
-	start_idx: usize,
-	// start of the event (ie pallet/variant index and then the fields and topic after).
-	event_start_idx: usize,
-	// start of the fields (ie after phase and pallet/variant index).
-	event_fields_start_idx: usize,
-	// end of the fields.
-	event_fields_end_idx: usize,
-	// end of everything (fields + topics)
-	end_idx: usize,
+pub struct EventDetails<Hash: Encode + Decode> {
+	inner: RawEventDetails<Hash>,
 	metadata: Metadata,
-	topics: Vec<Hash>,
 }
 
-// Based on subxt:
-// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L218-L409
-impl<Hash: Decode> EventDetails<Hash> {
+impl<Hash: Encode + Decode> EventDetails<Hash> {
 	// Attempt to dynamically decode a single event from our events input.
 	pub(crate) fn decode_from(
 		metadata: Metadata,
@@ -52,91 +36,42 @@ impl<Hash: Decode> EventDetails<Hash> {
 		start_idx: usize,
 		index: u32,
 	) -> Result<Self, Error> {
-		let input = &mut &all_bytes[start_idx..];
-
-		let phase = Phase::decode(input)?;
-
-		let event_start_idx = all_bytes.len() - input.len();
-
-		let pallet_index = u8::decode(input)?;
-		let variant_index = u8::decode(input)?;
-
-		let event_fields_start_idx = all_bytes.len() - input.len();
-
-		// Get metadata for the event:
-		let event_pallet = metadata.pallet_by_index_err(pallet_index)?;
-		let event_variant = event_pallet
-			.event_variant_by_index(variant_index)
-			.ok_or(MetadataError::VariantIndexNotFound(variant_index))?;
-		debug!("Decoding Event '{}::{}'", event_pallet.name(), &event_variant.name);
-
-		// Skip over the bytes belonging to this event.
-		for field_metadata in &event_variant.fields {
-			// Skip over the bytes for this field:
-			scale_decode::visitor::decode_with_visitor(
-				input,
-				field_metadata.ty.id,
-				metadata.types(),
-				scale_decode::visitor::IgnoreVisitor,
-			)
-			.map_err(scale_decode::Error::from)?;
-		}
-
-		// the end of the field bytes.
-		let event_fields_end_idx = all_bytes.len() - input.len();
-
-		// topics come after the event data in EventRecord.
-		let topics = Vec::<Hash>::decode(input)?;
-
-		// what bytes did we skip over in total, including topics.
-		let end_idx = all_bytes.len() - input.len();
-
-		Ok(EventDetails {
-			phase,
-			index,
-			start_idx,
-			event_start_idx,
-			event_fields_start_idx,
-			event_fields_end_idx,
-			end_idx,
-			all_bytes,
-			metadata,
-			topics,
-		})
+		let inner = RawEventDetails::decode_from(&metadata, all_bytes, start_idx, index)?;
+		Ok(EventDetails { inner, metadata })
 	}
 
 	/// When was the event produced?
 	pub fn phase(&self) -> Phase {
-		self.phase
+		self.inner.phase()
 	}
 
 	/// What index is this event in the stored events for this block.
 	pub fn index(&self) -> u32 {
-		self.index
+		self.inner.index()
 	}
 
 	/// The index of the pallet that the event originated from.
 	pub fn pallet_index(&self) -> u8 {
 		// Note: never panics; we expect these bytes to exist
 		// in order that the EventDetails could be created.
-		self.all_bytes[self.event_fields_start_idx - 2]
+		self.inner.pallet_index()
 	}
 
 	/// The index of the event variant that the event originated from.
 	pub fn variant_index(&self) -> u8 {
 		// Note: never panics; we expect these bytes to exist
 		// in order that the EventDetails could be created.
-		self.all_bytes[self.event_fields_start_idx - 1]
+		self.inner.variant_index()
 	}
 
 	/// The name of the pallet from whence the Event originated.
 	pub fn pallet_name(&self) -> &str {
-		self.event_metadata().pallet.name()
+		self.inner.pallet_name()
 	}
 
 	/// The name of the event (ie the name of the variant that it corresponds to).
 	pub fn variant_name(&self) -> &str {
-		&self.event_metadata().variant.name
+		self.inner.variant_name()
 	}
 
 	/// Fetch details from the metadata for this event.
@@ -158,12 +93,12 @@ impl<Hash: Decode> EventDetails<Hash> {
 	/// - Event fields.
 	/// - Event Topics.
 	pub fn bytes(&self) -> &[u8] {
-		&self.all_bytes[self.start_idx..self.end_idx]
+		self.inner.bytes()
 	}
 
 	/// Return the bytes representing the fields stored in this event.
 	pub fn field_bytes(&self) -> &[u8] {
-		&self.all_bytes[self.event_fields_start_idx..self.event_fields_end_idx]
+		self.inner.field_bytes()
 	}
 
 	/// Decode and provide the event fields back in the form of a [`scale_value::Composite`]
@@ -189,12 +124,7 @@ impl<Hash: Decode> EventDetails<Hash> {
 	/// decode the entirety of the event type (including the pallet and event
 	/// variants) using [`EventDetails::as_root_event()`].
 	pub fn as_event<E: StaticEvent>(&self) -> Result<Option<E>, Error> {
-		let ev_metadata = self.event_metadata();
-		if ev_metadata.pallet.name() == E::PALLET && ev_metadata.variant.name == E::EVENT {
-			Ok(Some(E::decode(&mut self.field_bytes())?))
-		} else {
-			Ok(None)
-		}
+		self.inner.as_event()
 	}
 
 	/// Attempt to decode these [`EventDetails`] into a root event type (which includes
@@ -202,7 +132,7 @@ impl<Hash: Decode> EventDetails<Hash> {
 	/// type for this is exposed via static codegen as a root level `Event` type.
 	pub fn as_root_event<E: RootEvent>(&self) -> Result<E, Error> {
 		let ev_metadata = self.event_metadata();
-		let pallet_bytes = &self.all_bytes[self.event_start_idx + 1..self.event_fields_end_idx];
+		let pallet_bytes = &self.inner.pallet_bytes();
 		let pallet_event_ty = ev_metadata
 			.pallet
 			.event_ty_id()
@@ -213,25 +143,25 @@ impl<Hash: Decode> EventDetails<Hash> {
 
 	/// Return the topics associated with this event.
 	pub fn topics(&self) -> &[Hash] {
-		&self.topics
+		self.inner.topics()
 	}
 }
 
-impl<Hash: Decode> EventDetails<Hash> {
-	/// Checks if the extrinsic has failed. If so, the corresponding DispatchError is returned.
-	pub fn check_if_failed(&self) -> Result<(), DispatchError> {
-		if self.pallet_name() == "System" && self.variant_name() == "ExtrinsicFailed" {
-			let dispatch_error =
-				DispatchError::decode_from(self.field_bytes(), self.metadata.clone())
-					.map_err(|_| DispatchError::CannotLookup)?;
-			return Err(dispatch_error)
-		}
-		Ok(())
+impl<Hash: Encode + Decode> EventDetails<Hash> {
+	/// Checks if the extrinsic has failed.
+	pub fn check_if_failed(&self) -> bool {
+		self.inner.check_if_failed()
+	}
+
+	/// Returns the dispatch error of the failed extrinsic, if it has failed.
+
+	pub fn associated_dispatch_error(&self) -> Option<DispatchError> {
+		self.inner.associated_dispatch_error(&self.metadata)
 	}
 
 	/// Checks if the event represents a code update (runtime update).
 	pub fn is_code_update(&self) -> bool {
-		self.pallet_name() == "System" && self.variant_name() == "CodeUpdated"
+		self.inner.is_code_update()
 	}
 }
 

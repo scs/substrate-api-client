@@ -14,7 +14,7 @@
 //! Interface to common author rpc functions and helpers thereof.
 
 use crate::{
-	api::{rpc_api::events::FetchEvents, Error, Result},
+	api::{rpc_api::events::FetchEvents, Error, ExtrinsicError, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
@@ -278,12 +278,14 @@ where
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
-
-		// Ensure that the extrinsic has been successful. If not, return an error.
-		for event in &extrinsic_events {
-			event.check_if_failed()?;
-		}
 		report.events = Some(extrinsic_events);
+		// Ensure the extrinsic was successful. If not, return an error.
+		for event in &extrinsic_events {
+			if let Err(dispatch_error) = event.check_if_failed() {
+				return Err(Error::FailedExtrinsic(ExtrinsicError { dispatch_error, report }))
+			}
+		}
+
 		Ok(report)
 	}
 

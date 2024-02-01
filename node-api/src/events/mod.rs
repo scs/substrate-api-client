@@ -11,10 +11,12 @@
 
 use crate::{error::Error, Metadata, StaticEvent};
 use alloc::{sync::Arc, vec::Vec};
-use codec::{Compact, Decode};
+use codec::{Compact, Decode, Encode};
 
 mod event_details;
+mod raw_event_details;
 pub use event_details::EventDetails;
+pub use raw_event_details::RawEventDetails;
 
 /// A collection of events obtained from a block, bundled with the necessary
 /// information needed to decode and iterate over them.
@@ -42,7 +44,7 @@ impl<Hash: core::fmt::Debug> core::fmt::Debug for Events<Hash> {
 	}
 }
 
-impl<Hash: Copy + Decode> Events<Hash> {
+impl<Hash: Copy + Encode + Decode> Events<Hash> {
 	pub fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
 		// event_bytes is a SCALE encoded vector of events. So, pluck the
 		// compact encoded length from the front, leaving the remaining bytes

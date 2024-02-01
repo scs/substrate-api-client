@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use sp_core::Bytes;
 
 pub use api_client::Api;
-pub use error::{Error, Result};
+pub use error::{Error, ExtrinsicError, Result};
 pub use rpc_api::{
 	FetchEvents, GetAccountInformation, GetBalance, GetChainInfo, GetStorage,
 	GetTransactionPayment, SubmitAndWatch, SubmitExtrinsic, SubscribeChain, SubscribeEvents,
@@ -35,7 +35,7 @@ pub mod rpc_api;
 
 /// Extrinsic report returned upon a submit_and_watch request.
 /// Holds as much information as available.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Decode)]
 pub struct ExtrinsicReport<Hash: Decode> {
 	// Hash of the extrinsic.
 	pub extrinsic_hash: Hash,
@@ -131,7 +131,7 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 		}
 	}
 
-	pub fn is_expected(&self) -> Result<()> {
+	pub fn is_expected(&self) -> Result<(), Hash> {
 		match self {
 			TransactionStatus::Ready
 			| TransactionStatus::Broadcast(_)

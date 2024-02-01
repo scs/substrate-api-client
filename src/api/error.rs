@@ -15,12 +15,13 @@
 
 */
 
-use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError};
+use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError, ExtrinsicReport};
 use ac_node_api::{
 	error::DispatchError,
 	metadata::{MetadataConversionError, MetadataError},
 };
-use alloc::boxed::Box;
+use alloc::{boxed::Box, vec::Vec};
+use codec::Decode;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -42,8 +43,8 @@ pub enum Error {
 	Codec(codec::Error),
 	/// Could not convert NumberOrHex with try_from.
 	TryFromIntError,
-	/// Node Api Dispatch Error.
-	Dispatch(DispatchError),
+	/// Node Api Extrinsic Dispatch Error.
+	FailedExtrinsic(ExtrinsicError),
 	/// Encountered unexpected tx status during watch process.
 	UnexpectedTxStatus(UnexpectedTxStatus),
 	/// Could not send update because the Stream has been closed unexpectedly.
@@ -56,4 +57,34 @@ pub enum Error {
 	BlockNotFound,
 	/// Any custom Error.
 	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
+}
+
+/// Encountered unexpected extrinsic status during watch process.
+#[derive(Debug)]
+pub struct OpaqueExtrinsicError(
+	/// Raw bytes of extrinsic error.
+	pub Vec<u8>,
+);
+
+impl OpaqueExtrinsicError {
+	/// Attempt to decode the leaf into expected concrete type.
+	pub fn decode_error(&self) -> Result<T, codec::Error> {
+		Decode::decode(&mut &*self.0).ok()
+	}
+}
+
+// Support decoding metadata from the "wire" format directly into this.
+// Errors may be lost in the case that the metadata content is somehow invalid.
+impl Decode for OpaqueExtrinsicError {
+	fn decode<I: codec::Input>(input: &mut I) -> Result<Self, codec::Error> {
+		let metadata = frame_metadata::RuntimeMetadataPrefixed::decode(input)?;
+		metadata.try_into().map_err(|_e| "Cannot try_into() to Metadata.".into())
+	}
+}
+
+/// Encountered unexpected extrinsic status during watch process.
+#[derive(Debug)]
+pub struct ExtrinsicError<Hash: Decode> {
+	pub dispatch_error: DispatchError,
+	pub report: ExtrinsicReport<Hash>,
 }
