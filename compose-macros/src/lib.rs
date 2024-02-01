@@ -37,11 +37,25 @@ mod rpc;
 macro_rules! compose_call {
 ($node_metadata: expr, $pallet: expr, $call_name: expr $(, $args: expr) *) => {
         {
-            let pallet = $node_metadata.pallet_by_name($pallet).unwrap().to_owned();
+			let pallet_metadata = $node_metadata.pallet_by_name($pallet).unwrap().to_owned();
+            $crate::compose_call_for_pallet_metadata!(pallet_metadata, $call_name $(, ($args)) *)
+        }
+    };
+}
 
-            let call_index = pallet.call_variant_by_name($call_name).unwrap().index;
-
-            ([pallet.index(), call_index as u8] $(, ($args)) *)
+/// Generates the extrinsic's call field for the given PalletMetadata
+/// # Arguments
+///
+/// * 'pallet_metadata' - This crate's parsed pallet metadata as field of the API.
+/// * 'call_name' - Call name as &str
+/// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
+/// As of now the user needs to check himself that the correct arguments are supplied.
+#[macro_export]
+macro_rules! compose_call_for_pallet_metadata {
+($pallet_metadata: expr, $call_name: expr $(, $args: expr) *) => {
+        {
+            let call_index = $pallet_metadata.call_variant_by_name($call_name).unwrap().index;
+            ([$pallet_metadata.index(), call_index as u8] $(, ($args)) *)
         }
     };
 }
