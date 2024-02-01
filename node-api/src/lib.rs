@@ -22,7 +22,7 @@ use alloc::{borrow::ToOwned, vec::Vec};
 use codec::{Decode, Encode};
 
 pub use alloc::{collections::BTreeMap, vec};
-pub use events::{EventDetails, Events};
+pub use events::{EventDetails, Events, RawEventDetails};
 pub use metadata::{Metadata, MetadataError};
 pub use scale_decode::DecodeAsType;
 
