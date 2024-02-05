@@ -39,7 +39,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = MyApi::new(client).await.unwrap();
-	api.set_signer(ExtrinsicSigner::new(alice_pair));
+	api.set_signer(alice_pair.into());
 	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
 	let signer_nonce = api.get_nonce().await.unwrap();
 	let transfer_call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
