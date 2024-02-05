@@ -22,13 +22,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "ac-examples"
+name = "ac-examples-async"
 version = "0.4.2"
 dependencies = [
  "env_logger",
  "frame-support",
  "frame-system",
- "futures",
  "kitchensink-runtime",
  "log",
  "pallet-balances",
@@ -39,12 +38,24 @@ dependencies = [
  "sp-core",
  "sp-keyring",
  "sp-runtime",
- "sp-version",
  "sp-weights",
  "substrate-api-client",
  "tokio",
  "tokio-util",
  "wabt",
+]
+
+[[package]]
+name = "ac-examples-sync"
+version = "0.4.2"
+dependencies = [
+ "env_logger",
+ "log",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-weights",
+ "substrate-api-client",
 ]
 
 [[package]]
@@ -103,27 +114,31 @@ dependencies = [
 ]
 
 [[package]]
-name = "ac-testing"
+name = "ac-testing-async"
 version = "0.3.2"
 dependencies = [
  "frame-support",
- "frame-system",
  "kitchensink-runtime",
  "pallet-balances",
- "pallet-identity",
  "pallet-staking",
  "parity-scale-codec",
- "serde_json",
- "sp-application-crypto",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
  "sp-staking",
- "sp-version",
+ "substrate-api-client",
+ "tokio",
+]
+
+[[package]]
+name = "ac-testing-sync"
+version = "0.3.2"
+dependencies = [
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
  "substrate-api-client",
  "substrate-client-keystore",
- "tokio",
- "wabt",
 ]
 
 [[package]]
@@ -7276,7 +7291,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.7",
  "rand 0.8.5",
  "static_assertions",

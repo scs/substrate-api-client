@@ -16,10 +16,12 @@ members = [
     ".",
     "client-keystore",
     "compose-macros",
-    "examples",
+    "examples/async",
+    "examples/sync",
     "node-api",
     "test-no-std",
-    "testing",
+    "testing/async",
+    "testing/sync",
 ]
 
 [dependencies]
@@ -40,7 +42,6 @@ serde_json = { version = "1.0.79", default-features = false }
 url = { version = "2.0.0", optional = true }
 
 # websocket dependent features
-futures = { version = "0.3", optional = true }
 jsonrpsee = { version = "0.16", optional = true, features = ["async-client", "client-ws-transport", "jsonrpsee-types"] }
 tungstenite = { version = "0.21", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
@@ -66,9 +67,10 @@ ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
+futures = "0.3.28"
 
 [features]
-default = ["std", "jsonrpsee-client", "sync-api"]
+default = ["std", "jsonrpsee-client"]
 # To support `no_std` builds in non-32 bit environments.
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
@@ -77,10 +79,10 @@ disable_target_static_assertions = [
 # If this is active all the code compiles in synchronous mode. If not selected, code will compile to async mode.
 sync-api = ["ac-compose-macros/sync-api", "maybe-async/is_sync"]
 
-# Use the `jsonrpsee` crate for websocket communication. Does provide sync and async support but needs a tokio runtime.
+# Use the `jsonrpsee` crate for websocket communication. Does only provide async support and needs a tokio runtime.
 # Provides convenience functions such as subscription callbacks.
 # Most examples use the `jsonrpsee` feature and can be used for reference.
-jsonrpsee-client = ["std", "jsonrpsee", "futures"]
+jsonrpsee-client = ["std", "jsonrpsee"]
 
 # Use the `tungstenite` crate for websocket communication. No async support but has some reconnection capabilities.
 # See the example `transfer_with_tungstenite_client` on how to use it.

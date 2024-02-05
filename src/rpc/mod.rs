@@ -31,9 +31,9 @@ pub use tungstenite_client::TungsteniteRpcClient;
 #[cfg(feature = "tungstenite-client")]
 pub mod tungstenite_client;
 
-#[cfg(feature = "jsonrpsee-client")]
+#[cfg(all(feature = "jsonrpsee-client", not(feature = "sync-api")))]
 pub use jsonrpsee_client::JsonrpseeClient;
-#[cfg(feature = "jsonrpsee-client")]
+#[cfg(all(feature = "jsonrpsee-client", not(feature = "sync-api")))]
 pub mod jsonrpsee_client;
 
 pub mod error;

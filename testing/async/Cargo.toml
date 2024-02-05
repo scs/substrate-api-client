@@ -1,0 +1,23 @@
+[package]
+name = "ac-testing-async"
+version = "0.3.2"
+authors = ["Supercomputing Systems AG <info@scs.ch>"]
+license = "Apache-2.0"
+edition = "2021"
+
+[dev-dependencies]
+codec = { package = "parity-scale-codec", version = "3.6.1", features = ['derive'] }
+tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
+
+# Substrate dependencies
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+
+# local deps
+substrate-api-client = { path = "../..", features = ["staking-xt", "contracts-xt"] }

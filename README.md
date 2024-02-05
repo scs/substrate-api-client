@@ -8,6 +8,7 @@ The substrate-api-client connects to the substrate's RPC interface via WebSocket
 * Support `no_std` builds. Only the rpc-client is std only. For `no_std` builds, a custom rpc client needs to be implemented.
 * Watch events and execute code upon events.
 * Parse and print the node metadata.
+* Support async and sync implementations.
 * Support three different websocket crates (`jsonrpsee`, `tungstenite` and `ws`). See `Cargo.toml` for more information and limitations.
 
 ## Prerequisites
@@ -30,14 +31,18 @@ docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/substrate:latest --de
 For more information, please refer to the [substrate](https://github.com/paritytech/substrate) repository.
 
 ## Examples
-
+The api-client provides several examples which show how to fetch node states or submit extrinsic. Examples are differentiated between `sync` and `async` implementations. Don't forget to check the feature import of the associated `Cargo.toml`. It shows how to import the api-client as an `async` or `sync` library.
 To run an example, clone the `substrate-api-client` repository and run the desired example directly with the cargo command:
 
 ```bash
 git clone https://github.com/scs/substrate-api-client.git
 cd substrate-api-client
-cargo run -p ac-examples --example get_storage
+# Run an async example:
+cargo run -p ac-examples-async --example get_storage
+# Run a sync example:
+cargo run -p ac-examples-sync --example runtime_update_sync
 ```
+
 or download the already built binaries from [GitHub Actions](https://github.com/scs/substrate-api-client/actions) and run them without any previous building:
 
 ```bash
@@ -50,24 +55,26 @@ chmod +x <example>
 
 Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
-The following examples can be found in the [examples](/examples/examples) folder:
+The following async examples can be found in the [async examples](/examples/async/examples) folder:
+* [benchmark_bulk_xt](/examples/async/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
+* [check_extrinsic_events](/examples/async/examples/check_extrinsic_events.rs): Check and react according to events associated to an extrinsic.
+* [compose_extrinsic](/examples/async/examples/compose_extrinsic.rs): Compose an extrinsic without interacting with the node or in no_std mode.
+* [contract_instantiate_with_code](/examples/async/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
+* [custom_nonce](/examples/async/examples/custom_nonce.rs): Compose an with a custom nonce.
+* [get_account_identity](/examples/async/examples/get_account_identity.rs): Create an custom Unchecked Extrinsic to set an account identity and retrieve it afterwards with a getter.
+* [get_blocks](/examples/async/examples/get_blocks.rs): Read header, block and signed block from storage.
+* [get_storage](/examples/async/examples/get_storage.rs): Read storage values.
+* [print_metadata](/examples/async/examples/print_metadata.rs): Print the metadata of the node in a readable way.
+* [runtime_update_async](/examples/async/examples/runtime_update_async.rs): How to do an runtime upgrade asynchronously.
+* [staking_batch_payout](/examples/async/examples/staking_batch_payout.rs): Batch reward payout for validator.
+* [subscribe_events](/examples/async/examples/subscribe_events.rs): Subscribe and react on events.
+* [sudo](/examples/async/examples/sudo.rs): Create and send a sudo wrapped call.
 
-* [benchmark_bulk_xt](/examples/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
-* [check_extrinsic_events](/examples/examples/check_extrinsic_events.rs): Check and react according to events associated to an extrinsic.
-* [compose_extrinsic](/examples/examples/compose_extrinsic.rs): Compose an extrinsic without interacting with the node or in no_std mode.
-* [contract_instantiate_with_code](/examples/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
-* [custom_nonce](/examples/examples/custom_nonce.rs): Compose an with a custom nonce.
-* [get_account_identity](/examples/examples/get_account_identity.rs): Create an custom Unchecked Extrinsic to set an account identity and retrieve it afterwards with a getter.
-* [get_block_async](/examples/examples/get_block_async.rs): Read header, block and signed block from storage.
-* [get_storage](/examples/examples/get_storage.rs): Read storage values.
-* [print_metadata](/examples/examples/print_metadata.rs): Print the metadata of the node in a readable way.
-* [runtime_update_async](/src/examples/examples/runtime_update_async.rs): How to do an runtime upgrade asynchronously.
-* [runtime_update_sync](/src/examples/examples/runtime_update_sync.rs): How to do an runtime upgrade synchronously.
-* [staking_batch_payout](/src/examples/examples/staking_batch_payout.rs): Batch reward payout for validator.
-* [subscribe_events](/examples/examples/subscribe_events.rs): Subscribe and react on events.
-* [sudo](/examples/examples/sudo.rs): Create and send a sudo wrapped call.
-* [transfer_with_tungstenite_client](/examples/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
-* [transfer_with_ws_client](/examples/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
+The following sync examples can be found in the [sync examples](/examples/sync/examples) folder:
+* [runtime_update_sync](/examples/sync/examples/runtime_update_sync.rs): How to do an runtime upgrade synchronously.
+* [transfer_with_tungstenite_client](/examples/sync/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
+* [transfer_with_ws_client](/examples/sync/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
+
 
 ## `no_std` build
 Almost everything in the api-client, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and a few additional features, is `no_std` compatible.
@@ -78,19 +85,17 @@ To import the api-client in `no_std` make sure the default features are turned o
 ```toml
 # In the Cargo.toml import the api-client as following:
 substrate-api-client = { git = "https://github.com/scs/substrate-api-client.git", default-features = false, features = ["disable_target_static_assertions"] }
-
 ```
 ### RPC Client
-Depending on the usage, there are two traits that the RPC Client needs to implement.
+Depending on the usage, there are two traits that the RPC Client needs to implement. You can choose between the sync and async implementation. If you decide to use the async implementation, you need to use the library `async-trait` for now (until it is integrated into the rust toolchain).
 
 #### Request
-
 For simple requests (send one request and receive one answer) the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is required:
 ```rust
 /// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
-	fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
+	(async) fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
 }
 ```
 By implementing this trait with a custom RPC client, most basic functionalities of the `Api` can already be used.
@@ -107,7 +112,7 @@ pub trait Subscribe {
 	where
 		Notification: DeserializeOwned;
 
-	fn subscribe<Notification: DeserializeOwned>(
+	(async) fn subscribe<Notification: DeserializeOwned>(
 		&self,
 		sub: &str,
 		params: RpcParams,
@@ -123,10 +128,10 @@ pub trait HandleSubscription<Notification: DeserializeOwned> {
 	/// Returns the next notification from the stream.
 	/// This may return `None` if the subscription has been terminated,
 	/// which may happen if the channel becomes full or is dropped.
-	fn next(&mut self) -> Option<Result<Notification>>;
+	(async) fn next(&mut self) -> Option<Result<Notification>>;
 
 	/// Unsubscribe and consume the subscription.
-	fn unsubscribe(self) -> Result<()>;
+	(async) fn unsubscribe(self) -> Result<()>;
 }
 ```
 Refering to the `std` example of the tungstenite, the `HandleSubscription` impl can be looked up [here](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/tungstenite_client/subscription.rs#L23-L54). It implements a simple channel receiver, waiting for the sender of the websocket client to send something.
