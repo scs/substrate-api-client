@@ -24,7 +24,6 @@ use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsicV4,
 };
-use alloc::borrow::ToOwned;
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use codec::{Compact, Encode};
@@ -46,18 +45,20 @@ pub trait BalancesExtrinsics {
 	type Extrinsic<Call>;
 
 	/// Transfer some liquid free balance to another account.
+	#[allow(clippy::type_complexity)]
 	async fn balance_transfer_allow_death(
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
-	) -> Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>;
+	) -> Option<Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>>;
 
 	///  Set the balances of a given account.
+	#[allow(clippy::type_complexity)]
 	async fn balance_force_set_balance(
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
-	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>;
+	) -> Option<Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -80,7 +81,7 @@ where
 		&self,
 		to: Self::Address,
 		amount: Self::Balance,
-	) -> Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>> {
+	) -> Option<Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>> {
 		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
 	}
 
@@ -88,7 +89,7 @@ where
 		&self,
 		who: Self::Address,
 		free_balance: Self::Balance,
-	) -> Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>> {
+	) -> Option<Self::Extrinsic<ForceSetBalanceCall<Self::Address, Self::Balance>>> {
 		compose_extrinsic!(self, BALANCES_MODULE, FORCE_SET_BALANCE, who, Compact(free_balance))
 	}
 }

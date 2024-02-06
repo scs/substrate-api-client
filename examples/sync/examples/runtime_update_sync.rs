@@ -78,9 +78,9 @@ pub fn send_code_update_extrinsic(
 	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
 
 	// Create a sudo `set_code` call.
-	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
+	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();
 	let weight: Weight = 0.into();
-	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
+	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight).unwrap();
 
 	println!("Sending extrinsic to trigger runtime update");
 	let block_hash = api

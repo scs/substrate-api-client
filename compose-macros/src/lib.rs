@@ -25,21 +25,28 @@ pub use log;
 
 mod rpc;
 
-/// Generates the extrinsic's call field for a given module and call passed as &str
+/// Generates the extrinsic's call field for a given module and call passed as &str, if found in the metadata.
+/// Otherwise None is returned.
 /// # Arguments
 ///
 /// * 'node_metadata' - This crate's parsed node metadata as field of the API.
-/// * 'pallet' - Pallet name as &str for which the call is composed.
+/// * 'pallet_name' - Pallet name as &str for which the call is composed.
 /// * 'call_name' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
-/// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_call {
-($node_metadata: expr, $pallet: expr, $call_name: expr $(, $args: expr) *) => {
+($node_metadata: expr, $pallet_name: expr, $call_name: expr $(, $args: expr) *) => {
         {
-			let pallet_metadata = $node_metadata.pallet_by_name($pallet).unwrap().to_owned();
-            $crate::compose_call_for_pallet_metadata!(pallet_metadata, $call_name $(, ($args)) *)
-        }
+			let maybe_pallet = $node_metadata.pallet_by_name($pallet_name);
+			let maybe_call = match  maybe_pallet {
+				Some(pallet) => {
+					$crate::compose_call_for_pallet_metadata!(pallet_metadata, $call_name $(, ($args)) *)
+				},
+				None => None,
+			}
+			maybe_call
+		}
+
     };
 }
 
@@ -54,13 +61,19 @@ macro_rules! compose_call {
 macro_rules! compose_call_for_pallet_metadata {
 ($pallet_metadata: expr, $call_name: expr $(, $args: expr) *) => {
         {
-            let call_index = $pallet_metadata.call_variant_by_name($call_name).unwrap().index;
-            ([$pallet_metadata.index(), call_index as u8] $(, ($args)) *)
+
+			let maybe_call_variant = $pallet_metadata.call_variant_by_name($call_name);
+			match maybe_call_variant {
+				Some(call_variant) => Some(([pallet.index(), call_variant.index as u8] $(, ($args)) *)),
+				None => None,
+			}
+
         }
+
     };
 }
 
-/// Generates an Unchecked extrinsic for a given call
+/// Generates an UncheckedExtrinsic for a given call.
 /// # Arguments
 ///
 /// * 'signer' - AccountKey that is used to sign the extrinsic.
@@ -85,75 +98,87 @@ macro_rules! compose_extrinsic_offline {
 	}};
 }
 
-/// Generates an Unchecked extrinsic for a given module and call passed as a &str.
+/// Generates an UncheckedExtrinsic for the given pallet and call, if they are found within the metadata.
+/// Otherwise None is returned.
 /// # Arguments
 ///
 /// * 'api' - This instance of API. If the *signer* field is not set, an unsigned extrinsic will be generated.
 /// * 'nonce' - signer's account nonce: Index
-/// * 'module' - Module name as &str for which the call is composed.
-/// * 'call' - Call name as &str
+/// * 'pallet_name' - Pallet name as &str for which the call is composed.
+/// * 'call_name' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
-/// As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_extrinsic_with_nonce {
 	($api: expr,
 	$nonce: expr,
-	$module: expr,
-	$call: expr
+	$pallet_name: expr,
+	$call_name: expr
 	$(, $args: expr) *) => {
 		{
             use $crate::log::debug;
             use $crate::primitives::UncheckedExtrinsicV4;
 
-            debug!("Composing generic extrinsic for module {:?} and call {:?}", $module, $call);
+            debug!("Composing generic extrinsic for module {:?} and call {:?}", $pallet_name, $call_name);
 
 			let metadata = $api.metadata();
-            let call = $crate::compose_call!(metadata, $module, $call $(, ($args)) *);
-            if let Some(signer) = $api.signer() {
-                $crate::compose_extrinsic_offline!(
-                    signer,
-                    call.clone(),
-                    $api.extrinsic_params($nonce)
-                )
-            } else {
-                UncheckedExtrinsicV4::new_unsigned(call.clone())
-            }
+            let maybe_call = $crate::compose_call!(metadata, $pallet_name, $call_name $(, ($args)) *);
+
+			let maybe_extrinsic = match maybe_call {
+				Some(call) => {
+					let extrinsic = if let Some(signer) = $api.signer() {
+						$crate::compose_extrinsic_offline!(
+							signer,
+							call.clone(),
+							$api.extrinsic_params($nonce)
+						)
+					} else {
+						UncheckedExtrinsicV4::new_unsigned(call.clone())
+					};
+					Some(extrinsic)
+				},
+				None => None,
+			};
+			maybe_extrinsic
+
+
 		}
 	};
 }
 
-/// Generates an Unchecked extrinsic for a given module and call passed as a &str.
-/// Fetches the nonce from the given `api` instance
+/// Generates an UncheckedExtrinsic for the given pallet and call, if they are found within the metadata.
+/// Otherwise None is returned.
+/// Fetches the nonce from the given `api` instance. If this fails, zero is taken as default nonce.
 /// See also compose_extrinsic_with_nonce
 #[macro_export]
 #[cfg(feature = "sync-api")]
 macro_rules! compose_extrinsic {
 	($api: expr,
-	$module: expr,
-	$call: expr
+	$pallet_name: expr,
+	$call_name: expr
 	$(, $args: expr) *) => {
 		{
-			let nonce = $api.get_nonce().unwrap();
-			let extrinsic = $crate::compose_extrinsic_with_nonce!($api, nonce, $module, $call $(, ($args)) *);
-			extrinsic
+			let nonce = $api.get_nonce().unwrap_or_default();
+			let maybe_extrinisc = $crate::compose_extrinsic_with_nonce!($api, nonce, $pallet_name, $call_name $(, ($args)) *);
+			maybe_extrinisc
 		}
     };
 }
 
-/// Generates an Unchecked extrinsic for a given module and call passed as a &str.
-/// Fetches the nonce from the given `api` instance
+/// Generates an UncheckedExtrinsic for the given pallet and call, if they are found within the metadata.
+/// Otherwise None is returned.
+/// Fetches the nonce from the given `api` instance. If this fails, zero is taken as default nonce.
 /// See also compose_extrinsic_with_nonce
 #[macro_export]
 #[cfg(not(feature = "sync-api"))]
 macro_rules! compose_extrinsic {
 	($api: expr,
-	$module: expr,
-	$call: expr
+	$pallet_name: expr,
+	$call_name: expr
 	$(, $args: expr) *) => {
 		{
-			let nonce = $api.get_nonce().await.unwrap();
-			let extrinsic = $crate::compose_extrinsic_with_nonce!($api, nonce, $module, $call $(, ($args)) *);
-			extrinsic
+			let nonce = $api.get_nonce().await.unwrap_or_default();
+			let maybe_extrinisc = $crate::compose_extrinsic_with_nonce!($api, nonce, $pallet_name, $call_name $(, ($args)) *);
+			maybe_extrinisc
 		}
 	};
 }
