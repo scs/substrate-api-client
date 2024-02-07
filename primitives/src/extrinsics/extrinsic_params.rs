@@ -291,7 +291,7 @@ impl From<AssetTip<u128>> for u128 {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use sp_core::hashing::blake2_256;
+	use sp_crypto_hashing::blake2_256;
 
 	#[test]
 	fn encode_blake2_256_works_as_expected() {
