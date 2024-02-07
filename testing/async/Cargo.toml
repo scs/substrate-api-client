@@ -13,6 +13,7 @@ tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
