@@ -97,7 +97,7 @@ impl GetStorageTypes for StorageEntryMetadata<PortableForm> {
 			StorageEntryType::Map { hashers, .. } => {
 				let module_prefix = pallet_prefix.as_bytes().to_vec();
 				let storage_prefix = self.name.as_bytes().to_vec();
-				let hasher1 = hashers.get(0).ok_or(MetadataError::StorageTypeError)?;
+				let hasher1 = hashers.first().ok_or(MetadataError::StorageTypeError)?;
 				let hasher2 = hashers.get(1).ok_or(MetadataError::StorageTypeError)?;
 
 				// hashers do not implement debug in no_std
@@ -125,7 +125,7 @@ impl GetStorageTypes for StorageEntryMetadata<PortableForm> {
 	fn get_map<K: Encode>(&self, pallet_prefix: &str) -> Result<StorageMap<K>, MetadataError> {
 		match &self.ty {
 			StorageEntryType::Map { hashers, .. } => {
-				let hasher = hashers.get(0).ok_or(MetadataError::StorageTypeError)?.to_owned();
+				let hasher = hashers.first().ok_or(MetadataError::StorageTypeError)?.to_owned();
 
 				let module_prefix = pallet_prefix.as_bytes().to_vec();
 				let storage_prefix = self.name.as_bytes().to_vec();
@@ -160,7 +160,7 @@ impl GetStorageTypes for StorageEntryMetadata<PortableForm> {
 				let module_prefix = pallet_prefix.as_bytes();
 				let storage_prefix = self.name.as_bytes();
 
-				let hasher1 = hashers.get(0).ok_or(MetadataError::StorageTypeError)?;
+				let hasher1 = hashers.first().ok_or(MetadataError::StorageTypeError)?;
 
 				let mut bytes = sp_core::twox_128(module_prefix).to_vec();
 				bytes.extend(&sp_core::twox_128(storage_prefix)[..]);
