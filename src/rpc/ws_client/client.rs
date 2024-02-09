@@ -141,3 +141,19 @@ impl WsRpcClient {
 		Ok(result_out.recv()?)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_new_works() {
+		let port = 9944;
+		let address = "ws://127.0.0.1";
+		let client = WsRpcClient::new(address, port).unwrap();
+
+		let client2 = WsRpcClient::with_default_url();
+
+		assert_eq!(client.url, client2.url);
+	}
+}

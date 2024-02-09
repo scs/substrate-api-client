@@ -229,6 +229,7 @@ where
 }
 
 #[cfg(test)]
+#[cfg(feature = "async-api")]
 mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
