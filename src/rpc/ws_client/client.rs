@@ -37,12 +37,26 @@ pub struct WsRpcClient {
 }
 
 impl WsRpcClient {
-	pub fn new(url: &str) -> Result<Self> {
-		Ok(Self { url: Url::parse(url)? })
+	/// Create a new client with the given address and port.
+	/// Example input:
+	/// - address: "ws://127.0.0.1"
+	/// - port: 9944
+	pub fn new(address: &str, port: u32) -> Result<Self> {
+		let url = format!("{address}:{port:?}");
+		Self::new_with_url(&url)
 	}
 
+	/// Create a new client with a local address and default Substrate node port.
 	pub fn with_default_url() -> Self {
-		Self::new("ws://127.0.0.1:9944").unwrap()
+		// This unwrap is safe and regularly testbed by system tests.
+		Self::new_with_url("ws://127.0.0.1:9944").unwrap()
+	}
+
+	/// Create a new client with the given url string.
+	/// Example url input: "ws://127.0.0.1:9944"
+	pub fn new_with_url(url: &str) -> Result<Self> {
+		let url: Url = Url::parse(url)?;
+		Ok(Self { url })
 	}
 }
 

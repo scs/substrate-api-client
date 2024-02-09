@@ -34,11 +34,25 @@ pub struct JsonrpseeClient {
 
 impl JsonrpseeClient {
 	pub async fn with_default_url() -> Result<Self> {
-		Self::new("ws://127.0.0.1:9944").await
+		Self::new_with_url("ws://127.0.0.1:9944").await
 	}
 
 	pub async fn new(url: &str) -> Result<Self> {
 		let parsed_url: Url = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
+	}
+	/// Create a new client with the given address, port and max number of reconnection attempts.
+	/// Example input:
+	/// - address: "ws://127.0.0.1"
+	/// - port: 9944
+	pub async fn new(address: &str, port: u32) -> Result<Self> {
+		let url = format!("{address}:{port:?}");
+		Self::new_with_url(&url).await
+	}
+
+	/// Create a new client with the given url string.
+	/// Example url input: "ws://127.0.0.1:9944"
+	pub async fn new_with_url(url: &str) -> Result<Self> {
+		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
 			.build(parsed_url)
 			.await
