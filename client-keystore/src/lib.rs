@@ -117,17 +117,17 @@ impl LocalKeystore {
 		Ok(sig)
 	}
 
-	fn vrf_output<T: CorePair + VrfSecret>(
+	fn vrf_pre_output<T: CorePair + VrfSecret>(
 		&self,
 		key_type: KeyTypeId,
 		public: &T::Public,
 		input: &T::VrfInput,
-	) -> std::result::Result<Option<T::VrfOutput>, TraitError> {
+	) -> std::result::Result<Option<T::VrfPreOutput>, TraitError> {
 		let preout = self
 			.0
 			.read()
 			.key_pair_by_type::<T>(public, key_type)?
-			.map(|pair| pair.vrf_output(input));
+			.map(|pair| pair.vrf_pre_output(input));
 		Ok(preout)
 	}
 }
@@ -166,13 +166,13 @@ impl Keystore for LocalKeystore {
 		self.vrf_sign::<sr25519::Pair>(key_type, public, data)
 	}
 
-	fn sr25519_vrf_output(
+	fn sr25519_vrf_pre_output(
 		&self,
 		key_type: KeyTypeId,
 		public: &sr25519::Public,
 		input: &sr25519::vrf::VrfInput,
-	) -> std::result::Result<Option<sr25519::vrf::VrfOutput>, TraitError> {
-		self.vrf_output::<sr25519::Pair>(key_type, public, input)
+	) -> std::result::Result<Option<sr25519::vrf::VrfPreOutput>, TraitError> {
+		self.vrf_pre_output::<sr25519::Pair>(key_type, public, input)
 	}
 
 	fn ed25519_public_keys(&self, key_type: KeyTypeId) -> Vec<ed25519::Public> {
