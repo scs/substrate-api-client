@@ -13,7 +13,7 @@
 
 use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
 use jsonrpsee::{
-	client_transport::ws::{Uri, WsTransportClientBuilder},
+	client_transport::ws::{Url, WsTransportClientBuilder},
 	core::{
 		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
 		traits::ToRpcParams,
@@ -38,13 +38,13 @@ impl JsonrpseeClient {
 	}
 
 	pub async fn new(url: &str) -> Result<Self> {
-		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
+		let parsed_url: Url = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
-			.build(uri)
+			.build(parsed_url)
 			.await
 			.map_err(|e| Error::Client(Box::new(e)))?;
 		let client = ClientBuilder::default()
-			.max_notifs_per_subscription(4096)
+			.max_buffer_capacity_per_subscription(4096)
 			.build_with_tokio(tx, rx);
 		Ok(Self { inner: Arc::new(client) })
 	}
@@ -81,11 +81,9 @@ impl Subscribe for JsonrpseeClient {
 struct RpcParamsWrapper(RpcParams);
 
 impl ToRpcParams for RpcParamsWrapper {
-	fn to_rpc_params(self) -> core::result::Result<Option<Box<RawValue>>, jsonrpsee::core::Error> {
+	fn to_rpc_params(self) -> core::result::Result<Option<Box<RawValue>>, serde_json::Error> {
 		if let Some(json) = self.0.build() {
-			RawValue::from_string(json)
-				.map(Some)
-				.map_err(jsonrpsee::core::Error::ParseError)
+			RawValue::from_string(json).map(Some)
 		} else {
 			Ok(None)
 		}
