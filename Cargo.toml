@@ -42,7 +42,7 @@ serde_json = { version = "1.0.79", default-features = false }
 url = { version = "2.0.0", optional = true }
 
 # websocket dependent features
-jsonrpsee = { version = "0.16", optional = true, features = ["async-client", "client-ws-transport", "jsonrpsee-types"] }
+jsonrpsee = { version = "0.21", optional = true, features = ["async-client", "client-ws-transport-native-tls", "jsonrpsee-types"] }
 tungstenite = { version = "0.21", optional = true, features = ["native-tls"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
