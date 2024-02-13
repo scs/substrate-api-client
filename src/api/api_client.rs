@@ -255,6 +255,7 @@ where
 mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
+	use ac_compose_macros::compose_call_for_pallet_metadata;
 	use ac_primitives::{
 		AssetRuntimeConfig, DefaultRuntimeConfig, GenericAdditionalParams, GenericExtrinsicParams,
 		PlainTip,
@@ -353,5 +354,20 @@ mod tests {
 		// Ensure metadata and runtime version have been updated.
 		assert_eq!(api.metadata.extrinsic(), metadata.extrinsic());
 		assert_eq!(api.runtime_version, runtime_version);
+	}
+
+	#[test]
+	fn macro_compose_call_for_pallet_metadata_works() {
+		let encoded_metadata: Bytes = fs::read("./ksm_metadata_v14.bin").unwrap().into();
+		let runtime_metadata_prefixed: RuntimeMetadataPrefixed =
+			Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		let pallet_metadata = metadata.pallet_by_name("Balances").unwrap();
+
+		let _call_one =
+			compose_call_for_pallet_metadata!(&pallet_metadata, "transfer_allow_death", 10000);
+		let _call_two =
+			compose_call_for_pallet_metadata!(&pallet_metadata, "force_set_balance", 10000);
 	}
 }
