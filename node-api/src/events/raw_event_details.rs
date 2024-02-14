@@ -28,7 +28,7 @@ use scale_value::{scale::TypeId, Composite};
 /// Raw event details without the associated metadata
 // Based on subxt EventDetails.
 // https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L197-L216
-#[derive(Debug, Clone, Encode, Decode)]
+#[derive(Debug, Clone, Encode, Decode, PartialEq)]
 pub struct RawEventDetails<Hash: Decode + Encode> {
 	phase: Phase,
 	/// The index of the event in the list of events in a given block.
@@ -831,5 +831,30 @@ mod tests {
 			.expect("event should be extracted OK");
 
 		assert_eq!(topics, ev.topics());
+	}
+
+	#[test]
+	fn encode_decode() {
+		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo, scale_decode::DecodeAsType)]
+		enum Event {
+			A(#[codec(compact)] u32),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construst an Events object to iterate them:
+		let events =
+			events::<Event>(metadata.clone(), vec![event_record(Phase::Finalization, Event::A(1))]);
+
+		// Dynamically decode:
+		let raw_event_details = events.iter().next().unwrap().unwrap().to_raw();
+
+		// Statically Encode/Decode:
+		let encoded = raw_event_details.encode();
+		let decoded = RawEventDetails::decode(&mut encoded.as_slice()).unwrap();
+
+		assert_eq!(raw_event_details, decoded);
 	}
 }
