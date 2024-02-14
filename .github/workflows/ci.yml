@@ -67,6 +67,10 @@ jobs:
 
                 # Run unit tests
                 cargo test --release,
+                cargo test --release -p substrate-client-keystore,
+                cargo test --release -p ac-node-api,
+                cargo test --release -p ac-primitives,
+
 
                 # Fmt
                 cargo fmt --all -- --check
