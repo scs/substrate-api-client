@@ -326,3 +326,510 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 		Ok(decoded)
 	}
 }
+
+/// Event related test utilities used outside this module.
+#[cfg(test)]
+pub(crate) mod test_utils {
+	use super::*;
+	use crate::{events::Compact, Events};
+	use codec::Encode;
+	use frame_metadata::{
+		v15::{
+			CustomMetadata, ExtrinsicMetadata, OuterEnums, PalletEventMetadata, PalletMetadata,
+			RuntimeMetadataV15,
+		},
+		RuntimeMetadataPrefixed,
+	};
+	use scale_info::{meta_type, TypeInfo};
+	use sp_core::H256;
+
+	/// An "outer" events enum containing exactly one event.
+	#[derive(
+		Encode,
+		Decode,
+		TypeInfo,
+		Clone,
+		Debug,
+		PartialEq,
+		Eq,
+		scale_encode::EncodeAsType,
+		scale_decode::DecodeAsType,
+	)]
+	pub enum AllEvents<Ev> {
+		Test(Ev),
+	}
+
+	/// This encodes to the same format an event is expected to encode to
+	/// in node System.Events storage.
+	#[derive(Encode)]
+	pub struct EventRecord<E: Encode> {
+		phase: Phase,
+		event: AllEvents<E>,
+		topics: Vec<H256>,
+	}
+
+	impl<E: Encode> EventRecord<E> {
+		/// Create a new event record with the given phase, event, and topics.
+		pub fn new(phase: Phase, event: E, topics: Vec<H256>) -> Self {
+			Self { phase, event: AllEvents::Test(event), topics }
+		}
+	}
+
+	/// Build an EventRecord, which encoded events in the format expected
+	/// to be handed back from storage queries to System.Events.
+	pub fn event_record<E: Encode>(phase: Phase, event: E) -> EventRecord<E> {
+		EventRecord::new(phase, event, vec![])
+	}
+
+	/// Build fake metadata consisting of a single pallet that knows
+	/// about the event type provided.
+	pub fn metadata<E: TypeInfo + 'static>() -> Metadata {
+		// Extrinsic needs to contain at least the generic type parameter "Call"
+		// for the metadata to be valid.
+		// The "Call" type from the metadata is used to decode extrinsics.
+		// In reality, the extrinsic type has "Call", "Address", "Extra", "Signature" generic types.
+		#[allow(unused)]
+		#[derive(TypeInfo)]
+		struct ExtrinsicType<Call> {
+			call: Call,
+		}
+		// Because this type is used to decode extrinsics, we expect this to be a TypeDefVariant.
+		// Each pallet must contain one single variant.
+		#[allow(unused)]
+		#[derive(TypeInfo)]
+		enum RuntimeCall {
+			PalletName(Pallet),
+		}
+		// The calls of the pallet.
+		#[allow(unused)]
+		#[derive(TypeInfo)]
+		enum Pallet {
+			#[allow(unused)]
+			SomeCall,
+		}
+
+		let pallets = vec![PalletMetadata {
+			name: "Test",
+			storage: None,
+			calls: None,
+			event: Some(PalletEventMetadata { ty: meta_type::<E>() }),
+			constants: vec![],
+			error: None,
+			index: 0,
+			docs: vec![],
+		}];
+
+		let extrinsic = ExtrinsicMetadata {
+			version: 0,
+			signed_extensions: vec![],
+			address_ty: meta_type::<()>(),
+			call_ty: meta_type::<RuntimeCall>(),
+			signature_ty: meta_type::<()>(),
+			extra_ty: meta_type::<()>(),
+		};
+
+		let meta = RuntimeMetadataV15::new(
+			pallets,
+			extrinsic,
+			meta_type::<()>(),
+			vec![],
+			OuterEnums {
+				call_enum_ty: meta_type::<()>(),
+				event_enum_ty: meta_type::<AllEvents<E>>(),
+				error_enum_ty: meta_type::<()>(),
+			},
+			CustomMetadata { map: Default::default() },
+		);
+		let runtime_metadata: RuntimeMetadataPrefixed = meta.into();
+		Metadata::try_from(runtime_metadata).unwrap()
+	}
+
+	/// Build an `Events` object for test purposes, based on the details provided,
+	/// and with a default block hash.
+	pub fn events<E: Decode + Encode>(
+		metadata: Metadata,
+		event_records: Vec<EventRecord<E>>,
+	) -> Events<H256> {
+		let num_events = event_records.len() as u32;
+		let mut event_bytes = Vec::new();
+		for ev in event_records {
+			ev.encode_to(&mut event_bytes);
+		}
+		events_raw(metadata, event_bytes, num_events)
+	}
+
+	/// Much like [`events`], but takes pre-encoded events and event count, so that we can
+	/// mess with the bytes in tests if we need to.
+	pub fn events_raw(metadata: Metadata, event_bytes: Vec<u8>, num_events: u32) -> Events<H256> {
+		// Prepend compact encoded length to event bytes:
+		let mut all_event_bytes = Compact(num_events).encode();
+		all_event_bytes.extend(event_bytes);
+		Events::new(metadata, H256::default(), all_event_bytes)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{
+		test_utils::{event_record, events, events_raw, EventRecord},
+		*,
+	};
+	use codec::Encode;
+	use scale_info::TypeInfo;
+	use scale_value::Value;
+	use sp_core::H256;
+
+	/// Build a fake wrapped metadata.
+	fn metadata<E: TypeInfo + 'static>() -> Metadata {
+		test_utils::metadata::<E>()
+	}
+
+	/// [`RawEventDetails`] can be annoying to test, because it contains
+	/// type info in the decoded field Values. Strip that here so that
+	/// we can compare fields more easily.
+	#[derive(Debug, PartialEq, Eq, Clone)]
+	pub struct TestRawEventDetails {
+		pub phase: Phase,
+		pub index: u32,
+		pub pallet: String,
+		pub pallet_index: u8,
+		pub variant: String,
+		pub variant_index: u8,
+		pub fields: Vec<scale_value::Value>,
+	}
+
+	/// Compare some actual [`RawEventDetails`] with a hand-constructed
+	/// (probably) [`TestRawEventDetails`].
+	pub fn assert_raw_events_match(
+		actual: RawEventDetails<H256>,
+		expected: TestRawEventDetails,
+		metadata: &Metadata,
+	) {
+		let actual_fields_no_context: Vec<_> = actual
+			.field_values(metadata)
+			.expect("can decode field values (2)")
+			.into_values()
+			.map(|value| value.remove_context())
+			.collect();
+
+		// Check each of the other fields:
+		assert_eq!(actual.phase(), expected.phase);
+		assert_eq!(actual.index(), expected.index);
+		assert_eq!(actual.pallet_name(), expected.pallet);
+		assert_eq!(actual.pallet_index(), expected.pallet_index);
+		assert_eq!(actual.variant_name(), expected.variant);
+		assert_eq!(actual.variant_index(), expected.variant_index);
+		assert_eq!(actual_fields_no_context, expected.fields);
+	}
+
+	#[test]
+	fn dynamically_decode_single_event() {
+		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo)]
+		enum Event {
+			A(u8, bool, Vec<String>),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construst an Events object to iterate them:
+		let event = Event::A(1, true, vec!["Hi".into()]);
+		let events = events::<Event>(
+			metadata.clone(),
+			vec![event_record(Phase::ApplyExtrinsic(123), event)],
+		);
+
+		let mut event_details_iter = events.iter();
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				phase: Phase::ApplyExtrinsic(123),
+				index: 0,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![
+					Value::u128(1),
+					Value::bool(true),
+					Value::unnamed_composite(vec![Value::string("Hi")]),
+				],
+			},
+			&metadata,
+		);
+		assert!(event_details_iter.next().is_none());
+	}
+
+	#[test]
+	fn dynamically_decode_multiple_events() {
+		#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
+		enum Event {
+			A(u8),
+			B(bool),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construst an Events object to iterate them:
+		let event1 = Event::A(1);
+		let event2 = Event::B(true);
+		let event3 = Event::A(234);
+
+		let events = events::<Event>(
+			metadata.clone(),
+			vec![
+				event_record(Phase::Initialization, event1),
+				event_record(Phase::ApplyExtrinsic(123), event2),
+				event_record(Phase::Finalization, event3),
+			],
+		);
+
+		let mut event_details_iter = events.iter();
+
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 0,
+				phase: Phase::Initialization,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![Value::u128(1)],
+			},
+			&metadata,
+		);
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 1,
+				phase: Phase::ApplyExtrinsic(123),
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "B".to_string(),
+				variant_index: 1,
+				fields: vec![Value::bool(true)],
+			},
+			&metadata,
+		);
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 2,
+				phase: Phase::Finalization,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![Value::u128(234)],
+			},
+			&metadata,
+		);
+		assert!(event_details_iter.next().is_none());
+	}
+
+	#[test]
+	fn dynamically_decode_multiple_events_until_error() {
+		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo)]
+		enum Event {
+			A(u8),
+			B(bool),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode 2 events:
+		let mut event_bytes = vec![];
+		event_record(Phase::Initialization, Event::A(1)).encode_to(&mut event_bytes);
+		event_record(Phase::ApplyExtrinsic(123), Event::B(true)).encode_to(&mut event_bytes);
+
+		// Push a few naff bytes to the end (a broken third event):
+		event_bytes.extend_from_slice(&[3, 127, 45, 0, 2]);
+
+		// Encode our events in the format we expect back from a node, and
+		// construst an Events object to iterate them:
+		let events = events_raw(
+			metadata.clone(),
+			event_bytes,
+			3, // 2 "good" events, and then it'll hit the naff bytes.
+		);
+		let mut event_details_iter = events.iter();
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 0,
+				phase: Phase::Initialization,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![Value::u128(1)],
+			},
+			&metadata,
+		);
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 1,
+				phase: Phase::ApplyExtrinsic(123),
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "B".to_string(),
+				variant_index: 1,
+				fields: vec![Value::bool(true)],
+			},
+			&metadata,
+		);
+
+		// We'll hit an error trying to decode the third event:
+		assert!(event_details_iter.next().unwrap().is_err());
+		// ... and then "None" from then on.
+		assert!(event_details_iter.next().is_none());
+		assert!(event_details_iter.next().is_none());
+	}
+
+	#[test]
+	fn compact_event_field() {
+		#[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
+		enum Event {
+			A(#[codec(compact)] u32),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construst an Events object to iterate them:
+		let events =
+			events::<Event>(metadata.clone(), vec![event_record(Phase::Finalization, Event::A(1))]);
+
+		// Dynamically decode:
+		let mut event_details_iter = events.iter();
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 0,
+				phase: Phase::Finalization,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![Value::u128(1)],
+			},
+			&metadata,
+		);
+		assert!(event_details_iter.next().is_none());
+	}
+
+	#[test]
+	fn compact_wrapper_struct_field() {
+		#[derive(Clone, Decode, Debug, PartialEq, Encode, TypeInfo)]
+		enum Event {
+			A(#[codec(compact)] CompactWrapper),
+		}
+
+		#[derive(Clone, Decode, Debug, PartialEq, codec::CompactAs, Encode, TypeInfo)]
+		struct CompactWrapper(u64);
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construct an Events object to iterate them:
+		let events = events::<Event>(
+			metadata.clone(),
+			vec![event_record(Phase::Finalization, Event::A(CompactWrapper(1)))],
+		);
+
+		// Dynamically decode:
+		let mut event_details_iter = events.iter();
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 0,
+				phase: Phase::Finalization,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![Value::unnamed_composite(vec![Value::u128(1)])],
+			},
+			&metadata,
+		);
+		assert!(event_details_iter.next().is_none());
+	}
+
+	#[test]
+	fn event_containing_explicit_index() {
+		#[derive(Clone, Debug, PartialEq, Eq, Decode, Encode, TypeInfo)]
+		#[repr(u8)]
+		#[allow(trivial_numeric_casts, clippy::unnecessary_cast)] // required because the Encode derive produces a warning otherwise
+		pub enum MyType {
+			B = 10u8,
+		}
+
+		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo)]
+		enum Event {
+			A(MyType),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construct an Events object to iterate them:
+		let events = events::<Event>(
+			metadata.clone(),
+			vec![event_record(Phase::Finalization, Event::A(MyType::B))],
+		);
+
+		// Dynamically decode:
+		let mut event_details_iter = events.iter();
+		assert_raw_events_match(
+			event_details_iter.next().unwrap().unwrap().to_raw(),
+			TestRawEventDetails {
+				index: 0,
+				phase: Phase::Finalization,
+				pallet: "Test".to_string(),
+				pallet_index: 0,
+				variant: "A".to_string(),
+				variant_index: 0,
+				fields: vec![Value::unnamed_variant("B", vec![])],
+			},
+			&metadata,
+		);
+		assert!(event_details_iter.next().is_none());
+	}
+
+	#[test]
+	fn topics() {
+		#[derive(Clone, Debug, PartialEq, Decode, Encode, TypeInfo, scale_decode::DecodeAsType)]
+		enum Event {
+			A(u8, bool, Vec<String>),
+		}
+
+		// Create fake metadata that knows about our single event, above:
+		let metadata = metadata::<Event>();
+
+		// Encode our events in the format we expect back from a node, and
+		// construct an Events object to iterate them:
+		let event = Event::A(1, true, vec!["Hi".into()]);
+		let topics = vec![H256::from_low_u64_le(123), H256::from_low_u64_le(456)];
+		let events = events::<Event>(
+			metadata,
+			vec![EventRecord::new(Phase::ApplyExtrinsic(123), event, topics.clone())],
+		);
+
+		let ev = events
+			.iter()
+			.next()
+			.expect("one event expected")
+			.expect("event should be extracted OK");
+
+		assert_eq!(topics, ev.topics());
+	}
+}
