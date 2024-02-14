@@ -51,7 +51,7 @@ async fn main() {
 	assert_eq!(alice_nonce, api.get_nonce().await.unwrap());
 
 	// Authority Discovery
-	let authority_id: Vec<sr25519::Public> = runtime_api.authority_discovery(None).await.unwrap();
+	let authority_id: Vec<sr25519::Public> = runtime_api.authorities(None).await.unwrap();
 	assert!(authority_id.len() > 0);
 
 	// BlockBuilder

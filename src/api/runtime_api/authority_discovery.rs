@@ -22,7 +22,7 @@ use codec::Decode;
 #[maybe_async::maybe_async(?Send)]
 pub trait AuthorityDiscoveryApi: RuntimeApi {
 	/// Retrieve authority identifiers of the current and next authority set.
-	async fn authority_discovery<AuthorityId: Decode>(
+	async fn authorities<AuthorityId: Decode>(
 		&self,
 		at_block: Option<Self::Hash>,
 	) -> Result<Vec<AuthorityId>>;
@@ -34,7 +34,7 @@ where
 	T: Config,
 	Client: Request,
 {
-	async fn authority_discovery<AuthorityId: Decode>(
+	async fn authorities<AuthorityId: Decode>(
 		&self,
 		at_block: Option<Self::Hash>,
 	) -> Result<Vec<AuthorityId>> {

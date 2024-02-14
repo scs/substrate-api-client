@@ -53,7 +53,7 @@ async fn main() {
 	println!("To exceute the balance extrinsic, the following fee is required: {:?}", final_fee);
 
 	// Get the authority Ids.
-	let authority_ids: Vec<sr25519::Public> = runtime_api.authority_discovery(None).await.unwrap();
+	let authority_ids: Vec<sr25519::Public> = runtime_api.authorities(None).await.unwrap();
 	println!("The following authorities are currently active:");
 	for authority in authority_ids {
 		println!("{:?}", authority);
