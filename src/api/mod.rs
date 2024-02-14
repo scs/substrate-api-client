@@ -35,7 +35,7 @@ pub mod rpc_api;
 
 /// Extrinsic report returned upon a submit_and_watch request.
 /// Holds as much information as available.
-#[derive(Debug, Clone, Encode, Decode)]
+#[derive(Debug, Clone, Encode, Decode, PartialEq)]
 pub struct ExtrinsicReport<Hash: Encode + Decode> {
 	// Hash of the extrinsic.
 	pub extrinsic_hash: Hash,
@@ -88,9 +88,9 @@ pub enum UnexpectedTxStatus {
 // Copied from `sc-transaction-pool`
 // (https://github.com/paritytech/substrate/blob/dddfed3d9260cf03244f15ba3db4edf9af7467e9/client/transaction-pool/api/src/lib.rs)
 // as the library is not no-std compatible
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Encode, Decode)]
 #[serde(rename_all = "camelCase")]
-pub enum TransactionStatus<Hash, BlockHash> {
+pub enum TransactionStatus<Hash: Encode + Decode, BlockHash: Encode + Decode> {
 	/// Transaction is part of the future queue.
 	Future,
 	/// Transaction is part of the ready queue.
@@ -115,7 +115,7 @@ pub enum TransactionStatus<Hash, BlockHash> {
 	Invalid,
 }
 
-impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
+impl<Hash: Encode + Decode, BlockHash: Encode + Decode> TransactionStatus<Hash, BlockHash> {
 	pub fn as_u8(&self) -> u8 {
 		match self {
 			TransactionStatus::Future => 0,
@@ -300,5 +300,19 @@ mod tests {
 		assert!(TransactionStatus::Usurped(H256::random()).reached_status(status));
 		assert!(TransactionStatus::Dropped.reached_status(status));
 		assert!(TransactionStatus::Invalid.reached_status(status));
+	}
+
+	#[test]
+	fn encode_decode_extrinsic_report() {
+		let hash = H256::random();
+		let block_hash = H256::random();
+		let status = TransactionStatus::InBlock(block_hash.clone());
+		// RawEventDetails Encoding / Decoding is already tested separately, so we don't need to retest here.
+		let report = ExtrinsicReport::new(hash, Some(block_hash), status, None);
+
+		let encoded = report.encode();
+		let decoded = ExtrinsicReport::<H256>::decode(&mut encoded.as_slice()).unwrap();
+
+		assert_eq!(report, decoded);
 	}
 }
