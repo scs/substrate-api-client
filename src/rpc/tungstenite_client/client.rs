@@ -224,3 +224,19 @@ fn read_until_text_message(socket: &mut MySocket) -> Result<String> {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn client_new() {
+		let port = 9944;
+		let address = "ws://127.0.0.1";
+		let client = TungsteniteRpcClient::new(address, port, 1).unwrap();
+
+		let client2 = TungsteniteRpcClient::with_default_url(1);
+
+		assert_eq!(client.url, client2.url);
+	}
+}

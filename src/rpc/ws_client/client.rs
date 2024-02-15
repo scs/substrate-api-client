@@ -147,7 +147,7 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn test_new_works() {
+	fn client_new() {
 		let port = 9944;
 		let address = "ws://127.0.0.1";
 		let client = WsRpcClient::new(address, port).unwrap();
