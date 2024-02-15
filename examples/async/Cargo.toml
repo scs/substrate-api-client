@@ -6,7 +6,7 @@ edition = "2021"
 
 [dev-dependencies]
 codec = { package = "parity-scale-codec", version = "3.6.1", features = ['derive'] }
-env_logger = "0.10.0"
+env_logger = "0.11"
 log = "0.4.14"
 serde_json = "1.0.79"
 tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
