@@ -65,6 +65,7 @@ The following async examples can be found in the [async examples](/examples/asyn
 * [get_blocks](/examples/async/examples/get_blocks.rs): Read header, block and signed block from storage.
 * [get_storage](/examples/async/examples/get_storage.rs): Read storage values.
 * [print_metadata](/examples/async/examples/print_metadata.rs): Print the metadata of the node in a readable way.
+* [query_runtime_api](/src/examples/async/examples/query_runtime_api.rs): How to query the runtime api.
 * [runtime_update_async](/examples/async/examples/runtime_update_async.rs): How to do an runtime upgrade asynchronously.
 * [staking_batch_payout](/examples/async/examples/staking_batch_payout.rs): Batch reward payout for validator.
 * [subscribe_events](/examples/async/examples/subscribe_events.rs): Subscribe and react on events.

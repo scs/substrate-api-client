@@ -14,6 +14,7 @@
 use crate::{
 	api::error::{Error, Result},
 	rpc::Request,
+	runtime_api::RuntimeApiClient,
 	GetAccountInformation,
 };
 use ac_compose_macros::rpc_params;
@@ -21,6 +22,7 @@ use ac_node_api::metadata::Metadata;
 use ac_primitives::{Config, ExtrinsicParams, SignExtrinsic};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
+use alloc::sync::Arc;
 use codec::Decode;
 use core::convert::TryFrom;
 use frame_metadata::RuntimeMetadataPrefixed;
@@ -36,7 +38,8 @@ pub struct Api<T: Config, Client> {
 	genesis_hash: T::Hash,
 	metadata: Metadata,
 	runtime_version: RuntimeVersion,
-	client: Client,
+	client: Arc<Client>,
+	runtime_api: RuntimeApiClient<T, Client>,
 	additional_extrinsic_params:
 		Option<<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams>,
 }
@@ -49,12 +52,15 @@ impl<T: Config, Client> Api<T, Client> {
 		runtime_version: RuntimeVersion,
 		client: Client,
 	) -> Self {
+		let client = Arc::new(client);
+		let runtime_api = RuntimeApiClient::new(client.clone());
 		Self {
 			signer: None,
 			genesis_hash,
 			metadata,
 			runtime_version,
 			client,
+			runtime_api,
 			additional_extrinsic_params: None,
 		}
 	}
@@ -100,6 +106,11 @@ impl<T: Config, Client> Api<T, Client> {
 		add_params: <T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::AdditionalParams,
 	) {
 		self.additional_extrinsic_params = Some(add_params);
+	}
+
+	/// Access the RuntimeApi.
+	pub fn runtime_api(&self) -> &RuntimeApiClient<T, Client> {
+		&self.runtime_api
 	}
 
 	/// Get the extrinsic params with the set additional params. If no additional params are set,
