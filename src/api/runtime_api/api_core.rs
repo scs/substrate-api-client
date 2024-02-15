@@ -16,7 +16,7 @@ use crate::{api::Result, rpc::Request};
 use ac_primitives::{config::Config, RuntimeVersion};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
-use alloc::{vec, vec::Vec};
+use alloc::vec;
 use sp_core::{Bytes, Encode};
 
 #[maybe_async::maybe_async(?Send)]
