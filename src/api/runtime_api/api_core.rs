@@ -17,7 +17,7 @@ use ac_primitives::{config::Config, RuntimeVersion};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};
-use sp_core::Encode;
+use sp_core::{Bytes, Encode};
 
 #[maybe_async::maybe_async(?Send)]
 pub trait CoreApi: RuntimeApi {
@@ -29,11 +29,7 @@ pub trait CoreApi: RuntimeApi {
 	async fn execute_block(&self, block: Self::Block, at_block: Option<Self::Hash>) -> Result<()>;
 
 	/// Execute the given opaque block.
-	async fn execute_opaque_block(
-		&self,
-		block: Vec<u8>,
-		at_block: Option<Self::Hash>,
-	) -> Result<()>;
+	async fn execute_opaque_block(&self, block: Bytes, at_block: Option<Self::Hash>) -> Result<()>;
 
 	/// Initialize a block with the given header.
 	async fn initialize_block(
@@ -57,15 +53,11 @@ where
 	type RuntimeVersion = RuntimeVersion;
 
 	async fn execute_block(&self, block: Self::Block, at_block: Option<Self::Hash>) -> Result<()> {
-		self.execute_opaque_block(block.encode(), at_block).await
+		self.execute_opaque_block(block.encode().into(), at_block).await
 	}
 
-	async fn execute_opaque_block(
-		&self,
-		block: Vec<u8>,
-		at_block: Option<Self::Hash>,
-	) -> Result<()> {
-		self.runtime_call("Core_execute_block", vec![block], at_block).await
+	async fn execute_opaque_block(&self, block: Bytes, at_block: Option<Self::Hash>) -> Result<()> {
+		self.runtime_call("Core_execute_block", vec![block.0], at_block).await
 	}
 
 	async fn initialize_block(
