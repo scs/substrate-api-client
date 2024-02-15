@@ -65,10 +65,8 @@ jobs:
                 cargo clippy --no-default-features -- -D warnings,
                 cargo clippy --all-features --examples -- -D warnings,
 
-                # Run unit tests
-                cargo test --release,
-                cargo test --release --no-default-features --features ws-client,
-                cargo test --release --no-default-features --features tungstenite-client,
+                # Run unit tests of the api crate,
+                cargo test --release --all-features --workspace --exclude test-no-std --exclude "ac-examples-*" --exclude "ac-testing-*",
 
                 # Fmt
                 cargo fmt --all -- --check
