@@ -36,7 +36,7 @@ type Index = <AssetRuntimeConfig as Config>::Index;
 #[tokio::main]
 async fn main() {
 	// Setup
-	let client = JsonrpseeClient::new("ws://127.0.0.1", 9944).await.unwrap();
+	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	let mut api = MyApi::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
