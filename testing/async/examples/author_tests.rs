@@ -89,7 +89,7 @@ async fn test_submit_and_watch(api: &MyApi, transfer_call: RuntimeCall, nonce: I
 async fn test_submit_and_watch_until_ready(api: &MyApi, transfer_call: RuntimeCall, nonce: Index) {
 	std::thread::sleep(std::time::Duration::from_secs(1));
 	let xt = api.compose_extrinsic_offline(transfer_call, nonce);
-	let extrinsic_hash: H256 = sp_core::blake2_256(&xt.encode()).into();
+	let extrinsic_hash: H256 = sp_crypto_hashing::blake2_256(&xt.encode()).into();
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Ready).await.unwrap();
 	assert_eq!(extrinsic_hash, report.extrinsic_hash);
 	assert!(report.block_hash.is_none());
