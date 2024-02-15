@@ -19,7 +19,7 @@
 
 extern crate alloc;
 
-use sp_core::twox_128;
+use sp_crypto_hashing::twox_128;
 use sp_storage::StorageKey;
 
 pub use ac_compose_macros;

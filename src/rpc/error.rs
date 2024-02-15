@@ -53,6 +53,7 @@ impl From<tungstenite::Error> for Error {
 }
 
 #[cfg(feature = "std")]
+#[allow(unused_imports)]
 pub use std_only::*;
 #[cfg(feature = "std")]
 mod std_only {
