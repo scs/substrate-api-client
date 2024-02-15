@@ -27,6 +27,7 @@ serde_json = { version = "1.0.79", default-features = false, features = ["alloc"
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 

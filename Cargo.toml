@@ -48,6 +48,7 @@ ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
