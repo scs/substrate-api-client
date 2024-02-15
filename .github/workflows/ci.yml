@@ -67,6 +67,8 @@ jobs:
 
                 # Run unit tests
                 cargo test --release,
+                cargo test --release --no-default-features --features ws-client,
+                cargo test --release --no-default-features --features tungstenite-client,
 
                 # Fmt
                 cargo fmt --all -- --check
