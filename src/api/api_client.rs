@@ -255,7 +255,6 @@ where
 mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
-	use ac_compose_macros::compose_call_for_pallet_metadata;
 	use ac_primitives::{
 		AssetRuntimeConfig, DefaultRuntimeConfig, GenericAdditionalParams, GenericExtrinsicParams,
 		PlainTip,
