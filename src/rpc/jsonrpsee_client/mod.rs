@@ -49,7 +49,7 @@ impl JsonrpseeClient {
 	/// Create a new client with the given url string.
 	/// Example url input: "ws://127.0.0.1:9944"
 	pub async fn new_with_url(url: &str) -> Result<Self> {
-		let uri: Uri = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
+		let parsed_url: Url = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
 			.build(parsed_url)
 			.await
@@ -98,5 +98,21 @@ impl ToRpcParams for RpcParamsWrapper {
 		} else {
 			Ok(None)
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn client_new() {
+		let port = 9944;
+		let address = "ws://127.0.0.1";
+		let client = JsonrpseeClient::new(address, port).await.unwrap();
+
+		let client2 = JsonrpseeClient::with_default_url().await.unwrap();
+
+		assert_eq!(client.inner, client2.inner);
 	}
 }
