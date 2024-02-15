@@ -66,11 +66,9 @@ jobs:
                 cargo clippy --all-features --examples -- -D warnings,
 
                 # Run unit tests
-                cargo test --release,
-                cargo test --release -p substrate-client-keystore,
-                cargo test --release -p ac-node-api,
-                cargo test --release -p ac-primitives,
-
+                cargo test --release --workspace --exclude test-no-std --exclude "ac-examples-*" --exclude "ac-testing-*",
+                cargo test --release --no-default-features --features ws-client,
+                cargo test --release --no-default-features --features tungstenite-client,
 
                 # Fmt
                 cargo fmt --all -- --check
