@@ -57,7 +57,7 @@ impl JsonrpseeClient {
 	/// - port: 9944
 	pub async fn new_with_port(address: &str, port: u32) -> Result<Self> {
 		let url = format!("{address}:{port:?}");
-		Self::new_with_url(&url).await
+		Self::new(&url).await
 	}
 }
 
