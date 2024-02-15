@@ -17,9 +17,10 @@
 //
 //! Local keystore implementation. This file is from substrate but was copied here to have
 //! access to the private stuff.
-//! Original file: https://github.com/paritytech/substrate/blob/d90836030f0973fbb0f70392d661cb51233a05e8/client/keystore/src/local.rs
+//! Original file: https://github.com/paritytech/polkadot-sdk/blob/1f023deab8d021c5bab08731e13aa12590ed4026/substrate/client/keystore/src/local.rs
 
 use parking_lot::RwLock;
+use sc_keystore::{Error, Result};
 use sp_application_crypto::{AppCrypto, AppPair, IsWrappedBy};
 use sp_core::{
 	crypto::{ByteArray, ExposeSecret, KeyTypeId, Pair as CorePair, SecretString, VrfSecret},
@@ -33,11 +34,17 @@ use std::{
 	sync::Arc,
 };
 
-use sc_keystore::{Error, Result};
-
 mod keystore_ext;
 pub use keystore_ext::KeystoreExt;
 pub use sp_keystore::{Error as TraitError, Keystore, KeystorePtr};
+
+sp_keystore::bandersnatch_experimental_enabled! {
+use sp_core::bandersnatch;
+}
+
+sp_keystore::bls_experimental_enabled! {
+use sp_core::{bls377, bls381, ecdsa_bls377};
+}
 
 /// A local based keystore that is either memory-based or filesystem-based.
 pub struct LocalKeystore(RwLock<KeystoreInner>);
@@ -117,22 +124,41 @@ impl LocalKeystore {
 		Ok(sig)
 	}
 
-	fn vrf_output<T: CorePair + VrfSecret>(
+	fn vrf_pre_output<T: CorePair + VrfSecret>(
 		&self,
 		key_type: KeyTypeId,
 		public: &T::Public,
 		input: &T::VrfInput,
-	) -> std::result::Result<Option<T::VrfOutput>, TraitError> {
-		let preout = self
+	) -> std::result::Result<Option<T::VrfPreOutput>, TraitError> {
+		let pre_output = self
 			.0
 			.read()
 			.key_pair_by_type::<T>(public, key_type)?
-			.map(|pair| pair.vrf_output(input));
-		Ok(preout)
+			.map(|pair| pair.vrf_pre_output(input));
+		Ok(pre_output)
 	}
 }
 
 impl Keystore for LocalKeystore {
+	fn insert(
+		&self,
+		key_type: KeyTypeId,
+		suri: &str,
+		public: &[u8],
+	) -> std::result::Result<(), ()> {
+		self.0.write().insert(key_type, suri, public).map_err(|_| ())
+	}
+
+	fn keys(&self, key_type: KeyTypeId) -> std::result::Result<Vec<Vec<u8>>, TraitError> {
+		self.0.read().raw_public_keys(key_type).map_err(|e| e.into())
+	}
+
+	fn has_keys(&self, public_keys: &[(Vec<u8>, KeyTypeId)]) -> bool {
+		public_keys
+			.iter()
+			.all(|(p, t)| self.0.read().key_phrase_by_type(p, *t).ok().flatten().is_some())
+	}
+
 	fn sr25519_public_keys(&self, key_type: KeyTypeId) -> Vec<sr25519::Public> {
 		self.public_keys::<sr25519::Pair>(key_type)
 	}
@@ -166,13 +192,13 @@ impl Keystore for LocalKeystore {
 		self.vrf_sign::<sr25519::Pair>(key_type, public, data)
 	}
 
-	fn sr25519_vrf_output(
+	fn sr25519_vrf_pre_output(
 		&self,
 		key_type: KeyTypeId,
 		public: &sr25519::Public,
 		input: &sr25519::vrf::VrfInput,
-	) -> std::result::Result<Option<sr25519::vrf::VrfOutput>, TraitError> {
-		self.vrf_output::<sr25519::Pair>(key_type, public, input)
+	) -> std::result::Result<Option<sr25519::vrf::VrfPreOutput>, TraitError> {
+		self.vrf_pre_output::<sr25519::Pair>(key_type, public, input)
 	}
 
 	fn ed25519_public_keys(&self, key_type: KeyTypeId) -> Vec<ed25519::Public> {
@@ -237,83 +263,144 @@ impl Keystore for LocalKeystore {
 		Ok(sig)
 	}
 
-	#[cfg(feature = "bls-experimental")]
-	fn bls381_public_keys(&self, key_type: KeyTypeId) -> Vec<bls381::Public> {
-		self.public_keys::<bls381::Pair>(key_type)
+	sp_keystore::bandersnatch_experimental_enabled! {
+		fn bandersnatch_public_keys(&self, key_type: KeyTypeId) -> Vec<bandersnatch::Public> {
+			self.public_keys::<bandersnatch::Pair>(key_type)
+		}
+
+		/// Generate a new pair compatible with the 'bandersnatch' signature scheme.
+		///
+		/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
+		fn bandersnatch_generate_new(
+			&self,
+			key_type: KeyTypeId,
+			seed: Option<&str>,
+		) -> std::result::Result<bandersnatch::Public, TraitError> {
+			self.generate_new::<bandersnatch::Pair>(key_type, seed)
+		}
+
+		fn bandersnatch_sign(
+			&self,
+			key_type: KeyTypeId,
+			public: &bandersnatch::Public,
+			msg: &[u8],
+		) -> std::result::Result<Option<bandersnatch::Signature>, TraitError> {
+			self.sign::<bandersnatch::Pair>(key_type, public, msg)
+		}
+
+		fn bandersnatch_vrf_sign(
+			&self,
+			key_type: KeyTypeId,
+			public: &bandersnatch::Public,
+			data: &bandersnatch::vrf::VrfSignData,
+		) -> std::result::Result<Option<bandersnatch::vrf::VrfSignature>, TraitError> {
+			self.vrf_sign::<bandersnatch::Pair>(key_type, public, data)
+		}
+
+		fn bandersnatch_vrf_pre_output(
+			&self,
+			key_type: KeyTypeId,
+			public: &bandersnatch::Public,
+			input: &bandersnatch::vrf::VrfInput,
+		) -> std::result::Result<Option<bandersnatch::vrf::VrfPreOutput>, TraitError> {
+			self.vrf_pre_output::<bandersnatch::Pair>(key_type, public, input)
+		}
+
+		fn bandersnatch_ring_vrf_sign(
+			&self,
+			key_type: KeyTypeId,
+			public: &bandersnatch::Public,
+			data: &bandersnatch::vrf::VrfSignData,
+			prover: &bandersnatch::ring_vrf::RingProver,
+		) -> std::result::Result<Option<bandersnatch::ring_vrf::RingVrfSignature>, TraitError> {
+			let sig = self
+				.0
+				.read()
+				.key_pair_by_type::<bandersnatch::Pair>(public, key_type)?
+				.map(|pair| pair.ring_vrf_sign(data, prover));
+			Ok(sig)
+		}
 	}
 
-	#[cfg(feature = "bls-experimental")]
-	/// Generate a new pair compatible with the 'bls381' signature scheme.
-	///
-	/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
-	fn bls381_generate_new(
-		&self,
-		key_type: KeyTypeId,
-		seed: Option<&str>,
-	) -> std::result::Result<bls381::Public, TraitError> {
-		self.generate_new::<bls381::Pair>(key_type, seed)
-	}
+	sp_keystore::bls_experimental_enabled! {
+		fn bls381_public_keys(&self, key_type: KeyTypeId) -> Vec<bls381::Public> {
+			self.public_keys::<bls381::Pair>(key_type)
+		}
 
-	#[cfg(feature = "bls-experimental")]
-	fn bls381_sign(
-		&self,
-		key_type: KeyTypeId,
-		public: &bls381::Public,
-		msg: &[u8],
-	) -> std::result::Result<Option<bls381::Signature>, TraitError> {
-		self.sign::<bls381::Pair>(key_type, public, msg)
-	}
+		/// Generate a new pair compatible with the 'bls381' signature scheme.
+		///
+		/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
+		fn bls381_generate_new(
+			&self,
+			key_type: KeyTypeId,
+			seed: Option<&str>,
+		) -> std::result::Result<bls381::Public, TraitError> {
+			self.generate_new::<bls381::Pair>(key_type, seed)
+		}
 
-	#[cfg(feature = "bls-experimental")]
-	fn bls377_public_keys(&self, key_type: KeyTypeId) -> Vec<bls377::Public> {
-		self.public_keys::<bls377::Pair>(key_type)
-	}
+		fn bls381_sign(
+			&self,
+			key_type: KeyTypeId,
+			public: &bls381::Public,
+			msg: &[u8],
+		) -> std::result::Result<Option<bls381::Signature>, TraitError> {
+			self.sign::<bls381::Pair>(key_type, public, msg)
+		}
 
-	#[cfg(feature = "bls-experimental")]
-	/// Generate a new pair compatible with the 'bls377' signature scheme.
-	///
-	/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
-	fn bls377_generate_new(
-		&self,
-		key_type: KeyTypeId,
-		seed: Option<&str>,
-	) -> std::result::Result<bls377::Public, TraitError> {
-		self.generate_new::<bls377::Pair>(key_type, seed)
-	}
+		fn bls377_public_keys(&self, key_type: KeyTypeId) -> Vec<bls377::Public> {
+			self.public_keys::<bls377::Pair>(key_type)
+		}
 
-	#[cfg(feature = "bls-experimental")]
-	fn bls377_sign(
-		&self,
-		key_type: KeyTypeId,
-		public: &bls377::Public,
-		msg: &[u8],
-	) -> std::result::Result<Option<bls377::Signature>, TraitError> {
-		self.sign::<bls377::Pair>(key_type, public, msg)
-	}
+		/// Generate a new pair compatible with the 'bls377' signature scheme.
+		///
+		/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
+		fn bls377_generate_new(
+			&self,
+			key_type: KeyTypeId,
+			seed: Option<&str>,
+		) -> std::result::Result<bls377::Public, TraitError> {
+			self.generate_new::<bls377::Pair>(key_type, seed)
+		}
 
-	fn insert(
-		&self,
-		key_type: KeyTypeId,
-		suri: &str,
-		public: &[u8],
-	) -> std::result::Result<(), ()> {
-		self.0.write().insert(key_type, suri, public).map_err(|_| ())
-	}
+		fn bls377_sign(
+			&self,
+			key_type: KeyTypeId,
+			public: &bls377::Public,
+			msg: &[u8],
+		) -> std::result::Result<Option<bls377::Signature>, TraitError> {
+			self.sign::<bls377::Pair>(key_type, public, msg)
+		}
 
-	fn keys(&self, key_type: KeyTypeId) -> std::result::Result<Vec<Vec<u8>>, TraitError> {
-		self.0.read().raw_public_keys(key_type).map_err(|e| e.into())
-	}
+		fn ecdsa_bls377_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa_bls377::Public> {
+			self.public_keys::<ecdsa_bls377::Pair>(key_type)
+		}
 
-	fn has_keys(&self, public_keys: &[(Vec<u8>, KeyTypeId)]) -> bool {
-		public_keys
-			.iter()
-			.all(|(p, t)| self.0.read().key_phrase_by_type(p, *t).ok().flatten().is_some())
+		/// Generate a new pair of paired-keys compatible with the '(ecdsa,bls377)' signature scheme.
+		///
+		/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
+		fn ecdsa_bls377_generate_new(
+			&self,
+			key_type: KeyTypeId,
+			seed: Option<&str>,
+		) -> std::result::Result<ecdsa_bls377::Public, TraitError> {
+			self.generate_new::<ecdsa_bls377::Pair>(key_type, seed)
+		}
+
+		fn ecdsa_bls377_sign(
+			&self,
+			key_type: KeyTypeId,
+			public: &ecdsa_bls377::Public,
+			msg: &[u8],
+		) -> std::result::Result<Option<ecdsa_bls377::Signature>, TraitError> {
+			self.sign::<ecdsa_bls377::Pair>(key_type, public, msg)
+		}
+
 	}
 }
 
-impl From<LocalKeystore> for KeystorePtr {
-	fn from(val: LocalKeystore) -> Self {
-		Arc::new(val)
+impl Into<KeystorePtr> for LocalKeystore {
+	fn into(self) -> KeystorePtr {
+		Arc::new(self)
 	}
 }
 
@@ -470,7 +557,7 @@ impl KeystoreInner {
 	/// Returns `None` if the keystore only exists in-memory and there isn't any path to provide.
 	fn key_file_path(&self, public: &[u8], key_type: KeyTypeId) -> Option<PathBuf> {
 		let mut buf = self.path.as_ref()?.clone();
-		let key_type = array_bytes::bytes2hex("", key_type.0);
+		let key_type = array_bytes::bytes2hex("", &key_type.0);
 		let key = array_bytes::bytes2hex("", public);
 		buf.push(key_type + key.as_str());
 		Some(buf)
@@ -481,11 +568,12 @@ impl KeystoreInner {
 		let mut public_keys: Vec<Vec<u8>> = self
 			.additional
 			.keys()
+			.into_iter()
 			.filter_map(|k| if k.0 == key_type { Some(k.1.clone()) } else { None })
 			.collect();
 
 		if let Some(path) = &self.path {
-			for entry in fs::read_dir(path)? {
+			for entry in fs::read_dir(&path)? {
 				let entry = entry?;
 				let path = entry.path();
 
