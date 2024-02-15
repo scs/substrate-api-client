@@ -16,9 +16,12 @@ dependencies = [
 name = "ac-compose-macros"
 version = "0.4.2"
 dependencies = [
+ "ac-node-api",
  "ac-primitives",
+ "frame-metadata 16.0.0",
  "log",
  "maybe-async",
+ "parity-scale-codec",
 ]
 
 [[package]]

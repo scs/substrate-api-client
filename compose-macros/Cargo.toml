@@ -17,6 +17,12 @@ maybe-async = { version = "0.2.7" }
 # local
 ac-primitives = { path = "../primitives", default-features = false }
 
+[dev-dependencies]
+ac-node-api = { path = "../node-api" }
+frame-metadata = { version = "16.0" }
+codec = { package = "parity-scale-codec", version = "3.6.1" }
+
+
 [features]
 default = ["std", "sync-api"]
 sync-api = ["maybe-async/is_sync"]

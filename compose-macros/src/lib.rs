@@ -157,3 +157,38 @@ macro_rules! compose_extrinsic {
 		}
 	};
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use ac_node_api::Metadata;
+	use codec::Decode;
+	use frame_metadata::RuntimeMetadataPrefixed;
+	use std::fs;
+
+	#[test]
+	fn macro_compose_call_for_pallet_metadata_works() {
+		let encoded_metadata = fs::read("../ksm_metadata_v14.bin").unwrap();
+		let runtime_metadata_prefixed =
+			RuntimeMetadataPrefixed::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		let pallet_metadata = metadata.pallet_by_name("Balances").unwrap();
+
+		let extra_parameter = 10000;
+		let expected_call_one = ([4, 0], extra_parameter);
+		let call_one = compose_call_for_pallet_metadata!(
+			&pallet_metadata,
+			"transfer_allow_death",
+			extra_parameter
+		);
+		assert_eq!(expected_call_one, call_one);
+		let expected_call_two = ([4, 8], extra_parameter);
+		let call_two = compose_call_for_pallet_metadata!(
+			&pallet_metadata,
+			"force_set_balance",
+			extra_parameter
+		);
+		assert_eq!(expected_call_two, call_two);
+	}
+}
