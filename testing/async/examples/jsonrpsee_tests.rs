@@ -13,8 +13,7 @@
 	limitations under the License.
 */
 
-//! Tests for the Jsonrpseeclient Wrapper. Should be during runtime, otherwise no connection can be etablished,
-//! which is happening already during creation.
+//! Tests for the Jsonrpseeclient Wrapper. Should happen during runtime, otherwise no connection can be etablished.
 
 use substrate_api_client::rpc::JsonrpseeClient;
 
