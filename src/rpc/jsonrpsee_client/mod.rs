@@ -37,9 +37,6 @@ impl JsonrpseeClient {
 		Self::new_with_url("ws://127.0.0.1:9944").await
 	}
 
-	pub async fn new(url: &str) -> Result<Self> {
-		let parsed_url: Url = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
-	}
 	/// Create a new client with the given address, port and max number of reconnection attempts.
 	/// Example input:
 	/// - address: "ws://127.0.0.1"
