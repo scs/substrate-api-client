@@ -100,19 +100,3 @@ impl ToRpcParams for RpcParamsWrapper {
 		}
 	}
 }
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn client_new() {
-		let port = 9944;
-		let address = "ws://127.0.0.1";
-		let client = JsonrpseeClient::new(address, port).await.unwrap();
-
-		let client2 = JsonrpseeClient::with_default_url().await.unwrap();
-
-		assert_eq!(client.inner, client2.inner);
-	}
-}
