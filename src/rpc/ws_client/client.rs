@@ -50,7 +50,7 @@ impl WsRpcClient {
 	/// - port: 9944
 	pub fn new_with_port(address: &str, port: u32) -> Result<Self> {
 		let url = format!("{address}:{port:?}");
-		Self::new_with_url(&url)
+		Self::new(&url)
 	}
 
 	/// Create a new client with a local address and default Substrate node port.

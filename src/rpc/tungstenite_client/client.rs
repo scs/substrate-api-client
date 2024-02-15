@@ -58,7 +58,7 @@ impl TungsteniteRpcClient {
 	/// - port: 9944
 	pub fn new_with_port(address: &str, port: u32, max_attempts: u8) -> Result<Self> {
 		let url = format!("{address}:{port:?}");
-		Self::new_with_url(&url, max_attempts)
+		Self::new(&url, max_attempts)
 	}
 
 	/// Create a new client with a local address and default Substrate node port.
