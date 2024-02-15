@@ -23,8 +23,8 @@ async fn main() {
 	let address = "ws://127.0.0.1";
 
 	let client = JsonrpseeClient::with_default_url().await;
-	let client2 = JsonrpseeClient::new(address, port);
-	let client3 = JsonrpseeClient::new(address, 9994);
+	let client2 = JsonrpseeClient::new(address, port).await;
+	let client3 = JsonrpseeClient::new(address, 9994).await;
 
 	assert!(client.is_ok());
 	assert!(client2.is_ok());
