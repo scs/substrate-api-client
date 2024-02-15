@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: init-rust-target
-        run: rustup show
+        run: rustup show && rustup component add rust-src
 
       - uses: Swatinem/rust-cache@v2
         with:
