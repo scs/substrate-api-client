@@ -32,6 +32,7 @@ pub use rpc_api::{
 pub mod api_client;
 pub mod error;
 pub mod rpc_api;
+pub mod runtime_api;
 
 /// Extrinsic report returned upon a submit_and_watch request.
 /// Holds as much information as available.

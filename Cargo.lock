@@ -7194,6 +7194,7 @@ dependencies = [
  "serde_json",
  "sp-core",
  "sp-crypto-hashing",
+ "sp-inherents",
  "sp-runtime",
  "sp-runtime-interface 24.0.0 (git+https://github.com/paritytech/polkadot-sdk.git?branch=master)",
  "sp-storage 19.0.0 (git+https://github.com/paritytech/polkadot-sdk.git?branch=master)",
