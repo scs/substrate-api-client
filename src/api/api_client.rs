@@ -307,7 +307,6 @@ mod tests {
 	}
 
 	#[test]
-	#[cfg(feature = "async-api")]
 	fn api_runtime_update_works() {
 		let runtime_version = RuntimeVersion { spec_version: 10, ..Default::default() };
 		// Update metadata
