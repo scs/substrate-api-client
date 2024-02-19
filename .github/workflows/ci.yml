@@ -97,7 +97,7 @@ jobs:
   taplo-fmt:
     name: "Taplo fmt"
     runs-on: ubuntu-latest
-    container: "tamasfe/taplo:0.8.1-alpine"
+    container: "tamasfe/taplo:latest"
     steps:
       - uses: actions/checkout@v4
 
