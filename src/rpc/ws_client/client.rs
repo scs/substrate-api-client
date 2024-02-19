@@ -40,7 +40,7 @@ impl WsRpcClient {
 	/// Create a new client with the given url string.
 	/// Example url input: "ws://127.0.0.1:9944"
 	pub fn new(url: &str) -> Result<Self> {
-		let url: Url = Url::parse(url)?;
+		let url = Url::parse(url)?;
 		Ok(Self { url })
 	}
 
@@ -152,8 +152,15 @@ mod tests {
 		let address = "ws://127.0.0.1";
 		let client = WsRpcClient::new_with_port(address, port).unwrap();
 
-		let client2 = WsRpcClient::with_default_url();
+		let expected_url = Url::parse("ws://127.0.0.1:9944").unwrap();
+		assert_eq!(client.url, expected_url);
+	}
 
-		assert_eq!(client.url, client2.url);
+	#[test]
+	fn client_with_default_url() {
+		let expected_url = Url::parse("ws://127.0.0.1:9944").unwrap();
+		let client = WsRpcClient::with_default_url();
+
+		assert_eq!(client.url, expected_url);
 	}
 }

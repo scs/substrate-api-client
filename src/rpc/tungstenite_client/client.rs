@@ -235,8 +235,15 @@ mod tests {
 		let address = "ws://127.0.0.1";
 		let client = TungsteniteRpcClient::new_with_port(address, port, 1).unwrap();
 
-		let client2 = TungsteniteRpcClient::with_default_url(1);
+		let expected_url = Url::parse("ws://127.0.0.1:9944").unwrap();
+		assert_eq!(client.url, expected_url);
+	}
 
-		assert_eq!(client.url, client2.url);
+	#[test]
+	fn client_with_default_url() {
+		let expected_url = Url::parse("ws://127.0.0.1:9944").unwrap();
+		let client = TungsteniteRpcClient::with_default_url(1);
+
+		assert_eq!(client.url, expected_url);
 	}
 }
