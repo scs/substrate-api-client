@@ -29,6 +29,7 @@ use frame_metadata::RuntimeMetadataPrefixed;
 use log::{debug, info};
 use sp_core::Bytes;
 use sp_version::RuntimeVersion;
+
 /// Api to talk with substrate-nodes
 ///
 /// It is generic over the `Request` trait, so you can use any rpc-backend you like.

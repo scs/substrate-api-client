@@ -12,7 +12,7 @@
 */
 use crate::{api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor, Result};
 use alloc::sync::Arc;
-use codec::Decode;
+use codec::{Decode, Encode};
 use core::sync::atomic::{AtomicBool, Ordering};
 use serde::de::DeserializeOwned;
 
@@ -28,7 +28,7 @@ where
 
 impl<Hash, Client> RuntimeUpdateDetector<Hash, Client>
 where
-	Hash: DeserializeOwned + Copy + Decode,
+	Hash: DeserializeOwned + Copy + Encode + Decode,
 	Client: Subscribe,
 {
 	pub fn new(subscription: EventSubscriptionFor<Client, Hash>) -> Self {

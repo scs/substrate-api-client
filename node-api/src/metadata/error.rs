@@ -41,6 +41,8 @@ pub enum MetadataError {
 	VariantIndexNotFound(u8),
 	/// Api is not in metadata.
 	RuntimeApiNotFound(String),
+	/// Exptected a different type of Metadata. Has there been a runtime upgrade inbetween?
+	MetadataMismatch,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Encode, Decode)]
