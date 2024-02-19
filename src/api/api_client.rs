@@ -271,7 +271,6 @@ mod tests {
 		PlainTip,
 	};
 	use frame_metadata::{v14::ExtrinsicMetadata, RuntimeMetadata};
-	use futures::executor;
 	use scale_info::form::PortableForm;
 	use sp_core::H256;
 	use std::{collections::HashMap, fs};
@@ -359,7 +358,7 @@ mod tests {
 		assert_ne!(api.runtime_version, runtime_version);
 
 		// Update runtime.
-		executor::block_on(api.update_runtime()).unwrap();
+		api.update_runtime().unwrap();
 
 		// Ensure metadata and runtime version have been updated.
 		assert_eq!(api.metadata.extrinsic(), metadata.extrinsic());

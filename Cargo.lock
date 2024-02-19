@@ -7184,7 +7184,6 @@ dependencies = [
  "derive_more",
  "frame-metadata 16.0.0",
  "frame-support",
- "futures",
  "futures-util",
  "hex",
  "jsonrpsee",
