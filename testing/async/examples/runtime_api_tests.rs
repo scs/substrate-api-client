@@ -55,7 +55,7 @@ async fn main() {
 	assert!(authority_id.len() > 0);
 
 	// BlockBuilder
-	let extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await;
+	let extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();
 	runtime_api.apply_extrinsic(extrinsic, None).await.unwrap().unwrap().unwrap();
 	let block = api.get_block_by_num(Some(0)).await.unwrap().unwrap();
 	let check = runtime_api.check_inherents(block, Default::default(), None).await.unwrap();
@@ -99,7 +99,7 @@ async fn main() {
 	let _quota = runtime_api.nominations_quota(100000000, None).await.unwrap();
 
 	// Transaction Payment
-	let extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await;
+	let extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();
 	let _tx_fee_details =
 		runtime_api.query_fee_details(extrinsic.clone(), 1000, None).await.unwrap();
 	let _tx_info = runtime_api.query_info(extrinsic, 1000, None).await.unwrap();
@@ -107,7 +107,11 @@ async fn main() {
 	let _fee = runtime_api.query_weight_to_fee(1000.into(), None).await.unwrap();
 
 	// Transaction Payment Call
-	let call = api.balance_transfer_allow_death(bob.clone().into(), 1000).await.function;
+	let call = api
+		.balance_transfer_allow_death(bob.clone().into(), 1000)
+		.await
+		.unwrap()
+		.function;
 	let _tx_fee_details =
 		runtime_api.query_call_fee_details(call.clone(), 1000, None).await.unwrap();
 	let _tx_info = runtime_api.query_call_info(call, 1000, None).await.unwrap();

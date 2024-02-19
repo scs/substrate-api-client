@@ -44,7 +44,8 @@ async fn main() {
 
 	// Query the fee of an extrinsic.
 	let bob = AccountKeyring::Bob.to_account_id();
-	let balance_extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await;
+	let balance_extrinsic =
+		api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();
 	let extrinsic_fee_details = runtime_api
 		.query_fee_details(balance_extrinsic.clone(), 1000, None)
 		.await
