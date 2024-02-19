@@ -14,7 +14,8 @@
 //! Interface to common author rpc functions and helpers thereof.
 
 use crate::{
-	api::{rpc_api::events::FetchEvents, Error, Result},
+	api::{rpc_api::events::FetchEvents, Error, ExtrinsicError, ExtrinsicResult},
+	error::FailedExtrinsicError,
 	rpc::{HandleSubscription, Request, Subscribe},
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
@@ -34,14 +35,14 @@ pub type TransactionSubscriptionFor<Client, Hash> =
 /// Simple extrinsic submission without any subscription.
 #[maybe_async::maybe_async(?Send)]
 pub trait SubmitExtrinsic {
-	type Hash;
+	type Hash: Encode + Decode;
 
 	/// Submit an encodable extrinsic to the substrate node.
 	/// Returns the extrinsic hash.
 	async fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<Self::Hash>
+	) -> ExtrinsicResult<Self::Hash, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -50,7 +51,10 @@ pub trait SubmitExtrinsic {
 
 	/// Submit an encoded, opaque extrinsic to the substrate node.
 	/// Returns the extrinsic hash.
-	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: &Bytes) -> Result<Self::Hash>;
+	async fn submit_opaque_extrinsic(
+		&self,
+		encoded_extrinsic: &Bytes,
+	) -> ExtrinsicResult<Self::Hash, Self::Hash>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -64,7 +68,7 @@ where
 	async fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<Self::Hash>
+	) -> ExtrinsicResult<Self::Hash, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -74,7 +78,10 @@ where
 		self.submit_opaque_extrinsic(&extrinsic.encode().into()).await
 	}
 
-	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: &Bytes) -> Result<Self::Hash> {
+	async fn submit_opaque_extrinsic(
+		&self,
+		encoded_extrinsic: &Bytes,
+	) -> ExtrinsicResult<Self::Hash, Self::Hash> {
 		let hex_encoded_xt = rpc_params![encoded_extrinsic];
 		debug!("sending extrinsic: {:?}", hex_encoded_xt);
 		let xt_hash = self.client().request("author_submitExtrinsic", hex_encoded_xt).await?;
@@ -94,7 +101,7 @@ pub trait SubmitAndWatch {
 	async fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>
+	) -> ExtrinsicResult<TransactionSubscriptionFor<Self::Client, Self::Hash>, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -108,7 +115,7 @@ pub trait SubmitAndWatch {
 	async fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: &Bytes,
-	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>;
+	) -> ExtrinsicResult<TransactionSubscriptionFor<Self::Client, Self::Hash>, Self::Hash>;
 
 	/// Submit an extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
@@ -134,7 +141,7 @@ pub trait SubmitAndWatch {
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>>
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -165,7 +172,7 @@ pub trait SubmitAndWatch {
 		&self,
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>>;
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash>;
 
 	/// Submit an extrinsic and watch it until the desired status
 	/// is reached, if no error is encountered previously.
@@ -187,7 +194,7 @@ pub trait SubmitAndWatch {
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>>
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -209,7 +216,7 @@ pub trait SubmitAndWatch {
 		&self,
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>>;
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -224,7 +231,7 @@ where
 	async fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
-	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>
+	) -> ExtrinsicResult<TransactionSubscriptionFor<Self::Client, Self::Hash>, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -237,7 +244,7 @@ where
 	async fn submit_and_watch_opaque_extrinsic(
 		&self,
 		encoded_extrinsic: &Bytes,
-	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>> {
+	) -> ExtrinsicResult<TransactionSubscriptionFor<Self::Client, Self::Hash>, Self::Hash> {
 		self.client()
 			.subscribe(
 				"author_submitAndWatchExtrinsic",
@@ -252,7 +259,7 @@ where
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>>
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -267,7 +274,7 @@ where
 		&self,
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>> {
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash> {
 		let mut report = self
 			.submit_and_watch_opaque_extrinsic_until_without_events(encoded_extrinsic, watch_until)
 			.await?;
@@ -279,13 +286,23 @@ where
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
 
-		// Ensure the extrinsic was successful. If not, return an error.
+		// Check if the extrinsic was succesfull or not.
+		let mut maybe_dispatch_error = None;
 		for event in &extrinsic_events {
 			if let Some(dispatch_error) = event.get_associated_dispatch_error() {
-				return Err(Error::Dispatch(dispatch_error))
+				maybe_dispatch_error = Some(dispatch_error);
+				break;
 			}
 		}
+
 		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
+
+		if let Some(dispatch_error) = maybe_dispatch_error {
+			return Err(ExtrinsicError::FailedExtrinsic(FailedExtrinsicError {
+				dispatch_error,
+				report,
+			}))
+		}
 
 		Ok(report)
 	}
@@ -299,7 +316,7 @@ where
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>>
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash>
 	where
 		Address: Encode,
 		Call: Encode,
@@ -317,7 +334,7 @@ where
 		&self,
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
-	) -> Result<ExtrinsicReport<Self::Hash>> {
+	) -> ExtrinsicResult<ExtrinsicReport<Self::Hash>, Self::Hash> {
 		let tx_hash = T::Hasher::hash(encoded_extrinsic);
 		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
 			self.submit_and_watch_opaque_extrinsic(encoded_extrinsic).await?;
@@ -338,10 +355,10 @@ where
 					},
 				Err(e) => {
 					subscription.unsubscribe().await?;
-					return Err(e)
+					return Err(e.into())
 				},
 			}
 		}
-		Err(Error::NoStream)
+		Err(ExtrinsicError::NoStream)
 	}
 }
