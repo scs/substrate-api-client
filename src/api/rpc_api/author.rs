@@ -85,7 +85,7 @@ where
 #[maybe_async::maybe_async(?Send)]
 pub trait SubmitAndWatch {
 	type Client: Subscribe;
-	type Hash: DeserializeOwned + Decode;
+	type Hash: DeserializeOwned + Decode + Encode;
 
 	/// Submit an extrinsic an return a Subscription
 	/// to watch the extrinsic progress.
@@ -279,11 +279,14 @@ where
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
 
-		// Ensure that the extrinsic has been successful. If not, return an error.
+		// Ensure the extrinsic was successful. If not, return an error.
 		for event in &extrinsic_events {
-			event.check_if_failed()?;
+			if let Some(dispatch_error) = event.get_associated_dispatch_error() {
+				return Err(Error::Dispatch(dispatch_error))
+			}
 		}
-		report.events = Some(extrinsic_events);
+		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
+
 		Ok(report)
 	}
 

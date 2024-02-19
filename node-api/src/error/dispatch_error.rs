@@ -59,7 +59,7 @@ impl DispatchError {
 	// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/error/dispatch_error.rs#L208-L321
 	pub fn decode_from<'a>(
 		bytes: impl Into<Cow<'a, [u8]>>,
-		metadata: Metadata,
+		metadata: &Metadata,
 	) -> Result<Self, Error> {
 		let bytes = bytes.into();
 		let dispatch_error_ty_id =
