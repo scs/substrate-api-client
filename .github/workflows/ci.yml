@@ -73,11 +73,11 @@ jobs:
 
         ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: init-rust-target
         run: rustup show && rustup component add rust-src
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v3
         with:
           key: ${{ matrix.check }}
 
@@ -85,7 +85,7 @@ jobs:
         run: ${{ matrix.check }}
 
       - name: Upload sync examples
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: contains(matrix.check, 'cargo test')
         with:
           name: examples
@@ -96,7 +96,7 @@ jobs:
             !target/release/examples/*-*
 
       - name: Upload async examples
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: contains(matrix.check, 'async')
         with:
           name: examples
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     container: "tamasfe/taplo:0.7.0-alpine"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run Taplo fmt
         run: taplo fmt --check
@@ -117,10 +117,10 @@ jobs:
     name: "License check"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install cargo-about
-        uses: baptiste0928/cargo-install@v2
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: cargo-about
           version: "0.5"
@@ -130,7 +130,7 @@ jobs:
         # the nightly version specified in rust-toolchain.toml
         run: cargo +stable about generate about.hbs > license.html
       - name: Archive license file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license
           path: license.html
@@ -172,7 +172,7 @@ jobs:
           runtime_update_async,
         ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run latest node
         run: |
@@ -183,7 +183,7 @@ jobs:
         shell: bash
 
       - name: Download example from previous run
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: examples
 
