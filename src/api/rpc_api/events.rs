@@ -22,7 +22,7 @@ use ac_primitives::config::Config;
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};
-use codec::Decode;
+use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use log::*;
 use serde::de::DeserializeOwned;
@@ -34,7 +34,7 @@ pub type EventSubscriptionFor<Client, Hash> =
 
 #[maybe_async::maybe_async(?Send)]
 pub trait FetchEvents {
-	type Hash: Decode;
+	type Hash: Encode + Decode;
 
 	/// Fetch all block events from node for the given block hash.
 	async fn fetch_events_from_block(&self, block_hash: Self::Hash) -> Result<Events<Self::Hash>>;
@@ -100,7 +100,7 @@ impl<Subscription, Hash> EventSubscription<Subscription, Hash> {
 
 impl<Subscription, Hash> EventSubscription<Subscription, Hash>
 where
-	Hash: DeserializeOwned + Copy + Decode,
+	Hash: DeserializeOwned + Copy + Encode + Decode,
 	Subscription: HandleSubscription<StorageChangeSet<Hash>>,
 {
 	/// Wait for the next value from the internal subscription.

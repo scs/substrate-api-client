@@ -15,7 +15,7 @@
 
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::EventDetails,
+	ac_node_api::RawEventDetails,
 	ac_primitives::{AssetRuntimeConfig, Config},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
@@ -122,7 +122,7 @@ async fn main() {
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
 }
 
-fn assert_associated_events_match_expected(events: Vec<EventDetails<Hash>>) {
+fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");

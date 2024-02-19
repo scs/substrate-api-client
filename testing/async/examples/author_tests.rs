@@ -19,7 +19,7 @@ use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
 use sp_core::{Encode, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::EventDetails,
+	ac_node_api::RawEventDetails,
 	ac_primitives::{
 		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
 	},
@@ -175,7 +175,7 @@ async fn test_submit_and_watch_extrinsic_until_in_block_without_events(
 	assert!(report.events.is_none());
 }
 
-fn assert_associated_events_match_expected(events: Vec<EventDetails<Hash>>) {
+fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");
