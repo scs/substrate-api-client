@@ -69,7 +69,6 @@ ac-node-api = { path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
-futures = "0.3.28"
 
 [features]
 default = ["std", "jsonrpsee-client"]
