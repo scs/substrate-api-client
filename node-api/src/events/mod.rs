@@ -9,12 +9,14 @@
 //! A representation of a block of events.
 //! This file bases on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L19-L196
 
-use crate::{error::Error, Metadata, StaticEvent};
+use crate::{error::Error, metadata::PalletMetadata, Metadata, StaticEvent};
 use alloc::{sync::Arc, vec::Vec};
-use codec::{Compact, Decode};
+use codec::{Compact, Decode, Encode};
 
 mod event_details;
+mod raw_event_details;
 pub use event_details::EventDetails;
+pub use raw_event_details::RawEventDetails;
 
 /// A collection of events obtained from a block, bundled with the necessary
 /// information needed to decode and iterate over them.
@@ -42,7 +44,7 @@ impl<Hash: core::fmt::Debug> core::fmt::Debug for Events<Hash> {
 	}
 }
 
-impl<Hash: Copy + Decode> Events<Hash> {
+impl<Hash: Copy + Encode + Decode> Events<Hash> {
 	pub fn new(metadata: Metadata, block_hash: Hash, event_bytes: Vec<u8>) -> Self {
 		// event_bytes is a SCALE encoded vector of events. So, pluck the
 		// compact encoded length from the front, leaving the remaining bytes
@@ -144,6 +146,32 @@ impl<Hash: Copy + Decode> Events<Hash> {
 	pub fn has<Ev: StaticEvent>(&self) -> Result<bool, Error> {
 		Ok(self.find::<Ev>().next().transpose()?.is_some())
 	}
+}
+
+/// This trait is implemented on the statically generated root event type, so that we're able
+/// to decode it properly via a pallet event that impls `DecodeAsMetadata`. This is necessary
+/// becasue the "root event" type is generated using pallet info but doesn't actually exist in the
+/// metadata types, so we have no easy way to decode things into it via type information and need a
+/// little help via codegen.
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L417-L432
+#[doc(hidden)]
+pub trait RootEvent: Sized {
+	/// Given details of the pallet event we want to decode, and the name of the pallet, try to hand
+	/// back a "root event".
+	fn root_event(
+		pallet_bytes: &[u8],
+		pallet_name: &str,
+		pallet_event_ty: u32,
+		metadata: &Metadata,
+	) -> Result<Self, Error>;
+}
+
+/// Details for the given event plucked from the metadata.
+// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L411-L415
+#[derive(Clone)]
+pub struct EventMetadataDetails<'a> {
+	pub pallet: PalletMetadata<'a>,
+	pub variant: &'a scale_info::Variant<scale_info::form::PortableForm>,
 }
 
 #[cfg(test)]
