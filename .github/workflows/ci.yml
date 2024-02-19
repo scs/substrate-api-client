@@ -223,3 +223,6 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           separate-directories: true
+          name: examples
+          pattern: examples-*
+          delete-merged: true
