@@ -206,9 +206,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: examples-*
-+         merge-multiple: true
-
-      -
+          merge-multiple: true
 
       - name: Run Examples
         timeout-minutes: 5
@@ -217,3 +215,10 @@ jobs:
           nc -z -v 127.0.0.1 9944
           chmod +x ${{ matrix.example }}
           ./${{ matrix.example }}
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          separate-directories: true
