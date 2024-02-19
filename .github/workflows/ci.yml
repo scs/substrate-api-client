@@ -26,16 +26,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
-        # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
-        #
-        # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
-        # we omit clippy and test there.
         check: [
                 # Test for no-std compatibility.
                 # `--locked` to enforce an up-to-date Cargo.lock
                 cargo build --release --workspace --locked --exclude test-no-std,
 
-                # Test for no-std compatibility.
+                # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
+                #
+                # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
+                # we omit clippy and test there.
                 cargo build --release -p test-no-std --features api-client,
                 cargo build --release -p test-no-std --features compose-macros,
                 cargo build --release -p test-no-std --features node-api,
@@ -84,11 +83,41 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-      - name: Upload examples
+      - name: Upload async examples
         uses: actions/upload-artifact@v4
-        if: contains(matrix.check, 'cargo test')
+        if: contains(matrix.check, 'examples-async')
         with:
-          name: examples
+          name: examples-async
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*.d
+            !target/release/examples/*-*
+
+      - name: Upload sync examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'examples-sync')
+        with:
+          name: examples-sync
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*.d
+            !target/release/examples/*-*
+
+      - name: Upload async testing examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'testing-async')
+        with:
+          name: examples-testing-async
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*.d
+            !target/release/examples/*-*
+
+      - name: Upload sync testing examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'testing-sync')
+        with:
+          name: examples-testing-sync
           path:  |
             target/release/examples/*
             !target/release/examples/*.d
@@ -173,10 +202,13 @@ jobs:
         run: sleep 20s
         shell: bash
 
-      - name: Download example from previous run
+      - name: Download examples from previous run
         uses: actions/download-artifact@v4
         with:
-          name: examples
+          pattern: examples-*
++         merge-multiple: true
+
+      -
 
       - name: Run Examples
         timeout-minutes: 5
