@@ -63,7 +63,7 @@ impl TungsteniteRpcClient {
 
 	/// Create a new client with a local address and default Substrate node port.
 	pub fn with_default_url(max_attempts: u8) -> Self {
-		// This unwrap is safe and regularly testbed by system tests.
+		// This unwrap is safe as is only regards the url parsing, which is tested.
 		Self::new("ws://127.0.0.1:9944", max_attempts).unwrap()
 	}
 }
