@@ -17,6 +17,7 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{AssetRuntimeConfig, Config},
+	error::ExtrinsicError,
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
@@ -66,12 +67,18 @@ async fn main() {
 	// Check if the transfer really has failed:
 	match result {
 		Ok(_report) => {
-			panic!("Exptected the call to fail.");
+			panic!("Expected the call to fail.");
 		},
-		Err(e) => {
-			println!("[+] Couldn't execute the extrinsic due to {e:?}\n");
+		Err(ExtrinsicError::FailedExtrinsic(e)) => {
+			let dispatch_error = e.dispatch_error;
+			println!("[+] Couldn't execute the extrinsic due to {dispatch_error:?}\n");
 			let string_error = format!("{e:?}");
 			assert!(string_error.contains("FundsUnavailable"));
+			// The extrinsic with the associated events indicating it has failed should have been included in a block.
+			assert!(e.report.block_hash.is_some())
+		},
+		_ => {
+			panic!("Expected the call to fail with an extrinsic error.");
 		},
 	};
 
