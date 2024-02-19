@@ -20,7 +20,7 @@ use ac_node_api::{
 	error::DispatchError,
 	metadata::{MetadataConversionError, MetadataError},
 };
-use alloc::boxed::Box;
+use alloc::{boxed::Box, vec::Vec};
 use codec::{Decode, Encode};
 
 pub type Result<T> = core::result::Result<T, Error>;
