@@ -40,10 +40,10 @@ macro_rules! compose_call {
 			let maybe_pallet = $node_metadata.pallet_by_name($pallet_name);
 			let maybe_call = match  maybe_pallet {
 				Some(pallet) => {
-					$crate::compose_call_for_pallet_metadata!(pallet_metadata, $call_name $(, ($args)) *)
+					$crate::compose_call_for_pallet_metadata!(pallet, $call_name $(, ($args)) *)
 				},
 				None => None,
-			}
+			};
 			maybe_call
 		}
 
@@ -64,7 +64,7 @@ macro_rules! compose_call_for_pallet_metadata {
 
 			let maybe_call_variant = $pallet_metadata.call_variant_by_name($call_name);
 			match maybe_call_variant {
-				Some(call_variant) => Some(([pallet.index(), call_variant.index as u8] $(, ($args)) *)),
+				Some(call_variant) => Some(([$pallet_metadata.index(), call_variant.index as u8] $(, ($args)) *)),
 				None => None,
 			}
 
@@ -206,14 +206,75 @@ mod tests {
 			&pallet_metadata,
 			"transfer_allow_death",
 			extra_parameter
-		);
+		)
+		.unwrap();
 		assert_eq!(expected_call_one, call_one);
 		let expected_call_two = ([4, 8], extra_parameter);
 		let call_two = compose_call_for_pallet_metadata!(
 			&pallet_metadata,
 			"force_set_balance",
 			extra_parameter
-		);
+		)
+		.unwrap();
 		assert_eq!(expected_call_two, call_two);
+	}
+
+	#[test]
+	fn macro_compose_call_for_pallet_metadata_returns_none_for_unknown_function() {
+		let encoded_metadata = fs::read("../ksm_metadata_v14.bin").unwrap();
+		let runtime_metadata_prefixed =
+			RuntimeMetadataPrefixed::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		let pallet_metadata = metadata.pallet_by_name("Balances").unwrap();
+		let non_existent_function = "obladi";
+
+		let option = compose_call_for_pallet_metadata!(&pallet_metadata, non_existent_function);
+		assert!(option.is_none());
+	}
+
+	#[test]
+	fn macro_compose_call_returns_none_for_unknown_function() {
+		let encoded_metadata = fs::read("../ksm_metadata_v14.bin").unwrap();
+		let runtime_metadata_prefixed =
+			RuntimeMetadataPrefixed::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		let pallet_name = "Balances";
+		let non_existent_function = "obladi";
+
+		let option = compose_call!(&metadata, pallet_name, non_existent_function);
+		assert!(option.is_none());
+	}
+
+	#[test]
+	fn macro_compose_call_returns_none_for_unknown_pallet() {
+		let encoded_metadata = fs::read("../ksm_metadata_v14.bin").unwrap();
+		let runtime_metadata_prefixed =
+			RuntimeMetadataPrefixed::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		let pallet_name = "Balance";
+		let non_existent_function = "force_set_balance";
+
+		let option = compose_call!(&metadata, pallet_name, non_existent_function);
+		assert!(option.is_none());
+	}
+
+	#[test]
+	fn macro_compose_call_works_for_valid_input() {
+		let encoded_metadata = fs::read("../ksm_metadata_v14.bin").unwrap();
+		let runtime_metadata_prefixed =
+			RuntimeMetadataPrefixed::decode(&mut encoded_metadata.as_slice()).unwrap();
+		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
+
+		let pallet_name = "Balances";
+		let non_existent_function = "force_set_balance";
+		let extra_parameter = 10000;
+
+		let expected_call = ([4, 8], extra_parameter);
+		let call =
+			compose_call!(&metadata, pallet_name, non_existent_function, extra_parameter).unwrap();
+		assert_eq!(call, expected_call);
 	}
 }
