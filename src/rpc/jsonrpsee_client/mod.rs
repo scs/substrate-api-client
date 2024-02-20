@@ -37,6 +37,8 @@ impl JsonrpseeClient {
 		Self::new("ws://127.0.0.1:9944").await
 	}
 
+	/// Create a new client with the given url string.
+	/// Example url input: "ws://127.0.0.1:9944"
 	pub async fn new(url: &str) -> Result<Self> {
 		let parsed_url: Url = url.parse().map_err(|e| Error::Client(Box::new(e)))?;
 		let (tx, rx) = WsTransportClientBuilder::default()
@@ -47,6 +49,15 @@ impl JsonrpseeClient {
 			.max_buffer_capacity_per_subscription(4096)
 			.build_with_tokio(tx, rx);
 		Ok(Self { inner: Arc::new(client) })
+	}
+
+	/// Create a new client with the given address, port and max number of reconnection attempts.
+	/// Example input:
+	/// - address: "ws://127.0.0.1"
+	/// - port: 9944
+	pub async fn new_with_port(address: &str, port: u32) -> Result<Self> {
+		let url = format!("{address}:{port:?}");
+		Self::new(&url).await
 	}
 }
 
