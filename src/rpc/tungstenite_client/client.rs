@@ -45,11 +45,25 @@ pub struct TungsteniteRpcClient {
 }
 
 impl TungsteniteRpcClient {
+	/// Create a new client with the given url string.
+	/// Example url input: "ws://127.0.0.1:9944"
 	pub fn new(url: &str, max_attempts: u8) -> Result<Self> {
-		Ok(Self { url: Url::parse(url)?, max_attempts })
+		let url: Url = Url::parse(url)?;
+		Ok(Self { url, max_attempts })
 	}
 
+	/// Create a new client with the given address, port and max number of reconnection attempts.
+	/// Example input:
+	/// - address: "ws://127.0.0.1"
+	/// - port: 9944
+	pub fn new_with_port(address: &str, port: u32, max_attempts: u8) -> Result<Self> {
+		let url = format!("{address}:{port:?}");
+		Self::new(&url, max_attempts)
+	}
+
+	/// Create a new client with a local address and default Substrate node port.
 	pub fn with_default_url(max_attempts: u8) -> Self {
+		// This unwrap is safe as is only regards the url parsing, which is tested.
 		Self::new("ws://127.0.0.1:9944", max_attempts).unwrap()
 	}
 }
@@ -208,5 +222,28 @@ fn read_until_text_message(socket: &mut MySocket) -> Result<String> {
 				debug!("skip frame msg");
 			},
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn client_new() {
+		let port = 9944;
+		let address = "ws://127.0.0.1";
+		let client = TungsteniteRpcClient::new_with_port(address, port, 1).unwrap();
+
+		let expected_url = Url::parse("ws://127.0.0.1:9944").unwrap();
+		assert_eq!(client.url, expected_url);
+	}
+
+	#[test]
+	fn client_with_default_url() {
+		let expected_url = Url::parse("ws://127.0.0.1:9944").unwrap();
+		let client = TungsteniteRpcClient::with_default_url(1);
+
+		assert_eq!(client.url, expected_url);
 	}
 }
