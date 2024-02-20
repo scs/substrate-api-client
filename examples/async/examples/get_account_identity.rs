@@ -62,7 +62,7 @@ async fn main() {
 	};
 
 	let xt: UncheckedExtrinsicV4<_, _, _, _> =
-		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone()));
+		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone())).unwrap();
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.

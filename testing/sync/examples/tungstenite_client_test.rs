@@ -39,7 +39,9 @@ fn main() {
 	let bob_balance = api.get_account_data(&bob.into()).unwrap().unwrap_or_default().free;
 
 	// Check for failed extrinsic failed onchain
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1);
+	let xt = api
+		.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1)
+		.unwrap();
 	let result = api.submit_and_watch_extrinsic_until(xt.clone(), XtStatus::InBlock);
 	assert!(format!("{:?}", result).contains("FundsUnavailable"));
 
@@ -49,7 +51,9 @@ fn main() {
 	assert!(format!("{:?}", result).contains("ExtrinsicFailed"));
 
 	// Check for successful extrinisc
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2);
+	let xt = api
+		.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2)
+		.unwrap();
 	let _block_hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.unwrap()

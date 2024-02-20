@@ -65,23 +65,25 @@ async fn main() {
 	let recipients_extrinsic_address: ExtrinsicAddressOf<ExtrinsicSigner> =
 		recipient.clone().into();
 	let new_balance = recipient_balance + 100;
-	let call = compose_call!(
-		api.metadata(),
-		"Balances",
-		"force_set_balance",
-		recipients_extrinsic_address,
-		Compact(new_balance)
-	);
+	let call: ([u8; 2], sp_runtime::MultiAddress<sp_runtime::AccountId32, u32>, Compact<_>) =
+		compose_call!(
+			api.metadata(),
+			"Balances",
+			"force_set_balance",
+			recipients_extrinsic_address,
+			Compact(new_balance)
+		)
+		.unwrap();
 
-	let xt: UncheckedExtrinsicV4<_, _, _, _> = compose_extrinsic!(&api, "Sudo", "sudo", call);
+	let xt: UncheckedExtrinsicV4<_, _, _, _> =
+		compose_extrinsic!(&api, "Sudo", "sudo", call).unwrap();
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api
 		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
 		.await
 		.unwrap()
-		.block_hash
-		.unwrap();
+		.block_hash;
 	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
 
 	// Ensure the extrinsic has been executed.

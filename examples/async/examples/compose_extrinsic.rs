@@ -103,7 +103,8 @@ async fn main() {
 			"transfer_allow_death",
 			recipients_extrinsic_address,
 			Compact(4u32)
-		);
+		)
+		.unwrap();
 		compose_extrinsic_offline!(extrinsic_signer, call, extrinsic_params)
 	};
 

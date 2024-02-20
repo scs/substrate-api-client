@@ -53,7 +53,9 @@ fn main() {
 	println!("[+] Bob's Free Balance is {}\n", bob_balance);
 
 	// We first generate an extrinsic that will fail to be executed due to missing funds.
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1);
+	let xt = api
+		.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1)
+		.unwrap();
 	println!(
 		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
 		alice.public(),
@@ -67,7 +69,9 @@ fn main() {
 	println!("[+] Extrinsic did not get included due to: {:?}\n", result);
 
 	// This time, we generate an extrinsic that will succeed.
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2);
+	let xt = api
+		.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance / 2)
+		.unwrap();
 	println!(
 		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
 		alice.public(),

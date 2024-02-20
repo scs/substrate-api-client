@@ -45,7 +45,10 @@ async fn main() {
 	//BadOrigin
 	api.set_signer(bob_signer.into());
 	//Can only be called by root
-	let xt = api.balance_force_set_balance(MultiAddress::Id(alice.clone()), 10).await;
+	let xt = api
+		.balance_force_set_balance(MultiAddress::Id(alice.clone()), 10)
+		.await
+		.unwrap();
 
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
 	assert!(result.is_err());
@@ -54,7 +57,10 @@ async fn main() {
 
 	//BelowMinimum
 	api.set_signer(alice_signer.into());
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(one.clone()), 999999).await;
+	let xt = api
+		.balance_transfer_allow_death(MultiAddress::Id(one.clone()), 999999)
+		.await
+		.unwrap();
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("(BelowMinimum"));

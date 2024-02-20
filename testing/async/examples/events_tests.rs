@@ -58,7 +58,7 @@ async fn main() {
 	println!("{events:?}");
 
 	// Submit a test-extrinsic to test `fetch_events_for_extrinsic`.
-	let xt = api.balance_transfer_allow_death(bob.into(), 1000).await;
+	let xt = api.balance_transfer_allow_death(bob.into(), 1000).await.unwrap();
 	let report = api
 		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock)
 		.await
