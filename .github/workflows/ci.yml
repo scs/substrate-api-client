@@ -13,9 +13,9 @@ env:
 jobs:
   cancel_previous_runs:
     name: Cancel Previous Runs
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: styfle/cancel-workflow-action@0.11.0
+      - uses: styfle/cancel-workflow-action@0.12.1
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -26,16 +26,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
-        # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
-        #
-        # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
-        # we omit clippy and test there.
         check: [
                 # Test for no-std compatibility.
                 # `--locked` to enforce an up-to-date Cargo.lock
                 cargo build --release --workspace --locked --exclude test-no-std,
 
-                # Test for no-std compatibility.
+                # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
+                #
+                # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
+                # we omit clippy and test there.
                 cargo build --release -p test-no-std --features api-client,
                 cargo build --release -p test-no-std --features compose-macros,
                 cargo build --release -p test-no-std --features node-api,
@@ -73,7 +72,7 @@ jobs:
 
         ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: init-rust-target
         run: rustup show && rustup component add rust-src
 
@@ -84,31 +83,52 @@ jobs:
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
 
-      - name: Upload sync examples
-        uses: actions/upload-artifact@v3
-        if: contains(matrix.check, 'cargo test')
+      - name: Upload async examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'examples-async')
         with:
-          name: examples
+          name: examples-async
           path:  |
             target/release/examples/*
-            !target/release/examples/*async*
             !target/release/examples/*.d
             !target/release/examples/*-*
 
-      - name: Upload async examples
-        uses: actions/upload-artifact@v3
-        if: contains(matrix.check, 'async')
+      - name: Upload sync examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'examples-sync')
         with:
-          name: examples
+          name: examples-sync
           path:  |
-            target/release/examples/*async
+            target/release/examples/*
+            !target/release/examples/*.d
+            !target/release/examples/*-*
+
+      - name: Upload async testing examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'testing-async')
+        with:
+          name: examples-testing-async
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*.d
+            !target/release/examples/*-*
+
+      - name: Upload sync testing examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'testing-sync')
+        with:
+          name: examples-testing-sync
+          path:  |
+            target/release/examples/*
+            !target/release/examples/*.d
+            !target/release/examples/*-*
 
   taplo-fmt:
     name: "Taplo fmt"
     runs-on: ubuntu-latest
-    container: "tamasfe/taplo:0.7.0-alpine"
+    container: "tamasfe/taplo:latest"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run Taplo fmt
         run: taplo fmt --check
@@ -117,20 +137,20 @@ jobs:
     name: "License check"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install cargo-about
-        uses: baptiste0928/cargo-install@v2
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: cargo-about
-          version: "0.5"
+          version: "0.6"
 
       - name: Run license check
         # Explicitly use stable because otherwise cargo will trigger a download of
         # the nightly version specified in rust-toolchain.toml
         run: cargo +stable about generate about.hbs > license.html
       - name: Archive license file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license
           path: license.html
@@ -173,7 +193,7 @@ jobs:
           runtime_update_async,
         ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run latest node
         run: |
@@ -183,10 +203,11 @@ jobs:
         run: sleep 20s
         shell: bash
 
-      - name: Download example from previous run
-        uses: actions/download-artifact@v3
+      - name: Download examples from previous run
+        uses: actions/download-artifact@v4
         with:
-          name: examples
+          pattern: examples-*
+          merge-multiple: true
 
       - name: Run Examples
         timeout-minutes: 5
@@ -195,3 +216,14 @@ jobs:
           nc -z -v 127.0.0.1 9944
           chmod +x ${{ matrix.example }}
           ./${{ matrix.example }}
+  merge:
+    runs-on: ubuntu-latest
+    needs: examples
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          separate-directories: true
+          name: examples
+          pattern: examples-*
+          delete-merged: true
