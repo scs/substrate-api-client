@@ -10,7 +10,9 @@ use substrate_api_client::{
 
 #[tokio::main]
 async fn main() {
-	let client = JsonrpseeClient::new("wss://kusama-rpc.polkadot.io:443").await.unwrap();
+	let client = JsonrpseeClient::new_with_port("wss://kusama-rpc.polkadot.io", 443)
+		.await
+		.unwrap();
 	let metadata_bytes: Bytes = client.request("state_getMetadata", rpc_params![]).await.unwrap();
 	let mut file = File::create("new_ksm_metadata.bin").unwrap();
 	file.write_all(&metadata_bytes.0).unwrap();
