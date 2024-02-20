@@ -46,7 +46,8 @@ cargo run -p ac-examples-sync --example runtime_update_sync
 or download the already built binaries from [GitHub Actions](https://github.com/scs/substrate-api-client/actions) and run them without any previous building:
 
 ```bash
-# Add execution rights to the chosen example.
+# Enter the async or sync example directory and add execution rights to the chosen example.
+cd examples-<sync/async>
 chmod +x <example>
 # And run it.
 ./<example>
