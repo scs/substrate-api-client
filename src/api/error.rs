@@ -15,12 +15,13 @@
 
 */
 
-use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError};
+use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError, ExtrinsicReport};
 use ac_node_api::{
 	error::DispatchError,
 	metadata::{MetadataConversionError, MetadataError},
 };
-use alloc::boxed::Box;
+use alloc::{boxed::Box, vec::Vec};
+use codec::{Decode, Encode};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -42,8 +43,8 @@ pub enum Error {
 	Codec(codec::Error),
 	/// Could not convert NumberOrHex with try_from.
 	TryFromIntError,
-	/// Node Api Dispatch Error.
-	Dispatch(DispatchError),
+	/// Extrinsic failed onchain. Contains the encoded report and the associated dispatch error.
+	FailedExtrinsic(FailedExtrinsicError),
 	/// Encountered unexpected tx status during watch process.
 	UnexpectedTxStatus(UnexpectedTxStatus),
 	/// Could not send update because the Stream has been closed unexpectedly.
@@ -56,4 +57,30 @@ pub enum Error {
 	BlockNotFound,
 	/// Any custom Error.
 	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
+}
+
+/// Encountered unexpected tx status during watch process or the extrinsic failed.
+#[derive(Debug)]
+pub struct FailedExtrinsicError {
+	dispatch_error: DispatchError,
+	encoded_report: Vec<u8>,
+}
+
+impl FailedExtrinsicError {
+	pub fn new(dispatch_error: DispatchError, encoded_report: Vec<u8>) -> Self {
+		Self { dispatch_error, encoded_report }
+	}
+
+	pub fn dispatch_error(&self) -> &DispatchError {
+		&self.dispatch_error
+	}
+
+	pub fn get_report<Hash: Encode + Decode>(&self) -> Result<ExtrinsicReport<Hash>> {
+		let report = Decode::decode(&mut self.encoded_report.as_slice())?;
+		Ok(report)
+	}
+
+	pub fn encoded_report(&self) -> &[u8] {
+		&self.encoded_report
+	}
 }

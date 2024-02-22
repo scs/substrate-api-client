@@ -15,6 +15,7 @@
 
 use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
+	error::FailedExtrinsicError,
 	rpc::{HandleSubscription, Request, Subscribe},
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
@@ -279,13 +280,23 @@ where
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
 
-		// Ensure the extrinsic was successful. If not, return an error.
+		// Check if the extrinsic was succesfull or not.
+		let mut maybe_dispatch_error = None;
 		for event in &extrinsic_events {
 			if let Some(dispatch_error) = event.get_associated_dispatch_error() {
-				return Err(Error::Dispatch(dispatch_error))
+				maybe_dispatch_error = Some(dispatch_error);
+				break
 			}
 		}
+
 		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
+
+		if let Some(dispatch_error) = maybe_dispatch_error {
+			return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
+				dispatch_error,
+				report.encode(),
+			)))
+		}
 
 		Ok(report)
 	}

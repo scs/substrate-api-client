@@ -15,11 +15,12 @@
 
 //! Tests for the dispatch error.
 
+use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
 	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
-	GetAccountInformation, SubmitAndWatch, XtStatus,
+	Error, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]
@@ -51,8 +52,16 @@ async fn main() {
 		.unwrap();
 
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
-	assert!(result.is_err());
-	assert!(format!("{result:?}").contains("BadOrigin"));
+	match result {
+		Err(Error::FailedExtrinsic(extrinsic_error)) => {
+			let dispatch_error = extrinsic_error.dispatch_error();
+			let report = extrinsic_error.get_report::<H256>().unwrap();
+			assert!(report.block_hash.is_some());
+			assert!(report.events.is_some());
+			assert!(format!("{dispatch_error:?}").contains("BadOrigin"));
+		},
+		_ => panic!("Expected Failed Extrinisc Error"),
+	}
 	println!("[+] BadOrigin error: Bob can't force set balance");
 
 	//BelowMinimum
@@ -62,7 +71,14 @@ async fn main() {
 		.await
 		.unwrap();
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
-	assert!(result.is_err());
-	assert!(format!("{result:?}").contains("(BelowMinimum"));
+	match result {
+		Err(Error::FailedExtrinsic(extrinsic_error)) => {
+			let dispatch_error = extrinsic_error.dispatch_error();
+			let report = extrinsic_error.get_report::<H256>().unwrap();
+			assert!(report.block_hash.is_some());
+			assert!(format!("{dispatch_error:?}").contains("BelowMinimum"));
+		},
+		_ => panic!("Expected Failed Extrinisc Error"),
+	}
 	println!("[+] BelowMinimum error: balance (999999) is below the existential deposit");
 }
