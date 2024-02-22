@@ -57,6 +57,7 @@ async fn main() {
 			let dispatch_error = extrinsic_error.dispatch_error();
 			let report = extrinsic_error.get_report::<H256>().unwrap();
 			assert!(report.block_hash.is_some());
+			assert!(report.events.is_some());
 			assert!(format!("{dispatch_error:?}").contains("BadOrigin"));
 		},
 		_ => panic!("Expected Failed Extrinisc Error"),

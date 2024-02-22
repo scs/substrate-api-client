@@ -289,13 +289,14 @@ where
 			}
 		}
 
+		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
+
 		if let Some(dispatch_error) = maybe_dispatch_error {
 			return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
 				dispatch_error,
 				report.encode(),
 			)))
 		}
-		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
 
 		Ok(report)
 	}
