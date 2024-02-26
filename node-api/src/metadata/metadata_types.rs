@@ -42,8 +42,6 @@ pub struct Metadata {
 	pallets: BTreeMap<String, PalletMetadataInner>,
 	/// Find the location in the pallet Vec by pallet index.
 	pallets_by_index: BTreeMap<u8, String>,
-	/// The type of the `Runtime`.
-	ty: <PortableForm as Form>::Type,
 	// Type of the DispatchError type, which is what comes back if
 	// an extrinsic fails.
 	dispatch_error_ty: Option<u32>,
@@ -72,7 +70,7 @@ impl Metadata {
 
 	/// Return the type of the `Runtime`.
 	pub fn ty(&self) -> &<PortableForm as Form>::Type {
-		&self.ty
+		&self.runtime_metadata.ty
 	}
 
 	/// Return the DispatchError type ID if it exists.
@@ -432,7 +430,6 @@ impl TryFrom<RuntimeMetadataPrefixed> for Metadata {
 			runtime_metadata: m.clone(),
 			pallets,
 			pallets_by_index,
-			extrinsic: m.extrinsic,
 			dispatch_error_ty,
 			apis,
 		})
