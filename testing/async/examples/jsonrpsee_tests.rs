@@ -15,6 +15,10 @@
 
 //! Tests for the Jsonrpseeclient Wrapper. Should happen during runtime, otherwise no connection can be etablished.
 
+use jsonrpsee::{
+	client_transport::ws::{Url, WsTransportClientBuilder},
+	core::client::{Client, ClientBuilder},
+};
 use substrate_api_client::rpc::JsonrpseeClient;
 
 #[tokio::main]
@@ -30,4 +34,10 @@ async fn main() {
 	assert!(client2.is_ok());
 	// No node running at this port - creation should fail.
 	assert!(client3.is_err());
+
+	// Test new_with_client
+	let uri = Url::parse(&format!("{}:{}", address, port)).unwrap();
+	let (tx, rx) = WsTransportClientBuilder::default().build(uri).await.unwrap();
+	let client: Client = ClientBuilder::default().build_with_tokio(tx, rx);
+	let _api_client = JsonrpseeClient::new_with_client(client);
 }

@@ -15,7 +15,7 @@ use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
 use jsonrpsee::{
 	client_transport::ws::{Url, WsTransportClientBuilder},
 	core::{
-		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+		client::{Client, ClientBuilder, ClientT, Error as JsonrpseeError, SubscriptionClientT},
 		traits::ToRpcParams,
 	},
 };
@@ -83,8 +83,8 @@ impl JsonrpseeClient {
 	/// # Cancel-safety
 	///
 	/// This method is not cancel-safe
-	pub async fn disconnect_reason(&self) -> Error {
-		self.inner.disconnect_reason()
+	pub async fn disconnect_reason(&self) -> JsonrpseeError {
+		self.inner.disconnect_reason().await
 	}
 
 	/// Completes when the client is disconnected or the client's background task encountered an error.
@@ -94,7 +94,7 @@ impl JsonrpseeClient {
 	///
 	/// This method is cancel safe.
 	pub async fn on_disconnect(&self) {
-		self.inner.on_disconnect()
+		self.inner.on_disconnect().await;
 	}
 }
 
