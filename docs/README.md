@@ -1,5 +1,19 @@
 # Developer Section
 
+## TODO List for a new Release
+If a new release is released, the following tasks need to be done:
+1. Update the .toml versions in accordance with the [Semantic Versioning](#semantic-versioning) section.
+2. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
+3. Update and release the new release.
+
+
+## TODO list for a new Parity release branch
+To follow a new partiy branch release, the following needs to be done:
+1. Create a new branch with the same name as the parity release and update dependencies. See this [commit](https://github.com/scs/substrate-api-client/commit/a50833a922ff98ae59e2fc587e0ab5466b3acab2) for an example update. Release branches are based on a specific api-client release, not master.
+2. Push the changes on the new branch and check CI result. CI will be triggered automatically if the branch follows the naming scheme of `release-polkadot-v[0-9]+.[0-9]+.[0-9]+*`. Results can be looked up [here](https://github.com/scs/substrate-api-client/actions)
+3. After CI passed, update the associated release text with the new branch. See [this release](https://github.com/scs/substrate-api-client/releases/tag/v0.16.0) as an example.
+
+
 ## Automatic Release generation
 
 A new draft release gets generated upon a new tag with a name matching `v[0-9]+.[0-9]+.[0-9]+*` (E.g. v1.2.3 and v1.2.3-rc1)
@@ -14,6 +28,7 @@ This is not yet checked or automated by CI, but it may be in the future. Current
 In case a new release is triggered, the `.toml` versions of the crates, that have been updated since the last release, should be increased.
 - In case of breaking API changes, the minor version should be increased (`0.9.3 -> 0.10.0`)
 - In case of changes, which do not break the API, the patch version should be increased (`0.9.3 -> 0.9.4`).
+The version of the main .toml should be same as the one of the release.
 
 ### PR Labels
 For automatic release generation, `E` and `F` labels are used.
