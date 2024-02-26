@@ -121,11 +121,6 @@ impl Metadata {
 		&self.runtime_metadata.custom
 	}
 
-	/// Returns the  mutable custom types of the metadata. Allows users to add custom types to the metadata.
-	pub fn custom_mut(&mut self) -> &mut CustomMetadata<PortableForm> {
-		&mut self.runtime_metadata.custom
-	}
-
 	#[cfg(feature = "std")]
 	pub fn pretty_format(&self) -> Result<String, std::string::FromUtf8Error> {
 		let buf = Vec::new();
@@ -518,5 +513,32 @@ impl Metadata {
 			.storage_entry(storage_item)?
 			.get_double_map::<K, Q>(pallet)?
 			.key(first_double_map_key, second_double_map_key))
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use codec::Decode;
+	use sp_core::Bytes;
+	use std::fs;
+
+	fn metadata() -> Metadata {
+		let encoded_metadata: Bytes = fs::read("./../ksm_metadata_v14.bin").unwrap().into();
+		Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap()
+	}
+
+	#[test]
+	fn outer_enum_access() {
+		let metadata = metadata();
+		println!("{:?}", metadata.outer_enums().call_enum_ty);
+	}
+
+	#[test]
+	fn initial_custom_metadata_is_empty() {
+		let metadata = metadata();
+		let custom_metadata = metadata.custom();
+
+		assert!(custom_metadata.map.is_empty());
 	}
 }
