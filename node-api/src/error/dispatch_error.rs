@@ -22,8 +22,8 @@ use log::*;
 use scale_decode::{visitor::DecodeAsTypeResult, DecodeAsType};
 
 /// An error dispatching a transaction. See Substrate DispatchError
-//https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L524
-#[derive(Debug, From)]
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L561-L598
+#[derive(Debug, From, PartialEq)]
 pub enum DispatchError {
 	/// Some error occurred.
 	Other,
@@ -51,12 +51,13 @@ pub enum DispatchError {
 	Corruption,
 	/// Some resource (e.g. a preimage) is unavailable right now. This might fix itself later.
 	Unavailable,
+	/// Root origin is not allowed.
+	RootNotAllowed,
 }
 
 impl DispatchError {
 	/// Attempt to decode a runtime [`DispatchError`].
-	// This function is copied (and adapted) from subxt:
-	// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/error/dispatch_error.rs#L208-L321
+	// https://github.com/paritytech/subxt/blob/0d1cc92f27c0c6d43de16fe7276484a141149096/subxt/src/error/dispatch_error.rs#L229-L338
 	pub fn decode_from<'a>(
 		bytes: impl Into<Cow<'a, [u8]>>,
 		metadata: &Metadata,
@@ -83,6 +84,7 @@ impl DispatchError {
 			Exhausted,
 			Corruption,
 			Unavailable,
+			RootNotAllowed,
 		}
 
 		// ModuleError is a bit special; we want to support being decoded from either
@@ -131,6 +133,7 @@ impl DispatchError {
 			DecodedDispatchError::Exhausted => DispatchError::Exhausted,
 			DecodedDispatchError::Corruption => DispatchError::Corruption,
 			DecodedDispatchError::Unavailable => DispatchError::Unavailable,
+			DecodedDispatchError::RootNotAllowed => DispatchError::RootNotAllowed,
 			// But we apply custom logic to transform the module error into the outward facing version:
 			DecodedDispatchError::Module(module_bytes) => {
 				let module_bytes = module_bytes.0;
@@ -173,7 +176,7 @@ impl DispatchError {
 }
 
 /// An error relating to tokens when dispatching a transaction.
-//https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L607
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L646-L671
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum TokenError {
 	/// Funds are unavailable.
@@ -194,10 +197,12 @@ pub enum TokenError {
 	CannotCreateHold,
 	/// Withdrawal would cause unwanted loss of account.
 	NotExpendable,
+	/// Account cannot receive the assets.
+	Blocked,
 }
 
 /// An error relating to arithmetic when dispatching a transaction.
-// https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/arithmetic/src/lib.rs#L59
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/arithmetic/src/lib.rs#L61-L71
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum ArithmeticError {
 	/// Underflow.
@@ -209,7 +214,7 @@ pub enum ArithmeticError {
 }
 
 /// An error relating to the transactional layers when dispatching a transaction.
-// https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L496
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L536-L544
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum TransactionalError {
 	/// Too many transactional layers have been spawned.
