@@ -62,7 +62,7 @@ impl JsonrpseeClient {
 	}
 
 	/// Create a new client with a user-generated Jsonrpsee Client.
-	pub async fn new_with_client(client: Client) -> Self {
+	pub fn new_with_client(client: Client) -> Self {
 		let inner = Arc::new(client);
 		Self { inner }
 	}
