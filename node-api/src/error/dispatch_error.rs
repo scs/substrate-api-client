@@ -22,8 +22,8 @@ use log::*;
 use scale_decode::{visitor::DecodeAsTypeResult, DecodeAsType};
 
 /// An error dispatching a transaction. See Substrate DispatchError
-//https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L524
-#[derive(Debug, From)]
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L561-L598
+#[derive(Debug, From, PartialEq, Eq)]
 pub enum DispatchError {
 	/// Some error occurred.
 	Other,
@@ -51,12 +51,13 @@ pub enum DispatchError {
 	Corruption,
 	/// Some resource (e.g. a preimage) is unavailable right now. This might fix itself later.
 	Unavailable,
+	/// Root origin is not allowed.
+	RootNotAllowed,
 }
 
 impl DispatchError {
 	/// Attempt to decode a runtime [`DispatchError`].
-	// This function is copied (and adapted) from subxt:
-	// https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/error/dispatch_error.rs#L208-L321
+	// https://github.com/paritytech/subxt/blob/0d1cc92f27c0c6d43de16fe7276484a141149096/subxt/src/error/dispatch_error.rs#L229-L338
 	pub fn decode_from<'a>(
 		bytes: impl Into<Cow<'a, [u8]>>,
 		metadata: &Metadata,
@@ -83,6 +84,7 @@ impl DispatchError {
 			Exhausted,
 			Corruption,
 			Unavailable,
+			RootNotAllowed,
 		}
 
 		// ModuleError is a bit special; we want to support being decoded from either
@@ -110,10 +112,10 @@ impl DispatchError {
 		}
 
 		// Decode into our temporary error:
-		let decoded_dispatch_err = DecodedDispatchError::decode_as_type(
+		let decoded_dispatch_err = DecodedDispatchError::decode_with_metadata(
 			&mut &*bytes,
 			dispatch_error_ty_id,
-			metadata.types(),
+			&metadata,
 		)?;
 
 		// Convert into the outward-facing error, mainly by handling the Module variant.
@@ -131,40 +133,31 @@ impl DispatchError {
 			DecodedDispatchError::Exhausted => DispatchError::Exhausted,
 			DecodedDispatchError::Corruption => DispatchError::Corruption,
 			DecodedDispatchError::Unavailable => DispatchError::Unavailable,
+			DecodedDispatchError::RootNotAllowed => DispatchError::RootNotAllowed,
 			// But we apply custom logic to transform the module error into the outward facing version:
 			DecodedDispatchError::Module(module_bytes) => {
 				let module_bytes = module_bytes.0;
 
 				// The old version is 2 bytes; a pallet and error index.
 				// The new version is 5 bytes; a pallet and error index and then 3 extra bytes.
-				let raw = if module_bytes.len() == 2 {
-					RawModuleError {
-						pallet_index: module_bytes[0],
-						error: [module_bytes[1], 0, 0, 0],
-					}
+				let bytes = if module_bytes.len() == 2 {
+					[module_bytes[0], module_bytes[1], 0, 0, 0]
 				} else if module_bytes.len() == 5 {
-					RawModuleError {
-						pallet_index: module_bytes[0],
-						error: [module_bytes[1], module_bytes[2], module_bytes[3], module_bytes[4]],
-					}
+					[
+						module_bytes[0],
+						module_bytes[1],
+						module_bytes[2],
+						module_bytes[3],
+						module_bytes[4],
+					]
 				} else {
 					warn!("Can't decode error sp_runtime::DispatchError: bytes do not match known shapes");
 					// Return _all_ of the bytes; every "unknown" return should be consistent.
-					return Err(Error::Unknown(bytes.to_vec()))
+					return Err(Error::Unknown(bytes.to_vec()));
 				};
 
-				let pallet_metadata = metadata.pallet_by_index_err(raw.pallet_index)?;
-				let error_details = pallet_metadata
-					.error_variant_by_index(raw.error[0])
-					.ok_or(MetadataError::ErrorNotFound(raw.pallet_index, raw.error[0]))?;
-
 				// And return our outward-facing version:
-				DispatchError::Module(ModuleError {
-					pallet: pallet_metadata.name().to_string(),
-					error: error_details.name.clone(),
-					description: error_details.docs.clone(),
-					raw,
-				})
+				DispatchError::Module(ModuleError { metadata, bytes })
 			},
 		};
 
@@ -173,7 +166,7 @@ impl DispatchError {
 }
 
 /// An error relating to tokens when dispatching a transaction.
-//https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L607
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L646-L671
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum TokenError {
 	/// Funds are unavailable.
@@ -194,10 +187,12 @@ pub enum TokenError {
 	CannotCreateHold,
 	/// Withdrawal would cause unwanted loss of account.
 	NotExpendable,
+	/// Account cannot receive the assets.
+	Blocked,
 }
 
 /// An error relating to arithmetic when dispatching a transaction.
-// https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/arithmetic/src/lib.rs#L59
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/arithmetic/src/lib.rs#L61-L71
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum ArithmeticError {
 	/// Underflow.
@@ -208,8 +203,8 @@ pub enum ArithmeticError {
 	DivisionByZero,
 }
 
-/// An error relating to the transactional layers when dispatching a transaction.
-// https://github.com/paritytech/substrate/blob/890451221db37176e13cb1a306246f02de80590a/primitives/runtime/src/lib.rs#L496
+/// An error relating to thr transactional layers when dispatching a transaction.
+// https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L536-L544
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode, DecodeAsType)]
 pub enum TransactionalError {
 	/// Too many transactional layers have been spawned.
@@ -219,40 +214,99 @@ pub enum TransactionalError {
 }
 
 /// Details about a module error that has occurred.
-#[derive(Clone, Debug)]
+// https://github.com/paritytech/subxt/blob/0d1cc92f27c0c6d43de16fe7276484a141149096/subxt/src/error/dispatch_error.rs#L167-L226
+#[derive(Clone)]
 pub struct ModuleError {
-	/// The name of the pallet that the error came from.
-	pub pallet: String,
-	/// The name of the error.
-	pub error: String,
-	/// A description of the error.
-	pub description: Vec<String>,
-	/// A byte representation of the error.
-	pub raw: RawModuleError,
+	metadata: Metadata,
+	/// Bytes representation:
+	///  - `bytes[0]`:   pallet index
+	///  - `bytes[1]`:   error index
+	///  - `bytes[2..]`: 3 bytes specific for the module error
+	bytes: [u8; 5],
 }
 
 impl PartialEq for ModuleError {
 	fn eq(&self, other: &Self) -> bool {
 		// A module error is the same if the raw underlying details are the same.
-		self.raw == other.raw
+		self.bytes == other.bytes
 	}
 }
 
-/// The error details about a module error that has occurred.
-///
-/// **Note**: Structure used to obtain the underlying bytes of a ModuleError.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct RawModuleError {
-	/// Index of the pallet that the error came from.
-	pub pallet_index: u8,
-	/// Raw error bytes.
-	pub error: [u8; 4],
+impl Eq for ModuleError {}
+
+/// Custom `Debug` implementation, ignores the very large `metadata` field, using it instead (as
+/// intended) to resolve the actual pallet and error names. This is much more useful for debugging.
+impl Debug for ModuleError {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> std::fmt::Result {
+		let details = self.details_string();
+		write!(f, "ModuleError(<{details}>)")
+	}
 }
 
-impl RawModuleError {
+impl core::fmt::Display for ModuleError {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		let details = self.details_string();
+		write!(f, "{details}")
+	}
+}
+
+impl ModuleError {
+	/// Return more details about this error.
+	pub fn details(&self) -> Result<ModuleErrorDetails, MetadataError> {
+		let pallet = self.metadata.pallet_by_index_err(self.pallet_index())?;
+		let variant = pallet
+			.error_variant_by_index(self.error_index())
+			.ok_or_else(|| MetadataError::VariantIndexNotFound(self.error_index()))?;
+
+		Ok(ModuleErrorDetails { pallet, variant })
+	}
+
+	/// Return a formatted string of the resolved error details for debugging/display purposes.
+	pub fn details_string(&self) -> String {
+		match self.details() {
+			Ok(details) => format!(
+				"{pallet_name}::{variant_name}",
+				pallet_name = details.pallet.name(),
+				variant_name = details.variant.name,
+			),
+			Err(_) => format!(
+				"Unknown pallet error '{bytes:?}' (pallet and error details cannot be retrieved)",
+				bytes = self.bytes
+			),
+		}
+	}
+
+	/// Return the underlying module error data that was decoded.
+	pub fn bytes(&self) -> [u8; 5] {
+		self.bytes
+	}
+
+	/// Obtain the pallet index from the underlying byte data.
+	pub fn pallet_index(&self) -> u8 {
+		self.bytes[0]
+	}
+
 	/// Obtain the error index from the underlying byte data.
 	pub fn error_index(&self) -> u8 {
-		// Error index is utilized as the first byte from the error array.
-		self.error[0]
+		self.bytes[1]
 	}
+
+	// 	/// Attempts to decode the ModuleError into the top outer Error enum.
+	// 	pub fn as_root_error<E: DecodeAsType>(&self) -> Result<E, Error> {
+	// 		let decoded = E::decode_as_type(
+	// 			&mut &self.bytes[..],
+	// 			self.metadata.outer_enums().error_enum_ty(),
+	// 			self.metadata.types(),
+	// 		)?;
+	//
+	// 		Ok(decoded)
+	// 	}
+}
+
+/// Details about the module error.
+pub struct ModuleErrorDetails<'a> {
+	/// The pallet that the error is in
+	pub pallet: crate::metadata::PalletMetadata<'a>,
+	/// The variant representing the error
+	pub variant: &'a scale_info::Variant<scale_info::form::PortableForm>,
 }
