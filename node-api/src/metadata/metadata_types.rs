@@ -520,6 +520,7 @@ impl Metadata {
 mod tests {
 	use super::*;
 	use codec::Decode;
+	use scale_info::TypeDef;
 	use sp_core::Bytes;
 	use std::fs;
 
@@ -531,11 +532,19 @@ mod tests {
 	#[test]
 	fn outer_enum_access() {
 		let metadata = metadata();
-		println!("{:?}", metadata.outer_enums().call_enum_ty);
+
+		let call_enum_ty = metadata.outer_enums().call_enum_ty;
+		let ty = metadata.types().types.get(call_enum_ty.id as usize).unwrap();
+		if let TypeDef::Variant(variant) = &ty.ty.type_def {
+			// The first pallet call is from System pallet.
+			assert_eq!(variant.variants[0].name, "System");
+		} else {
+			panic!("Expetected Variant outer enum call type.");
+		}
 	}
 
 	#[test]
-	fn initial_custom_metadata_is_empty() {
+	fn custom_ksm_metadata_v14_is_empty() {
 		let metadata = metadata();
 		let custom_metadata = metadata.custom();
 
