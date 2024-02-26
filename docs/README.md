@@ -3,7 +3,7 @@
 ## TODO List for a new Release
 If a new release is released, the following tasks need to be done:
 1. Update the .toml versions in accordance with the [Semantic Versioning](#semantic-versioning) section.
-2. Add a new tag to the desired commit, see [Tag generation](#tag-generation))
+2. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
 3. Update and release the new release.
 
 
@@ -11,7 +11,7 @@ If a new release is released, the following tasks need to be done:
 To follow a new partiy branch release, the following needs to be done:
 1. Create a new branch with the same name as the parity release and update dependencies. See this [commit](https://github.com/scs/substrate-api-client/commit/a50833a922ff98ae59e2fc587e0ab5466b3acab2) for an example update. Release branches are based on a specific api-client release, not master.
 2. Push the changes on the new branch and check CI result. CI will be triggered automatically if the branch follows the naming scheme of `release-polkadot-v[0-9]+.[0-9]+.[0-9]+*`. Results can be looked up [here](https://github.com/scs/substrate-api-client/actions)
-3. After CI passed, update associated release text with the new branch. See [this release](https://github.com/scs/substrate-api-client/releases/tag/v0.16.0) as an example.
+3. After CI passed, update the associated release text with the new branch. See [this release](https://github.com/scs/substrate-api-client/releases/tag/v0.16.0) as an example.
 
 
 ## Automatic Release generation
