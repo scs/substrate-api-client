@@ -539,7 +539,7 @@ mod tests {
 			// The first pallet call is from System pallet.
 			assert_eq!(variant.variants[0].name, "System");
 		} else {
-			panic!("Expetected Variant outer enum call type.");
+			panic!("Expected Variant outer enum call type.");
 		}
 	}
 
