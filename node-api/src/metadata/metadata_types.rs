@@ -20,12 +20,15 @@ use alloc::{
 use codec::{Decode, Encode};
 use frame_metadata::{
 	v15::{
-		ExtrinsicMetadata, PalletConstantMetadata, RuntimeApiMethodMetadata,
-		RuntimeMetadataLastVersion, StorageEntryMetadata,
+		CustomMetadata, ExtrinsicMetadata, OuterEnums, PalletConstantMetadata,
+		RuntimeApiMethodMetadata, RuntimeMetadataLastVersion, StorageEntryMetadata,
 	},
 	RuntimeMetadata, RuntimeMetadataPrefixed, META_RESERVED,
 };
-use scale_info::{form::PortableForm, PortableRegistry, Type, Variant};
+use scale_info::{
+	form::{Form, PortableForm},
+	PortableRegistry, Type, Variant,
+};
 use sp_storage::StorageKey;
 
 #[cfg(feature = "std")]
@@ -39,8 +42,8 @@ pub struct Metadata {
 	pallets: BTreeMap<String, PalletMetadataInner>,
 	/// Find the location in the pallet Vec by pallet index.
 	pallets_by_index: BTreeMap<u8, String>,
-	/// Metadata of the extrinsic.
-	extrinsic: ExtrinsicMetadata<PortableForm>,
+	/// The type of the `Runtime`.
+	ty: <PortableForm as Form>::Type,
 	// Type of the DispatchError type, which is what comes back if
 	// an extrinsic fails.
 	dispatch_error_ty: Option<u32>,
@@ -67,6 +70,11 @@ impl Metadata {
 		Some(PalletMetadata { inner, types: self.types() })
 	}
 
+	/// Return the type of the `Runtime`.
+	pub fn ty(&self) -> &<PortableForm as Form>::Type {
+		&self.ty
+	}
+
 	/// Return the DispatchError type ID if it exists.
 	pub fn dispatch_error_ty(&self) -> Option<u32> {
 		self.dispatch_error_ty
@@ -89,7 +97,7 @@ impl Metadata {
 
 	/// Return details about the extrinsic format.
 	pub fn extrinsic(&self) -> &ExtrinsicMetadata<PortableForm> {
-		&self.extrinsic
+		&self.runtime_metadata.extrinsic
 	}
 
 	/// An iterator over all of the runtime APIs.
@@ -103,6 +111,21 @@ impl Metadata {
 	pub fn runtime_api_trait_by_name(&'_ self, name: &str) -> Option<RuntimeApiMetadata<'_>> {
 		let inner = self.apis.get(name)?;
 		Some(RuntimeApiMetadata { inner, types: self.types() })
+	}
+
+	/// Return the outer enums types as found in the runtime.
+	pub fn outer_enums(&self) -> &OuterEnums<PortableForm> {
+		&self.runtime_metadata.outer_enums
+	}
+
+	/// Returns the custom types of the metadata.
+	pub fn custom(&self) -> &CustomMetadata<PortableForm> {
+		&self.runtime_metadata.custom
+	}
+
+	/// Returns the  mutable custom types of the metadata. Allows users to add custom types to the metadata.
+	pub fn custom_mut(&mut self) -> &mut CustomMetadata<PortableForm> {
+		&mut self.runtime_metadata.custom
 	}
 
 	#[cfg(feature = "std")]
@@ -249,13 +272,11 @@ impl<'a> PalletMetadata<'a> {
 	}
 }
 
-// Based on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/lib.rs#L274-L298
+// Based on https://github.com/paritytech/frame-metadata/blob/94e7743fa454963609763cf9cccbb7f85bc96d2f/frame-metadata/src/v15.rs#L249-L276
 #[derive(Debug, Clone)]
 struct PalletMetadataInner {
 	/// Pallet name.
 	name: String,
-	/// Pallet index.
-	index: u8,
 	/// Pallet storage metadata.
 	storage: BTreeMap<String, StorageEntryMetadata<PortableForm>>,
 	/// Type ID for the pallet Call enum.
@@ -266,12 +287,15 @@ struct PalletMetadataInner {
 	event_ty: Option<u32>,
 	/// Event variants by name/u8.
 	event_variant_index: VariantIndex,
+	/// Map from constant name to constant details.
+	constants: BTreeMap<String, PalletConstantMetadata<PortableForm>>,
 	/// Type ID for the pallet Error enum.
 	error_ty: Option<u32>,
 	/// Error variants by name/u8.
 	error_variant_index: VariantIndex,
-	/// Map from constant name to constant details.
-	constants: BTreeMap<String, PalletConstantMetadata<PortableForm>>,
+	/// Define the index of the pallet, this index will be used for the encoding of pallet event,
+	/// call and origin variants.
+	index: u8,
 	/// Pallet documentation.
 	docs: Vec<String>,
 }
