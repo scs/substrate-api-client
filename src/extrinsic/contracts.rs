@@ -31,7 +31,8 @@ use alloc::vec::Vec;
 use codec::{Compact, Encode};
 
 pub const CONTRACTS_MODULE: &str = "Contracts";
-pub const PUT_CODE: &str = "put_code";
+pub const UPLOAD_CODE: &str = "upload_code";
+pub const REMOVE_CODE: &str = "remove_code";
 pub const INSTANTIATE: &str = "instantiate";
 pub const INSTANTIATE_WITH_CODE: &str = "instantiate_with_code";
 pub const CALL: &str = "call";
@@ -45,8 +46,8 @@ pub type SaltFor<M> = <M as ContractsExtrinsics>::Salt;
 pub type HashFor<M> = <M as ContractsExtrinsics>::Hash;
 pub type AddressFor<M> = <M as ContractsExtrinsics>::Address;
 
-/// Call for putting code in a contract.
-pub type PutCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
+/// Call for uploading code in a contract.
+pub type UploadCodeFor<M> = (CallIndex, GasLimitFor<M>, DataFor<M>);
 
 /// Call for instantiating a contract with the code hash.
 pub type InstantiateWithHashFor<M> =
@@ -70,11 +71,17 @@ pub trait ContractsExtrinsics {
 	type Address;
 	type Extrinsic<Call>;
 
-	async fn contract_put_code(
+	async fn contract_upload_code(
 		&self,
-		gas_limit: Self::Gas,
 		code: Self::Code,
-	) -> Option<Self::Extrinsic<PutCodeFor<Self>>>;
+		storage_deposit_limit: Option<Self::Balances>,
+		determinism: Self::Determinism,
+	) -> Option<Self::Extrinsic<UploadCodeFor<Self>>>;
+
+	async fn contract_remove_code(
+		&self,
+		code_hash: Self::CodeHash,
+	) -> Option<Self::Extrinsic<UploadCodeFor<Self>>>;
 
 	async fn contract_instantiate(
 		&self,
@@ -124,12 +131,12 @@ where
 		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
 	>;
 
-	async fn contract_put_code(
+	async fn contract_upload_code(
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
-	) -> Option<Self::Extrinsic<PutCodeFor<Self>>> {
-		compose_extrinsic!(self, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
+	) -> Option<Self::Extrinsic<UploadCodeFor<Self>>> {
+		compose_extrinsic!(self, CONTRACTS_MODULE, UPLOAD_CODE, Compact(gas_limit), code)
 	}
 
 	async fn contract_instantiate(
