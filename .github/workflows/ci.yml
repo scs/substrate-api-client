@@ -165,6 +165,7 @@ jobs:
         example: [
           benchmark_bulk_xt,
           compose_extrinsic,
+          contract_instantiate_with_code,
           custom_nonce,
           check_extrinsic_events,
           get_account_identity,
