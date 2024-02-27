@@ -24,7 +24,7 @@ use substrate_api_client::{
 	ac_compose_macros::rpc_params,
 	ac_primitives::AssetRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
-	rpc::{JsonrpseeClient, Request},
+	rpc::{HandleSubscription, JsonrpseeClient, Request, Subscribe},
 	Api,
 };
 
@@ -43,26 +43,39 @@ async fn main() {
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
+	// Retrieve all available rpc methods:
 	let json_value: Value = api.client().request("rpc_methods", rpc_params![]).await.unwrap();
 	let json_string = serde_json::to_string(&json_value).unwrap();
-	println!("{json_string}");
+	println!("Available methods: {json_string} \n");
 
-	let chain_name: String = api
-		.client()
-		.request("chainSpec_unstable_chainName", rpc_params![])
-		.await
-		.unwrap();
+	// Since it's an unstable api and might change anytime, we first check if our calls are still
+	// available:
+	let chain_name_request = "chainSpec_unstable_chainName";
+	let chain_genesis_hash_request = "chainSpec_unstable_genesisHash";
+	let transaction_submit_watch = "transaction_unstable_submitAndWatch";
+	let transaction_unwatch = "transaction_unstable_unwatch";
 
+	let request_vec = [
+		chain_name_request,
+		chain_genesis_hash_request,
+		transaction_submit_watch,
+		transaction_unwatch,
+	];
+	for request in request_vec {
+		if !json_string.contains(request) {
+			panic!("Api has changed, please update the call {request}.");
+		}
+	}
+
+	// Submit the above defiend rpc requests:
+	let chain_name: String = api.client().request(chain_name_request, rpc_params![]).await.unwrap();
 	println!("Our chain is called: {chain_name}");
 
-	let genesishash: String = api
-		.client()
-		.request("chainSpec_unstable_genesisHash", rpc_params![])
-		.await
-		.unwrap();
+	let genesishash: String =
+		api.client().request(chain_genesis_hash_request, rpc_params![]).await.unwrap();
+	println!("Chain genesis Hash: {genesishash}");
 
-	println!("Genesis Hash: {genesishash}");
-
+	// Submit and watch a transaction:
 	let bob = AccountKeyring::Bob.to_account_id();
 	let encoded_extrinsic: Bytes = api
 		.balance_transfer_allow_death(bob.into(), 1000)
@@ -71,11 +84,26 @@ async fn main() {
 		.encode()
 		.into();
 
-	let subscription_string: String = api
+	let mut subscription = api
 		.client()
-		.request("transaction_unstable_submitAndWatch", rpc_params![encoded_extrinsic])
+		.subscribe::<Value>(
+			transaction_submit_watch,
+			rpc_params![encoded_extrinsic],
+			transaction_unwatch,
+		)
 		.await
 		.unwrap();
-
-	println!("Successfully submitted extrinsic. Watchable with the following subscription: {subscription_string}");
+	while let Some(notification) = subscription.next().await {
+		let notification = notification.unwrap();
+		println!("Subscription notification: {notification:?}");
+		let event_object_string = notification["event"].as_str().unwrap();
+		//let event_object_string = serde_json::from_string().unwrap();
+		match event_object_string {
+			"finalized" => break,
+			"bestChainBlockIncluded" | "validated" => println!("Got {event_object_string} event"),
+			_ => panic!("Unexpected event: {event_object_string}"),
+		};
+	}
+	println!("Transaction got finalized, unsubscribing.");
+	subscription.unsubscribe().await.unwrap();
 }
