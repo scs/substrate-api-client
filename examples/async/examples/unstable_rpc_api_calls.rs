@@ -16,10 +16,14 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
+use codec::Encode;
+use serde_json::Value;
+use sp_core::Bytes;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::rpc_params,
 	ac_primitives::AssetRuntimeConfig,
+	extrinsic::BalancesExtrinsics,
 	rpc::{JsonrpseeClient, Request},
 	Api,
 };
@@ -39,21 +43,39 @@ async fn main() {
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
-	let chain_name: String =
-		api.client().request("chainSpec_v1_chainName", rpc_params![]).await.unwrap();
+	let json_value: Value = api.client().request("rpc_methods", rpc_params![]).await.unwrap();
+	let json_string = serde_json::to_string(&json_value).unwrap();
+	println!("{json_string}");
 
-	println!("{chain_name}");
-
-	let pending_transactions: Vec<String> = api
+	let chain_name: String = api
 		.client()
-		.request("sudo_unstable_pendingTransactions", rpc_params![])
+		.request("chainSpec_unstable_chainName", rpc_params![])
 		.await
 		.unwrap();
 
-	println!("{pending_transactions:?}");
+	println!("Our chain is called: {chain_name}");
 
-	let version: String =
-		api.client().request("sudo_unstable_version", rpc_params![]).await.unwrap();
+	let genesishash: String = api
+		.client()
+		.request("chainSpec_unstable_genesisHash", rpc_params![])
+		.await
+		.unwrap();
 
-	println!("{version}");
+	println!("Genesis Hash: {genesishash}");
+
+	let bob = AccountKeyring::Bob.to_account_id();
+	let encoded_extrinsic: Bytes = api
+		.balance_transfer_allow_death(bob.into(), 1000)
+		.await
+		.unwrap()
+		.encode()
+		.into();
+
+	let subscription_string: String = api
+		.client()
+		.request("transaction_unstable_submitAndWatch", rpc_params![encoded_extrinsic])
+		.await
+		.unwrap();
+
+	println!("Successfully submitted extrinsic. Watchable with the following subscription: {subscription_string}");
 }
