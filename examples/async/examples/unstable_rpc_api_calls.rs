@@ -16,13 +16,12 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
-use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, GenericAdditionalParams},
-	rpc::JsonrpseeClient,
-	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
+	ac_compose_macros::rpc_params,
+	ac_primitives::AssetRuntimeConfig,
+	rpc::{JsonrpseeClient, Request},
+	Api,
 };
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
@@ -40,21 +39,21 @@ async fn main() {
 	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
-    let chain_name: String =
-			api.client().request("chainSpec_v1_chainName", rpc_params![]).await.unwrap();
+	let chain_name: String =
+		api.client().request("chainSpec_v1_chainName", rpc_params![]).await.unwrap();
 
-    println!("{chain_name}");
+	println!("{chain_name}");
 
-    let pending_transactions: Vec<String> =
-			api.client().request("sudo_unstable_pendingTransactions", rpc_params![]).await.unwrap();
+	let pending_transactions: Vec<String> = api
+		.client()
+		.request("sudo_unstable_pendingTransactions", rpc_params![])
+		.await
+		.unwrap();
 
-    println!("{pending_transactions}");
+	println!("{pending_transactions:?}");
 
-    let version: String =
-			api.client().request("sudo_unstable_version", rpc_params![]).await.unwrap();
+	let version: String =
+		api.client().request("sudo_unstable_version", rpc_params![]).await.unwrap();
 
-    println!("{version}");
-
-
-
+	println!("{version}");
 }
