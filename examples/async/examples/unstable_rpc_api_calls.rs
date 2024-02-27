@@ -13,8 +13,8 @@
 	limitations under the License.
 */
 
-//! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
-//! without asking the node for nonce and does not need to know the metadata
+//! This example shows how to call the unstable rpc api with self defined functions.
+//! This includes simple requests as well as subscription.
 
 use codec::Encode;
 use serde_json::Value;
