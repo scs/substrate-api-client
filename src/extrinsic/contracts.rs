@@ -19,8 +19,6 @@
 //! Contracts module is community maintained and not CI tested, therefore it may not work as is.
 //! https://polkadot.js.org/docs/substrate/extrinsics/#contracts
 
-// FIXME: This module is currently outdated. See https://github.com/scs/substrate-api-client/issues/435.
-
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
@@ -270,7 +268,7 @@ where
 			CONTRACTS_MODULE,
 			UPLOAD_CODE,
 			code,
-			storage_deposit_limit.map(|limit| Compact(limit)),
+			storage_deposit_limit.map(Compact),
 			determinism
 		)
 	}
@@ -305,7 +303,7 @@ where
 			dest,
 			Compact(value),
 			gas_limit,
-			storage_deposit_limit.map(|limit| Compact(limit)),
+			storage_deposit_limit.map(Compact),
 			data
 		)
 	}
@@ -325,7 +323,7 @@ where
 			INSTANTIATE_WITH_CODE,
 			Compact(value),
 			gas_limit,
-			storage_deposit_limit.map(|limit| Compact(limit)),
+			storage_deposit_limit.map(Compact),
 			code,
 			data,
 			salt
@@ -347,7 +345,7 @@ where
 			INSTANTIATE,
 			Compact(value),
 			gas_limit,
-			storage_deposit_limit.map(|limit| Compact(limit)),
+			storage_deposit_limit.map(Compact),
 			code_hash,
 			data,
 			salt
