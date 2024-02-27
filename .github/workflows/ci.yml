@@ -174,6 +174,7 @@ jobs:
           staking_batch_payout,
           subscribe_events,
           sudo,
+          unstable_rpc_api_calls,
           transfer_with_tungstenite_client,
           transfer_with_ws_client,
           author_tests,
