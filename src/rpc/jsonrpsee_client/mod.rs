@@ -15,7 +15,7 @@ use crate::rpc::{Error, Request, Result, RpcParams, Subscribe};
 use jsonrpsee::{
 	client_transport::ws::{Url, WsTransportClientBuilder},
 	core::{
-		client::{Client, ClientBuilder, ClientT, SubscriptionClientT},
+		client::{Client, ClientBuilder, ClientT, Error as JsonrpseeError, SubscriptionClientT},
 		traits::ToRpcParams,
 	},
 };
@@ -33,6 +33,7 @@ pub struct JsonrpseeClient {
 }
 
 impl JsonrpseeClient {
+	/// Create a new client to a local Substrate node with default port.
 	pub async fn with_default_url() -> Result<Self> {
 		Self::new("ws://127.0.0.1:9944").await
 	}
@@ -58,6 +59,42 @@ impl JsonrpseeClient {
 	pub async fn new_with_port(address: &str, port: u32) -> Result<Self> {
 		let url = format!("{address}:{port:?}");
 		Self::new(&url).await
+	}
+
+	/// Create a new client with a user-generated Jsonrpsee Client.
+	pub fn new_with_client(client: Client) -> Self {
+		let inner = Arc::new(client);
+		Self { inner }
+	}
+}
+
+impl JsonrpseeClient {
+	/// Checks if the client is connected to the target.
+	pub fn is_connected(&self) -> bool {
+		self.inner.is_connected()
+	}
+
+	/// This is similar to [`Client::on_disconnect`] but it can be used to get
+	/// the reason why the client was disconnected but it's not cancel-safe.
+	///
+	/// The typical use-case is that this method will be called after
+	/// [`Client::on_disconnect`] has returned in a "select loop".
+	///
+	/// # Cancel-safety
+	///
+	/// This method is not cancel-safe
+	pub async fn disconnect_reason(&self) -> JsonrpseeError {
+		self.inner.disconnect_reason().await
+	}
+
+	/// Completes when the client is disconnected or the client's background task encountered an error.
+	/// If the client is already disconnected, the future produced by this method will complete immediately.
+	///
+	/// # Cancel safety
+	///
+	/// This method is cancel safe.
+	pub async fn on_disconnect(&self) {
+		self.inner.on_disconnect().await;
 	}
 }
 

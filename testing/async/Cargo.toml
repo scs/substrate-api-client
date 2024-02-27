@@ -8,6 +8,8 @@ edition = "2021"
 [dev-dependencies]
 codec = { package = "parity-scale-codec", version = "3.6.1", features = ['derive'] }
 tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
+jsonrpsee = { version = "0.22", features = ["async-client", "client-ws-transport-native-tls", "jsonrpsee-types", "server"] }
+
 
 # Substrate dependencies
 frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
