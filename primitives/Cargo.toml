@@ -19,27 +19,27 @@ serde = { version = "1.0", default-features = false, features = ["derive", "allo
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate no_std
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-staking = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-staking = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
 # need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
 
 # substrate std / wasm only
-frame-system = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-pallet-assets = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-pallet-balances = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-pallet-contracts = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-pallet-staking = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+frame-system = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+pallet-assets = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+pallet-balances = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+pallet-contracts = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+pallet-staking = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
 
 [dev-dependencies]
-node-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
-pallet-transaction-payment = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+node-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+pallet-transaction-payment = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
 
 [features]
 default = ["std"]
