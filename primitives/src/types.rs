@@ -336,7 +336,7 @@ pub type NodeIndex = u64;
 
 /// Merkle Mountain Range operation error.
 // https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L362-L396
-#[derive(codec::Encode, codec::Decode, PartialEq, Eq, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, PartialEq, Eq, TypeInfo, RuntimeDebug)]
 pub enum MmrError {
 	/// Error during translation of a block number into a leaf index.
 	InvalidNumericOp,
@@ -358,4 +358,23 @@ pub enum MmrError {
 	InvalidLeafIndex,
 	/// The provided best know block number is invalid.
 	InvalidBestKnownBlock,
+}
+
+/// Defines the required determinism level of a wasm blob when either running or uploading code.
+#[derive(Clone, Copy, Encode, Decode, TypeInfo, MaxEncodedLen, RuntimeDebug, PartialEq, Eq)]
+pub enum Determinism {
+	/// The execution should be deterministic and hence no indeterministic instructions are
+	/// allowed.
+	///
+	/// Dispatchables always use this mode in order to make on-chain execution deterministic.
+	Enforced,
+	/// Allow calling or uploading an indeterministic code.
+	///
+	/// This is only possible when calling into `pallet-contracts` directly via
+	/// [`crate::Pallet::bare_call`].
+	///
+	/// # Note
+	///
+	/// **Never** use this mode for on-chain execution.
+	Relaxed,
 }

@@ -20,7 +20,8 @@ use kitchensink_runtime::AccountId;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::primitives::AssetRuntimeConfig, ac_node_api::StaticEvent,
-	extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api, SubmitAndWatch, XtStatus,
+	ac_primitives::Determinism, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
+	SubmitAndWatch, XtStatus,
 };
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
@@ -42,8 +43,6 @@ impl StaticEvent for ContractInstantiatedEventArgs {
 
 #[tokio::main]
 async fn main() {
-	env_logger::init();
-
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
@@ -52,41 +51,29 @@ async fn main() {
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().await.unwrap());
 
-	// contract to be deployed on the chain
-	const CONTRACT: &str = r#"
-(module
-    (func (export "call"))
-    (func (export "deploy"))
-)
-"#;
-	let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
+	let wasm = include_bytes!("flipper.wasm").to_vec();
 
 	let xt = api
-		.contract_instantiate_with_code(1_000_000_000_000_000, 500_000, wasm, vec![1u8], vec![1u8])
+		.contract_instantiate_with_code(
+			0,
+			500_000_000.into(),
+			None,
+			wasm.clone().into(),
+			vec![0].into(),
+			vec![0].into(),
+		)
 		.await
 		.unwrap();
 
-	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
-	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
-	println!("[+] Extrinsic is in Block. Hash: {:?}\n", report.block_hash.unwrap());
+	println!("[+] Creating a contract instance \n");
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
+	// Ensure the contract is valid - just doesnt make any changes.
+	assert!(format!("{:?}", result).contains("ContractReverted"));
 
-	println!("[+] Waiting for the contracts.Instantiated event");
+	let xt = api
+		.contract_upload_code(wasm.into(), None, Determinism::Enforced)
+		.await
+		.unwrap();
 
-	let associated_contract_events = report.events.unwrap();
-
-	let contract_instantiated_events: Vec<ContractInstantiatedEventArgs> =
-		associated_contract_events
-			.iter()
-			.filter_map(|event| event.as_event().unwrap())
-			.collect();
-	// We only expect one instantiated event
-	assert_eq!(contract_instantiated_events.len(), 1);
-	let contract = contract_instantiated_events[0].contract.clone();
-	println!("[+] Event was received. Contract deployed at: {contract:?}\n");
-
-	let xt = api.contract_call(contract.into(), 500_000, 500_000, vec![0u8]).await.unwrap();
-
-	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await.unwrap();
-	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
+	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 }

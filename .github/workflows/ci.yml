@@ -184,6 +184,7 @@ jobs:
           jsonrpsee_tests,
           keystore_tests,
           pallet_balances_tests,
+          pallet_contract_tests,
           pallet_transaction_payment_tests,
           runtime_api_tests,
           tungstenite_client_test,
