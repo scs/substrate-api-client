@@ -20,8 +20,8 @@ use kitchensink_runtime::AccountId;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::primitives::AssetRuntimeConfig, ac_node_api::StaticEvent,
-	ac_primitives::Determinism, error::FailedExtrinsicError, extrinsic::ContractsExtrinsics,
-	rpc::JsonrpseeClient, Api, SubmitAndWatch, XtStatus,
+	ac_primitives::Determinism, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
+	SubmitAndWatch, XtStatus,
 };
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
@@ -43,8 +43,6 @@ impl StaticEvent for ContractInstantiatedEventArgs {
 
 #[tokio::main]
 async fn main() {
-	env_logger::init();
-
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
