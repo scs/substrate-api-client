@@ -5,7 +5,7 @@ If a new release is released, the following tasks need to be done:
 1. Update the .toml versions in accordance with the [Semantic Versioning](#semantic-versioning) section.
 2. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
 3. Update and release the new release.
-
+4. Publish to crates.io, see https://doc.rust-lang.org/cargo/reference/publishing.html for more info. Important: Create a new branch and change all github deps to crates.io deps. See https://github.com/scs/substrate-api-client/issues/528 for an example update.
 
 ## TODO list for a new Parity release branch
 To follow a new partiy branch release, the following needs to be done:
