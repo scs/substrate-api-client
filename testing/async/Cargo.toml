@@ -12,15 +12,15 @@ jsonrpsee = { version = "0.22", features = ["async-client", "client-ws-transport
 
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
+pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.1" }
 
 # local deps
 substrate-api-client = { path = "../..", features = ["staking-xt", "contracts-xt"] }
