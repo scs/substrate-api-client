@@ -78,31 +78,4 @@ async fn main() {
 		.unwrap();
 
 	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
-	//
-	// 	println!("[+] Creating a contract instance \n");
-	// 	let report = api.submit_and_watch_extrinsic_until(xt1, XtStatus::InBlock).await.unwrap();
-	// 	println!("[+] Extrinsic is in Block. Hash: {:?}\n", report.block_hash.unwrap());
-	//
-	// 	println!("[+] Waiting for the contracts.Instantiated event");
-	//
-	// 	let associated_contract_events = report.events.unwrap();
-	//
-	// 	let contract_instantiated_events: Vec<ContractInstantiatedEventArgs> =
-	// 		associated_contract_events
-	// 			.iter()
-	// 			.filter_map(|event| event.as_event().unwrap())
-	// 			.collect();
-	// 	// We only expect one instantiated event
-	// 	assert_eq!(contract_instantiated_events.len(), 1);
-	// 	let contract = contract_instantiated_events[0].contract.clone();
-	// 	println!("[+] Event was received. Contract deployed at: {contract:?}\n");
-	//
-	// 	let xt = api
-	// 		.contract_call(contract.into(), 500_000, 500_000.into(), None, vec![0u8].into())
-	// 		.await
-	// 		.unwrap();
-	//
-	// 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
-	// 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await.unwrap();
-	// 	println!("[+] Extrinsic got finalized. Extrinsic Hash: {:?}", report.extrinsic_hash);
 }
