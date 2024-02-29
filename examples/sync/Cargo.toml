@@ -9,10 +9,10 @@ env_logger = "0.11"
 log = "0.4.14"
 
 # Substrate dependencies
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
-sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.7.2" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.8.0" }
+sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.8.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.8.0" }
+sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.8.0" }
 
 # local deps
 substrate-api-client = { path = "../..", default-features = false, features = ["tungstenite-client", "ws-client"] }
