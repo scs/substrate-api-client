@@ -17,7 +17,7 @@ name = "ac-compose-macros"
 version = "0.5.0"
 dependencies = [
  "ac-node-api",
- "ac-primitives",
+ "ac-primitives 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "frame-metadata 16.0.0",
  "log",
  "maybe-async",
@@ -65,7 +65,7 @@ dependencies = [
 name = "ac-node-api"
 version = "0.6.0"
 dependencies = [
- "ac-primitives",
+ "ac-primitives 0.9.1",
  "bitvec 1.0.1",
  "derive_more",
  "either",
@@ -110,6 +110,31 @@ dependencies = [
  "sp-core 30.0.0",
  "sp-crypto-hashing 0.1.0",
  "sp-keyring 33.0.0",
+ "sp-runtime 33.0.0",
+ "sp-runtime-interface 26.0.0",
+ "sp-staking 28.0.0",
+ "sp-version 31.0.0",
+ "sp-weights 29.0.0",
+]
+
+[[package]]
+name = "ac-primitives"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9ae522bea202dfeab020b6fc179b336e3c79c9b39dc78a433a7dfdc094e2792"
+dependencies = [
+ "frame-system 30.0.0",
+ "impl-serde 0.4.0",
+ "pallet-assets 31.0.0",
+ "pallet-balances 30.0.0",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-application-crypto 32.0.0",
+ "sp-core 30.0.0",
+ "sp-crypto-hashing 0.1.0",
  "sp-runtime 33.0.0",
  "sp-runtime-interface 26.0.0",
  "sp-staking 28.0.0",
@@ -9741,7 +9766,7 @@ version = "0.17.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
- "ac-primitives",
+ "ac-primitives 0.9.1",
  "async-trait",
  "derive_more",
  "frame-metadata 16.0.0",
@@ -9935,9 +9960,9 @@ version = "0.7.1"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
- "ac-primitives",
+ "ac-primitives 0.9.1",
  "libc",
- "sp-io 30.0.0",
+ "sp-io 32.0.0",
  "substrate-api-client",
 ]
 
