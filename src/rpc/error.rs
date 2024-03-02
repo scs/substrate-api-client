@@ -29,7 +29,7 @@ pub enum Error {
 	Io(String),
 	MaxConnectionAttemptsExceeded,
 	ConnectionClosed,
-	Client(Box<dyn core::error::Error + Send + Sync + 'static>),
+	Client(Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 impl From<serde_json::error::Error> for Error {
