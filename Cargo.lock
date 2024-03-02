@@ -50,7 +50,7 @@ dependencies = [
  "parity-scale-codec",
  "serde_json",
  "sp-core 28.0.0",
- "sp-keyring",
+ "sp-keyring 31.0.0",
  "sp-runtime 31.0.1",
  "sp-weights 27.0.0",
  "substrate-api-client 0.17.0",
@@ -66,7 +66,7 @@ dependencies = [
  "env_logger",
  "log",
  "sp-core 28.0.0",
- "sp-keyring",
+ "sp-keyring 31.0.0",
  "sp-runtime 31.0.1",
  "sp-weights 27.0.0",
  "substrate-api-client 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -168,7 +168,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-core 28.0.0",
  "sp-crypto-hashing 0.0.0",
- "sp-keyring",
+ "sp-keyring 31.0.0",
  "sp-runtime 31.0.1",
  "sp-staking 26.0.0",
  "substrate-api-client 0.17.0",
@@ -4464,7 +4464,7 @@ dependencies = [
  "scale-info",
  "sp-core 28.0.0",
  "sp-io 30.0.0",
- "sp-keyring",
+ "sp-keyring 31.0.0",
  "sp-runtime 31.0.1",
  "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk.git?branch=master)",
 ]
@@ -6156,15 +6156,16 @@ dependencies = [
 
 [[package]]
 name = "sc-keystore"
-version = "25.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk.git?branch=master#7ec692d11c5b0d749ad89a71df835dae4d3756ed"
+version = "27.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0413f82a27eded5a12e1f3d02c478b378e72912fbdf3b8b9cae7c5995c5a8f89"
 dependencies = [
  "array-bytes",
  "parking_lot",
  "serde_json",
- "sp-application-crypto 30.0.0",
- "sp-core 28.0.0",
- "sp-keystore 0.34.0",
+ "sp-application-crypto 32.0.0",
+ "sp-core 30.0.0",
+ "sp-keystore 0.36.0",
  "thiserror",
 ]
 
@@ -7244,6 +7245,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-keyring"
+version = "33.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f9c74648e593b45309dfddf34f4edfd0a91816d1d97dd5e0bd93c46e7cdb0d6"
+dependencies = [
+ "sp-core 30.0.0",
+ "sp-runtime 33.0.0",
+ "strum",
+]
+
+[[package]]
 name = "sp-keystore"
 version = "0.34.0"
 source = "git+https://github.com/paritytech/polkadot-sdk.git?branch=master#7ec692d11c5b0d749ad89a71df835dae4d3756ed"
@@ -8270,10 +8282,10 @@ dependencies = [
  "parking_lot",
  "sc-keystore",
  "serde_json",
- "sp-application-crypto 30.0.0",
- "sp-core 28.0.0",
- "sp-keyring",
- "sp-keystore 0.34.0",
+ "sp-application-crypto 32.0.0",
+ "sp-core 30.0.0",
+ "sp-keyring 33.0.0",
+ "sp-keystore 0.36.0",
  "tempfile",
 ]
 
