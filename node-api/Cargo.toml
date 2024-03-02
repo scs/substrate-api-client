@@ -36,7 +36,7 @@ sp-application-crypto = { default-features = false, features = ["full_crypto"], 
 sp-runtime-interface = { default-features = false, version = "26.0" }
 
 # local
-ac-primitives = { version = "0.9", default-features = false }
+ac-primitives = { version = "0.9", default-features = false, path = "../primitives" }
 
 [dev-dependencies]
 test-case = "3.1.0"

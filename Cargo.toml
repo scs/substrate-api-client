@@ -59,13 +59,13 @@ sp-version = { default-features = false, features = ["serde"], version = "31.0" 
 frame-support = { optional = true, version = "30.0" }
 
 # local deps
-ac-compose-macros = { version = "0.5", default-features = false }
-ac-node-api = { version = "0.6", default-features = false }
-ac-primitives = { version = "0.9", default-features = false }
+ac-compose-macros = { version = "0.5", path = "compose-macros", default-features = false }
+ac-node-api = { version = "0.6", path = "node-api", default-features = false }
+ac-primitives = { version = "0.9", path = "primitives", default-features = false }
 
 
 [dev-dependencies]
-ac-node-api = { version = "0.6", features = ["mocks"] }
+ac-node-api = { version = "0.6", path = "node-api", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
