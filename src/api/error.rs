@@ -56,7 +56,7 @@ pub enum Error {
 	/// Could not find the expected block.
 	BlockNotFound,
 	/// Any custom Error.
-	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
+	Other(Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 /// Encountered unexpected tx status during watch process or the extrinsic failed.
