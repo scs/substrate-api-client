@@ -23,6 +23,11 @@ use ac_node_api::{
 use alloc::{boxed::Box, vec::Vec};
 use codec::{Decode, Encode};
 
+#[cfg(not(feature = "std"))]
+use core::error::Error as ErrorT;
+#[cfg(feature = "std")]
+use std::error::Error as ErrorT;
+
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, derive_more::From)]
@@ -56,7 +61,7 @@ pub enum Error {
 	/// Could not find the expected block.
 	BlockNotFound,
 	/// Any custom Error.
-	Other(Box<dyn core::error::Error + Send + Sync + 'static>),
+	Other(Box<dyn ErrorT + Send + Sync + 'static>),
 }
 
 /// Encountered unexpected tx status during watch process or the extrinsic failed.

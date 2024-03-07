@@ -14,7 +14,7 @@
 //! Contains stuff to instantiate communication with a substrate node.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![feature(error_in_core)]
+#![cfg_attr(not(feature = "std"), feature(error_in_core))]
 
 extern crate alloc;
 
