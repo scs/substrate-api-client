@@ -59,14 +59,14 @@ sp-version = { default-features = false, features = ["serde"], version = "31.0" 
 frame-support = { optional = true, version = "30.0" }
 
 # local deps
-ac-compose-macros = { version = "0.5", default-features = false }
-ac-node-api = { version = "0.6", default-features = false }
-ac-primitives = { version = "0.9", default-features = false }
+ac-compose-macros = { path = "compose-macros", version = "0.5", default-features = false }
+ac-node-api = { path = "node-api", version = "0.6", default-features = false }
+ac-primitives = { path = "primitives", version = "0.9", default-features = false }
 
 
 [dev-dependencies]
-ac-node-api = { version = "0.6", features = ["mocks"] }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+ac-node-api = { path = "node-api", version = "0.6", features = ["mocks"] }
+kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-crates-io-v1.8.0" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
 
