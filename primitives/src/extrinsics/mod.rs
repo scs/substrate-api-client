@@ -254,7 +254,7 @@ mod tests {
 		CheckEra, CheckGenesis, CheckNonZeroSender, CheckNonce, CheckSpecVersion, CheckTxVersion,
 		CheckWeight,
 	};
-	use node_template_runtime::{
+	use solochain_template_runtime::{
 		BalancesCall, Runtime, RuntimeCall, SignedExtra, SystemCall, UncheckedExtrinsic, VERSION,
 	};
 	use pallet_transaction_payment::ChargeTransactionPayment;
