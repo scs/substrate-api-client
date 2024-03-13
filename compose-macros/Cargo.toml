@@ -15,10 +15,10 @@ log = { version = "0.4.14", default-features = false }
 maybe-async = { version = "0.2.7" }
 
 # local
-ac-primitives = { path = "../primitives", default-features = false }
+ac-primitives = { path = "../primitives", version = "0.9.1", default-features = false }
 
 [dev-dependencies]
-ac-node-api = { path = "../node-api" }
+ac-node-api = { path = "../node-api", version = "0.6" }
 frame-metadata = { version = "16.0" }
 codec = { package = "parity-scale-codec", version = "3.6.1" }
 
