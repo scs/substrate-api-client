@@ -13,4 +13,4 @@ sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 
 # local deps
 substrate-api-client = { path = "../..", version = "0.17", default-features = false, features = ["tungstenite-client", "ws-client"] }
-substrate-client-keystore = { path = "../../client-keystore" }
+ac-keystore = { path = "../../keystore" }
