@@ -254,10 +254,10 @@ mod tests {
 		CheckEra, CheckGenesis, CheckNonZeroSender, CheckNonce, CheckSpecVersion, CheckTxVersion,
 		CheckWeight,
 	};
-	use node_template_runtime::{
-		BalancesCall, Runtime, RuntimeCall, SignedExtra, SystemCall, UncheckedExtrinsic, VERSION,
-	};
 	use pallet_transaction_payment::ChargeTransactionPayment;
+	use solochain_template_runtime::{
+		BalancesCall, Runtime, RuntimeCall, SystemCall, TxExtension, UncheckedExtrinsic, VERSION,
+	};
 	use sp_core::{crypto::Ss58Codec, Pair, H256 as Hash};
 	use sp_keyring::AccountKeyring;
 	use sp_runtime::{
@@ -312,14 +312,14 @@ mod tests {
 			MultiAddress<AccountId32, u32>,
 			RuntimeCall,
 			MultiSignature,
-			SignedExtra,
+			TxExtension,
 		>::new_unsigned(call1.clone());
 		let json = serde_json::to_string(&xt1).expect("serializing failed");
 		let extrinsic: UncheckedExtrinsicV4<
 			MultiAddress<AccountId32, u32>,
 			RuntimeCall,
 			MultiSignature,
-			SignedExtra,
+			TxExtension,
 		> = serde_json::from_str(&json).expect("deserializing failed");
 		let call = extrinsic.function;
 		assert_eq!(call, call1);
@@ -342,7 +342,7 @@ mod tests {
 		let fee = 100;
 
 		// Create Substrate extrinsic.
-		let substrate_signed_extra: SignedExtra = (
+		let substrate_signed_extra: TxExtension = (
 			CheckNonZeroSender::<Runtime>::new(),
 			CheckSpecVersion::<Runtime>::new(),
 			CheckTxVersion::<Runtime>::new(),
@@ -399,7 +399,7 @@ mod tests {
 		let fee = 100;
 
 		// Create Substrate extrinsic.
-		let substrate_signed_extra: SignedExtra = (
+		let substrate_signed_extra: TxExtension = (
 			CheckNonZeroSender::<Runtime>::new(),
 			CheckSpecVersion::<Runtime>::new(),
 			CheckTxVersion::<Runtime>::new(),

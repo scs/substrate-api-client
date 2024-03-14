@@ -139,7 +139,7 @@ where
 mod tests {
 	use super::*;
 	use crate::AssetRuntimeConfig;
-	use node_template_runtime::Signature;
+	use solochain_template_runtime::Signature;
 	use sp_core::sr25519;
 	use sp_keyring::AccountKeyring;
 

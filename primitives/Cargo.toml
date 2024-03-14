@@ -37,7 +37,7 @@ pallet-contracts = { optional = true, git = "https://github.com/paritytech/polka
 pallet-staking = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 [dev-dependencies]
-node-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+solochain-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-transaction-payment = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
