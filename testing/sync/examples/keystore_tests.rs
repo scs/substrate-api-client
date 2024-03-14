@@ -15,10 +15,10 @@
 
 //! Tests for the author rpc interface functions.
 
+use ac_keystore::{Keystore, KeystoreExt, LocalKeystore};
 use sp_application_crypto::sr25519;
 use sp_core::crypto::{KeyTypeId, Ss58Codec};
 use std::path::PathBuf;
-use substrate_client_keystore::{Keystore, KeystoreExt, LocalKeystore};
 
 pub const KEYSTORE_PATH: &str = "my_keystore";
 pub const SR25519: KeyTypeId = KeyTypeId(*b"sr25");
