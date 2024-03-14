@@ -7,7 +7,7 @@ edition = "2021"
 repository = "https://github.com/scs/substrate-api-client"
 description = "Json-rpc client with helper functions compatible with any Substrate node"
 readme = "README.md"
-keywords = ["json", "rpc"]
+keywords = ["json", "rpc", "polkadot", "api", "blockchain"]
 categories = ["no-std", "wasm"]
 
 
