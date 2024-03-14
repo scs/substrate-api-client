@@ -14,7 +14,7 @@ categories = ["no-std", "wasm"]
 [workspace]
 members = [
     ".",
-    "client-keystore",
+    "keystore",
     "compose-macros",
     "examples/async",
     "examples/sync",

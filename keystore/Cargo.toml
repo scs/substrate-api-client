@@ -1,5 +1,5 @@
 [package]
-name = "substrate-client-keystore"
+name = "ac-keystore"
 version = "0.10.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"

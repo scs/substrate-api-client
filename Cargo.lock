@@ -62,6 +62,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ac-keystore"
+version = "0.10.0"
+dependencies = [
+ "array-bytes",
+ "async-trait",
+ "parking_lot",
+ "sc-keystore",
+ "serde_json",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-keyring",
+ "sp-keystore",
+ "tempfile",
+]
+
+[[package]]
 name = "ac-node-api"
 version = "0.6.0"
 dependencies = [
@@ -140,11 +156,11 @@ dependencies = [
 name = "ac-testing-sync"
 version = "0.4.0"
 dependencies = [
+ "ac-keystore",
  "sp-application-crypto",
  "sp-core",
  "sp-runtime",
  "substrate-api-client",
- "substrate-client-keystore",
 ]
 
 [[package]]
@@ -7339,22 +7355,6 @@ dependencies = [
  "schnorrkel",
  "sha2 0.10.8",
  "zeroize",
-]
-
-[[package]]
-name = "substrate-client-keystore"
-version = "0.10.0"
-dependencies = [
- "array-bytes",
- "async-trait",
- "parking_lot",
- "sc-keystore",
- "serde_json",
- "sp-application-crypto",
- "sp-core",
- "sp-keyring",
- "sp-keystore",
- "tempfile",
 ]
 
 [[package]]
