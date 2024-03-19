@@ -4,6 +4,8 @@ version = "0.10.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
+repository = "https://github.com/scs/substrate-api-client"
+description = "Keystore (and session key management) for ed25519 based chains like Polkadot. (fork of sc-keystore)"
 
 [dependencies]
 array-bytes = "6.2"
@@ -12,11 +14,11 @@ parking_lot = "0.12.0"
 serde_json = "1.0.79"
 
 # Substrate dependencies
-sc-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-application-crypto = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sc-keystore = { version = "27.0.0" }
+sp-application-crypto = { version = "32.0.0" }
+sp-core = { version = "30.0.0" }
+sp-keyring = { version = "33.0.0" }
+sp-keystore = { version = "0.36.0" }
 
 [dev-dependencies]
 tempfile = "3.3.0"
