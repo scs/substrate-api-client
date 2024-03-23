@@ -69,6 +69,7 @@ pub enum XtStatus {
 	Ready = 1,
 	Broadcast = 2,
 	InBlock = 3,
+	Retracted = 4,
 	Finalized = 6,
 }
 
@@ -77,7 +78,6 @@ pub enum XtStatus {
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum UnexpectedTxStatus {
 	Future,
-	Retracted,
 	FinalityTimeout,
 	Usurped,
 	Dropped,
@@ -136,10 +136,9 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 			TransactionStatus::Ready
 			| TransactionStatus::Broadcast(_)
 			| TransactionStatus::InBlock(_)
+			| TransactionStatus::Retracted(_)
 			| TransactionStatus::Finalized(_) => Ok(()),
 			TransactionStatus::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
-			TransactionStatus::Retracted(_) =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Retracted)),
 			TransactionStatus::FinalityTimeout(_) =>
 				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::FinalityTimeout)),
 			TransactionStatus::Usurped(_) =>
