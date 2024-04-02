@@ -18,7 +18,8 @@
 use ac_node_api::EventDetails;
 use ac_primitives::Bytes;
 use alloc::{string::String, vec::Vec};
-use codec::Decode;
+use codec::{Decode, Encode};
+use log::warn;
 use serde::{Deserialize, Serialize};
 
 pub use api_client::Api;
@@ -115,7 +116,7 @@ pub enum TransactionStatus<Hash, BlockHash> {
 	Invalid,
 }
 
-impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
+impl<Hash, BlockHash: Encode> TransactionStatus<Hash, BlockHash> {
 	pub fn as_u8(&self) -> u8 {
 		match self {
 			TransactionStatus::Future => 0,
@@ -136,8 +137,11 @@ impl<Hash, BlockHash> TransactionStatus<Hash, BlockHash> {
 			TransactionStatus::Ready
 			| TransactionStatus::Broadcast(_)
 			| TransactionStatus::InBlock(_)
-			| TransactionStatus::Retracted(_)
 			| TransactionStatus::Finalized(_) => Ok(()),
+			TransactionStatus::Retracted(hash) => {
+				warn!("xt is retracted: block: 0x{}", hex::encode(hash.encode()));
+				Ok(())
+			}
 			TransactionStatus::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
 			TransactionStatus::FinalityTimeout(_) =>
 				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::FinalityTimeout)),
