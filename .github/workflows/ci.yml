@@ -53,6 +53,9 @@ jobs:
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
 
+                # Test for 32 bit and wasm32-wasip1 compatibility
+                cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
+
                 # Compile examples and integration test separately to ensure features are not cross-imported
                 cargo test --release -p ac-examples-async,
                 cargo test --release -p ac-examples-sync,
