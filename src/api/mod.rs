@@ -119,36 +119,29 @@ pub enum TransactionStatus<Hash: Encode + Decode, BlockHash: Encode + Decode> {
 impl<Hash: Encode + Decode, BlockHash: Encode + Decode> TransactionStatus<Hash, BlockHash> {
 	pub fn as_u8(&self) -> u8 {
 		match self {
-			TransactionStatus::Future => 0,
-			TransactionStatus::Ready => 1,
-			TransactionStatus::Broadcast(_) => 2,
-			TransactionStatus::InBlock(_) => 3,
-			TransactionStatus::Retracted(_) => 4,
-			TransactionStatus::FinalityTimeout(_) => 5,
-			TransactionStatus::Finalized(_) => 6,
-			TransactionStatus::Usurped(_) => 7,
-			TransactionStatus::Dropped => 8,
-			TransactionStatus::Invalid => 9,
+			Self::Future => 0,
+			Self::Ready => 1,
+			Self::Broadcast(_) => 2,
+			Self::InBlock(_) => 3,
+			Self::Retracted(_) => 4,
+			Self::FinalityTimeout(_) => 5,
+			Self::Finalized(_) => 6,
+			Self::Usurped(_) => 7,
+			Self::Dropped => 8,
+			Self::Invalid => 9,
 		}
 	}
 
 	pub fn is_expected(&self) -> Result<()> {
 		match self {
-			TransactionStatus::Ready
-			| TransactionStatus::Broadcast(_)
-			| TransactionStatus::InBlock(_)
-			| TransactionStatus::Finalized(_) => Ok(()),
-			TransactionStatus::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
-			TransactionStatus::Retracted(_) =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Retracted)),
-			TransactionStatus::FinalityTimeout(_) =>
+			Self::Ready | Self::Broadcast(_) | Self::InBlock(_) | Self::Finalized(_) => Ok(()),
+			Self::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
+			Self::Retracted(_) => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Retracted)),
+			Self::FinalityTimeout(_) =>
 				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::FinalityTimeout)),
-			TransactionStatus::Usurped(_) =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped)),
-			TransactionStatus::Dropped =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Dropped)),
-			TransactionStatus::Invalid =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Invalid)),
+			Self::Usurped(_) => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped)),
+			Self::Dropped => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Dropped)),
+			Self::Invalid => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Invalid)),
 		}
 	}
 
@@ -160,11 +153,24 @@ impl<Hash: Encode + Decode, BlockHash: Encode + Decode> TransactionStatus<Hash, 
 
 	pub fn get_maybe_block_hash(&self) -> Option<&BlockHash> {
 		match self {
-			TransactionStatus::InBlock(block_hash) => Some(block_hash),
-			TransactionStatus::Retracted(block_hash) => Some(block_hash),
-			TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
-			TransactionStatus::Finalized(block_hash) => Some(block_hash),
+			Self::InBlock(block_hash) => Some(block_hash),
+			Self::Retracted(block_hash) => Some(block_hash),
+			Self::FinalityTimeout(block_hash) => Some(block_hash),
+			Self::Finalized(block_hash) => Some(block_hash),
 			_ => None,
+		}
+	}
+
+	/// Returns true if the Transaction reached its final Status
+	// See https://github.com/paritytech/polkadot-sdk/blob/289f5bbf7a45dc0380904a435464b15ec711ed03/substrate/client/transaction-pool/api/src/lib.rs#L161
+	pub fn is_final(&self) -> bool {
+		match self {
+			Self::Usurped(_)
+			| Self::Finalized(_)
+			| Self::FinalityTimeout(_)
+			| Self::Invalid
+			| Self::Dropped => true,
+			_ => false,
 		}
 	}
 }
