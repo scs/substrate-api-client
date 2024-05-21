@@ -225,7 +225,7 @@ pub trait SubmitAndWatch {
 
 	async fn populate_events(
 		&self,
-		mut report: ExtrinsicReport<Self::Hash>,
+		report: ExtrinsicReport<Self::Hash>,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
 
