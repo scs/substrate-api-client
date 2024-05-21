@@ -23,6 +23,7 @@ use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsicV4};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
+use alloc::vec::Vec;
 use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
