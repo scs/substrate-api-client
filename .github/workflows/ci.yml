@@ -82,7 +82,6 @@ jobs:
         run: rustup show && rustup component add rust-src
 
       - name: Cargo update
-        runs-on: ${{ matrix.os }}    
         if: ${{ github.event_name == 'schedule' }}
         run: cargo update
 
