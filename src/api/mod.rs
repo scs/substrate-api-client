@@ -206,14 +206,13 @@ impl<Hash: Encode + Decode, BlockHash: Encode + Decode> TransactionStatus<Hash, 
 	/// Returns true if the Transaction reached its final Status
 	// See https://github.com/paritytech/polkadot-sdk/blob/289f5bbf7a45dc0380904a435464b15ec711ed03/substrate/client/transaction-pool/api/src/lib.rs#L161
 	pub fn is_final(&self) -> bool {
-		match self {
+		matches!(
+			self,
 			Self::Usurped(_)
-			| Self::Finalized(_)
-			| Self::FinalityTimeout(_)
-			| Self::Invalid
-			| Self::Dropped => true,
-			_ => false,
-		}
+				| Self::Finalized(_)
+				| Self::FinalityTimeout(_)
+				| Self::Invalid | Self::Dropped
+		)
 	}
 }
 

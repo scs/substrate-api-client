@@ -396,7 +396,7 @@ where
 		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
 			self.submit_and_watch_opaque_extrinsic(&encoded_extrinsic).await?;
 
-		let determinants: Vec<_> = expected_status.into_iter().map(|d| d.as_u8()).collect();
+		let determinants: Vec<_> = expected_status.iter().map(|d| d.as_u8()).collect();
 
 		while let Some(transaction_status) = subscription.next().await {
 			let transaction_status = transaction_status?;
