@@ -82,7 +82,7 @@ jobs:
         run: rustup show && rustup component add rust-src
 
       - name: Cargo update
-        if: ${{ github.event_name == 'schedule' }}
+        #if: ${{ github.event_name == 'schedule' }}
         run: cargo update
 
       - uses: Swatinem/rust-cache@v2
