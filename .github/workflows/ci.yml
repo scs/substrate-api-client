@@ -23,7 +23,7 @@ jobs:
 
   setup_wasmtime:
     name: Setup wasmtime
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Setup `wasmtime`
         uses: bytecodealliance/actions/wasmtime/setup@v1
