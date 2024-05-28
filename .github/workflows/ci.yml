@@ -21,6 +21,16 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
+  setup_wasmtime:
+    name: Setup wasmtime
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup `wasmtime`
+        uses: bytecodealliance/actions/wasmtime/setup@v1
+
+      - name: Run `wasmtime version`
+        run: "wasmtime --version"
+
   build:
     name: ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
@@ -54,6 +64,7 @@ jobs:
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
+                cargo build --example wasm_example --target wasm32-unknown-unknown,
 
                 # Test for 32 bit and wasm32-wasip1 compatibility
                 cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
