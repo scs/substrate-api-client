@@ -21,15 +21,18 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
-  setup_wasmtime:
-    name: Setup wasmtime
+  wasmtime_test:
+    name: wasmtime test
     runs-on: ubuntu-latest
     steps:
       - name: Setup `wasmtime`
         uses: bytecodealliance/actions/wasmtime/setup@v1
 
-      - name: Run `wasmtime version`
-        run: "wasmtime --version"
+      - name: Compile wasm example
+        run: cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown
+
+      - name: Run wasm example
+        run: wasmtime --invoke main ../../target/wasm32-unknown-unknown/debug/examples/wasm_example.wasm 0 0
 
   build:
     name: ${{ matrix.check }}
@@ -64,7 +67,6 @@ jobs:
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
-                cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown,
 
                 # Test for 32 bit and wasm32-wasip1 compatibility
                 cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
