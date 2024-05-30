@@ -267,7 +267,7 @@ jobs:
         uses: bytecodealliance/actions/wasmtime/setup@v1
 
       - name: Run wasm example
-        run: wasmtime --invoke main ../../target/wasm32-unknown-unknown/debug/examples/${{ matrix.example }}.wasm 0 0
+        run: wasmtime --invoke main ${{ matrix.example }}.wasm 0 0
 
   merge:
     runs-on: ubuntu-latest
