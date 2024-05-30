@@ -85,28 +85,17 @@ pub enum UnexpectedTxStatus {
 	Invalid,
 }
 
+/// See `TransactionStatus` for a description of the different enum values
 pub enum TransactionStatusDeterminant {
-	/// Transaction is part of the future queue.
 	Future,
-	/// Transaction is part of the ready queue.
 	Ready,
-	/// The transaction has been broadcast to the given peers.
 	Broadcast,
-	/// Transaction has been included in block with given hash.
 	InBlock,
-	/// The block this transaction was included in has been retracted.
 	Retracted,
-	/// Maximum number of finality watchers has been reached,
-	/// old watchers are being removed.
 	FinalityTimeout,
-	/// Transaction has been finalized by a finality-gadget, e.g GRANDPA
 	Finalized,
-	/// Transaction has been replaced in the pool, by another transaction
-	/// that provides the same tags. (e.g. same (sender, nonce)).
 	Usurped,
-	/// Transaction has been dropped from the pool because of the limit.
 	Dropped,
-	/// Transaction is no longer valid in the current state.
 	Invalid,
 }
 

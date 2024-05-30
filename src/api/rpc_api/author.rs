@@ -213,6 +213,10 @@ pub trait SubmitAndWatch {
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 
+	/// Submit the extrinsic and watch it until it reaches one of the `expected_status`.
+	/// The method also returns if the transaction reaches a final state (regardless of contents of `expected_status`)
+	///
+	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_extrinsic_until_status<Address, Call, Signature, SignedExtra>(
 		&self,
 		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
@@ -224,6 +228,7 @@ pub trait SubmitAndWatch {
 		Signature: Encode,
 		SignedExtra: Encode;
 
+	/// Query the events for the specified `report` and attach them.
 	async fn populate_events(
 		&self,
 		report: ExtrinsicReport<Self::Hash>,
