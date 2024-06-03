@@ -6,6 +6,8 @@ on:
     branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+*', 'release-polkadot-v[0-9]+.[0-9]+.[0-9]+*' ]
   pull_request:
     branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+*', 'release-polkadot-v[0-9]+.[0-9]+.[0-9]+*' ]
+  schedule:
+    - cron: "0 0 * * *"
 
 env:
   CARGO_TERM_COLOR: always
@@ -78,6 +80,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: init-rust-target
         run: rustup show && rustup component add rust-src
+
+      - name: Cargo update
+        if: ${{ github.event_name == 'schedule' }}
+        run: cargo update
 
       - uses: Swatinem/rust-cache@v2
         with:
