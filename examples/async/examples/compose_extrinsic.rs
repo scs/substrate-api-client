@@ -139,7 +139,7 @@ async fn main() {
 
 	println!("[+] Composed Extrinsic:\n {:?}", xt);
 	let hash = api
-		.submit_and_watch_opaque_extrinsic_until_final(
+		.submit_and_watch_extrinsic_until_status(
 			xt.encode().into(),
 			&[TransactionStatusDeterminant::InBlock],
 		)

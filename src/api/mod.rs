@@ -101,6 +101,7 @@ pub enum TransactionStatusDeterminant {
 
 impl TransactionStatusDeterminant {
 	pub fn as_u8(&self) -> u8 {
+		// The values must match those from TransactionStatus::as_u8()!
 		match self {
 			Self::Future => 0,
 			Self::Ready => 1,
