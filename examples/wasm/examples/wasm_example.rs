@@ -27,6 +27,6 @@ pub extern "C" fn add(lhs: i32, rhs: i32) -> i32 {
 fn main() -> Result<ExitCode, i32> {
 	assert!(5 == 5, "x wasn't true!");
 	//panic!("x wasn't true!");
-	//Err(5)
-	Ok(ExitCode::from(1))
+	Err(5)
+	//Ok(ExitCode::from(1))
 }
