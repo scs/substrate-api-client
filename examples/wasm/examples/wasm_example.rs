@@ -28,5 +28,5 @@ fn main() -> Result<ExitCode, i32> {
 	assert!(5 == 5, "x wasn't true!");
 	//panic!("x wasn't true!");
 	//Err(5)
-	Ok(ExitCode::from(0))
+	Ok(ExitCode::from(1))
 }
