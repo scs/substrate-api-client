@@ -64,6 +64,15 @@ dependencies = [
 [[package]]
 name = "ac-examples-wasm"
 version = "0.5.0"
+dependencies = [
+ "frame-metadata 16.0.0",
+ "kitchensink-runtime",
+ "pallet-balances",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime",
+ "substrate-api-client",
+]
 
 [[package]]
 name = "ac-keystore"
