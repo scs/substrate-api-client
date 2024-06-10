@@ -85,6 +85,14 @@ jobs:
         if: ${{ github.event_name == 'schedule' }}
         run: cargo update
 
+      - name: Upload Cargo.lock
+        uses: actions/upload-artifact@v4
+        # Upload the Cargo.lock from the build with --locked as this one should not update the Cargo.lock anymore
+        if: contains(matrix.check, '--locked')
+        with:
+          name: cargo-lock
+          path: Cargo.lock
+
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.check }}
@@ -235,6 +243,5 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           separate-directories: true
-          name: examples
-          pattern: examples-*
+          name: artifacts
           delete-merged: true
