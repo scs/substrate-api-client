@@ -34,32 +34,34 @@ fn main() -> Result<ExitCode, i32> {
 		sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
 			.unwrap()
 			.into();
-	let bob: MultiAddress<AccountId32, AccountId32> = MultiAddress::Id(bob_account);
+	let _bob: MultiAddress<AccountId32, AccountId32> = MultiAddress::Id(bob_account);
 	let es_converted: ExtrinsicSigner<AssetRuntimeConfig> = alice.clone().into();
 	let es_new = ExtrinsicSigner::<AssetRuntimeConfig>::new(alice.clone());
 	assert_eq!(es_converted.signer().public(), es_new.signer().public());
+
+	let extrinsic = UncheckedExtrinsic::from_bytes(&[]);
+	match extrinsic {
+		Ok(_) => panic!("Extrinsic should be invalid"),
+		Err(_) => (),
+	}
+	//let _xt1: Bytes = extrinsic.unwrap().encode().into();
+
+	//assert_eq!(4, 5);
 
 	/*let call1 = RuntimeCall::Balances(BalancesCall::force_transfer {
 		source: bob.clone(),
 		dest: bob.clone(),
 		value: 10,
 	});
-	let call2 = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
-		dest: bob.clone(),
-		value: 2000,
-	});
-	let call3 =
-		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: bob, value: 1000 });
-
 	let _xt1: Bytes = UncheckedExtrinsic::new_unsigned(call1).encode().into();
-	let _xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
-	let _xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();*/
+	*/
+
 	/*
 	let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
 		bob_account.clone().into();
 
 	//let recipient = AccountKeyring::Bob.to_account_id();
-	//assert!(4 == 5, "x wasn't true!");
+
 	let spec_version = 1;
 	let transaction_version = 2;
 	let genesis_hash = H256::zero();
