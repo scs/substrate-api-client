@@ -12,13 +12,15 @@
 */
 
 //! Example that shows how to detect a runtime update and afterwards update the metadata.
-use kitchensink_runtime::{RuntimeCall, UncheckedExtrinsic};
+//use kitchensink_runtime::RuntimeCall;
+//use kitchensink_runtime::constants::currency::DOLLARS;
 pub use pallet_balances::Call as BalancesCall;
 use sp_core::{
 	crypto::{AccountId32, Ss58Codec},
 	sr25519, Bytes, Encode, Pair,
 };
 use sp_runtime::MultiAddress;
+pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 use std::process::ExitCode;
 use substrate_api_client::ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner};
 fn main() -> Result<ExitCode, i32> {
@@ -32,12 +34,12 @@ fn main() -> Result<ExitCode, i32> {
 		sr25519::Public::from_ss58check("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
 			.unwrap()
 			.into();
-	let bob = MultiAddress::Id(bob_account);
+	let bob: MultiAddress<AccountId32, AccountId32> = MultiAddress::Id(bob_account);
 	let es_converted: ExtrinsicSigner<AssetRuntimeConfig> = alice.clone().into();
 	let es_new = ExtrinsicSigner::<AssetRuntimeConfig>::new(alice.clone());
 	assert_eq!(es_converted.signer().public(), es_new.signer().public());
 
-	let call1 = RuntimeCall::Balances(BalancesCall::force_transfer {
+	/*let call1 = RuntimeCall::Balances(BalancesCall::force_transfer {
 		source: bob.clone(),
 		dest: bob.clone(),
 		value: 10,
@@ -51,7 +53,7 @@ fn main() -> Result<ExitCode, i32> {
 
 	let _xt1: Bytes = UncheckedExtrinsic::new_unsigned(call1).encode().into();
 	let _xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
-	let _xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
+	let _xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();*/
 	/*
 	let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
 		bob_account.clone().into();
