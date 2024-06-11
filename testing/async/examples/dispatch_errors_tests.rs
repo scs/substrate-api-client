@@ -20,7 +20,7 @@ use sp_keyring::AccountKeyring;
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
 	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
-	Error, GetAccountInformation, SubmitAndWatch, XtStatus,
+	Error, GetAccountInformation, GetBalance, SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]
@@ -59,10 +59,10 @@ async fn main() {
 			assert!(report.block_hash.is_some());
 			assert!(report.events.is_some());
 			assert!(format!("{dispatch_error:?}").contains("BadOrigin"));
+			println!("[+] BadOrigin error: Bob can't force set balance");
 		},
 		_ => panic!("Expected Failed Extrinisc Error"),
 	}
-	println!("[+] BadOrigin error: Bob can't force set balance");
 
 	//BelowMinimum
 	api.set_signer(alice_signer.into());
@@ -80,5 +80,9 @@ async fn main() {
 		},
 		_ => panic!("Expected Failed Extrinisc Error"),
 	}
-	println!("[+] BelowMinimum error: balance (999999) is below the existential deposit");
+	let existential_deposit = api.get_existential_deposit().await.unwrap();
+	println!(
+		"[+] BelowMinimum error: balance (999999) is below the existential deposit ({})",
+		&existential_deposit
+	);
 }
