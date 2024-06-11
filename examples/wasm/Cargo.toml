@@ -5,12 +5,7 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-frame-metadata = { version = "16.0", default-features = false, features = ["current", "serde_full", "decode"] }
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-
 substrate-api-client = { default-features = false, path = "../..", version = "0.17" }
-
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-kitchensink-runtime = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
