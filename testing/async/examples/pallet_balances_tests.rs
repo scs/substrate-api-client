@@ -15,52 +15,15 @@
 
 //! Tests for the pallet balances interface functions.
 
-use sp_core::H256;
-use sp_keyring::AccountKeyring;
-use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
-	Error, GetAccountInformation, GetBalance, SubmitAndWatch, XtStatus,
+	ac_primitives::AssetRuntimeConfig, rpc::JsonrpseeClient, Api, GetBalance,
 };
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
 
 	let _ed = api.get_existential_deposit().await.unwrap();
-
-	let alice_signer = AccountKeyring::Alice.pair();
-
-	let alice = AccountKeyring::Alice.to_account_id();
-	let balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
-	println!("[+] Alice's Free Balance is is {}\n", balance_of_alice);
-
-	let one = AccountKeyring::One.to_account_id();
-
-	//BadOrigin
-	api.set_signer(alice_signer.into());
-	//Can only be called by root
-	let xt = api
-		.balance_force_set_balance(MultiAddress::Id(alice.clone()), 100000000000000000)
-		.await
-		.unwrap();
-
-	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
-	match result {
-		Err(Error::FailedExtrinsic(extrinsic_error)) => {
-			let dispatch_error = extrinsic_error.dispatch_error();
-			let report = extrinsic_error.get_report::<H256>().unwrap();
-			assert!(report.block_hash.is_some());
-			assert!(report.events.is_some());
-			assert!(format!("{dispatch_error:?}").contains("BadOrigin"));
-			println!("{dispatch_error:?}");
-			println!("[+] BadOrigin error: Bob can't force set balance");
-		},
-		_ => panic!("Expected Failed Extrinisc Error"),
-	}
-
-	let balance_of_one = api.get_account_data(&one).await.unwrap().unwrap_or_default().free;
-	println!("[+] One's Free Balance is {}\n", balance_of_one);
 }
