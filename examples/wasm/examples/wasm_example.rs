@@ -24,6 +24,8 @@ use std::process::ExitCode;
 use substrate_api_client::ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner};
 
 fn main() -> Result<ExitCode, i32> {
+	// This test is not yet very sophisticated and not exhaustive.
+	// Still it shows how some basic data structures can be constructed and used.
 	let alice: sr25519::Pair = Pair::from_string(
 		"0xe5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a",
 		None,
