@@ -66,7 +66,7 @@ ac-primitives = { path = "primitives", version = "0.9.1", default-features = fal
 
 [dev-dependencies]
 ac-node-api = { path = "node-api", version = "0.6", features = ["mocks"] }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+kitchensink-runtime = { features=["metadata-hash"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
 
