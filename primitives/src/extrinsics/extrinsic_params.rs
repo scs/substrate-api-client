@@ -38,11 +38,12 @@ pub struct GenericSignedExtra<Tip, Index> {
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
+	pub check_hash: u8,
 }
 
 impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		Self { era, nonce, tip }
+		Self { era, nonce, tip, check_hash: 0 }
 	}
 }
 
@@ -55,7 +56,7 @@ impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 // defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
 // must mirror these return values.
 // Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
-pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<[u8; 32]>);
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in substrate extrinsics.
@@ -188,6 +189,7 @@ where
 			(),
 			(),
 			(),
+			None,
 		)
 	}
 }
