@@ -20,6 +20,7 @@ use pallet_balances::AccountData as GenericAccountData;
 use pallet_staking::Exposure;
 use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::AccountKeyring;
+use sp_runtime::print;
 use sp_staking::EraIndex;
 use substrate_api_client::{
 	ac_primitives::{AssetRuntimeConfig, Config},
@@ -57,11 +58,22 @@ async fn main() {
 		.unwrap();
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).await.unwrap().unwrap();
-	let _era_stakers: ErasStakers = api
-		.get_storage_double_map("Staking", "ErasStakers", EraIndex::default(), alice_stash, None)
+
+	let storage_double_map_key_prefix = api
+		.get_storage_double_map_key_prefix("Staking", "ErasStakers", 0)
+		.await
+		.unwrap();
+	let double_map_storage_keys = api
+		.get_storage_keys_paged(Some(storage_double_map_key_prefix), 3, None, None)
+		.await
+		.unwrap();
+	println!("Could fetch storage_keys: {:?}", double_map_storage_keys);
+	let era_stakers: ErasStakers = api
+		.get_storage_double_map("Staking", "ErasStakers", EraIndex::default(), "", None)
 		.await
 		.unwrap()
 		.unwrap();
+	println!("{:?}", era_stakers);
 
 	// Ensure the prefix matches the actual storage key:
 	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").await.unwrap();
