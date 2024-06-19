@@ -216,7 +216,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:latest --dev --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:master-0400ed90 --dev --rpc-external &
 
       - name: Wait until node has started
         run: sleep 20s
