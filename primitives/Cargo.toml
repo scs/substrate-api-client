@@ -19,27 +19,27 @@ serde = { version = "1.0", default-features = false, features = ["derive", "allo
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate no_std
-sp-core = { default-features = false, features = ["full_crypto", "serde"], version = "30.0" }
-sp-crypto-hashing = { default-features = false, version = "0.1" }
-sp-runtime = { default-features = false, features = ["serde"], version = "33.0" }
-sp-runtime-interface = { default-features = false, version = "26.0" }
-sp-staking = { default-features = false, features = ["serde"], version = "28.0" }
-sp-version = { default-features = false, features = ["serde"], version = "31.0" }
-sp-weights = { default-features = false, features = ["serde"], version = "29.0" }
+sp-core = { version = "33.0.1", default-features = false, features = ["full_crypto", "serde"] }
+sp-crypto-hashing = { version = "0.1.0", default-features = false }
+sp-runtime = { version = "37.0.0", default-features = false, features = ["serde"] }
+sp-runtime-interface = { version = "27.0.0", default-features = false }
+sp-staking = { version = "32.0.0", default-features = false, features = ["serde"] }
+sp-version = { version = "35.0.0", default-features = false, features = ["serde"] }
+sp-weights = { version = "31.0.0", default-features = false, features = ["serde"] }
 # need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, features = ["full_crypto"], version = "32.0" }
+sp-application-crypto = { version = "36.0.0", default-features = false, features = ["full_crypto"] }
 
 # substrate std / wasm only
-frame-system = { optional = true, version = "30.0" }
-pallet-assets = { optional = true, version = "31.0" }
-pallet-balances = { optional = true, version = "30.0" }
-pallet-contracts = { optional = true, version = "29.0" }
-pallet-staking = { optional = true, version = "30.0" }
+frame-system = { version = "34.0.1", optional = true }
+pallet-assets = { version = "35.0.0", optional = true }
+pallet-balances = { version = "35.0.0", optional = true }
+pallet-contracts = { version = "33.0.0", optional = true }
+pallet-staking = { version = "34.0.0", optional = true }
 
 [dev-dependencies]
 node-template-runtime = { version = "2.0" }
-sp-keyring = { version = "33.0" }
-pallet-transaction-payment = { version = "30.0" }
+sp-keyring = { version = "37.0.0" }
+pallet-transaction-payment = { version = "34.0.0" }
 
 [features]
 default = ["std"]
