@@ -50,8 +50,8 @@ async fn main() {
 
 	// Since it's an unstable api and might change anytime, we first check if our calls are still
 	// available:
-	let chain_name_request = "chainSpec_unstable_chainName";
-	let chain_genesis_hash_request = "chainSpec_unstable_genesisHash";
+	let chain_name_request = "chainSpec_v1_chainName";
+	let chain_genesis_hash_request = "chainSpec_v1_genesisHash";
 	let transaction_submit_watch = "transaction_unstable_submitAndWatch";
 	let transaction_unwatch = "transaction_unstable_unwatch";
 
