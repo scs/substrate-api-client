@@ -26,14 +26,14 @@ serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
 # substrate
-sp-core = { version = "33.0.1", default-features = false, features = ["full_crypto", "serde"] }
+sp-core = { version = "34.0.0", default-features = false, features = ["full_crypto", "serde"] }
 sp-crypto-hashing = { version = "0.1.0", default-features = false }
-sp-runtime = { version = "37.0.0", default-features = false, features = ["serde"] }
+sp-runtime = { version = "38.0.0", default-features = false, features = ["serde"] }
 sp-storage = { version = "21.0.0", default-features = false, features = ["serde"] }
 
 # need to add this for `no_std`
-sp-application-crypto = { version = "36.0.0", default-features = false, features = ["full_crypto"] }
-sp-runtime-interface = { version = "27.0.0", default-features = false }
+sp-application-crypto = { version = "37.0.0", default-features = false, features = ["full_crypto"] }
+sp-runtime-interface = { version = "28.0.0", default-features = false }
 
 # local
 ac-primitives = { version = "0.9", path = "../primitives", default-features = false }
