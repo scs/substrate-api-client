@@ -115,7 +115,6 @@ pub struct GenericAdditionalParams<Tip, Hash> {
 	era: Era,
 	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
-	metadata_hash: Option<H256>,
 }
 
 impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
@@ -145,12 +144,7 @@ impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
 
 impl<Tip: Default, Hash> Default for GenericAdditionalParams<Tip, Hash> {
 	fn default() -> Self {
-		Self {
-			era: Era::Immortal,
-			mortality_checkpoint: None,
-			tip: Tip::default(),
-			metadata_hash: None,
-		}
+		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
 	}
 }
 
