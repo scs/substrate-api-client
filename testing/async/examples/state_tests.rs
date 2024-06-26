@@ -59,7 +59,7 @@ async fn main() {
 		api.get_storage_map("System", "Account", &alice, None).await.unwrap().unwrap();
 
 	let storage_double_map_key_prefix = api
-		.get_storage_double_map_key_prefix("Staking", "ErasStakers", 0)
+		.get_storage_double_map_key_prefix("Staking", "ErasStakersOverview", 0)
 		.await
 		.unwrap();
 	let double_map_storage_keys = api
@@ -68,7 +68,7 @@ async fn main() {
 		.unwrap();
 	println!("Could fetch storage_keys: {:?}", double_map_storage_keys);
 	let era_stakers: ErasStakers = api
-		.get_storage_double_map("Staking", "ErasStakers", EraIndex::default(), alice_stash, None)
+		.get_storage_double_map("Staking", "ErasStakersOverview", EraIndex::default(), alice_stash, None)
 		.await
 		.unwrap()
 		.unwrap();
