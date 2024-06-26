@@ -17,11 +17,11 @@ either = { version = "1.6.1", default-features = false }
 frame-metadata = { version = "16.0", default-features = false, features = ["current", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
-scale-bits = { version = "0.6.0", default-features = false, features = ["scale-info", "serde"] }
-scale-decode = { version = "0.13.1", default-features = false, features = ["primitive-types", "derive"] }
-scale-encode = { version = "0.7.1", default-features = false, features = ["bits", "primitive-types", "derive"] }
+scale-bits = { version = "0.4.0", default-features = false, features = ["scale-info", "serde"] }
+scale-decode = { version = "0.10.0", default-features = false, features = ["primitive-types", "derive"] }
+scale-encode = { version = "0.5.0", default-features = false, features = ["bits", "primitive-types", "derive"] }
 scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
-scale-value = { version = "0.16.0", default-features = false }
+scale-value = { version = "0.13.0", default-features = false }
 serde = { version = "1.0.136", features = ["derive"], default-features = false }
 serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
 
