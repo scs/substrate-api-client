@@ -17,6 +17,7 @@
 
 use crate::config::Config;
 use codec::{Decode, Encode};
+use primitive_types::H256;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -38,11 +39,12 @@ pub struct GenericSignedExtra<Tip, Index> {
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
+	pub mode: bool,
 }
 
 impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		Self { era, nonce, tip }
+		Self { era, nonce, tip, mode: false }
 	}
 }
 
@@ -55,7 +57,7 @@ impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 // defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
 // must mirror these return values.
 // Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
-pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<H256>);
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in substrate extrinsics.
@@ -113,6 +115,7 @@ pub struct GenericAdditionalParams<Tip, Hash> {
 	era: Era,
 	mortality_checkpoint: Option<Hash>,
 	tip: Tip,
+	metadata_hash: Option<H256>,
 }
 
 impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
@@ -142,7 +145,12 @@ impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
 
 impl<Tip: Default, Hash> Default for GenericAdditionalParams<Tip, Hash> {
 	fn default() -> Self {
-		Self { era: Era::Immortal, mortality_checkpoint: None, tip: Tip::default() }
+		Self {
+			era: Era::Immortal,
+			mortality_checkpoint: None,
+			tip: Tip::default(),
+			metadata_hash: None,
+		}
 	}
 }
 
@@ -188,6 +196,8 @@ where
 			(),
 			(),
 			(),
+			// Option<H256> for the metadata. Some is unsupported for now.
+			None,
 		)
 	}
 }
