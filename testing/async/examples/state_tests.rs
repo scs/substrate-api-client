@@ -58,15 +58,6 @@ async fn main() {
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).await.unwrap().unwrap();
 
-	let storage_double_map_key_prefix = api
-		.get_storage_double_map_key_prefix("Staking", "ErasStakersOverview", 0)
-		.await
-		.unwrap();
-	let double_map_storage_keys = api
-		.get_storage_keys_paged(Some(storage_double_map_key_prefix), 3, None, None)
-		.await
-		.unwrap();
-	println!("Could fetch storage_keys: {:?}", double_map_storage_keys);
 	let era_stakers: ErasStakers = api
 		.get_storage_double_map(
 			"Staking",
