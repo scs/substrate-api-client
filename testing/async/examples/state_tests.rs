@@ -68,7 +68,13 @@ async fn main() {
 		.unwrap();
 	println!("Could fetch storage_keys: {:?}", double_map_storage_keys);
 	let era_stakers: ErasStakers = api
-		.get_storage_double_map("Staking", "ErasStakersOverview", EraIndex::default(), alice_stash, None)
+		.get_storage_double_map(
+			"Staking",
+			"ErasStakersOverview",
+			EraIndex::default(),
+			alice_stash,
+			None,
+		)
 		.await
 		.unwrap()
 		.unwrap();
