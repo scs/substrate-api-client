@@ -69,7 +69,6 @@ async fn main() {
 		.await
 		.unwrap()
 		.unwrap();
-	println!("ErasStakers: {:?}", era_stakers);
 
 	// Ensure the prefix matches the actual storage key:
 	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").await.unwrap();
