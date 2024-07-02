@@ -162,6 +162,12 @@ jobs:
           crate: cargo-about
           version: "0.6"
 
+      - name: Cargo update
+        # Run a cargo update in nightly build for the license check 
+        # (in case newer versions changed their license)
+        if: ${{ github.event_name == 'schedule' }}
+        run: cargo update
+
       - name: Run license check
         # Explicitly use stable because otherwise cargo will trigger a download of
         # the nightly version specified in rust-toolchain.toml
