@@ -57,8 +57,15 @@ async fn main() {
 		.unwrap();
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).await.unwrap().unwrap();
-	let _era_stakers: ErasStakers = api
-		.get_storage_double_map("Staking", "ErasStakers", EraIndex::default(), alice_stash, None)
+
+	let era_stakers: ErasStakers = api
+		.get_storage_double_map(
+			"Staking",
+			"ErasStakersOverview",
+			EraIndex::default(),
+			alice_stash,
+			None,
+		)
 		.await
 		.unwrap()
 		.unwrap();
