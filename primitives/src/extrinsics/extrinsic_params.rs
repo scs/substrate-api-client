@@ -45,9 +45,13 @@ pub struct GenericSignedExtra<Tip, Index> {
 impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		#[cfg(feature = "disable-metadata-hash-check")]
-		Self { era, nonce, tip, check_hash: 0 }
+		{
+			Self { era, nonce, tip, check_hash: 0 }
+		}
 		#[cfg(not(feature = "disable-metadata-hash-check"))]
-		Self { era, nonce, tip }
+		{
+			Self { era, nonce, tip }
+		}
 	}
 }
 
@@ -188,28 +192,32 @@ where
 
 	fn additional_signed(&self) -> Self::AdditionalSigned {
 		#[cfg(feature = "disable-metadata-hash-check")]
-		(
-			(),
-			self.spec_version,
-			self.transaction_version,
-			self.genesis_hash,
-			self.mortality_checkpoint,
-			(),
-			(),
-			(),
-			None,
-		)
+		{
+			(
+				(),
+				self.spec_version,
+				self.transaction_version,
+				self.genesis_hash,
+				self.mortality_checkpoint,
+				(),
+				(),
+				(),
+				None,
+			)
+		}
 		#[cfg(not(feature = "disable-metadata-hash-check"))]
-		(
-			(),
-			self.spec_version,
-			self.transaction_version,
-			self.genesis_hash,
-			self.mortality_checkpoint,
-			(),
-			(),
-			(),
-		)
+		{
+			(
+				(),
+				self.spec_version,
+				self.transaction_version,
+				self.genesis_hash,
+				self.mortality_checkpoint,
+				(),
+				(),
+				(),
+			)
+		}
 	}
 }
 
