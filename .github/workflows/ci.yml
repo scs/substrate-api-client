@@ -59,10 +59,10 @@ jobs:
                 cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
 
                 # Compile examples and integration test separately to ensure features are not cross-imported
-                cargo test --release -p ac-examples-async --features disable-metadata-hash-check,
-                cargo test --release -p ac-examples-sync --features disable-metadata-hash-check,
-                cargo test --release -p ac-testing-async --features disable-metadata-hash-check,
-                cargo test --release -p ac-testing-sync --features disable-metadata-hash-check,
+                cargo test --release -p ac-examples-async,
+                cargo test --release -p ac-examples-sync,
+                cargo test --release -p ac-testing-async,
+                cargo test --release -p ac-testing-sync,
 
                 # Clippy
                 cargo clippy -- -D warnings,
