@@ -16,4 +16,6 @@ substrate-api-client = { path = "../..", version = "0.17", default-features = fa
 ac-keystore = { path = "../../keystore" }
 
 [features]
-disable-metadata-hash-check = ["substrate-api-client/disable-metadata-hash-check"]
+disable-metadata-hash-check = [
+    "substrate-api-client/disable-metadata-hash-check",
+]

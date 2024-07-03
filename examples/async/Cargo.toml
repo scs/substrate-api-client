@@ -29,4 +29,6 @@ sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 substrate-api-client = { path = "../..", version = "0.17", features = ["staking-xt", "contracts-xt"] }
 
 [features]
-disable-metadata-hash-check = ["substrate-api-client/disable-metadata-hash-check"]
+disable-metadata-hash-check = [
+    "substrate-api-client/disable-metadata-hash-check",
+]
