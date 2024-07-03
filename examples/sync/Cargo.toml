@@ -15,4 +15,4 @@ sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
-substrate-api-client = { path = "../..", version = "0.17", default-features = false, features = ["tungstenite-client", "ws-client"] }
+substrate-api-client = { path = "../..", version = "0.17", default-features = false, features = ["tungstenite-client", "ws-client", "disable-metadata-hash-check"] }
