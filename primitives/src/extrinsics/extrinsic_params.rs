@@ -17,6 +17,7 @@
 
 use crate::config::Config;
 use codec::{Decode, Encode};
+#[cfg(feature = "disable-metadata-hash-check")]
 use primitive_types::H256;
 use sp_runtime::{
 	generic::Era,
