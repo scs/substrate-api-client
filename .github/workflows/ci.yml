@@ -59,10 +59,10 @@ jobs:
                 cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
 
                 # Compile examples and integration test separately to ensure features are not cross-imported
-                cargo test --release -p ac-examples-async,
-                cargo test --release -p ac-examples-sync,
-                cargo test --release -p ac-testing-async,
-                cargo test --release -p ac-testing-sync,
+                cargo test --release -p ac-examples-async --features disable-metadata-hash-check,
+                cargo test --release -p ac-examples-sync --features disable-metadata-hash-check,
+                cargo test --release -p ac-testing-async --features disable-metadata-hash-check,
+                cargo test --release -p ac-testing-sync --features disable-metadata-hash-check,
 
                 # Clippy
                 cargo clippy -- -D warnings,
@@ -216,7 +216,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:master-1680977e --dev --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:master-18228a9b --dev --rpc-external &
 
       - name: Wait until node has started
         run: sleep 20s
