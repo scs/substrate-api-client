@@ -17,6 +17,7 @@
 
 use crate::config::Config;
 use codec::{Decode, Encode};
+use primitive_types::H256;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -65,7 +66,7 @@ impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 // must mirror these return values.
 // Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
 #[cfg(feature = "disable-metadata-hash-check")]
-pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<[u8; 32]>);
+pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<H256>);
 #[cfg(not(feature = "disable-metadata-hash-check"))]
 pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
