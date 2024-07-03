@@ -28,7 +28,7 @@ use substrate_api_client::{
 		GenericAdditionalParams, SignExtrinsic,
 	},
 	rpc::JsonrpseeClient,
-	Api, GetChainInfo, SubmitAndWatch, XtStatus,
+	Api, GetChainInfo, SubmitAndWatch, TransactionStatusDeterminant, XtStatus,
 };
 
 type AssetExtrinsicSigner = <AssetRuntimeConfig as Config>::ExtrinsicSigner;
@@ -139,7 +139,7 @@ async fn main() {
 
 	println!("[+] Composed Extrinsic:\n {:?}", xt);
 	let hash = api
-		.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock)
+		.submit_and_watch_extrinsic_until_status(xt, &[TransactionStatusDeterminant::InBlock])
 		.await
 		.unwrap()
 		.block_hash
