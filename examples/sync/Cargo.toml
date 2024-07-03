@@ -16,3 +16,6 @@ sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 
 # local deps
 substrate-api-client = { path = "../..", version = "0.17", default-features = false, features = ["tungstenite-client", "ws-client"] }
+
+[features]
+disable-metadata-hash-check = ["substrate-api-client/disable-metadata-hash-check"]
