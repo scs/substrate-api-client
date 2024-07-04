@@ -54,6 +54,7 @@ jobs:
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
+                cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown,
 
                 # Test for 32 bit and wasm32-wasip1 compatibility
                 cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
@@ -119,6 +120,14 @@ jobs:
             target/release/examples/*
             !target/release/examples/*.d
             !target/release/examples/*-*
+
+      - name: Upload wasm examples
+        uses: actions/upload-artifact@v4
+        if: contains(matrix.check, 'examples-wasm')
+        with:
+          name: examples-wasm
+          path:  |
+            target/wasm32-unknown-unknown/release/examples/*.wasm
 
       - name: Upload async testing examples
         uses: actions/upload-artifact@v4
@@ -235,9 +244,35 @@ jobs:
           nc -z -v 127.0.0.1 9944
           chmod +x ${{ matrix.example }}
           ./${{ matrix.example }}
+
+  wasm_examples:
+    runs-on: ${{ matrix.os }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        example: [
+          wasm_example,
+        ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download examples from previous run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: examples-wasm
+          merge-multiple: true
+
+      - name: Setup `wasmtime`
+        uses: bytecodealliance/actions/wasmtime/setup@v1
+
+      - name: Run wasm example
+        run: wasmtime --invoke main ${{ matrix.example }}.wasm 0 0
+
   merge:
     runs-on: ubuntu-latest
-    needs: examples
+    needs: [examples, wasm_examples]
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
