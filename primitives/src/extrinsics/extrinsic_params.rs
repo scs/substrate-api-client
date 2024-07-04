@@ -17,6 +17,8 @@
 
 use crate::config::Config;
 use codec::{Decode, Encode};
+#[cfg(feature = "disable-metadata-hash-check")]
+use primitive_types::H256;
 use sp_runtime::{
 	generic::Era,
 	traits::{BlakeTwo256, Hash},
@@ -38,11 +40,20 @@ pub struct GenericSignedExtra<Tip, Index> {
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
+	#[cfg(feature = "disable-metadata-hash-check")]
+	pub check_hash: u8,
 }
 
 impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		Self { era, nonce, tip }
+		#[cfg(feature = "disable-metadata-hash-check")]
+		{
+			Self { era, nonce, tip, check_hash: 0 }
+		}
+		#[cfg(not(feature = "disable-metadata-hash-check"))]
+		{
+			Self { era, nonce, tip }
+		}
 	}
 }
 
@@ -55,6 +66,9 @@ impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 // defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
 // must mirror these return values.
 // Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
+#[cfg(feature = "disable-metadata-hash-check")]
+pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<H256>);
+#[cfg(not(feature = "disable-metadata-hash-check"))]
 pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
@@ -179,16 +193,33 @@ where
 	}
 
 	fn additional_signed(&self) -> Self::AdditionalSigned {
-		(
-			(),
-			self.spec_version,
-			self.transaction_version,
-			self.genesis_hash,
-			self.mortality_checkpoint,
-			(),
-			(),
-			(),
-		)
+		#[cfg(feature = "disable-metadata-hash-check")]
+		{
+			(
+				(),
+				self.spec_version,
+				self.transaction_version,
+				self.genesis_hash,
+				self.mortality_checkpoint,
+				(),
+				(),
+				(),
+				None,
+			)
+		}
+		#[cfg(not(feature = "disable-metadata-hash-check"))]
+		{
+			(
+				(),
+				self.spec_version,
+				self.transaction_version,
+				self.genesis_hash,
+				self.mortality_checkpoint,
+				(),
+				(),
+				(),
+			)
+		}
 	}
 }
 

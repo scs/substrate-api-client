@@ -23,4 +23,4 @@ pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", bran
 pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
-substrate-api-client = { path = "../..", version = "0.17", features = ["staking-xt", "contracts-xt"] }
+substrate-api-client = { path = "../..", version = "0.17", features = ["staking-xt", "contracts-xt", "disable-metadata-hash-check"] }

@@ -325,6 +325,8 @@ mod tests {
 		assert_eq!(call, call1);
 	}
 
+	// Currently does not with available version of substrate extrinsic
+	#[cfg(not(feature = "disable-metadata-hash-check"))]
 	#[test]
 	fn xt_hash_matches_substrate_impl() {
 		// Define extrinsic params.
@@ -384,6 +386,8 @@ mod tests {
 		)
 	}
 
+	// Currently does not work with stored bytes. Need to create a new version
+	#[cfg(not(feature = "disable-metadata-hash-check"))]
 	#[test]
 	fn xt_hash_matches_substrate_impl_large_xt() {
 		// Define xt parameters,
