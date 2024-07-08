@@ -1,6 +1,6 @@
 [package]
 name = "test-no-std"
-version = "0.7.1"
+version = "0.18.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
@@ -9,10 +9,10 @@ edition = "2021"
 libc = { version = "0.2.119", default-features = false }
 
 # local dependencies
-ac-compose-macros = { path = "../compose-macros", version = "0.5", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
-ac-node-api = { path = "../node-api", version = "0.6", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
-ac-primitives = { path = "../primitives", version = "0.9.1", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
-substrate-api-client = { path = "..", version = "0.17", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
+ac-compose-macros = { path = "../compose-macros", version = "0.18", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
+ac-node-api = { path = "../node-api", version = "0.18", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
+ac-primitives = { path = "../primitives", version = "0.18", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
+substrate-api-client = { path = "..", version = "0.18", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
 
 # substrate dependencies
 sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
