@@ -19,7 +19,7 @@ sc-keystore = { version = "32.0.0", git = "https://github.com/paritytech/polkado
 sp-application-crypto = { version = "37.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { version = "34.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { version = "38.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keystore = { version = "40.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keystore = { version = "0.40.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 [dev-dependencies]
 tempfile = "3.3.0"
