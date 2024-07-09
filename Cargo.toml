@@ -1,6 +1,6 @@
 [package]
 name = "substrate-api-client"
-version = "0.17.0"
+version = "0.18.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
@@ -60,13 +60,13 @@ sp-version = { default-features = false, features = ["serde"], git = "https://gi
 frame-support = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
-ac-compose-macros = { path = "compose-macros", version = "0.5", default-features = false }
-ac-node-api = { path = "node-api", version = "0.6", default-features = false }
-ac-primitives = { path = "primitives", version = "0.9.1", default-features = false }
+ac-compose-macros = { path = "compose-macros", version = "0.18", default-features = false }
+ac-node-api = { path = "node-api", version = "0.18", default-features = false }
+ac-primitives = { path = "primitives", version = "0.18", default-features = false }
 
 
 [dev-dependencies]
-ac-node-api = { path = "node-api", version = "0.6", features = ["mocks"] }
+ac-node-api = { path = "node-api", version = "0.18", features = ["mocks"] }
 kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
