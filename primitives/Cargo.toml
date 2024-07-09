@@ -19,27 +19,27 @@ serde = { version = "1.0", default-features = false, features = ["derive", "allo
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate no_std
-sp-core = { default-features = false, features = ["full_crypto", "serde"], version = "34.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { default-features = false, version = "0.1.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { default-features = false, features = ["serde"], version = "38.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime-interface = { default-features = false, version = "28.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-staking = { default-features = false, features = ["serde"], version = "33.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-version = { default-features = false, features = ["serde"], version = "36.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-weights = { default-features = false, features = ["serde"], version = "31.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { default-features = false, features = ["full_crypto", "serde"], version = "34.0.0" }
+sp-crypto-hashing = { default-features = false, version = "0.1.0" }
+sp-runtime = { default-features = false, features = ["serde"], version = "38.0.0" }
+sp-runtime-interface = { default-features = false, version = "28.0.0" }
+sp-staking = { default-features = false, features = ["serde"], version = "33.0.0" }
+sp-version = { default-features = false, features = ["serde"], version = "36.0.0" }
+sp-weights = { default-features = false, features = ["serde"], version = "31.0.0" }
 # need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, features = ["full_crypto"], version = "37.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-application-crypto = { default-features = false, features = ["full_crypto"], version = "37.0.0" }
 
 # substrate std / wasm only
-frame-system = { optional = true, version = "35.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-assets = { optional = true, version = "36.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { optional = true, version = "36.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-contracts = { optional = true, version = "34.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-staking = { optional = true, version = "35.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-system = { optional = true, version = "35.0.0" }
+pallet-assets = { optional = true, version = "36.0.0" }
+pallet-balances = { optional = true, version = "36.0.0" }
+pallet-contracts = { optional = true, version = "34.0.0" }
+pallet-staking = { optional = true, version = "35.0.0" }
 
 [dev-dependencies]
 solochain-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { version = "38.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-transaction-payment = { version = "35.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keyring = { version = "38.0.0" }
+pallet-transaction-payment = { version = "35.0.0" }
 
 [features]
 default = ["std"]

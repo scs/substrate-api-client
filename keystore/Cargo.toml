@@ -15,11 +15,11 @@ parking_lot = "0.12.0"
 serde_json = "1.0.79"
 
 # Substrate dependencies
-sc-keystore = { version = "32.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-application-crypto = { version = "37.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { version = "34.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { version = "38.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keystore = { version = "0.40.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sc-keystore = { version = "32.0.0" }
+sp-application-crypto = { version = "37.0.0" }
+sp-core = { version = "34.0.0" }
+sp-keyring = { version = "38.0.0" }
+sp-keystore = { version = "0.40.0" }
 
 [dev-dependencies]
 tempfile = "3.3.0"
