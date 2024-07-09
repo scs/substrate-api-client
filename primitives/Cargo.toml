@@ -37,7 +37,7 @@ pallet-contracts = { optional = true, version = "34.0.0" }
 pallet-staking = { optional = true, version = "35.0.0" }
 
 [dev-dependencies]
-solochain-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+solochain-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.13.0" }
 sp-keyring = { version = "38.0.0" }
 pallet-transaction-payment = { version = "35.0.0" }
 

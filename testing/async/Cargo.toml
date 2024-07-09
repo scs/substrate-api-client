@@ -13,7 +13,7 @@ jsonrpsee = { version = "0.22", features = ["async-client", "client-ws-transport
 
 # Substrate dependencies
 frame-support = { version = "35.0.0" }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.13.0" }
 sp-core = { version = "34.0.0" }
 sp-crypto-hashing = { version = "0.1.0" }
 sp-keyring = { version = "38.0.0" }

@@ -16,7 +16,7 @@ wabt = "0.10.0"
 # Substrate dependencies
 frame-support = { version = "35.0.0" }
 frame-system = { version = "35.0.0" }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.13.0" }
 pallet-balances = { version = "36.0.0" }
 pallet-identity = { version = "35.0.0" }
 pallet-staking = { version = "35.0.0" }
