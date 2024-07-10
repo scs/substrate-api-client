@@ -40,8 +40,19 @@ async fn main() {
 	let balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap_or_default().free;
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 
-	// Rough estimate of fees for two transactions
-	let fee_estimate = 2 * 2000000000000;
+	// Rough estimate of fees for three transactions
+	let fee_estimate = 3 * 2000000000000;
+
+	let xt = api
+		.balance_transfer_keep_alive(bob.clone().into(), balance_of_alice / 2 - fee_estimate)
+		.await
+		.unwrap();
+	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await;
+	// This call should succeed as alice has enough money
+	assert!(report.is_ok());
+
+	let balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
+	println!("[+] Alice's Free Balance is {}\n", balance_of_alice);
 
 	let xt = api
 		.balance_transfer_keep_alive(bob.clone().into(), balance_of_alice - fee_estimate)
@@ -52,19 +63,17 @@ async fn main() {
 	assert!(report.is_err());
 
 	let xt = api
-		.balance_transfer_allow_death(bob.into(), balance_of_alice - fee_estimate)
+		.balance_transfer_allow_death(bob.clone().into(), balance_of_alice - fee_estimate)
 		.await
 		.unwrap();
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await;
 	// With allow_death the call should succeed
 	assert!(result.is_ok());
 
-	let alice = AccountKeyring::Alice.to_account_id();
 	let alice_account = api.get_account_data(&alice).await.unwrap();
 	// Alice account should not exist anymore so we excpect an error
 	assert!(alice_account.is_none());
 
-	let bob = AccountKeyring::Bob.to_account_id();
 	let balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap_or_default().free;
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 }
