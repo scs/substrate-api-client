@@ -44,7 +44,7 @@ url = { version = "2.5", optional = true }
 
 # websocket dependent features
 jsonrpsee = { version = "0.24", optional = true, features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
-tungstenite = { version = "0.23", optional = true, features = ["native-tls"] }
+tungstenite = { version = "0.23", optional = true, features = ["native-tls", "url"] }
 ws = { version = "0.9.2", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
