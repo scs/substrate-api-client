@@ -30,10 +30,14 @@ use codec::{Compact, Encode};
 
 pub const BALANCES_MODULE: &str = "Balances";
 pub const TRANSFER_ALLOW_DEATH: &str = "transfer_allow_death";
+pub const TRANSFER_KEEP_ALIVE: &str = "transfer_keep_alive";
 pub const FORCE_SET_BALANCE: &str = "force_set_balance";
 
 /// Call for a balance transfer.
 pub type TransferAllowDeathCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
+
+/// Call for a balance transfer.
+pub type TransferKeepAliveCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
 
 /// Call to the balance of an account.
 pub type ForceSetBalanceCall<Address, Balance> = (CallIndex, Address, Compact<Balance>);
@@ -51,6 +55,14 @@ pub trait BalancesExtrinsics {
 		to: Self::Address,
 		amount: Self::Balance,
 	) -> Option<Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>>;
+
+	/// Transfer some liquid free balance to another account.
+	#[allow(clippy::type_complexity)]
+	async fn balance_transfer_keep_alive(
+		&self,
+		to: Self::Address,
+		amount: Self::Balance,
+	) -> Option<Self::Extrinsic<TransferKeepAliveCall<Self::Address, Self::Balance>>>;
 
 	///  Set the balances of a given account.
 	#[allow(clippy::type_complexity)]
@@ -83,6 +95,15 @@ where
 		amount: Self::Balance,
 	) -> Option<Self::Extrinsic<TransferAllowDeathCall<Self::Address, Self::Balance>>> {
 		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_ALLOW_DEATH, to, Compact(amount))
+	}
+
+	#[allow(clippy::type_complexity)]
+	async fn balance_transfer_keep_alive(
+		&self,
+		to: Self::Address,
+		amount: Self::Balance,
+	) -> Option<Self::Extrinsic<TransferKeepAliveCall<Self::Address, Self::Balance>>> {
+		compose_extrinsic!(self, BALANCES_MODULE, TRANSFER_KEEP_ALIVE, to, Compact(amount))
 	}
 
 	async fn balance_force_set_balance(
