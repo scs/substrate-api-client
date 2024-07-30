@@ -19,3 +19,7 @@ keys = ["features"]
 
 [rule.formatting]
 array_auto_expand = true
+
+[[rule]]
+keys = ["package"]
+formatting.reorder_keys = false
