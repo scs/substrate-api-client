@@ -38,6 +38,7 @@ jobs:
   build:
     name: ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
+    needs: free-disk-space
     strategy:
       fail-fast: false
       matrix:
