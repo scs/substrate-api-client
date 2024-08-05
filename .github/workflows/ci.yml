@@ -21,9 +21,24 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
+  free-disk-space:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false
+        docker-images: false
+        swap-storage: false
+
   build:
     name: ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
+    needs: free-disk-space
     strategy:
       fail-fast: false
       matrix:
