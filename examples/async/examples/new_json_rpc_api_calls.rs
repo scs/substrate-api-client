@@ -48,24 +48,10 @@ async fn main() {
 	let json_string = serde_json::to_string(&json_value).unwrap();
 	println!("Available methods: {json_string} \n");
 
-	// Since it's an unstable api and might change anytime, we first check if our calls are still
-	// available:
 	let chain_name_request = "chainSpec_v1_chainName";
 	let chain_genesis_hash_request = "chainSpec_v1_genesisHash";
 	let transaction_submit_watch = "transactionWatch_v1_submitAndWatch";
 	let transaction_unwatch = "transactionWatch_v1_unwatch";
-
-	let request_vec = [
-		chain_name_request,
-		chain_genesis_hash_request,
-		transaction_submit_watch,
-		transaction_unwatch,
-	];
-	for request in request_vec {
-		if !json_string.contains(request) {
-			panic!("Api has changed, please update the call {request}.");
-		}
-	}
 
 	// Submit the above defiend rpc requests:
 	let chain_name: String = api.client().request(chain_name_request, rpc_params![]).await.unwrap();
