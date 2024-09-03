@@ -17,7 +17,7 @@
 //! debugging tool.
 
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient, Api,
+	ac_primitives::DefaultRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient, Api,
 };
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
@@ -31,7 +31,7 @@ async fn main() {
 
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 
 	let meta = api.metadata().clone();
 

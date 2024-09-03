@@ -16,14 +16,14 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, GenericAdditionalParams},
+	ac_primitives::{DefaultRuntimeConfig, GenericAdditionalParams},
 	rpc::JsonrpseeClient,
 	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
+use westend_runtime::{BalancesCall, RuntimeCall};
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
@@ -37,7 +37,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
 	// Information for Era for mortal transactions.

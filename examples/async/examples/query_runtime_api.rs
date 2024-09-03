@@ -19,7 +19,7 @@ use codec::Encode;
 use sp_core::sr25519;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::DefaultRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	runtime_api::{AuthorityDiscoveryApi, CoreApi, MetadataApi, RuntimeApi, TransactionPaymentApi},
@@ -37,7 +37,7 @@ async fn main() {
 
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
 	api.set_signer(alice_pair.into());
 	let runtime_api = api.runtime_api();

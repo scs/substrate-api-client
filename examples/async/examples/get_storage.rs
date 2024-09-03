@@ -16,14 +16,14 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use frame_system::AccountInfo as GenericAccountInfo;
-use kitchensink_runtime::AccountId;
 use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, DefaultRuntimeConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage,
 };
+use westend_runtime::AccountId;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
@@ -31,11 +31,11 @@ use substrate_api_client::{
 // you most likely should use `DefaultRuntimeConfig` instead.
 
 type AccountInfo = GenericAccountInfo<
-	<AssetRuntimeConfig as Config>::Index,
-	<AssetRuntimeConfig as Config>::AccountData,
+	<DefaultRuntimeConfig as Config>::Index,
+	<DefaultRuntimeConfig as Config>::AccountData,
 >;
 
-type Balance = <AssetRuntimeConfig as Config>::Balance;
+type Balance = <DefaultRuntimeConfig as Config>::Balance;
 
 #[tokio::main]
 async fn main() {
@@ -43,7 +43,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 
 	// Get some plain storage values.
 	let (maybe_balance, proof) = tokio::try_join!(

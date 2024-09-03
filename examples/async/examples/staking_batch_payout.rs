@@ -16,7 +16,7 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::DefaultRuntimeConfig,
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
@@ -54,7 +54,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice.into());
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
@@ -148,7 +148,7 @@ async fn main() {
 pub async fn get_last_reward_received_for(
 	account: &AccountId32,
 	current_era: EraIndex,
-	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
+	api: &substrate_api_client::Api<DefaultRuntimeConfig, JsonrpseeClient>,
 ) -> Option<u32> {
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();
 

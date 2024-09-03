@@ -17,7 +17,7 @@
 
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
+	ac_primitives::DefaultRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
 	GetAccountInformation, GetBalance, SubmitAndWatch, XtStatus,
 };
 
@@ -25,7 +25,7 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 
 	let ed = api.get_existential_deposit().await.unwrap();
 	println!("[+] Existential deposit is {}\n", ed);

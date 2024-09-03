@@ -18,30 +18,30 @@
 //! - Compose an extrinsic without asking the node for nonce and without knowing the metadata
 
 use codec::Compact;
-use kitchensink_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		config::Config, AssetRuntimeConfig, AssetTip, ExtrinsicParams, ExtrinsicSigner,
+		config::Config, AssetTip, DefaultRuntimeConfig, ExtrinsicParams, ExtrinsicSigner,
 		GenericAdditionalParams, SignExtrinsic,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
+use westend_runtime::{BalancesCall, RuntimeCall};
 
-type AssetExtrinsicSigner = <AssetRuntimeConfig as Config>::ExtrinsicSigner;
-type AccountId = <AssetRuntimeConfig as Config>::AccountId;
+type AssetExtrinsicSigner = <DefaultRuntimeConfig as Config>::ExtrinsicSigner;
+type AccountId = <DefaultRuntimeConfig as Config>::AccountId;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
-type Hash = <AssetRuntimeConfig as Config>::Hash;
+type Hash = <DefaultRuntimeConfig as Config>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
-type Balance = <AssetRuntimeConfig as Config>::Balance;
+type Balance = <DefaultRuntimeConfig as Config>::Balance;
 /// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
 type AdditionalParams = GenericAdditionalParams<AssetTip<Balance>, Hash>;
 
-type Address = <AssetRuntimeConfig as Config>::Address;
+type Address = <DefaultRuntimeConfig as Config>::Address;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
@@ -56,8 +56,8 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
-	let extrinsic_signer = ExtrinsicSigner::<AssetRuntimeConfig>::new(signer);
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<DefaultRuntimeConfig>::new(signer);
 	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
@@ -89,7 +89,7 @@ async fn main() {
 
 	// Construct an extrinsic using only functionality available in no_std
 	let xt = {
-		let extrinsic_params = <AssetRuntimeConfig as Config>::ExtrinsicParams::new(
+		let extrinsic_params = <DefaultRuntimeConfig as Config>::ExtrinsicParams::new(
 			spec_version,
 			transaction_version,
 			signer_nonce,

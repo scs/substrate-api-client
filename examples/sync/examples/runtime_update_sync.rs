@@ -22,21 +22,21 @@ use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, DefaultRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::TungsteniteRpcClient,
 	rpc_api::RuntimeUpdateDetector,
 	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
-type Hash = <AssetRuntimeConfig as Config>::Hash;
+type Hash = <DefaultRuntimeConfig as Config>::Hash;
 
 fn main() {
 	env_logger::init();
 
 	// Initialize the api.
 	let client = TungsteniteRpcClient::with_default_url(1);
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
 	api.set_signer(sudoer.into());
 
@@ -73,9 +73,9 @@ fn main() {
 }
 
 pub fn send_code_update_extrinsic(
-	api: &substrate_api_client::Api<AssetRuntimeConfig, TungsteniteRpcClient>,
+	api: &substrate_api_client::Api<DefaultRuntimeConfig, TungsteniteRpcClient>,
 ) {
-	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+	let new_wasm: &[u8] = include_bytes!("westend_runtime.compact.compressed.wasm");
 
 	// Create a sudo `set_code` call.
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();

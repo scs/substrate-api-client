@@ -21,7 +21,7 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::WsRpcClient, Api,
+	ac_primitives::DefaultRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::WsRpcClient, Api,
 	GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
@@ -43,7 +43,7 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::with_default_url();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(alice.clone().into());
 
 	// Retrieve bobs current balance.

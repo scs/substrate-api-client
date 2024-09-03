@@ -15,23 +15,23 @@
 
 //! Tests for the author rpc interface functions.
 
-use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
 use sp_core::{Encode, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
-		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		Config, DefaultRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
 	},
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
+use westend_runtime::{AccountId, BalancesCall, RuntimeCall};
 
-type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<DefaultRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-type Hash = <AssetRuntimeConfig as Config>::Hash;
-type MyApi = Api<AssetRuntimeConfig, JsonrpseeClient>;
-type Index = <AssetRuntimeConfig as Config>::Index;
+type Hash = <DefaultRuntimeConfig as Config>::Hash;
+type MyApi = Api<DefaultRuntimeConfig, JsonrpseeClient>;
+type Index = <DefaultRuntimeConfig as Config>::Index;
 
 #[tokio::main]
 async fn main() {

@@ -16,7 +16,7 @@
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, DefaultRuntimeConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
@@ -27,7 +27,7 @@ use substrate_api_client::{
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
 // you most likely should use `DefaultRuntimeConfig` instead.
 
-type Hash = <AssetRuntimeConfig as Config>::Hash;
+type Hash = <DefaultRuntimeConfig as Config>::Hash;
 
 #[tokio::main]
 async fn main() {
@@ -36,7 +36,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice_signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_signer.into());
 
 	let alice = AccountKeyring::Alice.to_account_id();

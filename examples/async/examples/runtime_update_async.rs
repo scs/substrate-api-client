@@ -16,7 +16,7 @@ use sp_keyring::AccountKeyring;
 use sp_weights::Weight;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, DefaultRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
@@ -33,7 +33,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
 	api.set_signer(sudoer.into());
 
@@ -75,9 +75,9 @@ async fn main() {
 }
 
 pub async fn send_code_update_extrinsic(
-	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
+	api: &substrate_api_client::Api<DefaultRuntimeConfig, JsonrpseeClient>,
 ) {
-	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+	let new_wasm: &[u8] = include_bytes!("westend_runtime.compact.compressed.wasm");
 
 	// this call can only be called by sudo
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();

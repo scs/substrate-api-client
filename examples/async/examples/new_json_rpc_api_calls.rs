@@ -22,7 +22,7 @@ use sp_core::Bytes;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::rpc_params,
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::DefaultRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient, Request, Subscribe},
 	Api,
@@ -40,7 +40,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
 	// Retrieve all available rpc methods:

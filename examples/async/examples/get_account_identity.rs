@@ -16,16 +16,16 @@
 //! Example to show how to get the account identity display name from the identity pallet.
 
 use frame_support::traits::Currency;
-use kitchensink_runtime::{MaxAdditionalFields, Runtime as KitchensinkRuntime};
 use pallet_identity::{legacy::IdentityInfo, Data, Registration};
 use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{AssetRuntimeConfig, UncheckedExtrinsicV4},
+	ac_primitives::{DefaultRuntimeConfig, UncheckedExtrinsicV4},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
+use westend_runtime::{MaxAdditionalFields, Runtime as KitchensinkRuntime};
 
 type BalanceOf<T> = <<T as pallet_identity::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
@@ -45,7 +45,7 @@ async fn main() {
 	// Create the node-api client and set the signer.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let signer = AccountKeyring::Alice.pair();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.clone().into());
 
 	// Fill Identity storage.

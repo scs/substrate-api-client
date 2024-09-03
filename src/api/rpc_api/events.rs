@@ -236,7 +236,6 @@ mod tests {
 	use ac_primitives::DefaultRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
-	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
 	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
 	use sp_runtime::{
@@ -247,6 +246,7 @@ mod tests {
 	use sp_version::RuntimeVersion;
 	use std::{collections::HashMap, fs};
 	use test_case::test_case;
+	use westend_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 
 	#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
 	enum Event {
@@ -265,8 +265,8 @@ mod tests {
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}
 
-	fn default_header() -> kitchensink_runtime::Header {
-		kitchensink_runtime::Header {
+	fn default_header() -> westend_runtime::Header {
+		westend_runtime::Header {
 			number: Default::default(),
 			parent_hash: Default::default(),
 			state_root: Default::default(),
