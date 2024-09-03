@@ -16,10 +16,7 @@
 */
 
 use alloc::{boxed::Box, string::String};
-#[cfg(not(feature = "std"))]
 use core::error::Error as ErrorT;
-#[cfg(feature = "std")]
-use std::error::Error as ErrorT;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
