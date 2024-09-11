@@ -20,14 +20,14 @@ use frame_support::dispatch::DispatchInfo;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::{EventDetails, StaticEvent},
-	ac_primitives::{Config, DefaultRuntimeConfig},
+	ac_primitives::{Config, WestendRuntimeConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 use westend_runtime::RuntimeEvent;
 
-type Hash = <DefaultRuntimeConfig as Config>::Hash;
+type Hash = <WestendRuntimeConfig as Config>::Hash;
 
 /// Check out frame_system::Event::ExtrinsicSuccess:
 #[derive(Decode, Debug)]
@@ -45,7 +45,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
 	let bob = AccountKeyring::Bob.to_account_id();
@@ -76,7 +76,7 @@ async fn main() {
 	// Wait for event callbacks from the node, which are received via subscription.
 	for _ in 0..5 {
 		let event_records = event_subscription
-			.next_events::<RuntimeEvent, <DefaultRuntimeConfig as Config>::Hash>()
+			.next_events::<RuntimeEvent, <WestendRuntimeConfig as Config>::Hash>()
 			.await
 			.unwrap()
 			.unwrap();

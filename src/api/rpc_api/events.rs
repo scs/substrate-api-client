@@ -233,7 +233,7 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::DefaultRuntimeConfig;
+	use ac_primitives::WestendRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use scale_info::TypeInfo;
@@ -257,7 +257,7 @@ mod tests {
 	fn create_mock_api(
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<DefaultRuntimeConfig, RpcClientMock> {
+	) -> Api<WestendRuntimeConfig, RpcClientMock> {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();
@@ -381,9 +381,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt1);
-		let xt_hash2 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt2);
-		let xt_hash3 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt3);
+		let xt_hash1 = <WestendRuntimeConfig as Config>::Hasher::hash(&xt1);
+		let xt_hash2 = <WestendRuntimeConfig as Config>::Hasher::hash(&xt2);
+		let xt_hash3 = <WestendRuntimeConfig as Config>::Hasher::hash(&xt3);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };

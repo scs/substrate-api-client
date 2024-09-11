@@ -16,7 +16,7 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	ac_primitives::DefaultRuntimeConfig,
+	ac_primitives::WestendRuntimeConfig,
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
@@ -27,7 +27,7 @@ const MAX_BATCHED_TRANSACTION: u32 = 9;
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 pub type EraIndex = u32;
 
@@ -54,7 +54,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice.into());
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
@@ -148,7 +148,7 @@ async fn main() {
 pub async fn get_last_reward_received_for(
 	account: &AccountId32,
 	current_era: EraIndex,
-	api: &substrate_api_client::Api<DefaultRuntimeConfig, JsonrpseeClient>,
+	api: &substrate_api_client::Api<WestendRuntimeConfig, JsonrpseeClient>,
 ) -> Option<u32> {
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();
 

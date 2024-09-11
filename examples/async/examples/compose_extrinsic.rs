@@ -23,30 +23,27 @@ use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		config::Config, AssetTip, DefaultRuntimeConfig, ExtrinsicParams, ExtrinsicSigner,
-		GenericAdditionalParams, SignExtrinsic,
+		config::Config, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, PlainTip,
+		SignExtrinsic, WestendRuntimeConfig,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
-use westend_runtime::{BalancesCall, RuntimeCall};
+use westend_runtime::{Address, BalancesCall, RuntimeCall};
 
-type AssetExtrinsicSigner = <DefaultRuntimeConfig as Config>::ExtrinsicSigner;
-type AccountId = <DefaultRuntimeConfig as Config>::AccountId;
+type DefaultExtrinsicSigner = <WestendRuntimeConfig as Config>::ExtrinsicSigner;
+type AccountId = <WestendRuntimeConfig as Config>::AccountId;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
-type Hash = <DefaultRuntimeConfig as Config>::Hash;
+type Hash = <WestendRuntimeConfig as Config>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
-type Balance = <DefaultRuntimeConfig as Config>::Balance;
-/// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
-type AdditionalParams = GenericAdditionalParams<AssetTip<Balance>, Hash>;
-
-type Address = <DefaultRuntimeConfig as Config>::Address;
+type Balance = <WestendRuntimeConfig as Config>::Balance;
+type AdditionalParams = GenericAdditionalParams<PlainTip<Balance>, Hash>;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 #[tokio::main]
 async fn main() {
@@ -56,8 +53,8 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
-	let extrinsic_signer = ExtrinsicSigner::<DefaultRuntimeConfig>::new(signer);
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<WestendRuntimeConfig>::new(signer);
 	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
@@ -84,12 +81,12 @@ async fn main() {
 	let signer_nonce = api.get_nonce().await.unwrap();
 	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
-	let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
+	let recipients_extrinsic_address: ExtrinsicAddressOf<DefaultExtrinsicSigner> =
 		recipient.clone().into();
 
 	// Construct an extrinsic using only functionality available in no_std
 	let xt = {
-		let extrinsic_params = <DefaultRuntimeConfig as Config>::ExtrinsicParams::new(
+		let extrinsic_params = <WestendRuntimeConfig as Config>::ExtrinsicParams::new(
 			spec_version,
 			transaction_version,
 			signer_nonce,

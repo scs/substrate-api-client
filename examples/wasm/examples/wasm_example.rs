@@ -21,7 +21,7 @@ use sp_core::{
 use sp_runtime::MultiAddress;
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 use std::process::ExitCode;
-use substrate_api_client::ac_primitives::{DefaultRuntimeConfig, ExtrinsicSigner};
+use substrate_api_client::ac_primitives::{ExtrinsicSigner, WestendRuntimeConfig};
 
 fn main() -> Result<ExitCode, i32> {
 	// This test is not yet very sophisticated and not exhaustive.
@@ -37,8 +37,8 @@ fn main() -> Result<ExitCode, i32> {
 			.unwrap()
 			.into();
 	let _bob: MultiAddress<AccountId32, AccountId32> = MultiAddress::Id(bob_account);
-	let es_converted: ExtrinsicSigner<DefaultRuntimeConfig> = alice.clone().into();
-	let es_new = ExtrinsicSigner::<DefaultRuntimeConfig>::new(alice.clone());
+	let es_converted: ExtrinsicSigner<WestendRuntimeConfig> = alice.clone().into();
+	let es_new = ExtrinsicSigner::<WestendRuntimeConfig>::new(alice.clone());
 	assert_eq!(es_converted.signer().public(), es_new.signer().public());
 
 	let extrinsic = UncheckedExtrinsic::from_bytes(&[]);

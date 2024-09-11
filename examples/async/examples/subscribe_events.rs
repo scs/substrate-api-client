@@ -19,7 +19,7 @@
 use log::debug;
 use sp_core::H256 as Hash;
 use substrate_api_client::{
-	ac_primitives::DefaultRuntimeConfig, rpc::JsonrpseeClient, Api, SubscribeEvents,
+	ac_primitives::WestendRuntimeConfig, rpc::JsonrpseeClient, Api, SubscribeEvents,
 };
 
 // This module depends on the specific node runtime.
@@ -29,7 +29,7 @@ use westend_runtime::RuntimeEvent;
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +37,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
 
 	println!("Subscribe to events");
 	let mut subscription = api.subscribe_events().await.unwrap();

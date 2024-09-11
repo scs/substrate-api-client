@@ -18,7 +18,7 @@
 use codec::Decode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_compose_macros::primitives::DefaultRuntimeConfig, ac_node_api::StaticEvent,
+	ac_compose_macros::primitives::WestendRuntimeConfig, ac_node_api::StaticEvent,
 	ac_primitives::Determinism, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
 	SubmitAndWatch, XtStatus,
 };
@@ -27,7 +27,7 @@ use westend_runtime::AccountId;
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 #[allow(unused)]
 #[derive(Decode)]
@@ -46,7 +46,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
 	println!("[+] Alice's Account Nonce is {}", api.get_nonce().await.unwrap());

@@ -20,18 +20,18 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
-		Config, DefaultRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, WestendRuntimeConfig,
 	},
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 use westend_runtime::{AccountId, BalancesCall, RuntimeCall};
 
-type ExtrinsicSigner = GenericExtrinsicSigner<DefaultRuntimeConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<WestendRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-type Hash = <DefaultRuntimeConfig as Config>::Hash;
-type MyApi = Api<DefaultRuntimeConfig, JsonrpseeClient>;
-type Index = <DefaultRuntimeConfig as Config>::Index;
+type Hash = <WestendRuntimeConfig as Config>::Hash;
+type MyApi = Api<WestendRuntimeConfig, JsonrpseeClient>;
+type Index = <WestendRuntimeConfig as Config>::Index;
 
 #[tokio::main]
 async fn main() {

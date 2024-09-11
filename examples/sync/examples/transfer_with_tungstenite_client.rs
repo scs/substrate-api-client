@@ -21,14 +21,14 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::DefaultRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
+	ac_primitives::WestendRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 fn main() {
 	env_logger::init();
@@ -43,7 +43,7 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = TungsteniteRpcClient::with_default_url(100);
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(alice.clone().into());
 
 	// Retrieve bobs current balance.

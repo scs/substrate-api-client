@@ -21,28 +21,32 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{
-		DefaultRuntimeConfig, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
-		UncheckedExtrinsicV4,
+		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, UncheckedExtrinsicV4,
+		WestendRuntimeConfig,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
 };
-use westend_runtime::AccountId;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
 // the code better readable.
-type ExtrinsicSigner = GenericExtrinsicSigner<DefaultRuntimeConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<WestendRuntimeConfig>;
 
 // To access the ExtrinsicAddress type of the Signer, we need to do this via the trait `SignExtrinsic`.
 // For better code readability, we define a simple type here and, at the same time, assign the
 // AccountId type of the `SignExtrinsic` trait.
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
+
+// AccountId type of westend runtime.
+type AccountId = <WestendRuntimeConfig as Config>::AccountId;
+type Address = <WestendRuntimeConfig as Config>::Address;
+type Balance = <WestendRuntimeConfig as Config>::Balance;
 
 #[tokio::main]
 async fn main() {
@@ -51,7 +55,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let sudoer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(sudoer.into());
 
 	// Set the recipient of newly issued funds.
@@ -65,15 +69,14 @@ async fn main() {
 	let recipients_extrinsic_address: ExtrinsicAddressOf<ExtrinsicSigner> =
 		recipient.clone().into();
 	let new_balance = recipient_balance + 100;
-	let call: ([u8; 2], sp_runtime::MultiAddress<sp_runtime::AccountId32, u32>, Compact<_>) =
-		compose_call!(
-			api.metadata(),
-			"Balances",
-			"force_set_balance",
-			recipients_extrinsic_address,
-			Compact(new_balance)
-		)
-		.unwrap();
+	let call: ([u8; 2], Address, Compact<_>) = compose_call!(
+		api.metadata(),
+		"Balances",
+		"force_set_balance",
+		recipients_extrinsic_address,
+		Compact(new_balance)
+	)
+	.unwrap();
 
 	let xt: UncheckedExtrinsicV4<_, _, _, _> =
 		compose_extrinsic!(&api, "Sudo", "sudo", call).unwrap();

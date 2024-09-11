@@ -19,23 +19,23 @@ use frame_system::AccountInfo as GenericAccountInfo;
 use pallet_staking::Exposure;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{Config, DefaultRuntimeConfig},
+	ac_primitives::{Config, WestendRuntimeConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage,
 };
-use westend_runtime::AccountId;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// you most likely should use `WestendRuntimeConfig` instead.
 
 type AccountInfo = GenericAccountInfo<
-	<DefaultRuntimeConfig as Config>::Index,
-	<DefaultRuntimeConfig as Config>::AccountData,
+	<WestendRuntimeConfig as Config>::Index,
+	<WestendRuntimeConfig as Config>::AccountData,
 >;
 
-type Balance = <DefaultRuntimeConfig as Config>::Balance;
+type Balance = <WestendRuntimeConfig as Config>::Balance;
+type AccountId = <WestendRuntimeConfig as Config>::AccountId;
 
 #[tokio::main]
 async fn main() {
@@ -43,7 +43,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
 
 	// Get some plain storage values.
 	let (maybe_balance, proof) = tokio::try_join!(
