@@ -58,7 +58,7 @@ async fn main() {
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).await.unwrap().unwrap();
 
-	let era_stakers: ErasStakers = api
+	let _era_stakers: ErasStakers = api
 		.get_storage_double_map(
 			"Staking",
 			"ErasStakersOverview",

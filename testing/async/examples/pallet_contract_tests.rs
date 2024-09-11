@@ -18,11 +18,15 @@
 use codec::Decode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_compose_macros::primitives::WestendRuntimeConfig, ac_node_api::StaticEvent,
-	ac_primitives::Determinism, extrinsic::ContractsExtrinsics, rpc::JsonrpseeClient, Api,
-	SubmitAndWatch, XtStatus,
+	ac_compose_macros::primitives::{Config, WestendRuntimeConfig},
+	ac_node_api::StaticEvent,
+	ac_primitives::Determinism,
+	extrinsic::ContractsExtrinsics,
+	rpc::JsonrpseeClient,
+	Api, SubmitAndWatch, XtStatus,
 };
-use westend_runtime::AccountId;
+
+type AccountId = <WestendRuntimeConfig as Config>::AccountId;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.

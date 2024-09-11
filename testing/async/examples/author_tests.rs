@@ -25,13 +25,14 @@ use substrate_api_client::{
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
-use westend_runtime::{AccountId, BalancesCall, RuntimeCall};
+use westend_runtime::{BalancesCall, RuntimeCall};
 
 type ExtrinsicSigner = GenericExtrinsicSigner<WestendRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 type Hash = <WestendRuntimeConfig as Config>::Hash;
 type MyApi = Api<WestendRuntimeConfig, JsonrpseeClient>;
 type Index = <WestendRuntimeConfig as Config>::Index;
+type AccountId = <WestendRuntimeConfig as Config>::AccountId;
 
 #[tokio::main]
 async fn main() {
