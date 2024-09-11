@@ -175,9 +175,10 @@ impl<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> Config
 /// # Example
 ///
 /// ```
-/// use ac_primitives::{ DefaultRuntimeConfig, WithAddress };
+/// use ac_primitives::{ DefaultRuntimeConfig, WithAddress, MultiAddress, AccountId32 };
 ///
-/// type WestendRuntimeConfig = WithAddress<DefaultRuntimeConfig, MyAddressType>;
+/// type WestendRuntimeConfig = WithAddress<DefaultRuntimeConfig, MultiAddress<AccountId32, ()>>;
+/// ```
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct WithAddress<T, A>
 where
