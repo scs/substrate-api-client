@@ -306,7 +306,7 @@ mod tests {
 		let nonce = 6;
 		let retrieved_params = api.extrinsic_params(nonce);
 
-		let expected_params = GenericExtrinsicParams::<AssetRuntimeConfig, PlainTip<u128>>::new(
+		let expected_params = GenericExtrinsicParams::<DefaultRuntimeConfig, PlainTip<u128>>::new(
 			runtime_version.spec_version,
 			runtime_version.transaction_version,
 			nonce,

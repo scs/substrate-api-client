@@ -95,8 +95,8 @@ async fn main() {
 	// let _session_keys =
 	// 	runtime_api.decode_session_keys(encoded_session_keys, None).unwrap().unwrap();
 
-	// Staking
-	let _quota = runtime_api.nominations_quota(100000000, None).await.unwrap();
+	// Staking not available
+	// let _quota = runtime_api.nominations_quota(100000000, None).await.unwrap();
 
 	// Transaction Payment
 	let extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();

@@ -130,10 +130,8 @@ async fn main() {
 	assert_eq!(storage_keys.len() as u32, 14);
 
 	let max_keys = 20;
-	let storage_keys = api
-		.get_storage_keys_paged_limited(None, max_keys.clone(), None, None)
-		.await
-		.unwrap();
+	let storage_keys =
+		api.get_storage_keys_paged_limited(None, max_keys, None, None).await.unwrap();
 	assert_eq!(storage_keys.len() as u32, max_keys);
 
 	let storage_keys = api.get_storage_keys_paged(None, max_keys, None, None).await.unwrap();
