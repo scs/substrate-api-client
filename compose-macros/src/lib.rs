@@ -56,7 +56,7 @@ macro_rules! compose_call {
 /// * 'pallet_metadata' - This crate's parsed pallet metadata as field of the API.
 /// * 'call_name' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
-/// As of now the user needs to check himself that the correct arguments are supplied.
+///    As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_call_for_pallet_metadata {
 ($pallet_metadata: expr, $call_name: expr $(, $args: expr) *) => {
@@ -145,8 +145,9 @@ macro_rules! compose_extrinsic_with_nonce {
 	};
 }
 
-/// Generates an UncheckedExtrinsic for the given pallet and call, if they are found within the metadata.
-/// Otherwise None is returned.
+/// Generates an UncheckedExtrinsic for the given pallet and call from the metadata.
+///
+/// Returns None if call is not found within metadata.
 /// Fetches the nonce from the given `api` instance. If this fails, zero is taken as default nonce.
 /// See also compose_extrinsic_with_nonce
 #[macro_export]
@@ -164,8 +165,9 @@ macro_rules! compose_extrinsic {
     };
 }
 
-/// Generates an UncheckedExtrinsic for the given pallet and call, if they are found within the metadata.
-/// Otherwise None is returned.
+/// Generates an UncheckedExtrinsic for the given pallet and call from the metadata.
+///
+/// Returns None if call is not found within metadata.
 /// Fetches the nonce from the given `api` instance. If this fails, zero is taken as default nonce.
 /// See also compose_extrinsic_with_nonce
 #[macro_export]
