@@ -15,9 +15,6 @@
 
 */
 
-use crate::{
-	config::WithAddress, AccountId32, Config, DefaultRuntimeConfig, GenericExtrinsicParams,
-	MultiAddress,
-};
+use crate::{config::WithAddress, AccountId32, DefaultRuntimeConfig, MultiAddress};
 
 pub type WestendRuntimeConfig = WithAddress<DefaultRuntimeConfig, MultiAddress<AccountId32, ()>>;
