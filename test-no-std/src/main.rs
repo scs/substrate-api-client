@@ -95,7 +95,7 @@ unsafe impl GlobalAlloc for SimpleAllocator {
 		let align_mask_to_round_down = !(align - 1);
 
 		if align > MAX_SUPPORTED_ALIGN {
-			return null_mut()
+			return null_mut();
 		}
 
 		let mut allocated = 0;
@@ -103,7 +103,7 @@ unsafe impl GlobalAlloc for SimpleAllocator {
 			.remaining
 			.fetch_update(SeqCst, SeqCst, |mut remaining| {
 				if size > remaining {
-					return None
+					return None;
 				}
 				remaining -= size;
 				remaining &= align_mask_to_round_down;
@@ -112,7 +112,7 @@ unsafe impl GlobalAlloc for SimpleAllocator {
 			})
 			.is_err()
 		{
-			return null_mut()
+			return null_mut();
 		};
 		(self.arena.get() as *mut u8).add(allocated)
 	}

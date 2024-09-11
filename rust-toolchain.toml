@@ -1,4 +1,4 @@
 [toolchain]
-channel = "1.81"
+channel = "nightly-2024-09-01"
 targets = ["wasm32-unknown-unknown", "wasm32-wasip1"]
 profile = "default" # include rustfmt, clippy
