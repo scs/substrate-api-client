@@ -150,7 +150,7 @@ dependencies = [
  "frame-support",
  "jsonrpsee",
  "pallet-balances",
- "pallet-staking",
+ "pallet-society",
  "parity-scale-codec",
  "sp-core",
  "sp-crypto-hashing",
