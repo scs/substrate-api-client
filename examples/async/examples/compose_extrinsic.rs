@@ -18,32 +18,32 @@
 //! - Compose an extrinsic without asking the node for nonce and without knowing the metadata
 
 use codec::Compact;
+use rococo_runtime::{Address, BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
 		config::Config, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, PlainTip,
-		SignExtrinsic, WestendRuntimeConfig,
+		RococoRuntimeConfig, SignExtrinsic,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
-use westend_runtime::{Address, BalancesCall, RuntimeCall};
 
-type DefaultExtrinsicSigner = <WestendRuntimeConfig as Config>::ExtrinsicSigner;
-type AccountId = <WestendRuntimeConfig as Config>::AccountId;
+type DefaultExtrinsicSigner = <RococoRuntimeConfig as Config>::ExtrinsicSigner;
+type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
-type Hash = <WestendRuntimeConfig as Config>::Hash;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
-type Balance = <WestendRuntimeConfig as Config>::Balance;
+type Balance = <RococoRuntimeConfig as Config>::Balance;
 type AdditionalParams = GenericAdditionalParams<PlainTip<Balance>, Hash>;
 
 // To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
 // Therefore, we need to use the `AssetRuntimeConfig` in this example.
 // ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `WestendRuntimeConfig` instead.
+// you most likely should use `RococoRuntimeConfig` instead.
 
 #[tokio::main]
 async fn main() {
@@ -53,8 +53,8 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 
-	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
-	let extrinsic_signer = ExtrinsicSigner::<WestendRuntimeConfig>::new(signer);
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<RococoRuntimeConfig>::new(signer);
 	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
@@ -82,11 +82,11 @@ async fn main() {
 	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
 	let recipients_extrinsic_address: ExtrinsicAddressOf<DefaultExtrinsicSigner> =
-		recipient.clone().into();
+		recipient.clone();
 
 	// Construct an extrinsic using only functionality available in no_std
 	let xt = {
-		let extrinsic_params = <WestendRuntimeConfig as Config>::ExtrinsicParams::new(
+		let extrinsic_params = <RococoRuntimeConfig as Config>::ExtrinsicParams::new(
 			spec_version,
 			transaction_version,
 			signer_nonce,

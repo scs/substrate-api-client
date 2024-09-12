@@ -20,19 +20,19 @@ use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
-		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, WestendRuntimeConfig,
+		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, RococoRuntimeConfig,
 	},
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
-use westend_runtime::{BalancesCall, RuntimeCall};
+use rococo_runtime::{BalancesCall, RuntimeCall};
 
-type ExtrinsicSigner = GenericExtrinsicSigner<WestendRuntimeConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<RococoRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-type Hash = <WestendRuntimeConfig as Config>::Hash;
-type MyApi = Api<WestendRuntimeConfig, JsonrpseeClient>;
-type Index = <WestendRuntimeConfig as Config>::Index;
-type AccountId = <WestendRuntimeConfig as Config>::AccountId;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
+type MyApi = Api<RococoRuntimeConfig, JsonrpseeClient>;
+type Index = <RococoRuntimeConfig as Config>::Index;
+type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 
 #[tokio::main]
 async fn main() {

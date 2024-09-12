@@ -24,11 +24,11 @@ use crate::{extrinsic_params, ExtrinsicSigner, SignExtrinsic};
 
 pub use asset_runtime_config::*;
 pub use default_runtime_config::*;
-pub use westend_runtime_config::*;
+pub use rococo_runtime_config::*;
 
 pub mod asset_runtime_config;
 pub mod default_runtime_config;
-pub mod westend_runtime_config;
+pub mod rococo_runtime_config;
 
 /// Runtime types.
 pub trait Config {
@@ -177,7 +177,7 @@ impl<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> Config
 /// ```
 /// use ac_primitives::{ DefaultRuntimeConfig, WithAddress, MultiAddress, AccountId32 };
 ///
-/// type WestendRuntimeConfig = WithAddress<DefaultRuntimeConfig, MultiAddress<AccountId32, ()>>;
+/// type RococoRuntimeConfig = WithAddress<DefaultRuntimeConfig, MultiAddress<AccountId32, ()>>;
 /// ```
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
 pub struct WithAddress<T, A>

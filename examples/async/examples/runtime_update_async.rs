@@ -16,7 +16,7 @@ use sp_keyring::AccountKeyring;
 use sp_weights::Weight;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{Config, WestendRuntimeConfig},
+	ac_primitives::{Config, RococoRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
@@ -25,7 +25,7 @@ use substrate_api_client::{
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
-type Hash = <WestendRuntimeConfig as Config>::Hash;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
 
 #[tokio::main]
 async fn main() {
@@ -33,7 +33,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
 	api.set_signer(sudoer.into());
 
@@ -75,7 +75,7 @@ async fn main() {
 }
 
 pub async fn send_code_update_extrinsic(
-	api: &substrate_api_client::Api<WestendRuntimeConfig, JsonrpseeClient>,
+	api: &substrate_api_client::Api<RococoRuntimeConfig, JsonrpseeClient>,
 ) {
 	let new_wasm: &[u8] = include_bytes!("minimal_template_runtime.compact.compressed.wasm");
 

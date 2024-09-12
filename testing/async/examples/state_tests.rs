@@ -21,12 +21,12 @@ use pallet_society::Vote;
 use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{Config, WestendRuntimeConfig},
+	ac_primitives::{Config, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, GetStorage,
 };
 
-type KitchensinkConfig = WestendRuntimeConfig;
+type KitchensinkConfig = RococoRuntimeConfig;
 type Balance = <KitchensinkConfig as Config>::Balance;
 type AccountData = GenericAccountData<Balance>;
 

@@ -13,7 +13,7 @@ jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport
 
 # Substrate dependencies
 frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-westend-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }

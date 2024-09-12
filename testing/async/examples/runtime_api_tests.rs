@@ -18,7 +18,7 @@
 use sp_core::{sr25519, Decode};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::WestendRuntimeConfig,
+	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	runtime_api::{
@@ -33,7 +33,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
 	let runtime_api = api.runtime_api();

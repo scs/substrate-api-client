@@ -18,7 +18,7 @@
 use codec::Encode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::WestendRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
+	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
 	GetAccountInformation, GetBalance, GetTransactionPayment, SubmitAndWatch, XtStatus,
 };
 
@@ -26,7 +26,7 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<WestendRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 
 	let ed = api.get_existential_deposit().await.unwrap();
 	println!("[+] Existential deposit is {}\n", ed);
