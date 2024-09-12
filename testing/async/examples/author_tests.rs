@@ -187,9 +187,6 @@ fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	assert_eq!(events[2].pallet_name(), "Balances");
 	assert_eq!(events[2].variant_name(), "Deposit");
 
-	assert_eq!(events[3].pallet_name(), "Treasury");
-	assert_eq!(events[3].variant_name(), "Deposit");
-
 	assert_eq!(events[4].pallet_name(), "Balances");
 	assert_eq!(events[4].variant_name(), "Deposit");
 

@@ -70,14 +70,14 @@ async fn main() {
 	};
 	println!("Detected runtime update: {runtime_update_detected}");
 	println!("New spec_version: {}", api.spec_version());
-	assert!(api.spec_version() == 1268);
+	assert!(api.spec_version() == 111111111);
 	assert!(runtime_update_detected);
 }
 
 pub async fn send_code_update_extrinsic(
 	api: &substrate_api_client::Api<WestendRuntimeConfig, JsonrpseeClient>,
 ) {
-	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+	let new_wasm: &[u8] = include_bytes!("minimal_template_runtime.compact.compressed.wasm");
 
 	// this call can only be called by sudo
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();

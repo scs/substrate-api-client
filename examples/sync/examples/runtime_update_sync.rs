@@ -69,13 +69,13 @@ fn main() {
 	handler.join().unwrap();
 	api.update_runtime().unwrap();
 	println!("New spec_version: {}", api.spec_version());
-	assert!(api.spec_version() == 1268);
+	assert!(api.spec_version() == 111111111);
 }
 
 pub fn send_code_update_extrinsic(
 	api: &substrate_api_client::Api<WestendRuntimeConfig, TungsteniteRpcClient>,
 ) {
-	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+	let new_wasm: &[u8] = include_bytes!("minimal_template_runtime.compact.compressed.wasm");
 
 	// Create a sudo `set_code` call.
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();
