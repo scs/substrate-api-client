@@ -106,15 +106,15 @@ async fn main() {
 	let _fee = runtime_api.query_length_to_fee(1000, None).await.unwrap();
 	let _fee = runtime_api.query_weight_to_fee(1000.into(), None).await.unwrap();
 
-	// Transaction Payment Call
-	let call = api
-		.balance_transfer_allow_death(bob.clone().into(), 1000)
-		.await
-		.unwrap()
-		.function;
-	let _tx_fee_details =
-		runtime_api.query_call_fee_details(call.clone(), 1000, None).await.unwrap();
-	let _tx_info = runtime_api.query_call_info(call, 1000, None).await.unwrap();
-	let _fee = runtime_api.query_length_to_fee_call(1000, None).await.unwrap();
-	let _fee = runtime_api.query_weight_to_fee_call(1000.into(), None).await.unwrap();
+	// Transaction Payment Call not available on rococo runtime.
+	// let call = api
+	// 	.balance_transfer_allow_death(bob.clone().into(), 1000)
+	// 	.await
+	// 	.unwrap()
+	// 	.function;
+	// let _tx_fee_details =
+	// 	runtime_api.query_call_fee_details(call.clone(), 1000, None).await.unwrap();
+	// let _tx_info = runtime_api.query_call_info(call, 1000, None).await.unwrap();
+	// let _fee = runtime_api.query_length_to_fee_call(1000, None).await.unwrap();
+	// let _fee = runtime_api.query_weight_to_fee_call(1000.into(), None).await.unwrap();
 }
