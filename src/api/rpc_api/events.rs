@@ -236,6 +236,7 @@ mod tests {
 	use ac_primitives::RococoRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
+	use rococo_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
 	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
 	use sp_runtime::{
@@ -246,7 +247,6 @@ mod tests {
 	use sp_version::RuntimeVersion;
 	use std::{collections::HashMap, fs};
 	use test_case::test_case;
-	use rococo_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 
 	#[derive(Clone, Copy, Debug, PartialEq, Decode, Encode, TypeInfo)]
 	enum Event {

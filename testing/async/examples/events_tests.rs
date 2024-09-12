@@ -17,6 +17,7 @@
 
 use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
+use rococo_runtime::RuntimeEvent;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::{EventDetails, StaticEvent},
@@ -25,7 +26,6 @@ use substrate_api_client::{
 	rpc::JsonrpseeClient,
 	Api, FetchEvents, GetChainInfo, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
-use rococo_runtime::RuntimeEvent;
 
 type Hash = <RococoRuntimeConfig as Config>::Hash;
 

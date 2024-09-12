@@ -15,17 +15,17 @@
 
 //! Tests for the author rpc interface functions.
 
+use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_core::{Encode, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
-		Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic, RococoRuntimeConfig,
+		Config, ExtrinsicSigner as GenericExtrinsicSigner, RococoRuntimeConfig, SignExtrinsic,
 	},
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
-use rococo_runtime::{BalancesCall, RuntimeCall};
 
 type ExtrinsicSigner = GenericExtrinsicSigner<RococoRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;

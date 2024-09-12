@@ -15,6 +15,7 @@
 
 //! This example floods the node with a series of transactions.
 
+use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_primitives::{
@@ -23,7 +24,6 @@ use substrate_api_client::{
 	rpc::JsonrpseeClient,
 	Api, SubmitExtrinsic,
 };
-use rococo_runtime::{BalancesCall, RuntimeCall};
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.
 // This way, the types don't have to be reassigned with every usage of this type and makes
