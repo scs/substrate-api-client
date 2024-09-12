@@ -72,7 +72,7 @@ async fn main() {
 	// Sidenote: We could theoretically force a new era with sudo, but this takes at least 10 minutes ( = 1 epoch) in the
 	// kitchensink rutime. We don't want to wait that long.
 	let payout_staker_xt = api.payout_stakers(0, validator_stash).await.unwrap();
-	let result = api.submit_and_watch_extrinsic_until(payout_staker_xt, XtStatus::InBlock).await;
+	let _result = api.submit_and_watch_extrinsic_until(payout_staker_xt, XtStatus::InBlock).await;
 
 	if let Some(mut last_reward_received_at_era) =
 		get_last_reward_received_for(&validator_account, current_era_index, &api).await
