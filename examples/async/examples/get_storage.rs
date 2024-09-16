@@ -26,10 +26,8 @@ use substrate_api_client::{
 	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `RococoRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 type AccountInfo = GenericAccountInfo<
 	<RococoRuntimeConfig as Config>::Index,

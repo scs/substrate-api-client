@@ -12,6 +12,10 @@
 */
 
 //! Example that shows how to detect a runtime update and afterwards update the metadata.
+
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
+
 use sp_keyring::AccountKeyring;
 use sp_weights::Weight;
 use substrate_api_client::{
