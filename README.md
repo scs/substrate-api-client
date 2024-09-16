@@ -76,6 +76,7 @@ The following sync examples can be found in the [sync examples](/examples/sync/e
 * [transfer_with_tungstenite_client](/examples/sync/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/sync/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
+More, less well documented calls can be found in the testing crate.
 
 ## `no_std` build
 Almost everything in the api-client, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and a few additional features, is `no_std` compatible.
