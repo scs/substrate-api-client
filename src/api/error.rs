@@ -22,11 +22,7 @@ use ac_node_api::{
 };
 use alloc::{boxed::Box, vec::Vec};
 use codec::{Decode, Encode};
-
-#[cfg(not(feature = "std"))]
 use core::error::Error as ErrorT;
-#[cfg(feature = "std")]
-use std::error::Error as ErrorT;
 
 pub type Result<T> = core::result::Result<T, Error>;
 

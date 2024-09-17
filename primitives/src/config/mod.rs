@@ -129,6 +129,8 @@ pub trait Config {
 		+ DeserializeOwned;
 }
 
+/// Helper struct for fast Config creation with different Extrinsic Params than the original Config.
+///
 /// Take a type implementing [`Config`] (eg [`AssetRuntimeConfig`]), and some type which describes the
 /// additional and extra parameters to pass to an extrinsic (see [`ExtrinsicParams`]),
 /// and returns a type implementing [`Config`] with those new [`ExtrinsicParams`].
