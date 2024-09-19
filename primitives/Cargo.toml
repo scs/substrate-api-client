@@ -42,7 +42,6 @@ solochain-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-transaction-payment = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
-
 [features]
 default = ["std"]
 # To support `no_std` builds in non-32 bit environments.
