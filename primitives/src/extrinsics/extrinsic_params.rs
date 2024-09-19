@@ -41,14 +41,14 @@ pub struct GenericSignedExtra<Tip, Index> {
 	pub nonce: Index,
 	pub tip: Tip,
 	#[cfg(feature = "disable-metadata-hash-check")]
-	pub check_hash: u8,
+	pub check_hash: bool,
 }
 
 impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		#[cfg(feature = "disable-metadata-hash-check")]
 		{
-			Self { era, nonce, tip, check_hash: 0 }
+			Self { era, nonce, tip, check_hash: false }
 		}
 		#[cfg(not(feature = "disable-metadata-hash-check"))]
 		{
