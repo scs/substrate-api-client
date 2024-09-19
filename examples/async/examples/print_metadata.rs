@@ -17,13 +17,11 @@
 //! debugging tool.
 
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient, Api,
+	ac_primitives::RococoRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient, Api,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 #[tokio::main]
 async fn main() {
@@ -31,7 +29,7 @@ async fn main() {
 
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 
 	let meta = api.metadata().clone();
 

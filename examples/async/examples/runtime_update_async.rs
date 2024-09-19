@@ -12,11 +12,15 @@
 */
 
 //! Example that shows how to detect a runtime update and afterwards update the metadata.
+
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
+
 use sp_keyring::AccountKeyring;
 use sp_weights::Weight;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, RococoRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
@@ -25,7 +29,7 @@ use substrate_api_client::{
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
-type Hash = <AssetRuntimeConfig as Config>::Hash;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
 
 #[tokio::main]
 async fn main() {
@@ -33,7 +37,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
 	api.set_signer(sudoer.into());
 
@@ -70,14 +74,14 @@ async fn main() {
 	};
 	println!("Detected runtime update: {runtime_update_detected}");
 	println!("New spec_version: {}", api.spec_version());
-	assert!(api.spec_version() == 1268);
+	assert!(api.spec_version() == 111111111);
 	assert!(runtime_update_detected);
 }
 
 pub async fn send_code_update_extrinsic(
-	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
+	api: &substrate_api_client::Api<RococoRuntimeConfig, JsonrpseeClient>,
 ) {
-	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+	let new_wasm: &[u8] = include_bytes!("minimal_template_runtime.compact.compressed.wasm");
 
 	// this call can only be called by sudo
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();

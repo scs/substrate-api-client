@@ -18,35 +18,30 @@
 //! - Compose an extrinsic without asking the node for nonce and without knowing the metadata
 
 use codec::Compact;
-use kitchensink_runtime::{BalancesCall, RuntimeCall};
+use rococo_runtime::{Address, BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		config::Config, AssetRuntimeConfig, AssetTip, ExtrinsicParams, ExtrinsicSigner,
-		GenericAdditionalParams, SignExtrinsic,
+		config::Config, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, PlainTip,
+		RococoRuntimeConfig, SignExtrinsic,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
 
-type AssetExtrinsicSigner = <AssetRuntimeConfig as Config>::ExtrinsicSigner;
-type AccountId = <AssetRuntimeConfig as Config>::AccountId;
+type DefaultExtrinsicSigner = <RococoRuntimeConfig as Config>::ExtrinsicSigner;
+type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
 
-type Hash = <AssetRuntimeConfig as Config>::Hash;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
 /// Get the balance type from your node runtime and adapt it if necessary.
-type Balance = <AssetRuntimeConfig as Config>::Balance;
-/// We need AssetTip here, because the kitchensink runtime uses the asset pallet. Change to PlainTip if your node uses the balance pallet only.
-type AdditionalParams = GenericAdditionalParams<AssetTip<Balance>, Hash>;
+type Balance = <RococoRuntimeConfig as Config>::Balance;
+type AdditionalParams = GenericAdditionalParams<PlainTip<Balance>, Hash>;
 
-type Address = <AssetRuntimeConfig as Config>::Address;
-
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 #[tokio::main]
 async fn main() {
@@ -56,8 +51,8 @@ async fn main() {
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
-	let extrinsic_signer = ExtrinsicSigner::<AssetRuntimeConfig>::new(signer);
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
+	let extrinsic_signer = ExtrinsicSigner::<RococoRuntimeConfig>::new(signer);
 	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
@@ -84,12 +79,12 @@ async fn main() {
 	let signer_nonce = api.get_nonce().await.unwrap();
 	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
-	let recipients_extrinsic_address: ExtrinsicAddressOf<AssetExtrinsicSigner> =
-		recipient.clone().into();
+	let recipients_extrinsic_address: ExtrinsicAddressOf<DefaultExtrinsicSigner> =
+		recipient.clone();
 
 	// Construct an extrinsic using only functionality available in no_std
 	let xt = {
-		let extrinsic_params = <AssetRuntimeConfig as Config>::ExtrinsicParams::new(
+		let extrinsic_params = <RococoRuntimeConfig as Config>::ExtrinsicParams::new(
 			spec_version,
 			transaction_version,
 			signer_nonce,

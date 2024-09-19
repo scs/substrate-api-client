@@ -16,9 +16,10 @@ wabt = "0.10.0"
 # Substrate dependencies
 frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-recovery = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }

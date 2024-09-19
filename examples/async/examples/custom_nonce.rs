@@ -16,19 +16,17 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use kitchensink_runtime::{BalancesCall, RuntimeCall};
+use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, GenericAdditionalParams},
+	ac_primitives::{GenericAdditionalParams, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
 	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +35,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
 	// Information for Era for mortal transactions.

@@ -15,27 +15,30 @@
 
 //! Very simple example that shows how to get some simple storage values.
 
+use codec::Encode;
 use frame_system::AccountInfo as GenericAccountInfo;
-use kitchensink_runtime::AccountId;
-use pallet_staking::Exposure;
+use pallet_recovery::ActiveRecovery;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_compose_macros::compose_extrinsic,
+	ac_primitives::{Config, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, GetStorage,
+	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 type AccountInfo = GenericAccountInfo<
-	<AssetRuntimeConfig as Config>::Index,
-	<AssetRuntimeConfig as Config>::AccountData,
+	<RococoRuntimeConfig as Config>::Index,
+	<RococoRuntimeConfig as Config>::AccountData,
 >;
 
-type Balance = <AssetRuntimeConfig as Config>::Balance;
+type Balance = <RococoRuntimeConfig as Config>::Balance;
+type AccountId = <RococoRuntimeConfig as Config>::AccountId;
+type BlockNumber = <RococoRuntimeConfig as Config>::BlockNumber;
+type Friends = Vec<AccountId>;
+type Address = <RococoRuntimeConfig as Config>::Address;
 
 #[tokio::main]
 async fn main() {
@@ -43,21 +46,21 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 
 	// Get some plain storage values.
-	let (maybe_balance, proof) = tokio::try_join!(
-		api.get_storage::<Option<Balance>>("Balances", "TotalIssuance", None),
+	let (balance, proof) = tokio::try_join!(
+		api.get_storage::<Balance>("Balances", "TotalIssuance", None),
 		api.get_storage_value_proof("Balances", "TotalIssuance", None)
 	)
 	.unwrap();
-	println!("[+] TotalIssuance is {:?}", maybe_balance.unwrap());
+	println!("[+] TotalIssuance is {:?}", balance.unwrap());
 	println!("[+] StorageValueProof: {:?}", proof);
 
 	// Get the AccountInfo of Alice and the associated StoragePrefix.
 	let account: sp_core::sr25519::Public = AccountKeyring::Alice.public();
 	let (maybe_account_info, key_prefix) = tokio::try_join!(
-		api.get_storage_map::<_, Option<AccountInfo>>("System", "Account", account, None),
+		api.get_storage_map::<_, AccountInfo>("System", "Account", account, None),
 		api.get_storage_map_key_prefix("System", "Account")
 	)
 	.unwrap();
@@ -93,8 +96,35 @@ async fn main() {
 		println!("Retrieved data {:?}", storage_data);
 	}
 
+	// Create a recovery, so we can fetch an actual ActiveRecovery state from the chain.
+	let alice = AccountKeyring::Alice.to_account_id();
+	let alice_multiaddress: Address = alice.clone().into();
+	let charlie = AccountKeyring::Charlie.to_account_id();
+	let threshold: u16 = 2;
+	let delay_period: u32 = 1000;
+
+	let xt = compose_extrinsic!(
+		&api,
+		"Recovery",
+		"create_recovery",
+		vec![bob, charlie],
+		threshold,
+		delay_period
+	)
+	.unwrap();
+
+	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
+
+	// Set Bob as signer, so we can send the recevory extrinsic as Bob.
+	let signer2 = AccountKeyring::Bob.pair();
+	api.set_signer(signer2.into());
+	let xt = compose_extrinsic!(&api, "Recovery", "initiate_recovery", alice_multiaddress).unwrap();
+
+	println!("{:?}", xt.encode());
+	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
+
 	let storage_double_map_key_prefix = api
-		.get_storage_double_map_key_prefix("Staking", "ErasStakers", 0)
+		.get_storage_double_map_key_prefix("Recovery", "ActiveRecoveries", &alice)
 		.await
 		.unwrap();
 	let double_map_storage_keys = api
@@ -106,7 +136,7 @@ async fn main() {
 	for storage_key in double_map_storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
 		// We're expecting Exposure as return value because we fetch a storage value with prefix combination of "Staking" + "EraStakers" + 0.
-		let storage_data: Exposure<AccountId, Balance> =
+		let storage_data: ActiveRecovery<BlockNumber, Balance, Friends> =
 			api.get_storage_by_key(storage_key.clone(), None).await.unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}

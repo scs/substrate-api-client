@@ -13,6 +13,9 @@
 
 //! Example that shows how to detect a runtime update and afterwards update the metadata.
 
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several rre-compiled runtimes are available in the ac-primitives crate.
+
 use core::{
 	sync::atomic::{AtomicBool, Ordering},
 	time::Duration,
@@ -22,21 +25,21 @@ use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, RococoRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::TungsteniteRpcClient,
 	rpc_api::RuntimeUpdateDetector,
 	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
-type Hash = <AssetRuntimeConfig as Config>::Hash;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
 
 fn main() {
 	env_logger::init();
 
 	// Initialize the api.
 	let client = TungsteniteRpcClient::with_default_url(1);
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).unwrap();
 	let sudoer = AccountKeyring::Alice.pair();
 	api.set_signer(sudoer.into());
 
@@ -69,13 +72,13 @@ fn main() {
 	handler.join().unwrap();
 	api.update_runtime().unwrap();
 	println!("New spec_version: {}", api.spec_version());
-	assert!(api.spec_version() == 1268);
+	assert!(api.spec_version() == 111111111);
 }
 
 pub fn send_code_update_extrinsic(
-	api: &substrate_api_client::Api<AssetRuntimeConfig, TungsteniteRpcClient>,
+	api: &substrate_api_client::Api<RococoRuntimeConfig, TungsteniteRpcClient>,
 ) {
-	let new_wasm: &[u8] = include_bytes!("kitchensink_runtime.compact.compressed.wasm");
+	let new_wasm: &[u8] = include_bytes!("minimal_template_runtime.compact.compressed.wasm");
 
 	// Create a sudo `set_code` call.
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec()).unwrap();

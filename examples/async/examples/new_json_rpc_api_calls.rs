@@ -22,16 +22,14 @@ use sp_core::Bytes;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::rpc_params,
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient, Request, Subscribe},
 	Api,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 #[tokio::main]
 async fn main() {
@@ -40,7 +38,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let signer = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
 	// Retrieve all available rpc methods:

@@ -21,14 +21,12 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::WsRpcClient, Api,
+	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::WsRpcClient, Api,
 	GetAccountInformation, SubmitAndWatch, XtStatus,
 };
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 fn main() {
 	env_logger::init();
@@ -43,7 +41,7 @@ fn main() {
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let client = WsRpcClient::with_default_url();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).unwrap();
 	api.set_signer(alice.clone().into());
 
 	// Retrieve bobs current balance.

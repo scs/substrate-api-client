@@ -233,10 +233,10 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_node_api::{metadata::Metadata, test_utils::*};
-	use ac_primitives::DefaultRuntimeConfig;
+	use ac_primitives::RococoRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
-	use kitchensink_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
+	use rococo_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
 	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
 	use sp_runtime::{
@@ -257,7 +257,7 @@ mod tests {
 	fn create_mock_api(
 		metadata: Metadata,
 		data: HashMap<String, String>,
-	) -> Api<DefaultRuntimeConfig, RpcClientMock> {
+	) -> Api<RococoRuntimeConfig, RpcClientMock> {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();
@@ -265,8 +265,8 @@ mod tests {
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}
 
-	fn default_header() -> kitchensink_runtime::Header {
-		kitchensink_runtime::Header {
+	fn default_header() -> rococo_runtime::Header {
+		rococo_runtime::Header {
 			number: Default::default(),
 			parent_hash: Default::default(),
 			state_root: Default::default(),
@@ -381,9 +381,9 @@ mod tests {
 		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
 		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
 
-		let xt_hash1 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt1);
-		let xt_hash2 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt2);
-		let xt_hash3 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt3);
+		let xt_hash1 = <RococoRuntimeConfig as Config>::Hasher::hash(&xt1);
+		let xt_hash2 = <RococoRuntimeConfig as Config>::Hasher::hash(&xt2);
+		let xt_hash3 = <RococoRuntimeConfig as Config>::Hasher::hash(&xt3);
 
 		let block = Block { header: default_header(), extrinsics: vec![xt1, xt2, xt3] };
 		let signed_block = SignedBlock { block, justifications: None };

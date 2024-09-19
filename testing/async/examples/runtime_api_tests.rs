@@ -18,7 +18,7 @@
 use sp_core::{sr25519, Decode};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	runtime_api::{
@@ -33,7 +33,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
 	let runtime_api = api.runtime_api();
@@ -95,8 +95,8 @@ async fn main() {
 	// let _session_keys =
 	// 	runtime_api.decode_session_keys(encoded_session_keys, None).unwrap().unwrap();
 
-	// Staking
-	let _quota = runtime_api.nominations_quota(100000000, None).await.unwrap();
+	// Staking not available
+	// let _quota = runtime_api.nominations_quota(100000000, None).await.unwrap();
 
 	// Transaction Payment
 	let extrinsic = api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();
@@ -106,15 +106,15 @@ async fn main() {
 	let _fee = runtime_api.query_length_to_fee(1000, None).await.unwrap();
 	let _fee = runtime_api.query_weight_to_fee(1000.into(), None).await.unwrap();
 
-	// Transaction Payment Call
-	let call = api
-		.balance_transfer_allow_death(bob.clone().into(), 1000)
-		.await
-		.unwrap()
-		.function;
-	let _tx_fee_details =
-		runtime_api.query_call_fee_details(call.clone(), 1000, None).await.unwrap();
-	let _tx_info = runtime_api.query_call_info(call, 1000, None).await.unwrap();
-	let _fee = runtime_api.query_length_to_fee_call(1000, None).await.unwrap();
-	let _fee = runtime_api.query_weight_to_fee_call(1000.into(), None).await.unwrap();
+	// Transaction Payment Call not available on rococo runtime.
+	// let call = api
+	// 	.balance_transfer_allow_death(bob.clone().into(), 1000)
+	// 	.await
+	// 	.unwrap()
+	// 	.function;
+	// let _tx_fee_details =
+	// 	runtime_api.query_call_fee_details(call.clone(), 1000, None).await.unwrap();
+	// let _tx_info = runtime_api.query_call_info(call, 1000, None).await.unwrap();
+	// let _fee = runtime_api.query_length_to_fee_call(1000, None).await.unwrap();
+	// let _fee = runtime_api.query_weight_to_fee_call(1000.into(), None).await.unwrap();
 }

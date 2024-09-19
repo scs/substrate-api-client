@@ -60,13 +60,12 @@ The following async examples can be found in the [async examples](/examples/asyn
 * [benchmark_bulk_xt](/examples/async/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
 * [check_extrinsic_events](/examples/async/examples/check_extrinsic_events.rs): Check and react according to events associated to an extrinsic.
 * [compose_extrinsic](/examples/async/examples/compose_extrinsic.rs): Compose an extrinsic without interacting with the node or in no_std mode.
-* [contract_instantiate_with_code](/examples/async/examples/contract_instantiate_with_code.rs): Instantiate a contract on the chain.
 * [custom_nonce](/examples/async/examples/custom_nonce.rs): Compose an with a custom nonce.
-* [get_account_identity](/examples/async/examples/get_account_identity.rs): Create an custom Unchecked Extrinsic to set an account identity and retrieve it afterwards with a getter.
 * [get_blocks](/examples/async/examples/get_blocks.rs): Read header, block and signed block from storage.
 * [get_storage](/examples/async/examples/get_storage.rs): Read storage values.
+* [new_json_rpc_api_calls](examples/async/examples/new_json_rpc_api_calls.rs): Call the unstable rpc api with self defined functions.
 * [print_metadata](/examples/async/examples/print_metadata.rs): Print the metadata of the node in a readable way.
-* [query_runtime_api](/src/examples/async/examples/query_runtime_api.rs): How to query the runtime api.
+* [query_runtime_api](/examples/async/examples/query_runtime_api.rs): How to query the runtime api.
 * [runtime_update_async](/examples/async/examples/runtime_update_async.rs): How to do an runtime upgrade asynchronously.
 * [staking_batch_payout](/examples/async/examples/staking_batch_payout.rs): Batch reward payout for validator.
 * [subscribe_events](/examples/async/examples/subscribe_events.rs): Subscribe and react on events.
@@ -77,6 +76,7 @@ The following sync examples can be found in the [sync examples](/examples/sync/e
 * [transfer_with_tungstenite_client](/examples/sync/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 * [transfer_with_ws_client](/examples/sync/examples/transfer_with_ws_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
+More, less well documented calls can be found in the testing crate.
 
 ## `no_std` build
 Almost everything in the api-client, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and a few additional features, is `no_std` compatible.

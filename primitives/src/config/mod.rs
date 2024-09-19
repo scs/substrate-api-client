@@ -24,9 +24,11 @@ use crate::{extrinsic_params, ExtrinsicSigner, SignExtrinsic};
 
 pub use asset_runtime_config::*;
 pub use default_runtime_config::*;
+pub use rococo_runtime_config::*;
 
 pub mod asset_runtime_config;
 pub mod default_runtime_config;
+pub mod rococo_runtime_config;
 
 /// Runtime types.
 pub trait Config {
@@ -161,6 +163,48 @@ impl<T: Config, E: extrinsic_params::ExtrinsicParams<T::Index, T::Hash>> Config
 	type Header = T::Header;
 	type AccountData = T::AccountData;
 	type ExtrinsicParams = E;
+	type CryptoKey = T::CryptoKey;
+	type ExtrinsicSigner = ExtrinsicSigner<Self>;
+	type Block = T::Block;
+	type Balance = T::Balance;
+	type ContractCurrency = T::ContractCurrency;
+	type StakingBalance = T::StakingBalance;
+}
+
+/// Changes the Address type of the underlying Runtime Config. This allows to change the type of the Config without
+/// having to define all the other types as well.
+///
+/// # Example
+///
+/// ```
+/// use ac_primitives::{ DefaultRuntimeConfig, WithAddress, MultiAddress, AccountId32 };
+///
+/// type RococoRuntimeConfig = WithAddress<DefaultRuntimeConfig, MultiAddress<AccountId32, ()>>;
+/// ```
+#[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
+pub struct WithAddress<T, A>
+where
+	T: Config,
+	A: Debug + Clone + Encode + From<T::AccountId>,
+{
+	_marker: PhantomData<(T, A)>,
+}
+
+impl<T, A> Config for WithAddress<T, A>
+where
+	T: Config,
+	A: Debug + Clone + Encode + From<T::AccountId>,
+{
+	type Index = T::Index;
+	type BlockNumber = T::BlockNumber;
+	type Hash = T::Hash;
+	type AccountId = T::AccountId;
+	type Address = A;
+	type Signature = T::Signature;
+	type Hasher = T::Hasher;
+	type Header = T::Header;
+	type AccountData = T::AccountData;
+	type ExtrinsicParams = T::ExtrinsicParams;
 	type CryptoKey = T::CryptoKey;
 	type ExtrinsicSigner = ExtrinsicSigner<Self>;
 	type Block = T::Block;

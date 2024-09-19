@@ -13,14 +13,14 @@ jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport
 
 # Substrate dependencies
 frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-society = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
 substrate-api-client = { path = "../..", version = "0.18", features = ["staking-xt", "contracts-xt", "disable-metadata-hash-check"] }

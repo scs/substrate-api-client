@@ -17,23 +17,18 @@
 
 use codec::Decode;
 use pallet_balances::AccountData as GenericAccountData;
-use pallet_staking::Exposure;
+use pallet_society::Vote;
 use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::AccountKeyring;
-use sp_staking::EraIndex;
 use substrate_api_client::{
-	ac_primitives::{AssetRuntimeConfig, Config},
+	ac_primitives::{Config, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
 	Api, GetChainInfo, GetStorage,
 };
 
-type KitchensinkConfig = AssetRuntimeConfig;
+type KitchensinkConfig = RococoRuntimeConfig;
 type Balance = <KitchensinkConfig as Config>::Balance;
 type AccountData = GenericAccountData<Balance>;
-type ErasStakers = Exposure<
-	<KitchensinkConfig as Config>::AccountId,
-	<KitchensinkConfig as Config>::StakingBalance,
->;
 
 #[tokio::main]
 async fn main() {
@@ -58,17 +53,11 @@ async fn main() {
 	let _account_info: AccountData =
 		api.get_storage_map("System", "Account", &alice, None).await.unwrap().unwrap();
 
-	let era_stakers: ErasStakers = api
-		.get_storage_double_map(
-			"Staking",
-			"ErasStakersOverview",
-			EraIndex::default(),
-			alice_stash,
-			None,
-		)
+	let votes: Option<Vote> = api
+		.get_storage_double_map("Society", "DefenderVotes", 0, alice_stash, None)
 		.await
-		.unwrap()
 		.unwrap();
+	assert!(votes.is_none());
 
 	// Ensure the prefix matches the actual storage key:
 	let storage_key_prefix = api.get_storage_map_key_prefix("System", "Account").await.unwrap();
@@ -93,13 +82,7 @@ async fn main() {
 		.unwrap()
 		.unwrap();
 	let _double_map_proof = api
-		.get_storage_double_map_proof(
-			"Staking",
-			"ErasStakers",
-			EraIndex::default(),
-			alice_stash,
-			None,
-		)
+		.get_storage_double_map_proof("Society", "DefenderVotes", 0, &alice, None)
 		.await
 		.unwrap()
 		.unwrap();
@@ -113,12 +96,7 @@ async fn main() {
 
 	let max_keys = 2003;
 	let result = api
-		.get_storage_keys_paged_limited(
-			Some(storage_key_prefix.clone()),
-			max_keys.clone(),
-			None,
-			None,
-		)
+		.get_storage_keys_paged_limited(Some(storage_key_prefix.clone()), max_keys, None, None)
 		.await;
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("count exceeds maximum value"));
@@ -127,13 +105,11 @@ async fn main() {
 		.get_storage_keys_paged(Some(storage_key_prefix), max_keys, None, None)
 		.await
 		.unwrap();
-	assert_eq!(storage_keys.len() as u32, 14);
+	assert_eq!(storage_keys.len() as u32, 13);
 
 	let max_keys = 20;
-	let storage_keys = api
-		.get_storage_keys_paged_limited(None, max_keys.clone(), None, None)
-		.await
-		.unwrap();
+	let storage_keys =
+		api.get_storage_keys_paged_limited(None, max_keys, None, None).await.unwrap();
 	assert_eq!(storage_keys.len() as u32, max_keys);
 
 	let storage_keys = api.get_storage_keys_paged(None, max_keys, None, None).await.unwrap();

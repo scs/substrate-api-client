@@ -67,7 +67,7 @@ ac-primitives = { path = "primitives", version = "0.18", default-features = fals
 
 [dev-dependencies]
 ac-node-api = { path = "node-api", version = "0.18", features = ["mocks"] }
-kitchensink-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1.1", features = ["derive"] }
 test-case = "3.1.0"
 

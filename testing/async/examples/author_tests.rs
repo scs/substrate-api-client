@@ -15,23 +15,24 @@
 
 //! Tests for the author rpc interface functions.
 
-use kitchensink_runtime::{AccountId, BalancesCall, RuntimeCall};
+use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_core::{Encode, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
-		AssetRuntimeConfig, Config, ExtrinsicSigner as GenericExtrinsicSigner, SignExtrinsic,
+		Config, ExtrinsicSigner as GenericExtrinsicSigner, RococoRuntimeConfig, SignExtrinsic,
 	},
 	rpc::{HandleSubscription, JsonrpseeClient},
 	Api, SubmitAndWatch, SubmitExtrinsic, TransactionStatus, XtStatus,
 };
 
-type ExtrinsicSigner = GenericExtrinsicSigner<AssetRuntimeConfig>;
+type ExtrinsicSigner = GenericExtrinsicSigner<RococoRuntimeConfig>;
 type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-type Hash = <AssetRuntimeConfig as Config>::Hash;
-type MyApi = Api<AssetRuntimeConfig, JsonrpseeClient>;
-type Index = <AssetRuntimeConfig as Config>::Index;
+type Hash = <RococoRuntimeConfig as Config>::Hash;
+type MyApi = Api<RococoRuntimeConfig, JsonrpseeClient>;
+type Index = <RococoRuntimeConfig as Config>::Index;
+type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 
 #[tokio::main]
 async fn main() {
@@ -186,15 +187,12 @@ fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	assert_eq!(events[2].pallet_name(), "Balances");
 	assert_eq!(events[2].variant_name(), "Deposit");
 
-	assert_eq!(events[3].pallet_name(), "Treasury");
+	assert_eq!(events[3].pallet_name(), "Balances");
 	assert_eq!(events[3].variant_name(), "Deposit");
 
-	assert_eq!(events[4].pallet_name(), "Balances");
-	assert_eq!(events[4].variant_name(), "Deposit");
+	assert_eq!(events[4].pallet_name(), "TransactionPayment");
+	assert_eq!(events[4].variant_name(), "TransactionFeePaid");
 
-	assert_eq!(events[5].pallet_name(), "TransactionPayment");
-	assert_eq!(events[5].variant_name(), "TransactionFeePaid");
-
-	assert_eq!(events[6].pallet_name(), "System");
-	assert_eq!(events[6].variant_name(), "ExtrinsicSuccess");
+	assert_eq!(events[5].pallet_name(), "System");
+	assert_eq!(events[5].variant_name(), "ExtrinsicSuccess");
 }

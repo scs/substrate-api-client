@@ -15,17 +15,18 @@
 
 //! Tests for the pallet balances interface functions.
 
+use codec::Encode;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
-	GetAccountInformation, GetBalance, SubmitAndWatch, XtStatus,
+	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
+	GetAccountInformation, GetBalance, GetTransactionPayment, SubmitAndWatch, XtStatus,
 };
 
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 
 	let ed = api.get_existential_deposit().await.unwrap();
 	println!("[+] Existential deposit is {}\n", ed);
@@ -41,29 +42,56 @@ async fn main() {
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 
 	// Rough estimate of fees for three transactions
-	let fee_estimate = 3 * 2000000000000;
+	let dummy_xt = api
+		.balance_transfer_keep_alive(bob.clone().into(), balance_of_alice)
+		.await
+		.unwrap()
+		.encode();
+	let transaction_fee =
+		api.get_fee_details(&dummy_xt.into(), None).await.unwrap().unwrap().final_fee();
+	println!("[+] Transaction Fee is {}\n", transaction_fee);
 
 	let xt = api
-		.balance_transfer_keep_alive(bob.clone().into(), balance_of_alice / 2 - fee_estimate)
+		.balance_transfer_keep_alive(
+			bob.clone().into(),
+			balance_of_alice / 2 - (3 * transaction_fee),
+		)
 		.await
 		.unwrap();
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await;
 	// This call should succeed as alice has enough money
 	assert!(report.is_ok());
 
+	// Alice now has half of her balance plus two transaction fees left
+	// (one has been deducted by the transaction above).
+	let estimated_balance_of_alice = balance_of_alice / 2 + 2 * transaction_fee;
+
 	let balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
 	println!("[+] Alice's Free Balance is {}\n", balance_of_alice);
+	assert_eq!(balance_of_alice, estimated_balance_of_alice);
 
 	let xt = api
-		.balance_transfer_keep_alive(bob.clone().into(), balance_of_alice - fee_estimate)
+		.balance_transfer_keep_alive(bob.clone().into(), balance_of_alice - transaction_fee - 1)
 		.await
 		.unwrap();
+
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await;
 	// This call should fail as alice would fall below the existential deposit
 	assert!(report.is_err());
 
+	let balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
+	println!("[+] Alice's Free Balance is {}\n", balance_of_alice);
+
+	let dummy_xt = api
+		.balance_transfer_allow_death(bob.clone().into(), balance_of_alice)
+		.await
+		.unwrap()
+		.encode();
+	let transaction_fee =
+		api.get_fee_details(&dummy_xt.into(), None).await.unwrap().unwrap().final_fee();
+
 	let xt = api
-		.balance_transfer_allow_death(bob.clone().into(), balance_of_alice - fee_estimate)
+		.balance_transfer_allow_death(bob.clone().into(), balance_of_alice - transaction_fee - 1)
 		.await
 		.unwrap();
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await;

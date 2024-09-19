@@ -16,7 +16,7 @@ use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::AccountKeyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
-	ac_primitives::AssetRuntimeConfig,
+	ac_primitives::RococoRuntimeConfig,
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
@@ -24,10 +24,8 @@ use substrate_api_client::{
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;
 
-// To test this example with CI we run it against the Substrate kitchensink node, which uses the asset pallet.
-// Therefore, we need to use the `AssetRuntimeConfig` in this example.
-// ! However, most Substrate runtimes do not use the asset pallet at all. So if you run an example against your own node
-// you most likely should use `DefaultRuntimeConfig` instead.
+// This example is currently not tested because the polkadot chain (rococo runtime) we run our example against
+// does not include the staking pallet. But it still provides a good example for possible stake payouts.
 
 pub type EraIndex = u32;
 
@@ -54,7 +52,7 @@ async fn main() {
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice = AccountKeyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice.into());
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
@@ -68,17 +66,14 @@ async fn main() {
 	println!("{:?}", active_era);
 	let current_era_index = active_era.index;
 
-	// Test if payout staker extrinsic works. Careful: In CI, this extrinsic will fail to be executed, because
+	// Test if payout staker extrinsic works. Careful: If tested with CI, this extrinsic will fail to be executed, because
 	// one can not payout the current era (= 0 on the freshly started node). But this is okay, because we know if this
 	// error is returned from the node, the extrinsic has been created correctly.
 	// Sidenote: We could theoretically force a new era with sudo, but this takes at least 10 minutes ( = 1 epoch) in the
 	// kitchensink rutime. We don't want to wait that long.
 	let payout_staker_xt = api.payout_stakers(0, validator_stash).await.unwrap();
-	let result = api.submit_and_watch_extrinsic_until(payout_staker_xt, XtStatus::InBlock).await;
-	assert!(result.is_err());
-	assert!(format!("{result:?}").contains("InvalidEraToReward"));
+	let _result = api.submit_and_watch_extrinsic_until(payout_staker_xt, XtStatus::InBlock).await;
 
-	// From here on, this is not CI tested, but it serves as a nice example nonetheless.
 	if let Some(mut last_reward_received_at_era) =
 		get_last_reward_received_for(&validator_account, current_era_index, &api).await
 	{
@@ -148,7 +143,7 @@ async fn main() {
 pub async fn get_last_reward_received_for(
 	account: &AccountId32,
 	current_era: EraIndex,
-	api: &substrate_api_client::Api<AssetRuntimeConfig, JsonrpseeClient>,
+	api: &substrate_api_client::Api<RococoRuntimeConfig, JsonrpseeClient>,
 ) -> Option<u32> {
 	let ledger_storage_key = api.metadata().storage_map_key("Staking", "Ledger", account).unwrap();
 

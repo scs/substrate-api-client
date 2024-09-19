@@ -19,7 +19,7 @@ use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
-	ac_node_api::StaticEvent, ac_primitives::AssetRuntimeConfig, rpc::JsonrpseeClient, Api,
+	ac_node_api::StaticEvent, ac_primitives::RococoRuntimeConfig, rpc::JsonrpseeClient, Api,
 	GetAccountInformation, SystemApi,
 };
 
@@ -39,7 +39,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let alice_pair = AccountKeyring::Alice.pair();
-	let mut api = Api::<AssetRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
 	let alice = AccountKeyring::Alice.to_account_id();

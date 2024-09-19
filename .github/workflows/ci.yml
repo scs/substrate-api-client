@@ -208,11 +208,9 @@ jobs:
           compose_extrinsic,
           custom_nonce,
           check_extrinsic_events,
-          get_account_identity,
           get_blocks,
           get_storage,
           print_metadata,
-          staking_batch_payout,
           subscribe_events,
           sudo,
           new_json_rpc_api_calls,
@@ -225,7 +223,6 @@ jobs:
           jsonrpsee_tests,
           keystore_tests,
           pallet_balances_tests,
-          pallet_contract_tests,
           pallet_transaction_payment_tests,
           runtime_api_tests,
           tungstenite_client_test,
@@ -240,7 +237,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:master-178e699c --dev --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 parity/polkadot:latest --dev --rpc-external &
 
       - name: Wait until node has started
         run: sleep 20s
