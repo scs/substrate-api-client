@@ -120,6 +120,7 @@ dependencies = [
 name = "ac-primitives"
 version = "0.18.0"
 dependencies = [
+ "frame-metadata-hash-extension",
  "frame-system",
  "impl-serde",
  "pallet-assets",

@@ -250,6 +250,7 @@ mod tests {
 	use super::*;
 	use crate::AssetRuntimeConfig;
 	use extrinsic_params::{GenericAdditionalParams, GenericExtrinsicParams, PlainTip};
+	use frame_metadata_hash_extension::CheckMetadataHash;
 	use frame_system::{
 		CheckEra, CheckGenesis, CheckNonZeroSender, CheckNonce, CheckSpecVersion, CheckTxVersion,
 		CheckWeight,
@@ -325,8 +326,6 @@ mod tests {
 		assert_eq!(call, call1);
 	}
 
-	// Currently does not with available version of substrate extrinsic
-	#[cfg(not(feature = "disable-metadata-hash-check"))]
 	#[test]
 	fn xt_hash_matches_substrate_impl() {
 		// Define extrinsic params.
@@ -353,6 +352,7 @@ mod tests {
 			CheckNonce::<Runtime>::from(nonce),
 			CheckWeight::<Runtime>::new(),
 			ChargeTransactionPayment::<Runtime>::from(fee),
+			CheckMetadataHash::<Runtime>::new(false),
 		);
 
 		let substrate_extrinsic = UncheckedExtrinsic::new_signed(
@@ -386,13 +386,11 @@ mod tests {
 		)
 	}
 
-	// Currently does not work with stored bytes. Need to create a new version
-	#[cfg(not(feature = "disable-metadata-hash-check"))]
 	#[test]
 	fn xt_hash_matches_substrate_impl_large_xt() {
 		// Define xt parameters,
 		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
-		let code: Vec<u8> = include_bytes!("test-runtime.compact.wasm").to_vec();
+		let code: Vec<u8> = include_bytes!("solochain_template_runtime.wasm").to_vec();
 		let call = RuntimeCall::System(SystemCall::set_code { code });
 
 		let msg = &b"test-message"[..];
@@ -412,6 +410,7 @@ mod tests {
 			CheckNonce::<Runtime>::from(nonce),
 			CheckWeight::<Runtime>::new(),
 			ChargeTransactionPayment::<Runtime>::from(fee),
+			CheckMetadataHash::<Runtime>::new(false),
 		);
 		let substrate_extrinsic = UncheckedExtrinsic::new_signed(
 			call.clone(),

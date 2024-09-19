@@ -268,8 +268,7 @@ mod tests {
 	use super::*;
 	use crate::rpc::mocks::RpcClientMock;
 	use ac_primitives::{
-		AssetRuntimeConfig, DefaultRuntimeConfig, GenericAdditionalParams, GenericExtrinsicParams,
-		PlainTip,
+		DefaultRuntimeConfig, GenericAdditionalParams, GenericExtrinsicParams, PlainTip,
 	};
 	use frame_metadata::{v14::ExtrinsicMetadata, RuntimeMetadata};
 	use scale_info::form::PortableForm;
