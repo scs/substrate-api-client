@@ -61,11 +61,10 @@ CI should now automatically create a draft release. This draft release needs to 
 
 ## Runtime wasm generation
 A new runtime wasm file for CI testing currently needs to be built locally. To do this the following steps need to be done:
-1. Download a Polkadot / Substrate node. This can be any up to date node. The following are recommended:
-     - https://github.com/paritytech/polkadot-sdk-minimal-template: Fast building, but no specific pallets offered.
-     - https://github.com/paritytech/polkadot-sdk: kitchensink runtime offers all pallets from Parity.
+1. Download a Polkadot / Substrate node. This can be any up to date node. The following is recommended because it's small and builds fast: https://github.com/paritytech/polkadot-sdk-minimal-template. But it does not include many pallets.
+
 2. Update the runtime names and spec version. The `spec_name` and `impl_name` need to match the original runtime name of the running node. The `spec_version` needs to be higher than the original one.
-This needs to be adapted in the source code and looks like the code below. Mostly, it can be found in the `runtime/src/lib.rs` file (Example kitchensink-runtime: https://github.com/paritytech/polkadot-sdk/blob/master/substrate/bin/node/runtime/src/lib.rs)
+This needs to be adapted in the source code and looks like the code posted below. Often, it can be found in the `runtime/src/lib.rs` file (Example path minimal runtime: https://github.com/paritytech/polkadot-sdk-minimal-template/blob/master/runtime/src/lib.rs)
 ```rust
 /// The runtime version.
 #[runtime_version]
@@ -81,11 +80,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 };
 ```
 
-3. Build the runtime with cargo build. Examples:
-- Minimal runtime: `cargo build -p minimal-template-node --release`
-- Kitchensink runtime: `cargo build -p kitchensink-runtime --release`
+3. Build the runtime with cargo build. For the minimal runtime it is: `cargo build -p minimal-template-node --release`
 
-4. Get the wasm file from the `target/release/wbuild/<RUNTIME NAME>` folder. Example for the minimal runtime: `/polkadot-sdk-minimal-template/target/release/wbuild/minimal-template-runtime/minimal_template_runtime.compact.compressed.wasm`
+
+4. Get the wasm file from the `target/release/wbuild/<RUNTIME NAME>` folder. Example for the minimal runtime: `~/polkadot-sdk-minimal-template/target/release/wbuild/minimal-template-runtime/minimal_template_runtime.compact.compressed.wasm`
 
 
 ## Code overview
