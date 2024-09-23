@@ -17,12 +17,13 @@ use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
 	error::FailedExtrinsicError,
 	rpc::{HandleSubscription, Request, Subscribe},
-	Api, ExtrinsicReport, TransactionStatus, XtStatus,
+	Api, ExtrinsicReport, TransactionStatus, TransactionStatusDeterminant, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsicV4};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
+use alloc::vec::Vec;
 use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
@@ -211,6 +212,27 @@ pub trait SubmitAndWatch {
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
+
+	/// Submit the extrinsic and watch it until it reaches one of the `expected_status`.
+	/// The method also returns if the transaction reaches a final state (regardless of contents of `expected_status`)
+	///
+	/// This method is blocking if the sync-api feature is activated
+	async fn submit_and_watch_extrinsic_until_status<Address, Call, Signature, SignedExtra>(
+		&self,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		expected_status: &[TransactionStatusDeterminant],
+	) -> Result<ExtrinsicReport<Self::Hash>>
+	where
+		Address: Encode,
+		Call: Encode,
+		Signature: Encode,
+		SignedExtra: Encode;
+
+	/// Query the events for the specified `report` and attach them.
+	async fn populate_events(
+		&self,
+		report: ExtrinsicReport<Self::Hash>,
+	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -269,18 +291,25 @@ where
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
-		let mut report = self
+		let report: ExtrinsicReport<<T as Config>::Hash> = self
 			.submit_and_watch_opaque_extrinsic_until_without_events(encoded_extrinsic, watch_until)
 			.await?;
 
 		if watch_until < XtStatus::InBlock {
 			return Ok(report)
 		}
+		self.populate_events(report).await
+	}
+
+	async fn populate_events(
+		&self,
+		mut report: ExtrinsicReport<Self::Hash>,
+	) -> Result<ExtrinsicReport<Self::Hash>> {
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
 
-		// Check if the extrinsic was succesfull or not.
+		// Check if the extrinsic was successful or not.
 		let mut maybe_dispatch_error = None;
 		for event in &extrinsic_events {
 			if let Some(dispatch_error) = event.get_associated_dispatch_error() {
@@ -351,6 +380,40 @@ where
 					subscription.unsubscribe().await?;
 					return Err(e)
 				},
+			}
+		}
+		Err(Error::NoStream)
+	}
+
+	async fn submit_and_watch_extrinsic_until_status<Address, Call, Signature, SignedExtra>(
+		&self,
+		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		expected_status: &[TransactionStatusDeterminant],
+	) -> Result<ExtrinsicReport<Self::Hash>>
+	where
+		Address: Encode,
+		Call: Encode,
+		Signature: Encode,
+		SignedExtra: Encode,
+	{
+		let encoded_extrinsic: Bytes = extrinsic.encode().into();
+		let tx_hash = T::Hasher::hash(&encoded_extrinsic);
+		let mut subscription: TransactionSubscriptionFor<Self::Client, Self::Hash> =
+			self.submit_and_watch_opaque_extrinsic(&encoded_extrinsic).await?;
+
+		let determinants: Vec<_> = expected_status.iter().map(|d| d.as_u8()).collect();
+
+		while let Some(transaction_status) = subscription.next().await {
+			let transaction_status = transaction_status?;
+			if transaction_status.is_final() || determinants.contains(&transaction_status.as_u8()) {
+				subscription.unsubscribe().await?;
+				let block_hash = transaction_status.get_maybe_block_hash();
+				return Ok(ExtrinsicReport::new(
+					tx_hash,
+					block_hash.copied(),
+					transaction_status,
+					None,
+				));
 			}
 		}
 		Err(Error::NoStream)
