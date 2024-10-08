@@ -225,11 +225,11 @@ mod tests {
 		assert!(TransactionStatus::Ready.is_expected().is_ok());
 		assert!(TransactionStatus::Broadcast(vec![]).is_expected().is_ok());
 		assert!(TransactionStatus::InBlock(H256::random()).is_expected().is_ok());
+		assert!(TransactionStatus::Retracted(H256::random()).is_expected().is_ok());
 		assert!(TransactionStatus::Finalized(H256::random()).is_expected().is_ok());
 
 		// Not supported.
 		assert!(TransactionStatus::Future.is_expected().is_err());
-		assert!(TransactionStatus::Retracted(H256::random()).is_expected().is_err());
 		assert!(TransactionStatus::FinalityTimeout(H256::random()).is_expected().is_err());
 		assert!(TransactionStatus::Usurped(H256::random()).is_expected().is_err());
 		assert!(TransactionStatus::Dropped.is_expected().is_err());
