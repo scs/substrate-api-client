@@ -17,7 +17,7 @@ use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
 	error::FailedExtrinsicError,
 	rpc::{HandleSubscription, Request, Subscribe},
-	Api, ExtrinsicReport, TransactionStatus, UnexpectedTxStatus, XtStatus,
+	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsicV4};
@@ -364,9 +364,6 @@ where
 					subscription.unsubscribe().await?;
 					return Err(e)
 				},
-			}
-			if transaction_status.is_final() {
-				return Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped))
 			}
 		}
 		Err(Error::NoStream)
