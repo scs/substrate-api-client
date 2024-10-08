@@ -17,7 +17,7 @@ use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
 	error::FailedExtrinsicError,
 	rpc::{HandleSubscription, Request, Subscribe},
-	Api, ExtrinsicReport, TransactionStatus, XtStatus,
+	Api, ExtrinsicReport, TransactionStatus, UnexpectedTxStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsicV4};
@@ -211,6 +211,12 @@ pub trait SubmitAndWatch {
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
+
+	/// Query the events for the specified `report` and attach them.
+	async fn populate_events(
+		&self,
+		report: ExtrinsicReport<Self::Hash>,
+	) -> Result<ExtrinsicReport<Self::Hash>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -269,18 +275,25 @@ where
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
-		let mut report = self
+		let report = self
 			.submit_and_watch_opaque_extrinsic_until_without_events(encoded_extrinsic, watch_until)
 			.await?;
 
 		if watch_until < XtStatus::InBlock {
 			return Ok(report)
 		}
+		self.populate_events(report).await
+	}
+
+	async fn populate_events(
+		&self,
+		mut report: ExtrinsicReport<Self::Hash>,
+	) -> Result<ExtrinsicReport<Self::Hash>> {
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
 
-		// Check if the extrinsic was succesfull or not.
+		// Check if the extrinsic was successful or not.
 		let mut maybe_dispatch_error = None;
 		for event in &extrinsic_events {
 			if let Some(dispatch_error) = event.get_associated_dispatch_error() {
@@ -351,6 +364,9 @@ where
 					subscription.unsubscribe().await?;
 					return Err(e)
 				},
+			}
+			if transaction_status.is_final() {
+				return Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped))
 			}
 		}
 		Err(Error::NoStream)
