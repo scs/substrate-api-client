@@ -289,6 +289,9 @@ where
 		&self,
 		mut report: ExtrinsicReport<Self::Hash>,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
+		if report.events.is_some() {
+			return Err(Error::Other("Report already contains events".into()))
+		}
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;

@@ -174,6 +174,13 @@ async fn test_submit_and_watch_extrinsic_until_in_block_without_events(
 	println!("Extrinsic got successfully included in Block!");
 	assert!(report.block_hash.is_some());
 	assert!(report.events.is_none());
+
+	// Now we fetch the events separately
+	let report = api.populate_events(report).await.unwrap();
+	assert!(report.events.is_some());
+
+	// Can populate events only once
+	assert!(api.populate_events(report).await.is_err());
 }
 
 fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
