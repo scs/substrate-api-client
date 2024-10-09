@@ -212,11 +212,11 @@ pub trait SubmitAndWatch {
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 
-	/// Query the events for the specified `report` and attach them.
-	async fn populate_events(
-		&self,
-		report: ExtrinsicReport<Self::Hash>,
-	) -> Result<ExtrinsicReport<Self::Hash>>;
+	/// Query the events for the specified `report` and attaches them to the returned report.
+	/// If the function fails the report is not modified.
+	///
+	/// This method is blocking if the sync-api feature is activated
+	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -275,20 +275,18 @@ where
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>> {
-		let report = self
+		let mut report = self
 			.submit_and_watch_opaque_extrinsic_until_without_events(encoded_extrinsic, watch_until)
 			.await?;
 
 		if watch_until < XtStatus::InBlock {
 			return Ok(report)
 		}
-		self.populate_events(report).await
+		self.populate_events(&mut report).await?;
+		return Ok(report);
 	}
 
-	async fn populate_events(
-		&self,
-		mut report: ExtrinsicReport<Self::Hash>,
-	) -> Result<ExtrinsicReport<Self::Hash>> {
+	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()> {
 		if report.events.is_some() {
 			return Err(Error::Other("Report already contains events".into()))
 		}
@@ -304,17 +302,14 @@ where
 				break
 			}
 		}
-
-		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
-
 		if let Some(dispatch_error) = maybe_dispatch_error {
 			return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
 				dispatch_error,
 				report.encode(),
 			)))
 		}
-
-		Ok(report)
+		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
+		Ok(())
 	}
 
 	async fn submit_and_watch_extrinsic_until_without_events<

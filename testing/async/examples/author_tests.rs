@@ -184,7 +184,7 @@ async fn test_submit_and_watch_extrinsic_until_in_block_without_events(
 	// Wait a little, otherwise we may run into future
 	std::thread::sleep(std::time::Duration::from_secs(1));
 	let xt = api.compose_extrinsic_offline(transfer_call, nonce);
-	let report = api
+	let mut report = api
 		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock)
 		.await
 		.unwrap();
@@ -193,13 +193,14 @@ async fn test_submit_and_watch_extrinsic_until_in_block_without_events(
 	assert!(report.events.is_none());
 
 	// Now we fetch the events separately
-	let report = api.populate_events(report).await.unwrap();
+	api.populate_events(&mut report).await.unwrap();
 	assert!(report.events.is_some());
 	let events = report.events.as_ref().unwrap();
 	assert_associated_events_match_expected(&events);
 
 	// Can populate events only once
-	assert!(api.populate_events(report).await.is_err());
+	let result = api.populate_events(&mut report).await;
+	assert!(result.is_err());
 }
 
 fn assert_associated_events_match_expected(events: &[RawEventDetails<Hash>]) {
