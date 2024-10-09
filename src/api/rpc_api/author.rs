@@ -213,7 +213,7 @@ pub trait SubmitAndWatch {
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 
 	/// Query the events for the specified `report` and attaches them to the returned report.
-	/// If the function fails the report is not modified.
+	/// If the function fails events might still be added to the report.
 	///
 	/// This method is blocking if the sync-api feature is activated
 	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()>;
@@ -302,13 +302,13 @@ where
 				break
 			}
 		}
+		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
 		if let Some(dispatch_error) = maybe_dispatch_error {
 			return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
 				dispatch_error,
 				report.encode(),
 			)))
 		}
-		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
 		Ok(())
 	}
 
