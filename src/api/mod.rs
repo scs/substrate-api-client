@@ -15,7 +15,8 @@
 
 */
 
-use ac_node_api::events::RawEventDetails;
+use crate::error::FailedExtrinsicError;
+use ac_node_api::{events::RawEventDetails, EventDetails, Metadata};
 use alloc::{string::String, vec::Vec};
 use codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
@@ -59,6 +60,27 @@ impl<Hash: Encode + Decode> ExtrinsicReport<Hash> {
 		events: Option<Vec<RawEventDetails<Hash>>>,
 	) -> Self {
 		Self { extrinsic_hash, block_hash, status, events }
+	}
+
+	pub fn add_events(&mut self, events: Vec<EventDetails<Hash>>) {
+		self.events = Some(events.into_iter().map(|event| event.to_raw()).collect());
+	}
+
+	pub fn status_based_on_events(&self, metadata: &Metadata) -> Result<()> {
+		if self.events.is_none() {
+			return Err(Error::Other("Report does not contain any events".into()))
+		}
+		// Check if the extrinsic was successful or not.
+		let events = self.events.as_ref().unwrap();
+		for event in events {
+			if let Some(dispatch_error) = event.get_associated_dispatch_error(metadata) {
+				return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
+					dispatch_error,
+					self.encode(),
+				)))
+			}
+		}
+		Ok(())
 	}
 }
 

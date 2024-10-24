@@ -192,9 +192,13 @@ async fn test_submit_and_watch_extrinsic_until_in_block_without_events(
 	assert!(report.block_hash.is_some());
 	assert!(report.events.is_none());
 
+	// Should fail without events
+	assert!(report.status_based_on_events(&api.metadata()).is_err());
+
 	// Now we fetch the events separately
 	api.populate_events(&mut report).await.unwrap();
 	assert!(report.events.is_some());
+	assert!(report.status_based_on_events(&api.metadata()).is_ok());
 	let events = report.events.as_ref().unwrap();
 	assert_associated_events_match_expected(&events);
 
