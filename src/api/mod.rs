@@ -70,7 +70,7 @@ impl<Hash: Encode + Decode> ExtrinsicReport<Hash> {
 	/// Returns an error if the events are missing or if one of the events indicates a problem.
 	pub fn check_events_for_dispatch_error(&self, metadata: &Metadata) -> Result<()> {
 		if self.events.is_none() {
-			return Err(Error::Other("Report does not contain any events".into()))
+			return Err(Error::EventsMissing)
 		}
 		// Check if the extrinsic was successful or not.
 		let events = self.events.as_ref().unwrap();

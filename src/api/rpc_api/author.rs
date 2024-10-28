@@ -288,7 +288,7 @@ where
 
 	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()> {
 		if report.events.is_some() {
-			return Err(Error::Other("Report already contains events".into()))
+			return Err(Error::EventsAlreadyPresent)
 		}
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
