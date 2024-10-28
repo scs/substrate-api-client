@@ -211,7 +211,7 @@ pub trait SubmitAndWatch {
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
 
-	/// Query the events for the specified `report` and attaches them to the returned report.
+	/// Query the events for the specified `report` and attaches them to the mutable report.
 	/// If the function fails events might still be added to the report.
 	///
 	/// This method is blocking if the sync-api feature is activated
