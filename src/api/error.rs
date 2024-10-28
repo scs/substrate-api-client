@@ -56,6 +56,10 @@ pub enum Error {
 	BlockHashNotFound,
 	/// Could not find the expected block.
 	BlockNotFound,
+	/// Operation needs events but events are missing.
+	EventsMissing,
+	/// Operation wants to add events but they are already present.
+	EventsAlreadyPresent,
 	/// Any custom Error.
 	Other(Box<dyn ErrorT + Send + Sync + 'static>),
 }

@@ -58,17 +58,18 @@ async fn main() {
 		test_submit_and_watch_until_broadcast(&api, transfer_call.clone(), signer_nonce + 3),
 		test_submit_and_watch_until_in_block(&api, transfer_call.clone(), signer_nonce + 4),
 		test_submit_and_watch_until_finalized(&api, transfer_call.clone(), signer_nonce + 5),
+		test_submit_and_watch_until_retracted(&api, transfer_call.clone(), signer_nonce + 6),
 		// Test some _watch_untils_without_events. We don't need to test all, because it is tested implicitly by `submit_and_watch_extrinsic_until`
 		// as internal call.
 		test_submit_and_watch_extrinsic_until_ready_without_events(
 			&api,
 			transfer_call.clone(),
-			signer_nonce + 6
+			signer_nonce + 7
 		),
 		test_submit_and_watch_extrinsic_until_in_block_without_events(
 			&api,
 			transfer_call.clone(),
-			signer_nonce + 7
+			signer_nonce + 8
 		)
 	);
 }
@@ -125,7 +126,7 @@ async fn test_submit_and_watch_until_in_block(
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 	assert!(report.block_hash.is_some());
 	assert!(matches!(report.status, TransactionStatus::InBlock(_)));
-	assert_associated_events_match_expected(report.events.unwrap());
+	assert_associated_events_match_expected(&report.events.unwrap());
 	println!("Success: submit_and_watch_extrinsic_until {:?}", report.status);
 }
 
@@ -139,7 +140,23 @@ async fn test_submit_and_watch_until_finalized(
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).await.unwrap();
 	assert!(report.block_hash.is_some());
 	assert!(matches!(report.status, TransactionStatus::Finalized(_)));
-	assert_associated_events_match_expected(report.events.unwrap());
+	assert_associated_events_match_expected(&report.events.unwrap());
+	println!("Success: submit_and_watch_extrinsic_until {:?}", report.status);
+}
+
+async fn test_submit_and_watch_until_retracted(
+	api: &MyApi,
+	transfer_call: RuntimeCall,
+	nonce: Index,
+) {
+	std::thread::sleep(std::time::Duration::from_secs(1));
+	let xt = api.compose_extrinsic_offline(transfer_call, nonce);
+	// We wait for `Retracted`` but we cannot simulate this in a test. Therefore we will receive the status after `Retracted`
+	// which is `Finalized`
+	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Retracted).await.unwrap();
+	assert!(report.block_hash.is_some());
+	assert!(matches!(report.status, TransactionStatus::Finalized(_)));
+	assert_associated_events_match_expected(&report.events.unwrap());
 	println!("Success: submit_and_watch_extrinsic_until {:?}", report.status);
 }
 
@@ -167,16 +184,30 @@ async fn test_submit_and_watch_extrinsic_until_in_block_without_events(
 	// Wait a little, otherwise we may run into future
 	std::thread::sleep(std::time::Duration::from_secs(1));
 	let xt = api.compose_extrinsic_offline(transfer_call, nonce);
-	let report = api
+	let mut report = api
 		.submit_and_watch_extrinsic_until_without_events(xt, XtStatus::InBlock)
 		.await
 		.unwrap();
 	println!("Extrinsic got successfully included in Block!");
 	assert!(report.block_hash.is_some());
 	assert!(report.events.is_none());
+
+	// Should fail without events
+	assert!(report.check_events_for_dispatch_error(&api.metadata()).is_err());
+
+	// Now we fetch the events separately
+	api.populate_events(&mut report).await.unwrap();
+	assert!(report.events.is_some());
+	assert!(report.check_events_for_dispatch_error(&api.metadata()).is_ok());
+	let events = report.events.as_ref().unwrap();
+	assert_associated_events_match_expected(&events);
+
+	// Can populate events only once
+	let result = api.populate_events(&mut report).await;
+	assert!(result.is_err());
 }
 
-fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
+fn assert_associated_events_match_expected(events: &[RawEventDetails<Hash>]) {
 	// First event
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");

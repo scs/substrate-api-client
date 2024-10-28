@@ -15,7 +15,6 @@
 
 use crate::{
 	api::{rpc_api::events::FetchEvents, Error, Result},
-	error::FailedExtrinsicError,
 	rpc::{HandleSubscription, Request, Subscribe},
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
@@ -211,6 +210,12 @@ pub trait SubmitAndWatch {
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
+
+	/// Query the events for the specified `report` and attaches them to the mutable report.
+	/// If the function fails events might still be added to the report.
+	///
+	/// This method is blocking if the sync-api feature is activated
+	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -276,29 +281,20 @@ where
 		if watch_until < XtStatus::InBlock {
 			return Ok(report)
 		}
+		self.populate_events(&mut report).await?;
+		report.check_events_for_dispatch_error(self.metadata())?;
+		return Ok(report);
+	}
+
+	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()> {
+		if report.events.is_some() {
+			return Err(Error::EventsAlreadyPresent)
+		}
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
-
-		// Check if the extrinsic was succesfull or not.
-		let mut maybe_dispatch_error = None;
-		for event in &extrinsic_events {
-			if let Some(dispatch_error) = event.get_associated_dispatch_error() {
-				maybe_dispatch_error = Some(dispatch_error);
-				break
-			}
-		}
-
-		report.events = Some(extrinsic_events.into_iter().map(|event| event.to_raw()).collect());
-
-		if let Some(dispatch_error) = maybe_dispatch_error {
-			return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
-				dispatch_error,
-				report.encode(),
-			)))
-		}
-
-		Ok(report)
+		report.add_events(extrinsic_events);
+		Ok(())
 	}
 
 	async fn submit_and_watch_extrinsic_until_without_events<

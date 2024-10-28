@@ -15,7 +15,8 @@
 
 */
 
-use ac_node_api::events::RawEventDetails;
+use crate::error::FailedExtrinsicError;
+use ac_node_api::{events::RawEventDetails, EventDetails, Metadata};
 use alloc::{string::String, vec::Vec};
 use codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
@@ -60,6 +61,29 @@ impl<Hash: Encode + Decode> ExtrinsicReport<Hash> {
 	) -> Self {
 		Self { extrinsic_hash, block_hash, status, events }
 	}
+
+	pub fn add_events(&mut self, events: Vec<EventDetails<Hash>>) {
+		self.events = Some(events.into_iter().map(|event| event.to_raw()).collect());
+	}
+
+	/// Checks the status of the extrinsic by evaluating the events attached to the report.
+	/// Returns an error if the events are missing or if one of the events indicates a problem.
+	pub fn check_events_for_dispatch_error(&self, metadata: &Metadata) -> Result<()> {
+		if self.events.is_none() {
+			return Err(Error::EventsMissing)
+		}
+		// Check if the extrinsic was successful or not.
+		let events = self.events.as_ref().unwrap();
+		for event in events {
+			if let Some(dispatch_error) = event.get_associated_dispatch_error(metadata) {
+				return Err(Error::FailedExtrinsic(FailedExtrinsicError::new(
+					dispatch_error,
+					self.encode(),
+				)))
+			}
+		}
+		Ok(())
+	}
 }
 
 /// Simplified TransactionStatus to allow the user to choose until when to watch
@@ -70,6 +94,7 @@ pub enum XtStatus {
 	Ready = 1,
 	Broadcast = 2,
 	InBlock = 3,
+	Retracted = 4,
 	Finalized = 6,
 }
 
@@ -78,7 +103,6 @@ pub enum XtStatus {
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum UnexpectedTxStatus {
 	Future,
-	Retracted,
 	FinalityTimeout,
 	Usurped,
 	Dropped,
@@ -119,36 +143,32 @@ pub enum TransactionStatus<Hash: Encode + Decode, BlockHash: Encode + Decode> {
 impl<Hash: Encode + Decode, BlockHash: Encode + Decode> TransactionStatus<Hash, BlockHash> {
 	pub fn as_u8(&self) -> u8 {
 		match self {
-			TransactionStatus::Future => 0,
-			TransactionStatus::Ready => 1,
-			TransactionStatus::Broadcast(_) => 2,
-			TransactionStatus::InBlock(_) => 3,
-			TransactionStatus::Retracted(_) => 4,
-			TransactionStatus::FinalityTimeout(_) => 5,
-			TransactionStatus::Finalized(_) => 6,
-			TransactionStatus::Usurped(_) => 7,
-			TransactionStatus::Dropped => 8,
-			TransactionStatus::Invalid => 9,
+			Self::Future => 0,
+			Self::Ready => 1,
+			Self::Broadcast(_) => 2,
+			Self::InBlock(_) => 3,
+			Self::Retracted(_) => 4,
+			Self::FinalityTimeout(_) => 5,
+			Self::Finalized(_) => 6,
+			Self::Usurped(_) => 7,
+			Self::Dropped => 8,
+			Self::Invalid => 9,
 		}
 	}
 
 	pub fn is_expected(&self) -> Result<()> {
 		match self {
-			TransactionStatus::Ready
-			| TransactionStatus::Broadcast(_)
-			| TransactionStatus::InBlock(_)
-			| TransactionStatus::Finalized(_) => Ok(()),
-			TransactionStatus::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
-			TransactionStatus::Retracted(_) =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Retracted)),
-			TransactionStatus::FinalityTimeout(_) =>
+			Self::Ready
+			| Self::Broadcast(_)
+			| Self::InBlock(_)
+			| Self::Retracted(_)
+			| Self::Finalized(_) => Ok(()),
+			Self::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
+			Self::FinalityTimeout(_) =>
 				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::FinalityTimeout)),
-			TransactionStatus::Usurped(_) =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped)),
-			TransactionStatus::Dropped =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Dropped)),
-			TransactionStatus::Invalid =>
-				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Invalid)),
+			Self::Usurped(_) => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Usurped)),
+			Self::Dropped => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Dropped)),
+			Self::Invalid => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Invalid)),
 		}
 	}
 
@@ -160,12 +180,25 @@ impl<Hash: Encode + Decode, BlockHash: Encode + Decode> TransactionStatus<Hash, 
 
 	pub fn get_maybe_block_hash(&self) -> Option<&BlockHash> {
 		match self {
-			TransactionStatus::InBlock(block_hash) => Some(block_hash),
-			TransactionStatus::Retracted(block_hash) => Some(block_hash),
-			TransactionStatus::FinalityTimeout(block_hash) => Some(block_hash),
-			TransactionStatus::Finalized(block_hash) => Some(block_hash),
+			Self::InBlock(block_hash) => Some(block_hash),
+			Self::Retracted(block_hash) => Some(block_hash),
+			Self::FinalityTimeout(block_hash) => Some(block_hash),
+			Self::Finalized(block_hash) => Some(block_hash),
 			_ => None,
 		}
+	}
+
+	/// Returns true if the Transaction reached its final Status
+	// See https://github.com/paritytech/polkadot-sdk/blob/289f5bbf7a45dc0380904a435464b15ec711ed03/substrate/client/transaction-pool/api/src/lib.rs#L161
+	pub fn is_final(&self) -> bool {
+		matches!(
+			self,
+			Self::Usurped(_)
+				| Self::Finalized(_)
+				| Self::FinalityTimeout(_)
+				| Self::Invalid
+				| Self::Dropped
+		)
 	}
 }
 
@@ -216,11 +249,11 @@ mod tests {
 		assert!(TransactionStatus::Ready.is_expected().is_ok());
 		assert!(TransactionStatus::Broadcast(vec![]).is_expected().is_ok());
 		assert!(TransactionStatus::InBlock(H256::random()).is_expected().is_ok());
+		assert!(TransactionStatus::Retracted(H256::random()).is_expected().is_ok());
 		assert!(TransactionStatus::Finalized(H256::random()).is_expected().is_ok());
 
 		// Not supported.
 		assert!(TransactionStatus::Future.is_expected().is_err());
-		assert!(TransactionStatus::Retracted(H256::random()).is_expected().is_err());
 		assert!(TransactionStatus::FinalityTimeout(H256::random()).is_expected().is_err());
 		assert!(TransactionStatus::Usurped(H256::random()).is_expected().is_err());
 		assert!(TransactionStatus::Dropped.is_expected().is_err());
