@@ -282,7 +282,7 @@ where
 			return Ok(report)
 		}
 		self.populate_events(&mut report).await?;
-		report.status_based_on_events(self.metadata())?;
+		report.check_events_for_dispatch_error(self.metadata())?;
 		return Ok(report);
 	}
 

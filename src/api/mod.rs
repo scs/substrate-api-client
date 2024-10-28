@@ -68,7 +68,7 @@ impl<Hash: Encode + Decode> ExtrinsicReport<Hash> {
 
 	/// Checks the status of the extrinsic by evaluating the events attached to the report.
 	/// Returns an error if the events are missing or if one of the events indicates a problem.
-	pub fn status_based_on_events(&self, metadata: &Metadata) -> Result<()> {
+	pub fn check_events_for_dispatch_error(&self, metadata: &Metadata) -> Result<()> {
 		if self.events.is_none() {
 			return Err(Error::Other("Report does not contain any events".into()))
 		}
