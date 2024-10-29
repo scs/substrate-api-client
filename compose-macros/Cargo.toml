@@ -1,6 +1,6 @@
 [package]
 name = "ac-compose-macros"
-version = "0.18.0"
+version = "1.16.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
@@ -15,10 +15,10 @@ log = { version = "0.4.14", default-features = false }
 maybe-async = { version = "0.2.7" }
 
 # local
-ac-primitives = { path = "../primitives", version = "0.18", default-features = false }
+ac-primitives = { path = "../primitives", version = "1.16", default-features = false }
 
 [dev-dependencies]
-ac-node-api = { path = "../node-api", version = "0.18" }
+ac-node-api = { path = "../node-api", version = "1.16" }
 frame-metadata = { version = "16.0" }
 codec = { package = "parity-scale-codec", version = "3.6.1" }
 
