@@ -151,7 +151,7 @@ If you still experience issues during upgrading, do not hesitate to create an is
 
 ## Version numbers
 
-We use a specififc versioning schema in order to enable us to release the same version multiple times for different polkadot releases
+Starting with release 1.16.0, we use a specific versioning schema in order to enable us to release the same version multiple times for different polkadot releases
 - Major version numbers represent the version of the substrate-api-client
 - Minor version numbers represent the polkadot release
   - Note that this implies that there can be breaking changes in minor releases.
@@ -163,7 +163,7 @@ We use a specififc versioning schema in order to enable us to release the same v
   - This release contains all the features of our current `master` branch
   - We don't create releases for polkadot bugfix releases unless there are known issues
 - We don't backport features and bugfixes per default. If requested we decide on a case by case basis.
-- New releases can contain breaking changes. We try to track these and announce them in the release notes.
+- New releases can contain breaking changes. These are announced in the release notes.
 
 ## Alternatives
 
