@@ -149,6 +149,21 @@ An example project on how to upgrade from older tags can be found in the Integri
 
 If you still experience issues during upgrading, do not hesitate to create an issue for support.
 
+## Version numbers
+
+Starting with release 1.16.0, we use a specific versioning schema in order to enable us to release the same version multiple times for different polkadot releases
+- Major version numbers represent the version of the substrate-api-client
+- Minor version numbers represent the polkadot release
+  - Note that this implies that there can be breaking changes in minor releases.
+- Patch/bugfix number is still used for bugfixes
+
+## Releases and backwards compatibility
+
+- We usually create a release for each new polkadot release
+  - This release contains all the features of our current `master` branch
+  - We don't create releases for polkadot bugfix releases unless there are known issues
+- We don't backport features and bugfixes per default. If requested we decide on a case by case basis.
+- New releases can contain breaking changes. These are announced in the release notes.
 
 ## Alternatives
 
