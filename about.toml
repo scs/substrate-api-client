@@ -10,6 +10,8 @@ accepted = [
     "OpenSSL",
     "OpenSSL-standalone",
     "SSLeay-standalone",
+    "LicenseRef-scancode-public-domain",
+    "LicenseRef-scancode-unknown-license-reference",
     "Unicode-DFS-2016",
     "Unicode-3.0",
     "NOASSERTION",
