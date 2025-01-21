@@ -17,5 +17,4 @@ ignore-dev-dependencies = true
 ignore-build-dependencies = true
 workarounds = [
     "ring",
-    "rustls",
 ]
