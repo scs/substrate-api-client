@@ -8,10 +8,15 @@ accepted = [
     "MPL-2.0",
     "ISC",
     "OpenSSL",
+    "OpenSSL-standalone",
+    "SSLeay-standalone",
+    "LicenseRef-scancode-public-domain",
+    "LicenseRef-scancode-unknown-license-reference",
     "Unicode-DFS-2016",
     "Unicode-3.0",
     "NOASSERTION",
-    "GPL-3.0"
+    "GPL-3.0",
+    "GPL-1.0-or-later"
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true
