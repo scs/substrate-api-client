@@ -13,7 +13,7 @@
 
 use codec::{Decode, Encode};
 use pallet_staking::{ActiveEraInfo, Exposure};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig,
@@ -50,13 +50,13 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let alice = AccountKeyring::Alice.pair();
+	let alice = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice.into());
 
 	// Give a valid validator account address. In the kitchinsink runtime, this is Alice.
-	let validator_account = AccountKeyring::Alice.to_account_id();
+	let validator_account = Sr25519Keyring::Alice.to_account_id();
 	// Alice Stash:
 	let validator_stash =
 		AccountId32::from_ss58check("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY").unwrap();

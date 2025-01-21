@@ -17,7 +17,7 @@
 
 use codec::Encode;
 use sp_core::sr25519;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
@@ -36,12 +36,12 @@ async fn main() {
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
+	let alice_pair = Sr25519Keyring::Alice.pair();
 	api.set_signer(alice_pair.into());
 	let runtime_api = api.runtime_api();
 
 	// Query the fee of an extrinsic.
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 	let balance_extrinsic =
 		api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();
 	let extrinsic_fee_details = runtime_api

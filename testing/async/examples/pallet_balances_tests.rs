@@ -16,7 +16,7 @@
 //! Tests for the pallet balances interface functions.
 
 use codec::Encode;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
 	GetAccountInformation, GetBalance, GetTransactionPayment, SubmitAndWatch, XtStatus,
@@ -31,13 +31,13 @@ async fn main() {
 	let ed = api.get_existential_deposit().await.unwrap();
 	println!("[+] Existential deposit is {}\n", ed);
 
-	let alice = AccountKeyring::Alice.to_account_id();
-	let alice_signer = AccountKeyring::Alice.pair();
+	let alice = Sr25519Keyring::Alice.to_account_id();
+	let alice_signer = Sr25519Keyring::Alice.pair();
 	api.set_signer(alice_signer.into());
 	let balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
 	println!("[+] Alice's Free Balance is {}\n", balance_of_alice);
 
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 	let balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap_or_default().free;
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 

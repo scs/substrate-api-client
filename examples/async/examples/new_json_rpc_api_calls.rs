@@ -19,7 +19,7 @@
 use codec::Encode;
 use serde_json::Value;
 use sp_core::Bytes;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_compose_macros::rpc_params,
 	ac_primitives::RococoRuntimeConfig,
@@ -36,7 +36,7 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let signer = AccountKeyring::Alice.pair();
+	let signer = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
@@ -60,7 +60,7 @@ async fn main() {
 	println!("Chain genesis Hash: {genesishash}");
 
 	// Submit and watch a transaction:
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 	let encoded_extrinsic: Bytes = api
 		.balance_transfer_allow_death(bob.into(), 1000)
 		.await

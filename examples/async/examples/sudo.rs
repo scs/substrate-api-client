@@ -17,7 +17,7 @@
 //! module, whereas the desired module and call are supplied as a string.
 
 use codec::Compact;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{
@@ -50,13 +50,13 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let sudoer = AccountKeyring::Alice.pair();
+	let sudoer = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(sudoer.into());
 
 	// Set the recipient of newly issued funds.
-	let recipient = AccountKeyring::Bob.to_account_id();
+	let recipient = Sr25519Keyring::Bob.to_account_id();
 
 	// Get the current balance of the recipient.
 	let recipient_balance = api.get_account_data(&recipient).await.unwrap().unwrap().free;

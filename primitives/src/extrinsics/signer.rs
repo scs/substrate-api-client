@@ -141,11 +141,11 @@ mod tests {
 	use crate::AssetRuntimeConfig;
 	use solochain_template_runtime::Signature;
 	use sp_core::sr25519;
-	use sp_keyring::AccountKeyring;
+	use sp_keyring::Sr25519Keyring;
 
 	#[test]
 	fn test_extrinsic_signer_clone() {
-		let pair = AccountKeyring::Alice.pair();
+		let pair = Sr25519Keyring::Alice.pair();
 		let signer = ExtrinsicSigner::<AssetRuntimeConfig>::new(pair);
 
 		let _signer2 = signer.clone();
@@ -153,7 +153,7 @@ mod tests {
 
 	#[test]
 	fn test_static_extrinsic_signer_clone() {
-		let pair = AccountKeyring::Alice.pair();
+		let pair = Sr25519Keyring::Alice.pair();
 		let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
 
 		let _signer2 = signer.clone();
