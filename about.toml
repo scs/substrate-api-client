@@ -15,8 +15,7 @@ accepted = [
     "Unicode-DFS-2016",
     "Unicode-3.0",
     "NOASSERTION",
-    "GPL-3.0",
-    "GPL-1.0-or-later"
+    "GPL-3.0"
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true
