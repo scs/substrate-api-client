@@ -13,7 +13,7 @@
 
 use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
-use ac_primitives::{config::Config, UncheckedExtrinsicV4};
+use ac_primitives::{config::Config, UncheckedExtrinsic};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};
@@ -32,7 +32,7 @@ pub trait BlockBuilderApi: RuntimeApi {
 	/// Apply the given extrinsic.
 	async fn apply_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::ApplyExtrinsicResult>
 	where
@@ -81,7 +81,7 @@ where
 
 	async fn apply_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::ApplyExtrinsicResult>
 	where

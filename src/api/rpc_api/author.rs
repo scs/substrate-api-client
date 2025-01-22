@@ -19,7 +19,7 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, UncheckedExtrinsicV4};
+use ac_primitives::{config::Config, UncheckedExtrinsic};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use codec::{Decode, Encode};
@@ -40,7 +40,7 @@ pub trait SubmitExtrinsic {
 	/// Returns the extrinsic hash.
 	async fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 	) -> Result<Self::Hash>
 	where
 		Address: Encode,
@@ -63,7 +63,7 @@ where
 
 	async fn submit_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 	) -> Result<Self::Hash>
 	where
 		Address: Encode,
@@ -93,7 +93,7 @@ pub trait SubmitAndWatch {
 	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>
 	where
 		Address: Encode,
@@ -132,7 +132,7 @@ pub trait SubmitAndWatch {
 	/// This method is blocking if the sync-api feature is activated
 	async fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
@@ -185,7 +185,7 @@ pub trait SubmitAndWatch {
 		SignedExtra,
 	>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
@@ -229,7 +229,7 @@ where
 
 	async fn submit_and_watch_extrinsic<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 	) -> Result<TransactionSubscriptionFor<Self::Client, Self::Hash>>
 	where
 		Address: Encode,
@@ -256,7 +256,7 @@ where
 
 	async fn submit_and_watch_extrinsic_until<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>
 	where
@@ -304,7 +304,7 @@ where
 		SignedExtra,
 	>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>
 	where

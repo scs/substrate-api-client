@@ -22,7 +22,7 @@ use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
-	UncheckedExtrinsicV4,
+	UncheckedExtrinsic,
 };
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
@@ -82,11 +82,11 @@ where
 {
 	type Balance = T::Balance;
 	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
-	type Extrinsic<Call> = UncheckedExtrinsicV4<
+	type Extrinsic<Call> = UncheckedExtrinsic<
 		Self::Address,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
-		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::TxExtension,
 	>;
 
 	async fn balance_transfer_allow_death(

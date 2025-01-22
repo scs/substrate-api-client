@@ -23,7 +23,7 @@ use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, Determinism,
-	SignExtrinsic, UncheckedExtrinsicV4, Weight,
+	SignExtrinsic, UncheckedExtrinsic, Weight,
 };
 use codec::{Compact, Encode};
 use sp_core::Bytes;
@@ -250,7 +250,7 @@ where
 	type Data = Bytes;
 	type Salt = Bytes;
 	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
-	type Extrinsic<Call> = UncheckedExtrinsicV4<
+	type Extrinsic<Call> = UncheckedExtrinsic<
 		Self::Address,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
