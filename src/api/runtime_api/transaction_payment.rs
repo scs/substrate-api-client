@@ -133,11 +133,7 @@ where
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		TransactionExtension: Encode,
 	{
-		self.query_info_opaque(extrinsic.encode(), length, at_block).await
-	}
-
 	async fn query_info_opaque(
 		&self,
 		extrinsic: Vec<u8>,
