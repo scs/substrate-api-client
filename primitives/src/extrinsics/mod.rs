@@ -17,20 +17,14 @@
 
 //! Primitives for substrate extrinsics.
 
-use crate::OpaqueExtrinsic;
-use alloc::{format, vec::Vec};
-use codec::{Decode, Encode, Error, Input};
-use core::fmt;
-use scale_info::TypeInfo;
-use sp_runtime::traits::Extrinsic;
-
 pub use extrinsic_params::{
 	AssetTip, ExtrinsicParams, GenericAdditionalParams, GenericExtrinsicParams, GenericImplicit,
 	GenericTxExtension, PlainTip, SignedPayload,
 };
+#[allow(deprecated)]
 pub use extrinsic_v4::UncheckedExtrinsicV4;
 pub use signer::{ExtrinsicSigner, SignExtrinsic};
-pub use sp_runtime::generic::UncheckedExtrinsic;
+pub use sp_runtime::generic::{Preamble, UncheckedExtrinsic};
 
 /// Call Index used a prefix of every extrinsic call.
 pub type CallIndex = [u8; 2];

@@ -13,9 +13,7 @@
 
 use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
-use ac_primitives::{
-	config::Config, FeeDetails, RuntimeDispatchInfo, UncheckedExtrinsicV4, Weight,
-};
+use ac_primitives::{config::Config, FeeDetails, RuntimeDispatchInfo, UncheckedExtrinsic, Weight};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};
@@ -31,7 +29,7 @@ pub trait TransactionPaymentApi: RuntimeApi {
 	/// Query the transaction fee details.
 	async fn query_fee_details<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::FeeDetails>
@@ -52,7 +50,7 @@ pub trait TransactionPaymentApi: RuntimeApi {
 	/// Query the transaction fee info.
 	async fn query_info<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::RuntimeDispatchInfo>
@@ -98,7 +96,7 @@ where
 
 	async fn query_fee_details<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::FeeDetails>
@@ -127,7 +125,7 @@ where
 
 	async fn query_info<Address, Call, Signature, SignedExtra>(
 		&self,
-		extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::RuntimeDispatchInfo>

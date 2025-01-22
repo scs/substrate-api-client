@@ -22,7 +22,7 @@ use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{
 		Config, ExtrinsicSigner as GenericExtrinsicSigner, RococoRuntimeConfig, SignExtrinsic,
-		UncheckedExtrinsicV4,
+		UncheckedExtrinsic,
 	},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
@@ -75,7 +75,7 @@ async fn main() {
 	)
 	.unwrap();
 
-	let xt: UncheckedExtrinsicV4<_, _, _, _> =
+	let xt: UncheckedExtrinsic<_, _, _, _> =
 		compose_extrinsic!(&api, "Sudo", "sudo", call).unwrap();
 
 	// Send and watch extrinsic until in block.

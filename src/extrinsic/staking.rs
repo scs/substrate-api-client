@@ -22,7 +22,7 @@ use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	config::Config, CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic,
-	UncheckedExtrinsicV4,
+	UncheckedExtrinsic,
 };
 use codec::{Compact, Decode, Encode};
 
@@ -166,7 +166,7 @@ where
 	type RewardDestination = RewardDestination<Self::Address>;
 	type AccountId = T::AccountId;
 	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
-	type Extrinsic<Call> = UncheckedExtrinsicV4<
+	type Extrinsic<Call> = UncheckedExtrinsic<
 		Self::Address,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,

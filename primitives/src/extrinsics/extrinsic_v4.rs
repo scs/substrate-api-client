@@ -24,9 +24,6 @@ use core::fmt;
 use scale_info::TypeInfo;
 use sp_runtime::traits::Extrinsic;
 
-/// Call Index used a prefix of every extrinsic call.
-pub type CallIndex = [u8; 2];
-
 /// Current version of the [`UncheckedExtrinsic`] encoded format.
 const V4: u8 = 4;
 
