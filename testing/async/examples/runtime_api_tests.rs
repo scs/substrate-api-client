@@ -46,7 +46,7 @@ async fn main() {
 	// General Runtime Api
 	let bytes = runtime_api.rpc_call("Metadata_metadata_versions", None, None).await.unwrap();
 	let metadata_versions = Vec::<u32>::decode(&mut bytes.0.as_slice()).unwrap();
-	assert_eq!(metadata_versions, [14, 15]);
+	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
 
 	// AccountNonce
 	let alice_nonce = runtime_api.account_nonce(alice, None).await.unwrap();
