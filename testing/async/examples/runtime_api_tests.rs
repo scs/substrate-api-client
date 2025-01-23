@@ -28,6 +28,8 @@ use substrate_api_client::{
 	Api, GetChainInfo,
 };
 
+const UNSTABLE_METADATA_VERSION: u32 = u32::MAX;
+
 #[tokio::main]
 async fn main() {
 	// Setup
@@ -73,7 +75,7 @@ async fn main() {
 	let _method_names = runtime_api.list_methods_of_trait("BabeApi", None).await.unwrap();
 	let _trait_names = runtime_api.list_traits(None).await.unwrap();
 	let metadata_versions = runtime_api.metadata_versions(None).await.unwrap();
-	assert_eq!(metadata_versions, [14, 15]);
+	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
 
 	// MMR
 	// This doesn't seem to work with the current substrate node. Tried it on polkadot.js aswell, but it keeps on runtime panicking.
