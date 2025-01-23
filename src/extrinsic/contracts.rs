@@ -254,7 +254,7 @@ where
 		Self::Address,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
-		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::TxExtension,
 	>;
 
 	async fn contract_upload_code(
