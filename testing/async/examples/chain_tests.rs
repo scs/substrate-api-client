@@ -16,7 +16,7 @@
 //! Tests for the chain rpc interface functions, including testing the RococoRuntimeConfig
 //! and Signer generation for the RococoRuntimeConfig.
 
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
@@ -28,7 +28,7 @@ async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
-	let signer = AccountKeyring::Alice.pair();
+	let signer = Sr25519Keyring::Alice.pair();
 	api.set_signer(signer.into());
 
 	// GetChainInfo

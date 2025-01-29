@@ -19,7 +19,7 @@ use codec::Decode;
 use pallet_balances::AccountData as GenericAccountData;
 use pallet_society::Vote;
 use sp_core::{crypto::Ss58Codec, sr25519};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::{Config, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
@@ -36,7 +36,7 @@ async fn main() {
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let api = Api::<KitchensinkConfig, _>::new(client).await.unwrap();
 
-	let alice = AccountKeyring::Alice.to_account_id();
+	let alice = Sr25519Keyring::Alice.to_account_id();
 	let block_hash = api.get_block_hash(None).await.unwrap().unwrap();
 	let alice_stash =
 		sr25519::Public::from_ss58check("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY")

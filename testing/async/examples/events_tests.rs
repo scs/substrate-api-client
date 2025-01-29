@@ -18,7 +18,7 @@
 use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
 use rococo_runtime::RuntimeEvent;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_node_api::{EventDetails, StaticEvent},
 	ac_primitives::{Config, RococoRuntimeConfig},
@@ -44,11 +44,11 @@ impl StaticEvent for ExtrinsicSuccess {
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
+	let alice_pair = Sr25519Keyring::Alice.pair();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 
 	// Test `fetch_events_from_block`: There should always be at least the
 	// timestamp set event.

@@ -17,7 +17,7 @@
 
 use codec::Encode;
 use sp_core::sr25519;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
@@ -25,6 +25,8 @@ use substrate_api_client::{
 	runtime_api::{AuthorityDiscoveryApi, CoreApi, MetadataApi, RuntimeApi, TransactionPaymentApi},
 	Api, GetChainInfo,
 };
+
+const UNSTABLE_METADATA_VERSION: u32 = u32::MAX;
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
 // own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
@@ -36,12 +38,12 @@ async fn main() {
 	// Initialize the api, which retrieves the metadata from the node upon initialization.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
+	let alice_pair = Sr25519Keyring::Alice.pair();
 	api.set_signer(alice_pair.into());
 	let runtime_api = api.runtime_api();
 
 	// Query the fee of an extrinsic.
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 	let balance_extrinsic =
 		api.balance_transfer_allow_death(bob.clone().into(), 1000).await.unwrap();
 	let extrinsic_fee_details = runtime_api
@@ -64,7 +66,7 @@ async fn main() {
 
 	// Query the available metadata versions.
 	let metadata_versions = runtime_api.metadata_versions(None).await.unwrap();
-	assert_eq!(metadata_versions, [14, 15]);
+	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
 
 	// List all apis and functions thereof.
 	let trait_names = runtime_api.list_traits(None).await.unwrap();

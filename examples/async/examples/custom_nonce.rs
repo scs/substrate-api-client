@@ -17,7 +17,7 @@
 //! without asking the node for nonce and does not need to know the metadata
 
 use rococo_runtime::{BalancesCall, RuntimeCall};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_primitives::{GenericAdditionalParams, RococoRuntimeConfig},
@@ -33,7 +33,7 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let signer = AccountKeyring::Alice.pair();
+	let signer = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
@@ -54,7 +54,7 @@ async fn main() {
 	println!("[+] Signer's Account Nonce is {}\n", signer_nonce);
 
 	// Create an extrinsic that should get included in the future pool due to a nonce that is too high.
-	let recipient = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let recipient = MultiAddress::Id(Sr25519Keyring::Bob.to_account_id());
 	let call =
 		RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: recipient, value: 42 });
 	let xt = api.compose_extrinsic_offline(call, signer_nonce + 1);

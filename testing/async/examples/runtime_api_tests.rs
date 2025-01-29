@@ -16,7 +16,7 @@
 //! Tests for the runtime api.
 
 use sp_core::{sr25519, Decode};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
@@ -28,23 +28,25 @@ use substrate_api_client::{
 	Api, GetChainInfo,
 };
 
+const UNSTABLE_METADATA_VERSION: u32 = u32::MAX;
+
 #[tokio::main]
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
+	let alice_pair = Sr25519Keyring::Alice.pair();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
 	let runtime_api = api.runtime_api();
 
-	let alice = AccountKeyring::Alice.to_account_id();
-	let bob = AccountKeyring::Bob.to_account_id();
+	let alice = Sr25519Keyring::Alice.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 
 	// General Runtime Api
 	let bytes = runtime_api.rpc_call("Metadata_metadata_versions", None, None).await.unwrap();
 	let metadata_versions = Vec::<u32>::decode(&mut bytes.0.as_slice()).unwrap();
-	assert_eq!(metadata_versions, [14, 15]);
+	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
 
 	// AccountNonce
 	let alice_nonce = runtime_api.account_nonce(alice, None).await.unwrap();
@@ -73,7 +75,7 @@ async fn main() {
 	let _method_names = runtime_api.list_methods_of_trait("BabeApi", None).await.unwrap();
 	let _trait_names = runtime_api.list_traits(None).await.unwrap();
 	let metadata_versions = runtime_api.metadata_versions(None).await.unwrap();
-	assert_eq!(metadata_versions, [14, 15]);
+	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
 
 	// MMR
 	// This doesn't seem to work with the current substrate node. Tried it on polkadot.js aswell, but it keeps on runtime panicking.

@@ -16,7 +16,7 @@
 //! Tests for the dispatch error.
 
 use sp_core::H256;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
 	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
@@ -27,19 +27,19 @@ use substrate_api_client::{
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let alice_signer = AccountKeyring::Alice.pair();
-	let bob_signer = AccountKeyring::Bob.pair();
+	let alice_signer = Sr25519Keyring::Alice.pair();
+	let bob_signer = Sr25519Keyring::Bob.pair();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 
-	let alice = AccountKeyring::Alice.to_account_id();
+	let alice = Sr25519Keyring::Alice.to_account_id();
 	let balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
 	println!("[+] Alice's Free Balance is {}\n", balance_of_alice);
 
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 	let balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap_or_default().free;
 	println!("[+] Bob's Free Balance is {}\n", balance_of_bob);
 
-	let one = AccountKeyring::One.to_account_id();
+	let one = Sr25519Keyring::One.to_account_id();
 	let balance_of_one = api.get_account_data(&one).await.unwrap().unwrap_or_default().free;
 	println!("[+] One's Free Balance is {}\n", balance_of_one);
 

@@ -20,7 +20,7 @@ use core::{
 	sync::atomic::{AtomicBool, Ordering},
 	time::Duration,
 };
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
@@ -40,7 +40,7 @@ fn main() {
 	// Initialize the api.
 	let client = TungsteniteRpcClient::with_default_url(1);
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).unwrap();
-	let sudoer = AccountKeyring::Alice.pair();
+	let sudoer = Sr25519Keyring::Alice.pair();
 	api.set_signer(sudoer.into());
 
 	let subscription = api.subscribe_events().unwrap();

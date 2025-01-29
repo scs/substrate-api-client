@@ -260,7 +260,7 @@ mod tests {
 		BalancesCall, Runtime, RuntimeCall, SignedExtra, SystemCall, UncheckedExtrinsic, VERSION,
 	};
 	use sp_core::{crypto::Ss58Codec, Pair, H256 as Hash};
-	use sp_keyring::AccountKeyring;
+	use sp_keyring::Sr25519Keyring;
 	use sp_runtime::{
 		generic::Era, testing::sr25519, traits::Hash as HashTrait, AccountId32, MultiAddress,
 		MultiSignature,
@@ -329,8 +329,8 @@ mod tests {
 	#[test]
 	fn xt_hash_matches_substrate_impl() {
 		// Define extrinsic params.
-		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
-		let bob = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+		let alice = MultiAddress::Id(Sr25519Keyring::Alice.to_account_id());
+		let bob = MultiAddress::Id(Sr25519Keyring::Bob.to_account_id());
 		let call =
 			RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: bob, value: 42 });
 
@@ -389,7 +389,7 @@ mod tests {
 	#[test]
 	fn xt_hash_matches_substrate_impl_large_xt() {
 		// Define xt parameters,
-		let alice = MultiAddress::Id(AccountKeyring::Alice.to_account_id());
+		let alice = MultiAddress::Id(Sr25519Keyring::Alice.to_account_id());
 		let code: Vec<u8> = include_bytes!("solochain_template_runtime.wasm").to_vec();
 		let call = RuntimeCall::System(SystemCall::set_code { code });
 

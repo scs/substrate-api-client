@@ -17,7 +17,7 @@
 
 use codec::Decode;
 use frame_support::dispatch::DispatchInfo;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_node_api::StaticEvent, ac_primitives::RococoRuntimeConfig, rpc::JsonrpseeClient, Api,
 	GetAccountInformation, SystemApi,
@@ -38,18 +38,18 @@ impl StaticEvent for ExtrinsicSuccess {
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
+	let alice_pair = Sr25519Keyring::Alice.pair();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
 
-	let alice = AccountKeyring::Alice.to_account_id();
+	let alice = Sr25519Keyring::Alice.to_account_id();
 
 	// GetAccountInformation
 	let _account_info = api.get_account_info(&alice).await.unwrap().unwrap();
 	let _account_data = api.get_account_data(&alice).await.unwrap().unwrap();
 
 	// Empty account information
-	let inexistent_account = AccountKeyring::Two.to_account_id();
+	let inexistent_account = Sr25519Keyring::Two.to_account_id();
 	let maybe_account_info = api.get_account_info(&inexistent_account).await.unwrap();
 	assert!(maybe_account_info.is_none());
 	let maybe_account_data = api.get_account_data(&inexistent_account).await.unwrap();

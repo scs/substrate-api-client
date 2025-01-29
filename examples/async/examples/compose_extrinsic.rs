@@ -19,7 +19,7 @@
 
 use codec::Compact;
 use rococo_runtime::{Address, BalancesCall, RuntimeCall};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
@@ -48,7 +48,7 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let signer = AccountKeyring::Alice.pair();
+	let signer = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
@@ -56,7 +56,7 @@ async fn main() {
 	// Signer is needed to set the nonce and sign the extrinsic.
 	api.set_signer(extrinsic_signer.clone());
 
-	let recipient: Address = MultiAddress::Id(AccountKeyring::Bob.to_account_id());
+	let recipient: Address = MultiAddress::Id(Sr25519Keyring::Bob.to_account_id());
 
 	// Get the last finalized header to retrieve information for Era for mortal transactions (online).
 	let last_finalized_header_hash = api.get_finalized_head().await.unwrap().unwrap();

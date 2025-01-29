@@ -13,7 +13,7 @@
 	limitations under the License.
 */
 
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{Config, RococoRuntimeConfig},
@@ -32,13 +32,13 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let alice_signer = AccountKeyring::Alice.pair();
+	let alice_signer = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(alice_signer.into());
 
-	let alice = AccountKeyring::Alice.to_account_id();
-	let bob = AccountKeyring::Bob.to_account_id();
+	let alice = Sr25519Keyring::Alice.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 
 	let (maybe_data_of_alice, maybe_data_of_bob) =
 		tokio::try_join!(api.get_account_data(&alice), api.get_account_data(&bob)).unwrap();

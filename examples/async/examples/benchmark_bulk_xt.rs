@@ -16,7 +16,7 @@
 //! This example floods the node with a series of transactions.
 
 use rococo_runtime::{BalancesCall, RuntimeCall};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::{
 		Config, ExtrinsicSigner as GenericExtrinsicSigner, RococoRuntimeConfig, SignExtrinsic,
@@ -43,12 +43,12 @@ async fn main() {
 	env_logger::init();
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
-	let signer = AccountKeyring::Alice.pair();
+	let signer = Sr25519Keyring::Alice.pair();
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
 	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
 	api.set_signer(signer.into());
 
-	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
+	let recipient: ExtrinsicAddressOf<ExtrinsicSigner> = Sr25519Keyring::Bob.to_account_id().into();
 	// We use a manual nonce input here, because otherwise the api retrieves the nonce via getter and needs
 	// to wait for the response of the node (and the actual execution of the previous extrinsic).
 	// But because we want to spam the node with extrinsic, we simple monotonically increase the nonce, without

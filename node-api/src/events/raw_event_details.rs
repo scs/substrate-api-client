@@ -91,7 +91,7 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 	pub fn event_metadata<'a>(
 		&'a self,
 		metadata: &'a Metadata,
-	) -> Result<EventMetadataDetails, Error> {
+	) -> Result<EventMetadataDetails<'a>, Error> {
 		let pallet = metadata
 			.pallet_by_index(self.pallet_index())
 			.ok_or(Error::Metadata(MetadataError::PalletIndexNotFound(self.pallet_index())))?;
@@ -256,7 +256,7 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 	pub(crate) fn event_metadata_unchecked<'a>(
 		&'a self,
 		metadata: &'a Metadata,
-	) -> EventMetadataDetails {
+	) -> EventMetadataDetails<'a> {
 		let pallet = metadata
 			.pallet_by_index(self.pallet_index())
 			.expect("event pallet to be found; we did this already during decoding");

@@ -18,7 +18,7 @@
 use codec::Encode;
 use frame_system::AccountInfo as GenericAccountInfo;
 use pallet_recovery::ActiveRecovery;
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
 	ac_primitives::{Config, RococoRuntimeConfig},
@@ -58,7 +58,7 @@ async fn main() {
 	println!("[+] StorageValueProof: {:?}", proof);
 
 	// Get the AccountInfo of Alice and the associated StoragePrefix.
-	let account: sp_core::sr25519::Public = AccountKeyring::Alice.public();
+	let account: sp_core::sr25519::Public = Sr25519Keyring::Alice.public();
 	let (maybe_account_info, key_prefix) = tokio::try_join!(
 		api.get_storage_map::<_, AccountInfo>("System", "Account", account, None),
 		api.get_storage_map_key_prefix("System", "Account")
@@ -70,9 +70,9 @@ async fn main() {
 
 	// Get Alice's and Bobs AccountNonce with api.get_nonce(). Alice will be set as the signer for
 	// the current api, so the nonce retrieval can be simplified:
-	let signer = AccountKeyring::Alice.pair();
+	let signer = Sr25519Keyring::Alice.pair();
 	api.set_signer(signer.into());
-	let bob = AccountKeyring::Bob.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 
 	let (alice_nonce, bob_nonce) =
 		tokio::try_join!(api.get_nonce(), api.get_account_nonce(&bob)).unwrap();
@@ -97,9 +97,9 @@ async fn main() {
 	}
 
 	// Create a recovery, so we can fetch an actual ActiveRecovery state from the chain.
-	let alice = AccountKeyring::Alice.to_account_id();
+	let alice = Sr25519Keyring::Alice.to_account_id();
 	let alice_multiaddress: Address = alice.clone().into();
-	let charlie = AccountKeyring::Charlie.to_account_id();
+	let charlie = Sr25519Keyring::Charlie.to_account_id();
 	let threshold: u16 = 2;
 	let delay_period: u32 = 1000;
 
@@ -116,7 +116,7 @@ async fn main() {
 	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
 	// Set Bob as signer, so we can send the recevory extrinsic as Bob.
-	let signer2 = AccountKeyring::Bob.pair();
+	let signer2 = Sr25519Keyring::Bob.pair();
 	api.set_signer(signer2.into());
 	let xt = compose_extrinsic!(&api, "Recovery", "initiate_recovery", alice_multiaddress).unwrap();
 

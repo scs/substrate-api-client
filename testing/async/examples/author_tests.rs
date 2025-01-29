@@ -17,7 +17,7 @@
 
 use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_core::{Encode, H256};
-use sp_keyring::AccountKeyring;
+use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
@@ -38,10 +38,10 @@ type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 async fn main() {
 	// Setup
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let alice_pair = AccountKeyring::Alice.pair();
+	let alice_pair = Sr25519Keyring::Alice.pair();
 	let mut api = MyApi::new(client).await.unwrap();
 	api.set_signer(alice_pair.into());
-	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = AccountKeyring::Bob.to_account_id().into();
+	let bob: ExtrinsicAddressOf<ExtrinsicSigner> = Sr25519Keyring::Bob.to_account_id().into();
 	let signer_nonce = api.get_nonce().await.unwrap();
 	let transfer_call = RuntimeCall::Balances(BalancesCall::transfer_allow_death {
 		dest: bob.clone(),
