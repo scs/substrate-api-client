@@ -17,7 +17,6 @@
 
 use crate::config::Config;
 use codec::{Codec, Decode, Encode};
-#[cfg(feature = "disable-metadata-hash-check")]
 use primitive_types::H256;
 use scale_info::{StaticTypeInfo, TypeInfo};
 use sp_runtime::{
@@ -42,19 +41,13 @@ pub struct GenericTxExtension<Tip, Index> {
 	#[codec(compact)]
 	pub nonce: Index,
 	pub tip: Tip,
-	#[cfg(feature = "disable-metadata-hash-check")]
 	pub check_hash: u8,
 }
 
 impl<Tip, Index> GenericTxExtension<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		#[cfg(feature = "disable-metadata-hash-check")]
 		{
 			Self { era, nonce, tip, check_hash: 0 }
-		}
-		#[cfg(not(feature = "disable-metadata-hash-check"))]
-		{
-			Self { era, nonce, tip }
 		}
 	}
 }
@@ -84,10 +77,7 @@ where
 // defines what is returned upon the `implicit` call. The Implicit defined here
 // must mirror these return values.
 // Example: https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/frame/system/src/extensions/check_mortality.rs#L62
-#[cfg(feature = "disable-metadata-hash-check")]
 pub type GenericImplicit<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<H256>, ());
-#[cfg(not(feature = "disable-metadata-hash-check"))]
-pub type GenericImplicit<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in substrate extrinsics.
@@ -154,9 +144,9 @@ pub struct GenericExtrinsicParams<T: Config, Tip> {
 /// needed for constructing an extrinsic with the trait `ExtrinsicParams`.
 #[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
 pub struct GenericAdditionalParams<Tip, Hash> {
-	era: Era,
-	mortality_checkpoint: Option<Hash>,
-	tip: Tip,
+	pub era: Era,
+	pub mortality_checkpoint: Option<Hash>,
+	pub tip: Tip,
 }
 
 impl<Tip: Default, Hash> GenericAdditionalParams<Tip, Hash> {
@@ -223,7 +213,6 @@ where
 	}
 
 	fn implicit(&self) -> Self::Implicit {
-		#[cfg(feature = "disable-metadata-hash-check")]
 		{
 			(
 				(),
@@ -235,19 +224,6 @@ where
 				(),
 				(),
 				None,
-				(),
-			)
-		}
-		#[cfg(not(feature = "disable-metadata-hash-check"))]
-		{
-			(
-				(),
-				self.spec_version,
-				self.transaction_version,
-				self.genesis_hash,
-				self.mortality_checkpoint,
-				(),
-				(),
 				(),
 			)
 		}
