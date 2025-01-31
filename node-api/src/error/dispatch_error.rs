@@ -16,10 +16,10 @@ use alloc::{
 	vec::Vec,
 };
 use codec::{Decode, Encode};
-use core::fmt::Debug;
+use core::{fmt::Debug, marker::PhantomData};
 use derive_more::From;
 use log::*;
-use scale_decode::{visitor::DecodeAsTypeResult, DecodeAsType};
+use scale_decode::{visitor::DecodeAsTypeResult, DecodeAsType, TypeResolver};
 
 /// An error dispatching a transaction. See Substrate DispatchError
 // https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L561-L598
@@ -91,23 +91,26 @@ impl DispatchError {
 		// a legacy format of 2 bytes, or a newer format of 5 bytes. So, just grab the bytes
 		// out when decoding to manually work with them.
 		struct DecodedModuleErrorBytes(Vec<u8>);
-		struct DecodedModuleErrorBytesVisitor;
-		impl scale_decode::Visitor for DecodedModuleErrorBytesVisitor {
+		struct DecodedModuleErrorBytesVisitor<R: TypeResolver>(PhantomData<R>);
+		impl<R: TypeResolver> scale_decode::Visitor for DecodedModuleErrorBytesVisitor<R> {
 			type Error = scale_decode::Error;
 			type Value<'scale, 'info> = DecodedModuleErrorBytes;
+			type TypeResolver = R;
+
 			fn unchecked_decode_as_type<'scale, 'info>(
 				self,
 				input: &mut &'scale [u8],
-				_type_id: scale_decode::visitor::TypeId,
-				_types: &'info scale_info::PortableRegistry,
+				_type_id: R::TypeId,
+				_types: &'info R,
 			) -> DecodeAsTypeResult<Self, Result<Self::Value<'scale, 'info>, Self::Error>> {
 				DecodeAsTypeResult::Decoded(Ok(DecodedModuleErrorBytes(input.to_vec())))
 			}
 		}
+
 		impl scale_decode::IntoVisitor for DecodedModuleErrorBytes {
-			type Visitor = DecodedModuleErrorBytesVisitor;
-			fn into_visitor() -> Self::Visitor {
-				DecodedModuleErrorBytesVisitor
+			type AnyVisitor<R: TypeResolver> = DecodedModuleErrorBytesVisitor<R>;
+			fn into_visitor<R: TypeResolver>() -> DecodedModuleErrorBytesVisitor<R> {
+				DecodedModuleErrorBytesVisitor(PhantomData)
 			}
 		}
 

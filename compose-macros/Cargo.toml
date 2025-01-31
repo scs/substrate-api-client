@@ -19,7 +19,7 @@ ac-primitives = { path = "../primitives", version = "1.16", default-features = f
 
 [dev-dependencies]
 ac-node-api = { path = "../node-api", version = "1.16" }
-frame-metadata = { version = "16.0" }
+frame-metadata = { version = "18.0" }
 codec = { package = "parity-scale-codec", version = "3.6.1" }
 
 

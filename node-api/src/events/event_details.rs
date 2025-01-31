@@ -15,7 +15,7 @@ use crate::{
 };
 use alloc::sync::Arc;
 use codec::{Decode, Encode};
-use scale_value::{scale::TypeId, Composite};
+use scale_value::Composite;
 
 /// The event details with the associated metadata.
 // Based on subxt EventDetails.
@@ -93,7 +93,7 @@ impl<Hash: Encode + Decode> EventDetails<Hash> {
 
 	/// Decode and provide the event fields back in the form of a [`scale_value::Composite`]
 	/// type which represents the named or unnamed fields that were present in the event.
-	pub fn field_values(&self) -> Result<Composite<TypeId>, Error> {
+	pub fn field_values(&self) -> Result<Composite<u32>, Error> {
 		self.inner.field_values_unchecked(&self.metadata)
 	}
 
