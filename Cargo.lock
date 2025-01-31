@@ -127,7 +127,6 @@ dependencies = [
  "pallet-balances",
  "pallet-contracts",
  "pallet-staking",
- "pallet-transaction-payment",
  "parity-scale-codec",
  "primitive-types 0.12.2",
  "scale-info",

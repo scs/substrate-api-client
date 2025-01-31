@@ -22,7 +22,7 @@ pub use extrinsic_params::{
 	GenericTxExtension, PlainTip, SignedPayload,
 };
 #[allow(deprecated)]
-pub use extrinsic_v4::UncheckedExtrinsicV4;
+pub use extrinsic_v4::deprecated;
 pub use signer::{ExtrinsicSigner, SignExtrinsic};
 pub use sp_runtime::generic::{Preamble, UncheckedExtrinsic};
 

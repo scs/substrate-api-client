@@ -40,7 +40,7 @@ pallet-staking = { optional = true, git = "https://github.com/paritytech/polkado
 frame-metadata-hash-extension = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 solochain-template-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-transaction-payment = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+
 
 [features]
 default = ["std"]
