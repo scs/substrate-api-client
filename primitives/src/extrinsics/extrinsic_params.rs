@@ -69,7 +69,8 @@ where
 }
 
 /// Default implicit fields of a Polkadot/Substrate node.
-/// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, CheckEra, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment, CheckMetadataHash, WeightReclaim).
+// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, CheckEra, CheckNonce, CheckWeight,
+// transactionPayment::ChargeTransactionPayment, CheckMetadataHash, WeightReclaim).
 // The order and types must match the one defined in the runtime.
 // Example: https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/bin/node/runtime/src/lib.rs#L2665-L2678
 // The `Implicit` is the tuple returned from the call TransactionExtension::implicit().
