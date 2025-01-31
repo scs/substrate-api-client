@@ -126,8 +126,7 @@ impl<Hash: Copy + Encode + Decode> Events<Hash> {
 	/// them, and return only those which should decode to the provided `Ev` type.
 	/// If an error occurs, all subsequent iterations return `None`.
 	pub fn find<Ev: StaticEvent>(&self) -> impl Iterator<Item = Result<Ev, Error>> + '_ {
-		self.iter()
-			.filter_map(|ev| ev.and_then(|ev| ev.as_event::<Ev>().map_err(Into::into)).transpose())
+		self.iter().filter_map(|ev| ev.and_then(|ev| ev.as_event::<Ev>()).transpose())
 	}
 
 	/// Iterate through the events using metadata to dynamically decode and skip
