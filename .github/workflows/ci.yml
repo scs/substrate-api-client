@@ -15,14 +15,14 @@ env:
 jobs:
   cancel_previous_runs:
     name: Cancel Previous Runs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: styfle/cancel-workflow-action@0.12.1
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
   free-disk-space:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Free Disk Space (Ubuntu)
       uses: jlumbroso/free-disk-space@main
@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-22.04 ]
         check: [
                 # Test for no-std compatibility.
                 # `--locked` to enforce an up-to-date Cargo.lock
@@ -179,7 +179,7 @@ jobs:
 
   license-check:
     name: "License check"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -205,7 +205,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-22.04 ]
         example: [
           benchmark_bulk_xt,
           compose_extrinsic,
@@ -264,7 +264,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-22.04 ]
         example: [
           wasm_example,
         ]
@@ -284,7 +284,7 @@ jobs:
         run: wasmtime --invoke main ${{ matrix.example }}.wasm 0 0
 
   merge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [examples, wasm_examples]
     steps:
       - name: Merge Artifacts
