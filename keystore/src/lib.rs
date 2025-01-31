@@ -778,7 +778,7 @@ mod tests {
 		let temp_dir = TempDir::new().unwrap();
 		let store = LocalKeystore::open(temp_dir.path(), None).unwrap();
 
-		let file_name = temp_dir.path().join(array_bytes::bytes2hex("", &SR25519.0[..2]));
+		let file_name = temp_dir.path().join(&SR25519.0[..2].hexify());
 		fs::write(file_name, "test").expect("Invalid file is written");
 
 		assert!(store.sr25519_public_keys(SR25519).is_empty());
