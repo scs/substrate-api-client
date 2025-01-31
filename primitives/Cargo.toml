@@ -48,7 +48,6 @@ default = ["std"]
 disable_target_static_assertions = [
     "sp-runtime-interface/disable_target_static_assertions",
 ]
-disable-metadata-hash-check = []
 std = [
     "codec/std",
     "primitive-types/std",
