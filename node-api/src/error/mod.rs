@@ -14,7 +14,7 @@ use derive_more::From;
 
 // Re-expose the errors we use from other crates here:
 pub use crate::metadata::{MetadataConversionError, MetadataError};
-pub use scale_decode::Error as DecodeError;
+pub use scale_decode::{visitor::DecodeError as VisitorDecodeError, Error as DecodeError};
 pub use scale_encode::Error as EncodeError;
 pub use sp_core::crypto::SecretStringError;
 pub use sp_runtime::transaction_validity::TransactionValidityError;
@@ -43,6 +43,8 @@ pub enum Error {
 	DecodeValue(Box<DecodeError>),
 	/// Error encoding from a [`crate::dynamic::Value`].
 	EncodeValue(Box<EncodeError>),
+	/// Visitor Decode Error.
+	Visitor(VisitorDecodeError),
 	/// The bytes representing an error that we were unable to decode.
 	Unknown(Vec<u8>),
 	/// Other error.
