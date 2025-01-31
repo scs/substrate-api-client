@@ -43,7 +43,6 @@ impl<T: Config, Client> Api<T, Client> {
 		match self.signer() {
 			Some(signer) => compose_extrinsic_offline!(signer, call, self.extrinsic_params(nonce)),
 			None => UncheckedExtrinsic { preamble: Preamble::Bare(5), function: call },
-			// TODO: Add Possibility of General (unsigned, but with General() function)
 		}
 	}
 }
