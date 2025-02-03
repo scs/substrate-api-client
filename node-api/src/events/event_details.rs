@@ -130,7 +130,6 @@ impl<Hash: Encode + Decode> EventDetails<Hash> {
 	}
 
 	/// Returns the dispatch error of the failed extrinsic, if it has failed.
-
 	pub fn get_associated_dispatch_error(&self) -> Option<DispatchError> {
 		self.inner.get_associated_dispatch_error(&self.metadata)
 	}
