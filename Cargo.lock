@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "ac-compose-macros"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "ac-node-api",
  "ac-primitives",
@@ -26,7 +26,7 @@ dependencies = [
 
 [[package]]
 name = "ac-examples-async"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "env_logger",
  "frame-support",
@@ -51,7 +51,7 @@ dependencies = [
 
 [[package]]
 name = "ac-examples-sync"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "env_logger",
  "log",
@@ -64,7 +64,7 @@ dependencies = [
 
 [[package]]
 name = "ac-examples-wasm"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "pallet-balances",
  "sp-core",
@@ -74,7 +74,7 @@ dependencies = [
 
 [[package]]
 name = "ac-keystore"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "array-bytes",
  "async-trait",
@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "ac-node-api"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "ac-primitives",
  "bitvec",
@@ -118,7 +118,7 @@ dependencies = [
 
 [[package]]
 name = "ac-primitives"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "frame-metadata-hash-extension",
  "frame-system",
@@ -147,7 +147,7 @@ dependencies = [
 
 [[package]]
 name = "ac-testing-async"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "frame-support",
  "jsonrpsee",
@@ -166,7 +166,7 @@ dependencies = [
 
 [[package]]
 name = "ac-testing-sync"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "ac-keystore",
  "sp-application-crypto",
@@ -7071,7 +7071,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-api-client"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
@@ -7239,7 +7239,7 @@ dependencies = [
 
 [[package]]
 name = "test-no-std"
-version = "0.18.0"
+version = "1.16.0"
 dependencies = [
  "ac-compose-macros",
  "ac-node-api",
