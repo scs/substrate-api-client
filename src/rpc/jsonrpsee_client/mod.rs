@@ -110,7 +110,10 @@ impl Request for JsonrpseeClient {
 
 #[maybe_async::async_impl(?Send)]
 impl Subscribe for JsonrpseeClient {
-	type Subscription<Notification> = SubscriptionWrapper<Notification> where Notification: DeserializeOwned;
+	type Subscription<Notification>
+		= SubscriptionWrapper<Notification>
+	where
+		Notification: DeserializeOwned;
 
 	async fn subscribe<Notification: DeserializeOwned>(
 		&self,

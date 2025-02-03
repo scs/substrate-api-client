@@ -94,7 +94,7 @@ impl Metadata {
 	}
 }
 
-impl<'a> PalletMetadata<'a> {
+impl PalletMetadata<'_> {
 	pub fn print(&self) {
 		println!("----------------- Pallet: '{}' -----------------\n", self.name());
 		println!("Pallet id: {}", self.index());
