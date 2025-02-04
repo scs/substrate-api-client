@@ -85,16 +85,15 @@ macro_rules! compose_extrinsic_offline {
     $call: expr,
     $params: expr) => {{
 		use $crate::primitives::extrinsics::{
-			ExtrinsicParams, SignExtrinsic, SignedPayload, UncheckedExtrinsicV4,
+			ExtrinsicParams, SignExtrinsic, SignedPayload, UncheckedExtrinsic,
 		};
 
-		let extra = $params.signed_extra();
-		let raw_payload =
-			SignedPayload::from_raw($call.clone(), extra, $params.additional_signed());
+		let extra = $params.transaction_extension();
+		let raw_payload = SignedPayload::from_raw($call.clone(), extra, $params.implicit());
 
 		let signature = raw_payload.using_encoded(|payload| $signer.sign(payload));
 
-		UncheckedExtrinsicV4::new_signed($call, $signer.extrinsic_address(), signature, extra)
+		UncheckedExtrinsic::new_signed($call, $signer.extrinsic_address(), signature, extra)
 	}};
 }
 
@@ -116,7 +115,7 @@ macro_rules! compose_extrinsic_with_nonce {
 	$(, $args: expr) *) => {
 		{
             use $crate::log::debug;
-            use $crate::primitives::UncheckedExtrinsicV4;
+            use $crate::primitives::UncheckedExtrinsic;
 
             debug!("Composing generic extrinsic for module {:?} and call {:?}", $pallet_name, $call_name);
 
@@ -132,7 +131,7 @@ macro_rules! compose_extrinsic_with_nonce {
 							$api.extrinsic_params($nonce)
 						)
 					} else {
-						UncheckedExtrinsicV4::new_unsigned(call.clone())
+						UncheckedExtrinsic::new_bare(call.clone())
 					};
 					Some(extrinsic)
 				},

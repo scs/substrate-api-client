@@ -22,7 +22,7 @@ use crate::{rpc::Request, Api};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
-	UncheckedExtrinsicV4,
+	UncheckedExtrinsic,
 };
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
@@ -63,11 +63,11 @@ where
 	T: Config,
 	Client: Request,
 {
-	type Extrinsic<Call> = UncheckedExtrinsicV4<
+	type Extrinsic<Call> = UncheckedExtrinsic<
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
-		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::TxExtension,
 	>;
 
 	async fn batch<Call: Encode + Clone>(

@@ -16,26 +16,28 @@
 */
 
 use crate::config::Config;
-use codec::{Decode, Encode};
+use codec::{Codec, Decode, Encode};
 #[cfg(feature = "disable-metadata-hash-check")]
 use primitive_types::H256;
+use scale_info::{StaticTypeInfo, TypeInfo};
 use sp_runtime::{
 	generic::Era,
-	traits::{BlakeTwo256, Hash},
+	impl_tx_ext_default,
+	traits::{BlakeTwo256, Dispatchable, Hash, TransactionExtension},
 };
 
-/// SignedExtra that is compatible with a default Substrate / Polkadot node.
-// Unlike the SignedExtra on the node side, which seemingly contains a lot more parameters
-// see: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
-// The SignedExtra on the client side mirrors the actual values contained. E.g.
+/// TxExtension that is compatible with a default Substrate / Polkadot node.
+// Unlike the TxExtension on the node side, which seemingly contains a lot more parameters
+// see: https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/bin/node/runtime/src/lib.rs#L2665-L2678
+// The TxExtension on the client side mirrors the actual values contained. E.g.
 // CheckNonZeroSender does not hold any value inside (see link below)
-// https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L33
-// and is therefore not represented on this side of the SignedExtra.
+// https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/frame/system/src/extensions/check_non_zero_sender.rs#L32
+// and is therefore not represented on this side of the TxExtension.
 // The Era however is actually defined in the CheckMortality part:
-// https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_mortality.rs#L36
+// https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/frame/system/src/extensions/check_mortality.rs#L39
 // and needs to be defined here. Be sure the order matches the one on the node side.
-#[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct GenericSignedExtra<Tip, Index> {
+#[derive(Decode, Encode, Copy, Clone, Eq, PartialEq, Debug, TypeInfo)]
+pub struct GenericTxExtension<Tip, Index> {
 	pub era: Era,
 	#[codec(compact)]
 	pub nonce: Index,
@@ -44,7 +46,7 @@ pub struct GenericSignedExtra<Tip, Index> {
 	pub check_hash: u8,
 }
 
-impl<Tip, Index> GenericSignedExtra<Tip, Index> {
+impl<Tip, Index> GenericTxExtension<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
 		#[cfg(feature = "disable-metadata-hash-check")]
 		{
@@ -57,19 +59,35 @@ impl<Tip, Index> GenericSignedExtra<Tip, Index> {
 	}
 }
 
-/// Default AdditionalSigned fields of a Polkadot/Substrate node.
-/// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, Check::Era, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment).
+impl<Call, Tip, Index> TransactionExtension<Call> for GenericTxExtension<Tip, Index>
+where
+	Call: Dispatchable,
+	GenericTxExtension<Tip, Index>:
+		Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
+	Tip: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
+	Index: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
+{
+	const IDENTIFIER: &'static str = "GenericTxExtension";
+	type Implicit = ();
+	type Pre = ();
+	type Val = ();
+
+	impl_tx_ext_default!(Call; weight validate prepare);
+}
+
+/// Default implicit fields of a Polkadot/Substrate node.
+/// Order: (CheckNonZeroSender, CheckSpecVersion, CheckTxVersion, CheckGenesis, CheckEra, CheckNonce, CheckWeight, transactionPayment::ChargeTransactionPayment, CheckMetadataHash, WeightReclaim).
 // The order and types must match the one defined in the runtime.
-// Example: https://github.com/paritytech/substrate/blob/cbd8f1b56fd8ab9af0d9317432cc735264c89d70/bin/node/runtime/src/lib.rs#L1779-L1788
-// The `AdditionalSigned` is the tuple returned from the call SignedExtra::additional_signed().
-// Each member defined in the `SignedExtra` on the node side implements the trait `SignedExtension`, which
-// defines what is returned upon the `additional_signed` call. The AdditionalSigned defined here
+// Example: https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/bin/node/runtime/src/lib.rs#L2665-L2678
+// The `Implicit` is the tuple returned from the call TransactionExtension::implicit().
+// Each member defined in the `TxExtension` on the node side implements the trait `TransactionExtension`, which
+// defines what is returned upon the `implicit` call. The Implicit defined here
 // must mirror these return values.
-// Example: https://github.com/paritytech/substrate/blob/23bb5a6255bbcd7ce2999044710428bc4a7a924f/frame/system/src/extensions/check_non_zero_sender.rs#L64-L66
+// Example: https://github.com/paritytech/polkadot-sdk/blob/c139739868eddbda495d642219a57602f63c18f5/substrate/frame/system/src/extensions/check_mortality.rs#L62
 #[cfg(feature = "disable-metadata-hash-check")]
-pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<H256>);
+pub type GenericImplicit<Hash> = ((), u32, u32, Hash, Hash, (), (), (), Option<H256>, ());
 #[cfg(not(feature = "disable-metadata-hash-check"))]
-pub type GenericAdditionalSigned<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
+pub type GenericImplicit<Hash> = ((), u32, u32, Hash, Hash, (), (), ());
 
 /// This trait allows you to configure the "signed extra" and
 /// "additional" parameters that are signed and used in substrate extrinsics.
@@ -79,16 +97,16 @@ pub trait ExtrinsicParams<Index, Hash> {
 	/// these params is updated.
 	type AdditionalParams: Default + Clone;
 
-	/// Extra mirroring the `SignedExtra` defined on the node side.
+	/// Extra mirroring the `TxExtension` defined on the node side.
 	/// These parameters are sent along with the extrinsic and are taken into account
 	/// when signing the extrinsic.
-	/// It represents the inner values of the SignedExtra, PhantomData is ignored.
-	type SignedExtra: Copy + Encode;
+	/// It represents the inner values of the TxExtension, PhantomData is ignored.
+	type TxExtension: Copy + Encode;
 
-	/// AdditionalSigned format of the node, which is returned upon the call `additional_signed`.
+	/// Implicit format of the node, which is returned upon the call `additional_signed`.
 	/// These parameters are not sent along with the extrinsic, but are taken into account
 	/// when signing it, meaning the client and node must agree on their values.
-	type AdditionalSigned: Encode;
+	type Implicit: Encode;
 
 	/// Construct a new instance.
 	fn new(
@@ -100,10 +118,22 @@ pub trait ExtrinsicParams<Index, Hash> {
 	) -> Self;
 
 	/// Construct the signed extra needed for constructing an extrinsic.
-	fn signed_extra(&self) -> Self::SignedExtra;
+	#[deprecated = "Use transaction_extension instead"]
+	fn signed_extra(&self) -> Self::TxExtension {
+		self.transaction_extension()
+	}
+
+	/// Construct the transaction extension needed for creating an extrinsic.
+	fn transaction_extension(&self) -> Self::TxExtension;
 
 	/// Construct any additional data that should be in the signed payload of the extrinsic.
-	fn additional_signed(&self) -> Self::AdditionalSigned;
+	#[deprecated = "Use implicit instead"]
+	fn additional_signed(&self) -> Self::Implicit {
+		self.implicit()
+	}
+
+	/// Construct any implicit data that should be in the signed payload of the extrinsic.
+	fn implicit(&self) -> Self::Implicit;
 }
 
 /// An implementation of [`ExtrinsicParams`] that is suitable for constructing
@@ -167,8 +197,8 @@ where
 	Tip: Copy + Default + Encode,
 {
 	type AdditionalParams = GenericAdditionalParams<Tip, T::Hash>;
-	type SignedExtra = GenericSignedExtra<Tip, T::Index>;
-	type AdditionalSigned = GenericAdditionalSigned<T::Hash>;
+	type TxExtension = GenericTxExtension<Tip, T::Index>;
+	type Implicit = GenericImplicit<T::Hash>;
 
 	fn new(
 		spec_version: u32,
@@ -188,11 +218,11 @@ where
 		}
 	}
 
-	fn signed_extra(&self) -> Self::SignedExtra {
-		Self::SignedExtra::new(self.era, self.nonce, self.tip)
+	fn transaction_extension(&self) -> Self::TxExtension {
+		Self::TxExtension::new(self.era, self.nonce, self.tip)
 	}
 
-	fn additional_signed(&self) -> Self::AdditionalSigned {
+	fn implicit(&self) -> Self::Implicit {
 		#[cfg(feature = "disable-metadata-hash-check")]
 		{
 			(
@@ -205,6 +235,7 @@ where
 				(),
 				(),
 				None,
+				(),
 			)
 		}
 		#[cfg(not(feature = "disable-metadata-hash-check"))]
@@ -230,18 +261,18 @@ where
 /// actually contains.
 // https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L192-L197
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct SignedPayload<Call, SignedExtra, AdditionalSigned>(
-	(Call, SignedExtra, AdditionalSigned),
+pub struct SignedPayload<Call, TransactionExtension, Implicit>(
+	(Call, TransactionExtension, Implicit),
 );
 
-impl<Call, SignedExtra, AdditionalSigned> SignedPayload<Call, SignedExtra, AdditionalSigned>
+impl<Call, TransactionExtension, Implicit> SignedPayload<Call, TransactionExtension, Implicit>
 where
 	Call: Encode,
-	SignedExtra: Encode,
-	AdditionalSigned: Encode,
+	TransactionExtension: Encode,
+	Implicit: Encode,
 {
 	/// Create new `SignedPayload` from raw components.
-	pub fn from_raw(call: Call, extra: SignedExtra, additional_signed: AdditionalSigned) -> Self {
+	pub fn from_raw(call: Call, extra: TransactionExtension, additional_signed: Implicit) -> Self {
 		Self((call, extra, additional_signed))
 	}
 
