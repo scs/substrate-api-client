@@ -30,16 +30,16 @@ pub trait BlockBuilderApi: RuntimeApi {
 	type Header;
 
 	/// Apply the given extrinsic.
-	async fn apply_extrinsic<Address, Call, Signature, SignedExtra>(
+	async fn apply_extrinsic<Address, Call, Signature, TransactionExtension>(
 		&self,
-		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, TransactionExtension>,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::ApplyExtrinsicResult>
 	where
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		SignedExtra: Encode;
+		TransactionExtension: Encode;
 
 	/// Apply the given opaque extrinsic.
 	async fn apply_opaque_extrinsic(
@@ -79,16 +79,16 @@ where
 	type CheckInherentsResult = CheckInherentsResult;
 	type Header = T::Header;
 
-	async fn apply_extrinsic<Address, Call, Signature, SignedExtra>(
+	async fn apply_extrinsic<Address, Call, Signature, TransactionExtension>(
 		&self,
-		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, TransactionExtension>,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::ApplyExtrinsicResult>
 	where
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		SignedExtra: Encode,
+		TransactionExtension: Encode,
 	{
 		self.apply_opaque_extrinsic(extrinsic.encode(), at_block).await
 	}

@@ -27,9 +27,9 @@ pub trait TransactionPaymentApi: RuntimeApi {
 	type Weight;
 
 	/// Query the transaction fee details.
-	async fn query_fee_details<Address, Call, Signature, SignedExtra>(
+	async fn query_fee_details<Address, Call, Signature, TransactionExtension>(
 		&self,
-		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, TransactionExtension>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::FeeDetails>
@@ -37,7 +37,7 @@ pub trait TransactionPaymentApi: RuntimeApi {
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		SignedExtra: Encode;
+		TransactionExtension: Encode;
 
 	/// Query the transaction fee details of opaque extrinsic.
 	async fn query_fee_details_opaque(
@@ -48,9 +48,9 @@ pub trait TransactionPaymentApi: RuntimeApi {
 	) -> Result<Self::FeeDetails>;
 
 	/// Query the transaction fee info.
-	async fn query_info<Address, Call, Signature, SignedExtra>(
+	async fn query_info<Address, Call, Signature, TransactionExtension>(
 		&self,
-		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, TransactionExtension>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::RuntimeDispatchInfo>
@@ -58,7 +58,7 @@ pub trait TransactionPaymentApi: RuntimeApi {
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		SignedExtra: Encode;
+		TransactionExtension: Encode;
 
 	/// Query the transaction info of opaque extrinsic.
 	async fn query_info_opaque(
@@ -94,9 +94,9 @@ where
 	type Balance = T::Balance;
 	type Weight = Weight;
 
-	async fn query_fee_details<Address, Call, Signature, SignedExtra>(
+	async fn query_fee_details<Address, Call, Signature, TransactionExtension>(
 		&self,
-		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, TransactionExtension>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::FeeDetails>
@@ -104,7 +104,7 @@ where
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		SignedExtra: Encode,
+		TransactionExtension: Encode,
 	{
 		self.query_fee_details_opaque(extrinsic.encode(), length, at_block).await
 	}
@@ -123,9 +123,9 @@ where
 		.await
 	}
 
-	async fn query_info<Address, Call, Signature, SignedExtra>(
+	async fn query_info<Address, Call, Signature, TransactionExtension>(
 		&self,
-		extrinsic: UncheckedExtrinsic<Address, Call, Signature, SignedExtra>,
+		extrinsic: UncheckedExtrinsic<Address, Call, Signature, TransactionExtension>,
 		length: u32,
 		at_block: Option<Self::Hash>,
 	) -> Result<Self::RuntimeDispatchInfo>
@@ -133,7 +133,7 @@ where
 		Address: Encode,
 		Call: Encode,
 		Signature: Encode,
-		SignedExtra: Encode,
+		TransactionExtension: Encode,
 	{
 		self.query_info_opaque(extrinsic.encode(), length, at_block).await
 	}

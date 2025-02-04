@@ -265,16 +265,18 @@ where
 /// actually contains.
 // https://github.com/paritytech/substrate/blob/1612e39131e3fe57ba4c78447fb1cbf7c4f8830e/primitives/runtime/src/generic/unchecked_extrinsic.rs#L192-L197
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
-pub struct SignedPayload<Call, SignedExtra, Implicit>((Call, SignedExtra, Implicit));
+pub struct SignedPayload<Call, TransactionExtension, Implicit>(
+	(Call, TransactionExtension, Implicit),
+);
 
-impl<Call, SignedExtra, Implicit> SignedPayload<Call, SignedExtra, Implicit>
+impl<Call, TransactionExtension, Implicit> SignedPayload<Call, TransactionExtension, Implicit>
 where
 	Call: Encode,
-	SignedExtra: Encode,
+	TransactionExtension: Encode,
 	Implicit: Encode,
 {
 	/// Create new `SignedPayload` from raw components.
-	pub fn from_raw(call: Call, extra: SignedExtra, additional_signed: Implicit) -> Self {
+	pub fn from_raw(call: Call, extra: TransactionExtension, additional_signed: Implicit) -> Self {
 		Self((call, extra, additional_signed))
 	}
 
