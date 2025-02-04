@@ -31,6 +31,7 @@ use std::{
 use url::Url;
 use ws::{connect, Result as WsResult, Sender as WsSender};
 
+#[deprecated = "Use JsonrpseeClient or TungsteniteRpcClient instead."]
 #[derive(Debug, Clone)]
 pub struct WsRpcClient {
 	url: Url,
