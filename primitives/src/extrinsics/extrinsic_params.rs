@@ -119,14 +119,18 @@ pub trait ExtrinsicParams<Index, Hash> {
 
 	/// Construct the signed extra needed for constructing an extrinsic.
 	#[deprecated = "Use transaction_extension instead"]
-	fn signed_extra(&self) -> Self::TxExtension;
+	fn signed_extra(&self) -> Self::TxExtension {
+		self.transaction_extension()
+	}
 
 	/// Construct the transaction extension needed for creating an extrinsic.
 	fn transaction_extension(&self) -> Self::TxExtension;
 
 	/// Construct any additional data that should be in the signed payload of the extrinsic.
 	#[deprecated = "Use implicit instead"]
-	fn additional_signed(&self) -> Self::Implicit;
+	fn additional_signed(&self) -> Self::Implicit {
+		self.implicit()
+	}
 
 	/// Construct any implicit data that should be in the signed payload of the extrinsic.
 	fn implicit(&self) -> Self::Implicit;
@@ -214,16 +218,8 @@ where
 		}
 	}
 
-	fn signed_extra(&self) -> Self::TxExtension {
-		self.transaction_extension()
-	}
-
 	fn transaction_extension(&self) -> Self::TxExtension {
 		Self::TxExtension::new(self.era, self.nonce, self.tip)
-	}
-
-	fn additional_signed(&self) -> Self::Implicit {
-		self.implicit()
 	}
 
 	fn implicit(&self) -> Self::Implicit {
