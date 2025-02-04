@@ -97,7 +97,7 @@ jobs:
       - name: init-rust-target
         run: rustup show && rustup component add rust-src
 
-      - name: Install gcc-multilib
+      - name: Install gcc-multilib for wasmi compilation
         run: sudo apt install gcc-multilib
 
       - name: Cargo update
