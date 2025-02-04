@@ -97,6 +97,9 @@ jobs:
       - name: init-rust-target
         run: rustup show && rustup component add rust-src
 
+      - name: Install gcc-multilib
+        run: sudo apt install gcc-multilib
+
       - name: Cargo update
         if: ${{ github.event_name == 'schedule' }}
         run: cargo update
