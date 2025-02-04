@@ -368,9 +368,9 @@ mod tests {
 		let call3 =
 			RuntimeCall::Balances(BalancesCall::transfer_allow_death { dest: bob, value: 1000 });
 
-		let xt1: Bytes = UncheckedExtrinsic::new_unsigned(call1).encode().into();
-		let xt2: Bytes = UncheckedExtrinsic::new_unsigned(call2).encode().into();
-		let xt3: Bytes = UncheckedExtrinsic::new_unsigned(call3).encode().into();
+		let xt1: Bytes = UncheckedExtrinsic::new_bare(call1).encode().into();
+		let xt2: Bytes = UncheckedExtrinsic::new_bare(call2).encode().into();
+		let xt3: Bytes = UncheckedExtrinsic::new_bare(call3).encode().into();
 
 		let xt_hash1 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt1.0);
 		let xt_hash2 = <DefaultRuntimeConfig as Config>::Hasher::hash(&xt2.0);
