@@ -14,17 +14,17 @@ tokio-util = "0.7"
 wabt = "0.10"
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-recovery = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { version = "39.0" }
+frame-system = { version = "39.1" }
+rococo-runtime = { version = "21.0" }
+pallet-balances = { version = "40.0" }
+pallet-identity = { version = "39.0" }
+pallet-recovery = { version = "39.0" }
+pallet-staking = { version = "39.0" }
+sp-core = { version = "35.0" }
+sp-keyring = { version = "40.0" }
+sp-runtime = { version = "40.1" }
+sp-weights = { version = "31.0" }
 
 # local deps
 substrate-api-client = { path = "../..", version = "1.16", features = ["staking-xt", "contracts-xt"] }

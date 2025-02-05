@@ -12,15 +12,15 @@ jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport
 
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-society = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { version = "38.0" }
+rococo-runtime = { version = "21.0" }
+sp-core = { version = "35.0" }
+sp-crypto-hashing = { version = "0.1" }
+sp-keyring = { version = "40.0" }
+sp-runtime = { version = "40.1" }
+sp-staking = { version = "37.0" }
+pallet-balances = { version = "40.0" }
+pallet-society = { version = "39.0" }
 
 # local deps
 substrate-api-client = { path = "../..", version = "1.16", features = ["staking-xt", "contracts-xt"] }
