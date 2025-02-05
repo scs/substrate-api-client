@@ -208,6 +208,7 @@ where
 			nonce,
 		}
 	}
+
 	fn transaction_extension(&self) -> Self::TxExtension {
 		Self::TxExtension::new(self.era, self.nonce, self.tip)
 	}
