@@ -105,9 +105,6 @@ staking-xt = ["std", "ac-primitives/staking-xt"]
 # of the functionality this feature provides.
 contracts-xt = ["std", "ac-primitives/contracts-xt"]
 
-# Provides compatibility to RFC-0078: "Merkelized Metadata" but disables the check of the metadata hash
-disable-metadata-hash-check = ["ac-primitives/disable-metadata-hash-check"]
-
 # Enables all std features of dependencies in case of std build.
 std = [
     # crates.io no_std
