@@ -29,7 +29,7 @@ members = [
 # crates.io no_std
 async-trait = "0.1.68"
 codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
-derive_more = { version = "1.0", default-features = false }
+derive_more = { version = "2.0", default-features = false }
 frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
 futures-util = { version = "0.3", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
