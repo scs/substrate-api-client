@@ -12,7 +12,7 @@ categories = ["no-std"]
 [dependencies]
 bitvec = { version = "1.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive", "bit-vec"], default-features = false }
-derive_more = { version = "2.0", default-features = false }
+derive_more = { version = "2.0", default-features = false, features = ["from"] }
 either = { version = "1.6.1", default-features = false }
 frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
 hex = { version = "0.4.3", default-features = false }
