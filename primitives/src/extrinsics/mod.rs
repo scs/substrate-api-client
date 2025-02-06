@@ -30,5 +30,6 @@ pub use sp_runtime::generic::{Preamble, UncheckedExtrinsic};
 pub type CallIndex = [u8; 2];
 
 pub mod extrinsic_params;
+pub mod extrinsic_params_without_hash_check;
 mod extrinsic_v4;
 pub mod signer;
