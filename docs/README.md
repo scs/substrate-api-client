@@ -6,7 +6,7 @@ If a new release is released, the following tasks need to be done:
 2. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
 3. Update and release the new release.
 4. Create a new branch and change all github deps to crates.io deps. See https://github.com/scs/substrate-api-client/issues/528 for an example update. The [psvm](https://crates.io/crates/psvm) tool can be useful for updating the polkadot dependencies.
-5. Publish to crates.io, see https://doc.rust-lang.org/cargo/reference/publishing.html for more info. 
+5. Publish to crates.io, see https://doc.rust-lang.org/cargo/reference/publishing.html for more info.
 
 
 ## Automatic Release generation
@@ -72,6 +72,12 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 
 
 4. Get the wasm file from the `target/release/wbuild/<RUNTIME NAME>` folder. Example for the minimal runtime: `~/polkadot-sdk-minimal-template/target/release/wbuild/minimal-template-runtime/minimal_template_runtime.compact.compressed.wasm`
+
+## Cargo.toml dependency Specification
+In the `Cargo.toml` we handle the versioning as following:
+- By default: No patch version specified
+- If there is a specific reason to specify a version with patch, then add a comment why this is needed (security vulnerability, ...)
+Cargo will ensure the imported version is not below the specified one (above is possible though).
 
 
 ## Code overview
