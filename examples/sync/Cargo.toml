@@ -6,7 +6,7 @@ edition = "2021"
 
 [dev-dependencies]
 env_logger = "0.11"
-log = "0.4.14"
+log = "0.4"
 
 # Substrate dependencies
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
