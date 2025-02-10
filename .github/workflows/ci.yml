@@ -98,7 +98,7 @@ jobs:
         run: rustup show && rustup component add rust-src
 
       - name: Install gcc-multilib for wasmi compilation
-        run: sudo apt install gcc-multilib
+        run: sudp apt update && sudo apt install gcc-multilib
         if: contains(matrix.check, 'wasm32-wasip1')
 
       - name: Cargo update
