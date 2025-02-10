@@ -99,6 +99,7 @@ jobs:
 
       - name: Install gcc-multilib for wasmi compilation
         run: sudo apt install gcc-multilib
+        if: contains(matrix.check, 'wasm32-wasip1')
 
       - name: Cargo update
         if: ${{ github.event_name == 'schedule' }}
