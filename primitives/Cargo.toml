@@ -11,7 +11,7 @@ categories = ["no-std"]
 
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.6", default-features = false, features = ['derive'] }
+codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ['derive'] }
 impl-serde = { version = "0.5", default-features = false }
 primitive-types = { version = "0.13", default-features = false, features = ["serde_no_std", "scale-info"] }
 scale-info = { version = "2.1", default-features = false, features = ["derive"] }
