@@ -139,9 +139,9 @@ where
 mod tests {
 	use super::*;
 	use crate::AssetRuntimeConfig;
-	use solochain_template_runtime::Signature;
 	use sp_core::sr25519;
 	use sp_keyring::Sr25519Keyring;
+	use sp_runtime::MultiSignature;
 
 	#[test]
 	fn test_extrinsic_signer_clone() {
@@ -154,7 +154,7 @@ mod tests {
 	#[test]
 	fn test_static_extrinsic_signer_clone() {
 		let pair = Sr25519Keyring::Alice.pair();
-		let signer = StaticExtrinsicSigner::<_, Signature>::new(pair);
+		let signer = StaticExtrinsicSigner::<_, MultiSignature>::new(pair);
 
 		let _signer2 = signer.clone();
 	}
