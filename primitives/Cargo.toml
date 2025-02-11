@@ -24,7 +24,7 @@ sp-crypto-hashing = { version = "0.1.0", default-features = false }
 sp-runtime = { version = "40.1", default-features = false, features = ["serde"] }
 sp-runtime-interface = { version = "29.0", default-features = false }
 sp-staking = { version = "37.0", default-features = false, features = ["serde"] }
-sp-version = { version = "37.0", default-features = false, features = ["serde"] }
+sp-version = { version = "38.0", default-features = false, features = ["serde"] }
 sp-weights = { version = "31.0", default-features = false, features = ["serde"] }
 # need to add this for the app_crypto macro
 sp-application-crypto = { version = "39.0", default-features = false, features = ["full_crypto"] }

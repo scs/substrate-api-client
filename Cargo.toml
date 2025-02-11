@@ -54,7 +54,7 @@ sp-inherents = { default-features = false, version = "35.0" }
 sp-runtime = { default-features = false, features = ["serde"], version = "40.1" }
 sp-runtime-interface = { default-features = false, version = "29.0" }
 sp-storage = { default-features = false, features = ["serde"], version = "22.0" }
-sp-version = { default-features = false, features = ["serde"], version = "37.0" }
+sp-version = { default-features = false, features = ["serde"], version = "38.0" }
 
 # substrate std / wasm only
 frame-support = { optional = true, version = "39.0" }
