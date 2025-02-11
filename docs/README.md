@@ -5,7 +5,7 @@ If a new release is released, the following tasks need to be done:
 1. Update the .toml versions in accordance with the [Semantic Versioning](../README.md#version-numbers) section.
 1. Create a new branch and change all github deps to crates.io deps. See https://github.com/scs/substrate-api-client/issues/812 for an example update. The [psvm](https://crates.io/crates/psvm) tool can be useful for updating the polkadot dependencies.
 1. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
-1. Update and release the new release (see [Automatic Release generation](#automatic-release-generation)).
+1. Update and release the new release (see [Automatic Release Generation](#automatic-release-generation)).
 1. Publish to crates.io (see https://doc.rust-lang.org/cargo/reference/publishing.html for more info):
 	```shell
 	cargo login <Crates.io Token>
