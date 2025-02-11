@@ -6,7 +6,14 @@ If a new release is released, the following tasks need to be done:
 2. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
 3. Update and release the new release.
 4. Create a new branch and change all github deps to crates.io deps. See https://github.com/scs/substrate-api-client/issues/528 for an example update. The [psvm](https://crates.io/crates/psvm) tool can be useful for updating the polkadot dependencies.
-5. Publish to crates.io, see https://doc.rust-lang.org/cargo/reference/publishing.html for more info.
+5. Publish to crates.io (see https://doc.rust-lang.org/cargo/reference/publishing.html for more info):
+	```shell
+	cargo login <Crates.io Token>
+	# Only run the next step if CI has run successfully. Dry run does not work, you'd need to upload the ac libraries one by one.
+	cargo publish --no-verify
+	```
+
+
 
 
 ## Automatic Release generation
