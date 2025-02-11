@@ -21,9 +21,8 @@ use alloc::{
 };
 use codec::{Decode, Encode};
 use log::*;
-use scale_decode::DecodeAsFields;
 use scale_info::PortableRegistry;
-use scale_value::{scale::TypeId, Composite};
+use scale_value::Composite;
 
 /// Raw event details without the associated metadata
 // Based on subxt EventDetails.
@@ -119,7 +118,7 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 
 	/// Decode and provide the event fields back in the form of a [`scale_value::Composite`]
 	/// type which represents the named or unnamed fields that were present in the event.
-	pub fn field_values(&self, metadata: &Metadata) -> Result<Composite<TypeId>, Error> {
+	pub fn field_values(&self, metadata: &Metadata) -> Result<Composite<u32>, Error> {
 		let event_metadata = self.event_metadata(metadata)?;
 		self.field_values_inner(&event_metadata, metadata.types())
 	}
@@ -219,7 +218,7 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 				input,
 				field_metadata.ty.id,
 				metadata.types(),
-				scale_decode::visitor::IgnoreVisitor,
+				scale_decode::visitor::IgnoreVisitor::new(),
 			)
 			.map_err(scale_decode::Error::from)?;
 		}
@@ -272,7 +271,7 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 	pub(crate) fn field_values_unchecked(
 		&self,
 		metadata: &Metadata,
-	) -> Result<Composite<TypeId>, Error> {
+	) -> Result<Composite<u32>, Error> {
 		let event_metadata = self.event_metadata_unchecked(metadata);
 		self.field_values_inner(&event_metadata, metadata.types())
 	}
@@ -314,14 +313,14 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 		&self,
 		event_metadata: &EventMetadataDetails,
 		types: &PortableRegistry,
-	) -> Result<Composite<TypeId>, Error> {
+	) -> Result<Composite<u32>, Error> {
 		let bytes = &mut self.field_bytes();
 		let mut fields = event_metadata
 			.variant
 			.fields
 			.iter()
 			.map(|f| scale_decode::Field::new(f.ty.id, f.name.as_deref()));
-		let decoded = <Composite<TypeId>>::decode_as_fields(bytes, &mut fields, types)?;
+		let decoded = scale_value::scale::decode_as_fields(bytes, &mut fields, types)?;
 
 		Ok(decoded)
 	}

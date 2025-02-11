@@ -27,16 +27,16 @@ members = [
 
 [dependencies]
 # crates.io no_std
-async-trait = "0.1.68"
-codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ['derive'] }
-derive_more = { version = "0.99.5" }
-frame-metadata = { version = "16.0", default-features = false, features = ["current", "serde_full", "decode"] }
+async-trait = "0.1"
+codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ["derive"] }
+derive_more = { version = "2.0", default-features = false, features = ["from"] }
+frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
 futures-util = { version = "0.3", default-features = false }
-hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
-log = { version = "0.4.14", default-features = false }
-maybe-async = { version = "0.2.7" }
-serde = { version = "1.0.136", default-features = false, features = ["derive"] }
-serde_json = { version = "1.0.79", default-features = false }
+hex = { version = "0.4", default-features = false, features = ["alloc"] }
+log = { version = "0.4", default-features = false }
+maybe-async = { version = "0.2" }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0", default-features = false }
 
 
 # crates.io std only
@@ -44,8 +44,8 @@ url = { version = "2.5", optional = true }
 
 # websocket dependent features
 jsonrpsee = { version = "0.24", optional = true, features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
-tungstenite = { version = "0.23", optional = true, features = ["native-tls", "url"] }
-ws = { version = "0.9.2", optional = true, features = ["ssl"] }
+tungstenite = { version = "0.26", optional = true, features = ["native-tls", "url"] }
+ws = { version = "0.9", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
@@ -68,8 +68,8 @@ ac-primitives = { path = "primitives", version = "1.16", default-features = fals
 [dev-dependencies]
 ac-node-api = { path = "node-api", version = "1.16", features = ["mocks"] }
 rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-scale-info = { version = "2.1.1", features = ["derive"] }
-test-case = "3.1.0"
+scale-info = { version = "2.1", features = ["derive"] }
+test-case = "3.1"
 
 [features]
 default = ["std", "jsonrpsee-client"]

@@ -105,7 +105,7 @@ impl TungsteniteRpcClient {
 		debug!("Connected to the server. Response HTTP code: {}", response.status());
 
 		// Send request to server.
-		socket.send(Message::Text(json_req))?;
+		socket.send(Message::Text(json_req.into()))?;
 
 		let msg = read_until_text_message(&mut socket)?;
 
@@ -149,7 +149,7 @@ fn subscribe_to_server(
 	debug!("Connected to the server. Response HTTP code: {}", response.status());
 
 	// Subscribe to server
-	socket.send(Message::Text(json_req))?;
+	socket.send(Message::Text(json_req.into()))?;
 
 	// Read the first message response - must be the subscription id.
 	let msg = read_until_text_message(&mut socket)?;
@@ -210,7 +210,7 @@ fn attempt_connection_until(url: &Url, max_attempts: u8) -> Result<(MySocket, Re
 fn read_until_text_message(socket: &mut MySocket) -> Result<String> {
 	loop {
 		match socket.read()? {
-			Message::Text(s) => break Ok(s),
+			Message::Text(s) => break Ok(s.as_str().into()),
 			Message::Binary(_) => {
 				debug!("skip binary msg");
 			},

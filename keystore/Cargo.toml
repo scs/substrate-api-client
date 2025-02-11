@@ -9,10 +9,10 @@ description = "Keystore (and session key management) for ed25519 based chains li
 readme = "README.md"
 
 [dependencies]
-array-bytes = "6.2"
-async-trait = "0.1.52"
-parking_lot = "0.12.0"
-serde_json = "1.0.79"
+array-bytes = "9.1"
+async-trait = "0.1"
+parking_lot = "0.12"
+serde_json = "1.0"
 
 # Substrate dependencies
 sc-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
@@ -22,4 +22,4 @@ sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 [dev-dependencies]
-tempfile = "3.3.0"
+tempfile = "3.3"

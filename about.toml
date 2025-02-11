@@ -11,6 +11,7 @@ accepted = [
     "Unicode-DFS-2016",
     "Unicode-3.0",
     "NOASSERTION",
+    "Zlib",
     "GPL-3.0"
 ]
 ignore-dev-dependencies = true

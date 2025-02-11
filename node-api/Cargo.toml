@@ -10,20 +10,20 @@ readme = "README.md"
 categories = ["no-std"]
 
 [dependencies]
-bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
-codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive", "bit-vec"], default-features = false }
-derive_more = { version = "0.99.17" }
-either = { version = "1.6.1", default-features = false }
-frame-metadata = { version = "16.0", default-features = false, features = ["current", "serde_full", "decode"] }
-hex = { version = "0.4.3", default-features = false }
-log = { version = "0.4.14", default-features = false }
-scale-bits = { version = "0.4.0", default-features = false, features = ["scale-info", "serde"] }
-scale-decode = { version = "0.10.0", default-features = false, features = ["primitive-types", "derive"] }
-scale-encode = { version = "0.5.0", default-features = false, features = ["bits", "primitive-types", "derive"] }
-scale-info = { version = "2.0.1", features = ["derive", "decode", "bitvec"], default-features = false }
-scale-value = { version = "0.13.0", default-features = false }
-serde = { version = "1.0.136", features = ["derive"], default-features = false }
-serde_json = { version = "1.0.79", default-features = false, features = ["alloc"] }
+bitvec = { version = "1.0", default-features = false, features = ["alloc"] }
+codec = { package = "parity-scale-codec", version = "3.7", features = ["derive", "bit-vec"], default-features = false }
+derive_more = { version = "2.0", default-features = false, features = ["from"] }
+either = { version = "1.6", default-features = false }
+frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
+hex = { version = "0.4", default-features = false }
+log = { version = "0.4", default-features = false }
+scale-bits = { version = "0.7", default-features = false, features = ["scale-info", "serde"] }
+scale-decode = { version = "0.16", default-features = false, features = ["primitive-types", "derive"] }
+scale-encode = { version = "0.10", default-features = false, features = ["bits", "primitive-types", "derive"] }
+scale-info = { version = "2.0", features = ["derive", "decode", "bitvec"], default-features = false }
+scale-value = { version = "0.18", default-features = false }
+serde = { version = "1.0", features = ["derive"], default-features = false }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
@@ -39,7 +39,7 @@ sp-runtime-interface = { default-features = false, git = "https://github.com/par
 ac-primitives = { path = "../primitives", version = "1.16", default-features = false }
 
 [dev-dependencies]
-test-case = "3.1.0"
+test-case = "3.1"
 
 [features]
 default = ["std"]

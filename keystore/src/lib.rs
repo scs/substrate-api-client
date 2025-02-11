@@ -17,8 +17,9 @@
 //
 //! Local keystore implementation. This file is from substrate but was copied here to have
 //! access to the private stuff.
-//! Original file: https://github.com/paritytech/polkadot-sdk/blob/1f023deab8d021c5bab08731e13aa12590ed4026/substrate/client/keystore/src/local.rs
+//! Original file: https://github.com/paritytech/polkadot-sdk/blob/76a6d478e07b2cdf9e5b87a2a840e92bea8d9e12/substrate/client/keystore/src/local.rs
 
+use array_bytes::{Dehexify, Hexify};
 use parking_lot::RwLock;
 use sc_keystore::{Error, Result};
 use sp_application_crypto::{AppCrypto, AppPair, IsWrappedBy};
@@ -43,7 +44,7 @@ use sp_core::bandersnatch;
 }
 
 sp_keystore::bls_experimental_enabled! {
-use sp_core::{bls377, bls381, ecdsa_bls377};
+use sp_core::{bls381, ecdsa_bls381, KeccakHasher};
 }
 
 /// A local based keystore that is either memory-based or filesystem-based.
@@ -51,6 +52,13 @@ pub struct LocalKeystore(RwLock<KeystoreInner>);
 
 impl LocalKeystore {
 	/// Create a local keystore from filesystem.
+	///
+	/// The keystore will be created at `path`. The keystore optionally supports to encrypt/decrypt
+	/// the keys in the keystore using `password`.
+	///
+	/// NOTE: Even when passing a `password`, the keys on disk appear to look like normal secret
+	/// uris. However, without having the correct password the secret uri will not generate the
+	/// correct private key. See [`SecretUri`](sp_core::crypto::SecretUri) for more information.
 	pub fn open<T: Into<PathBuf>>(path: T, password: Option<SecretString>) -> Result<Self> {
 		let inner = KeystoreInner::open(path, password)?;
 		Ok(Self(RwLock::new(inner)))
@@ -140,6 +148,13 @@ impl LocalKeystore {
 }
 
 impl Keystore for LocalKeystore {
+	/// Insert a new secret key.
+	///
+	/// WARNING: if the secret keypair has been manually generated using a password
+	/// (e.g. using methods such as [`sp_core::crypto::Pair::from_phrase`]) then such
+	/// a password must match the one used to open the keystore via [`LocalKeystore::open`].
+	/// If the passwords doesn't match then the inserted key ends up being unusable under
+	/// the current keystore instance.
 	fn insert(
 		&self,
 		key_type: KeyTypeId,
@@ -347,54 +362,42 @@ impl Keystore for LocalKeystore {
 			self.sign::<bls381::Pair>(key_type, public, msg)
 		}
 
-		fn bls377_public_keys(&self, key_type: KeyTypeId) -> Vec<bls377::Public> {
-			self.public_keys::<bls377::Pair>(key_type)
+		fn ecdsa_bls381_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa_bls381::Public> {
+			self.public_keys::<ecdsa_bls381::Pair>(key_type)
 		}
 
-		/// Generate a new pair compatible with the 'bls377' signature scheme.
+		/// Generate a new pair of paired-keys compatible with the '(ecdsa,bls381)' signature scheme.
 		///
 		/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
-		fn bls377_generate_new(
+		fn ecdsa_bls381_generate_new(
 			&self,
 			key_type: KeyTypeId,
 			seed: Option<&str>,
-		) -> std::result::Result<bls377::Public, TraitError> {
-			self.generate_new::<bls377::Pair>(key_type, seed)
+		) -> std::result::Result<ecdsa_bls381::Public, TraitError> {
+			self.generate_new::<ecdsa_bls381::Pair>(key_type, seed)
 		}
 
-		fn bls377_sign(
+		fn ecdsa_bls381_sign(
 			&self,
 			key_type: KeyTypeId,
-			public: &bls377::Public,
+			public: &ecdsa_bls381::Public,
 			msg: &[u8],
-		) -> std::result::Result<Option<bls377::Signature>, TraitError> {
-			self.sign::<bls377::Pair>(key_type, public, msg)
+		) -> std::result::Result<Option<ecdsa_bls381::Signature>, TraitError> {
+			self.sign::<ecdsa_bls381::Pair>(key_type, public, msg)
 		}
 
-		fn ecdsa_bls377_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa_bls377::Public> {
-			self.public_keys::<ecdsa_bls377::Pair>(key_type)
-		}
-
-		/// Generate a new pair of paired-keys compatible with the '(ecdsa,bls377)' signature scheme.
-		///
-		/// If `[seed]` is `Some` then the key will be ephemeral and stored in memory.
-		fn ecdsa_bls377_generate_new(
+		fn ecdsa_bls381_sign_with_keccak256(
 			&self,
 			key_type: KeyTypeId,
-			seed: Option<&str>,
-		) -> std::result::Result<ecdsa_bls377::Public, TraitError> {
-			self.generate_new::<ecdsa_bls377::Pair>(key_type, seed)
-		}
-
-		fn ecdsa_bls377_sign(
-			&self,
-			key_type: KeyTypeId,
-			public: &ecdsa_bls377::Public,
+			public: &ecdsa_bls381::Public,
 			msg: &[u8],
-		) -> std::result::Result<Option<ecdsa_bls377::Signature>, TraitError> {
-			self.sign::<ecdsa_bls377::Pair>(key_type, public, msg)
+		) -> std::result::Result<Option<ecdsa_bls381::Signature>, TraitError> {
+			 let sig = self.0
+			.read()
+			.key_pair_by_type::<ecdsa_bls381::Pair>(public, key_type)?
+			.map(|pair| pair.sign_with_hasher::<KeccakHasher>(msg));
+			Ok(sig)
 		}
-
 	}
 }
 
@@ -557,8 +560,8 @@ impl KeystoreInner {
 	/// Returns `None` if the keystore only exists in-memory and there isn't any path to provide.
 	fn key_file_path(&self, public: &[u8], key_type: KeyTypeId) -> Option<PathBuf> {
 		let mut buf = self.path.as_ref()?.clone();
-		let key_type = array_bytes::bytes2hex("", &key_type.0);
-		let key = array_bytes::bytes2hex("", public);
+		let key_type = key_type.0.hexify();
+		let key = public.hexify();
 		buf.push(key_type + key.as_str());
 		Some(buf)
 	}
@@ -579,7 +582,7 @@ impl KeystoreInner {
 
 				// skip directories and non-unicode file names (hex is unicode)
 				if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-					match array_bytes::hex2bytes(name) {
+					match <Vec<u8>>::dehexify(name) {
 						Ok(ref hex) if hex.len() > 4 => {
 							if hex[0..4] != key_type.0 {
 								continue
@@ -775,7 +778,7 @@ mod tests {
 		let temp_dir = TempDir::new().unwrap();
 		let store = LocalKeystore::open(temp_dir.path(), None).unwrap();
 
-		let file_name = temp_dir.path().join(array_bytes::bytes2hex("", &SR25519.0[..2]));
+		let file_name = temp_dir.path().join(&SR25519.0[..2].hexify());
 		fs::write(file_name, "test").expect("Invalid file is written");
 
 		assert!(store.sr25519_public_keys(SR25519).is_empty());

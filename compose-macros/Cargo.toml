@@ -11,16 +11,16 @@ categories = ["no-std"]
 
 
 [dependencies]
-log = { version = "0.4.14", default-features = false }
-maybe-async = { version = "0.2.7" }
+log = { version = "0.4", default-features = false }
+maybe-async = { version = "0.2" }
 
 # local
 ac-primitives = { path = "../primitives", version = "1.16", default-features = false }
 
 [dev-dependencies]
 ac-node-api = { path = "../node-api", version = "1.16" }
-frame-metadata = { version = "16.0" }
-codec = { package = "parity-scale-codec", version = "3.6.1" }
+frame-metadata = { version = "18.0" }
+codec = { package = "parity-scale-codec", version = "3.7" }
 
 
 [features]

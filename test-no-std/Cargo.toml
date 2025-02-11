@@ -6,7 +6,7 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dependencies]
-libc = { version = "0.2.119", default-features = false }
+libc = { version = "0.2", default-features = false }
 
 # local dependencies
 ac-compose-macros = { path = "../compose-macros", version = "1.16", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
