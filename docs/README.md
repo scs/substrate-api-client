@@ -3,18 +3,19 @@
 ## TODO List for a new Release
 If a new release is released, the following tasks need to be done:
 1. Update the .toml versions in accordance with the [Semantic Versioning](../README.md#version-numbers) section.
-2. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
-3. Update and release the new release.
-4. Create a new branch and change all github deps to crates.io deps. See https://github.com/scs/substrate-api-client/issues/528 for an example update. The [psvm](https://crates.io/crates/psvm) tool can be useful for updating the polkadot dependencies.
-5. Publish to crates.io (see https://doc.rust-lang.org/cargo/reference/publishing.html for more info):
+1. Create a new branch and change all github deps to crates.io deps. See https://github.com/scs/substrate-api-client/issues/812 for an example update. The [psvm](https://crates.io/crates/psvm) tool can be useful for updating the polkadot dependencies.
+1. Add a new tag to the desired commit, see the [Tag generation](#tag-generation) section.
+1. Update and release the new release.
+1. Publish to crates.io (see https://doc.rust-lang.org/cargo/reference/publishing.html for more info):
 	```shell
 	cargo login <Crates.io Token>
-	# Only run the next step if CI has run successfully. Dry run does not work, you'd need to upload the ac libraries one by one.
-	cargo publish --no-verify
+	# Only run the next steps if CI has run successfully.
+	cargo publish -p ac-primitives
+	cargo publish -p ac-keystore
+	cargo publish -p ac-node-api
+	cargo publish -p ac-compose-macros
+	cargo publish
 	```
-
-
-
 
 ## Automatic Release generation
 
