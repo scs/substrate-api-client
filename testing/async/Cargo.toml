@@ -12,7 +12,7 @@ jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport
 
 
 # Substrate dependencies
-frame-support = { version = "38.0" }
+frame-support = { version = "39.0" }
 rococo-runtime = { version = "21.0" }
 sp-core = { version = "35.0" }
 sp-crypto-hashing = { version = "0.1" }
