@@ -1,11 +1,11 @@
 [package]
 name = "ac-examples-wasm"
-version = "1.16.0"
+version = "1.17.0"
 license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-substrate-api-client = { path = "../..", version = "1.16", default-features = false }
+substrate-api-client = { path = "../..", version = "1.17", default-features = false }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }

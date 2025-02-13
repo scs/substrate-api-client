@@ -1,6 +1,6 @@
 [package]
 name = "ac-node-api"
-version = "1.16.0"
+version = "1.17.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
@@ -36,7 +36,7 @@ sp-application-crypto = { default-features = false, features = ["full_crypto"], 
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local
-ac-primitives = { path = "../primitives", version = "1.16", default-features = false }
+ac-primitives = { path = "../primitives", version = "1.17", default-features = false }
 
 [dev-dependencies]
 test-case = "3.1"
