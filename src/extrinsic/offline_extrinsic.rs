@@ -24,6 +24,8 @@ use ac_primitives::{
 };
 use codec::Encode;
 
+const EXTRINSIC_FORMAT_VERSION: u8 = 5;
+
 type ExtrinsicAddress<T> =
 	<<T as Config>::ExtrinsicSigner as SignExtrinsic<<T as Config>::AccountId>>::ExtrinsicAddress;
 type Signature<T> =
@@ -42,7 +44,10 @@ impl<T: Config, Client> Api<T, Client> {
 	) -> UncheckedExtrinsic<ExtrinsicAddress<T>, Call, Signature<T>, TxExtension<T>> {
 		match self.signer() {
 			Some(signer) => compose_extrinsic_offline!(signer, call, self.extrinsic_params(nonce)),
-			None => UncheckedExtrinsic { preamble: Preamble::Bare(5), function: call },
+			None => UncheckedExtrinsic {
+				preamble: Preamble::Bare(EXTRINSIC_FORMAT_VERSION),
+				function: call,
+			},
 		}
 	}
 }

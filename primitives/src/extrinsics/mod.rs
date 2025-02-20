@@ -33,3 +33,6 @@ pub mod extrinsic_params;
 pub mod extrinsic_params_without_hash_check;
 mod extrinsic_v4;
 pub mod signer;
+
+mod extensions;
+mod new_school_extrinsic;
