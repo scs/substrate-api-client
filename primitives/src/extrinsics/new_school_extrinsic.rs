@@ -15,7 +15,7 @@
 
 */
 
-use super::extensions::{CheckGenesis, VerifySignature};
+use super::extensions::{CheckGenesis, ExtrinsicExtension, VerifySignature};
 use crate::config::Config;
 use codec::{Codec, Decode, Encode};
 use primitive_types::H256;
@@ -24,7 +24,7 @@ use sp_core::crypto::AccountId32;
 use sp_runtime::{
 	generic::Era,
 	impl_tx_ext_default,
-	traits::{BlakeTwo256, Dispatchable, Hash, TransactionExtension},
+	traits::{BlakeTwo256, Dispatchable, Hash},
 	MultiSignature,
 };
 
