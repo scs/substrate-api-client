@@ -25,10 +25,12 @@ use crate::{extrinsic_params, ExtrinsicSigner, SignExtrinsic};
 pub use asset_runtime_config::*;
 pub use default_runtime_config::*;
 pub use rococo_runtime_config::*;
+pub use resonance_runtime_config::*;
 
 pub mod asset_runtime_config;
 pub mod default_runtime_config;
 pub mod rococo_runtime_config;
+pub mod resonance_runtime_config;
 
 /// Runtime types.
 pub trait Config {

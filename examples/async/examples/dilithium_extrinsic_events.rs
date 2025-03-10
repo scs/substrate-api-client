@@ -19,21 +19,21 @@
 // pub use pair::{crystal_alice, dilithium_bob, crystal_charlie};
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
-	ac_primitives::{Config, DefaultRuntimeConfig},
+	ac_primitives::{ExtrinsicSigner, Config, AccountId32, AccountData, Block, Header,
+		MultiAddress, OpaqueExtrinsic, resonance_runtime_config::ResonanceRuntimeConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
 };
 use dilithium_crypto::types::ResonancePair;
-use dilithium_crypto::pair::{crystal_alice, dilithium_bob, crystal_charlie};
-use dilithium_crypto::traits;
-use dilithium_crypto::pair::*;
+use dilithium_crypto::ResonanceSignatureScheme;
+use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use sp_runtime::traits::IdentifyAccount;
+use sp_core::Pair;
+type Hash = <ResonanceRuntimeConfig as Config>::Hash;
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
 // own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
-
-type Hash = <DefaultRuntimeConfig as Config>::Hash;
 
 #[tokio::main]
 async fn main() {
@@ -44,13 +44,16 @@ async fn main() {
 	let alice_signer = crystal_alice();
 	// let alice = crystal_alice.into_account();
 	// let bob = dilithium_bob.into_account();
-	let alice = alice_signer.into_account();  // Get public key and convert to account
+	let alice = crystal_alice().into_account();  // Get public key and convert to account
 	let bob = dilithium_bob().into_account();
 
 
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
-	api.set_signer(alice_signer);
+	let mut api = Api::<ResonanceRuntimeConfig, _>::new(client).await.unwrap();
+
+	let es = ExtrinsicSigner::<ResonanceRuntimeConfig>::new(alice_signer.into());
+
+	api.set_signer(es);
 
 
 	let (maybe_data_of_alice, maybe_data_of_bob) =

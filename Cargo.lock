@@ -121,6 +121,7 @@ dependencies = [
 name = "ac-primitives"
 version = "1.17.0"
 dependencies = [
+ "dilithium-crypto",
  "frame-metadata-hash-extension 0.7.0",
  "frame-system 39.1.0",
  "impl-serde",
