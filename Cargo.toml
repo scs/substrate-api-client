@@ -48,16 +48,16 @@ tungstenite = { version = "0.26", optional = true, features = ["native-tls", "ur
 ws = { version = "0.9", optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-inherents = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-inherents = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
 
 # substrate std / wasm only
-frame-support = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
 
 # local deps
 ac-compose-macros = { path = "compose-macros", version = "1.17", default-features = false }
@@ -67,7 +67,7 @@ ac-primitives = { path = "primitives", version = "1.17", default-features = fals
 
 [dev-dependencies]
 ac-node-api = { path = "node-api", version = "1.17", features = ["mocks"] }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
 scale-info = { version = "2.1", features = ["derive"] }
 test-case = "3.1"
 
