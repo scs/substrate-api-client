@@ -14,17 +14,18 @@ tokio-util = "0.7"
 wabt = "0.10"
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-pallet-recovery = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+frame-support = { version = "39.0.0" }
+frame-system = { version = "39.1.0" }
+rococo-runtime = { version = "21.0.0" }
+pallet-balances = { version = "40.0.1" }
+pallet-identity = { version = "39.0.0" }
+pallet-recovery = { version = "39.0.0" }
+pallet-staking = { version = "39.0.1" }
+sp-core = { version = "35.0.0" }
+sp-keyring = { version = "40.0.0" }
+sp-runtime = { version = "40.1.0" }
+sp-weights = { version = "31.0.0" }
+dilithium-crypto = { workspace = true, default-features = false, features = ["full_crypto"] }
 
 # local deps
-substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt"] }
+substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt", "jsonrpsee-client"] }

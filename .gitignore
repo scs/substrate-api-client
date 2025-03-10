@@ -18,3 +18,4 @@
 
 # VScode
 **/.vscode
+.DS_Store

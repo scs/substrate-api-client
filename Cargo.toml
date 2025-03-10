@@ -25,8 +25,20 @@ members = [
     "testing/sync",
 ]
 
+[workspace.dependencies]
+dilithium-crypto = { path = "../backbone/dilithium-crypto", default-features = false, features = ["full_crypto"] }
+
 [dependencies]
-# crates.io no_std
+frame-support = { version = "39.0.0", default-features = false, optional = true }
+frame-system = { version = "39.1.0" }
+sp-core = { version = "35.0.0" }
+sp-runtime = { version = "40.1.0" }
+sp-crypto-hashing = { version="0.1.0", default-features = false }
+sp-inherents = { version="35.0.0", default-features = false }
+sp-runtime-interface = { version="29.0.0", default-features = false }
+sp-storage = { version="22.0.0", default-features = false, features = ["serde"] }
+sp-version = { version="38.0.0", default-features = false, features = ["serde"] }
+
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ["derive"] }
 derive_more = { version = "2.0", default-features = false, features = ["from"] }
@@ -37,37 +49,18 @@ log = { version = "0.4", default-features = false }
 maybe-async = { version = "0.2" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0", default-features = false }
-
-
-# crates.io std only
+dilithium-crypto.workspace=true
 url = { version = "2.5", optional = true }
-
-# websocket dependent features
 jsonrpsee = { version = "0.24", optional = true, features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
 tungstenite = { version = "0.26", optional = true, features = ["native-tls", "url"] }
 ws = { version = "0.9", optional = true, features = ["ssl"] }
-
-# Substrate no_std dependencies
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-inherents = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-
-# substrate std / wasm only
-frame-support = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-
-# local deps
 ac-compose-macros = { path = "compose-macros", version = "1.17", default-features = false }
 ac-node-api = { path = "node-api", version = "1.17", default-features = false }
 ac-primitives = { path = "primitives", version = "1.17", default-features = false }
 
-
 [dev-dependencies]
 ac-node-api = { path = "node-api", version = "1.17", features = ["mocks"] }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1", features = ["derive"] }
 test-case = "3.1"
 
@@ -129,4 +122,5 @@ std = [
     "ac-compose-macros/std",
     "ac-node-api/std",
     "ac-primitives/std",
+    "dilithium-crypto/std",
 ]

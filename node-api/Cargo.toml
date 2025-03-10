@@ -26,14 +26,14 @@ serde = { version = "1.0", features = ["derive"], default-features = false }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # substrate
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-core = { version = "35.0.0", default-features = false, features = ["full_crypto", "serde"] }
+sp-crypto-hashing = { version = "0.1.0", default-features = false }
+sp-runtime = { version = "40.1.0", default-features = false, features = ["serde"] }
+sp-storage = { version = "22.0.0", default-features = false, features = ["serde"] }
 
 # need to add this for `no_std`
-sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-stable2412-2" }
+sp-application-crypto = { version = "39.0.0", default-features = false, features = ["full_crypto"] }
+sp-runtime-interface = { version = "29.0.0", default-features = false }
 
 # local
 ac-primitives = { path = "../primitives", version = "1.17", default-features = false }
