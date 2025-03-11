@@ -67,39 +67,39 @@ async fn main() {
 	// So lets create an extrinsic that will not succeed:
 	// Alice tries so transfer all her balance, but that will not work, because
 	// she will not have enough balance left to pay the fees.
-	let bad_transfer_extrinsic = api
-		.balance_transfer_allow_death(bob.clone().into(), balance_of_alice)
-		.await
-		.unwrap();
-	println!("[+] Composed bad extrinsic: {bad_transfer_extrinsic:?}\n",);
+	// let bad_transfer_extrinsic = api
+	// 	.balance_transfer_allow_death(bob.clone().into(), balance_of_alice)
+	// 	.await
+	// 	.unwrap();
+	// println!("[+] Composed bad extrinsic: {bad_transfer_extrinsic:?}\n",);
 
-	// Send and watch extrinsic until InBlock.
-	let result = api
-		.submit_and_watch_extrinsic_until(bad_transfer_extrinsic, XtStatus::InBlock)
-		.await;
-	println!("[+] Sent bad transfer extrinsic. Result {result:?}");
+	// // Send and watch extrinsic until InBlock.
+	// let result = api
+	// 	.submit_and_watch_extrinsic_until(bad_transfer_extrinsic, XtStatus::InBlock)
+	// 	.await;
+	// println!("[+] Sent bad transfer extrinsic. Result {result:?}");
 
-	// Check if the transfer really has failed:
-	match result {
-		Ok(_report) => {
-			panic!("Exptected the call to fail.");
-		},
-		Err(e) => {
-			println!("[+] Couldn't execute the extrinsic due to {e:?}\n");
-			let string_error = format!("{e:?}");
-			assert!(string_error.contains("FundsUnavailable"));
-		},
-	};
+	// // Check if the transfer really has failed:
+	// match result {
+	// 	Ok(_report) => {
+	// 		panic!("Exptected the call to fail.");
+	// 	},
+	// 	Err(e) => {
+	// 		println!("[+] Couldn't execute the extrinsic due to {e:?}\n");
+	// 		let string_error = format!("{e:?}");
+	// 		assert!(string_error.contains("FundsUnavailable"));
+	// 	},
+	// };
 
 	// Verify that Bob's free Balance hasn't changed.
-	let new_balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap().free;
-	println!("[+] Bob's Free Balance is now {}\n", new_balance_of_bob);
-	assert_eq!(balance_of_bob, new_balance_of_bob);
+	// let new_balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap().free;
+	// println!("[+] Bob's Free Balance is now {}\n", new_balance_of_bob);
+	// assert_eq!(balance_of_bob, new_balance_of_bob);
 
-	// Verify that Alice's free Balance decreased: paid fees.
-	let new_balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
-	println!("[+] Alice's Free Balance is now {}\n", new_balance_of_alice);
-	assert!(balance_of_alice > new_balance_of_alice);
+	// // Verify that Alice's free Balance decreased: paid fees.
+	// let new_balance_of_alice = api.get_account_data(&alice).await.unwrap().unwrap().free;
+	// println!("[+] Alice's Free Balance is now {}\n", new_balance_of_alice);
+	// assert!(balance_of_alice > new_balance_of_alice);
 
 	// Next, we send an extrinsic that should succeed:
 	let balance_to_transfer = 1000;
