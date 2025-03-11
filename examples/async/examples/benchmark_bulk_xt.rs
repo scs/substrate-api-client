@@ -15,7 +15,7 @@
 
 //! This example floods the node with a series of transactions.
 
-use rococo_runtime::{BalancesCall, RuntimeCall};
+use resonance_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_primitives::{

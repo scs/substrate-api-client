@@ -10,10 +10,10 @@ codec = { package = "parity-scale-codec", version = "3.7", features = ['derive']
 tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types", "server"] }
 
-
+resonance-runtime = { workspace = true, default-features = false }
 # Substrate dependencies
 frame-support = { version = "39.0.0" }
-rococo-runtime = { version = "21.0.0" }
+# rococo-runtime = { version = "21.0.0" }
 sp-core = { version = "35.0.0" }
 sp-crypto-hashing = { version = "0.1.0" }
 sp-keyring = { version = "40.0.0" }

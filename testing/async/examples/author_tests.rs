@@ -15,7 +15,7 @@
 
 //! Tests for the author rpc interface functions.
 
-use rococo_runtime::{BalancesCall, RuntimeCall};
+use resonance_runtime::{BalancesCall, RuntimeCall};
 use sp_core::{Encode, H256};
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{

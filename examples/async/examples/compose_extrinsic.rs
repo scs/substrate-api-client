@@ -18,7 +18,7 @@
 //! - Compose an extrinsic without asking the node for nonce and without knowing the metadata
 
 use codec::Compact;
-use rococo_runtime::{Address, BalancesCall, RuntimeCall};
+use resonance_runtime::{Address, BalancesCall, RuntimeCall};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{

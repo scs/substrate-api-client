@@ -19,17 +19,13 @@
 // pub use pair::{crystal_alice, dilithium_bob, crystal_charlie};
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
-	ac_primitives::{ExtrinsicSigner, Config, AccountId32, AccountData, Block, Header,
-		MultiAddress, OpaqueExtrinsic, resonance_runtime_config::ResonanceRuntimeConfig},
+	ac_primitives::{ExtrinsicSigner, Config, resonance_runtime_config::ResonanceRuntimeConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
 };
-use dilithium_crypto::types::ResonancePair;
-use dilithium_crypto::ResonanceSignatureScheme;
 use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use sp_runtime::traits::IdentifyAccount;
-use sp_core::Pair;
 type Hash = <ResonanceRuntimeConfig as Config>::Hash;
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
@@ -38,7 +34,7 @@ type Hash = <ResonanceRuntimeConfig as Config>::Hash;
 #[tokio::main]
 async fn main() {
 	env_logger::init();
-	println!("[+] EXTRINSIC TEST\n");
+	println!("[+] Dilithium Signature TEST\n");
 
 	// Initialize api and set the signer (sender) that is used to sign the extrinsics.
 	let alice_signer = crystal_alice();
@@ -60,8 +56,8 @@ async fn main() {
 		tokio::try_join!(api.get_account_data(&alice), api.get_account_data(&bob)).unwrap();
 	let balance_of_alice = maybe_data_of_alice.unwrap().free;
 	let balance_of_bob = maybe_data_of_bob.unwrap_or_default().free;
-	println!("[+] Alice's Free Balance is {balance_of_alice}\n");
-	println!("[+] Bob's Free Balance is {balance_of_bob}\n");
+	println!("[+] Crystal Alice's Free Balance is {balance_of_alice}\n");
+	println!("[+] Crystal Bob's Free Balance is {balance_of_bob}\n");
 
 	// First we want to see the events of a failed extrinsic.
 	// So lets create an extrinsic that will not succeed:
@@ -139,7 +135,7 @@ async fn main() {
 
 	// Verify that Bob release has received the transferred amount.
 	let new_balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap().free;
-	println!("[+] Bob's Free Balance is now {}\n", new_balance_of_bob);
+	println!("[+] Crystal Bob's Free Balance is now {}\n", new_balance_of_bob);
 	let expected_balance_of_bob = balance_of_bob + balance_to_transfer;
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
 }

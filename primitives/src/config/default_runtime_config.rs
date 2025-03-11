@@ -28,7 +28,7 @@ impl Config for DefaultRuntimeConfig {
 	type Hasher = BlakeTwo256;
 	type Header = Header<Self::BlockNumber, BlakeTwo256>;
 	type AccountData = AccountData<Self::Balance>;
-	type ExtrinsicParams = PlainTipExtrinsicParams<Self>;
+	type ExtrinsicParams = DefaultPlainTipExtrinsicParams<Self>;
 	type CryptoKey = sr25519::Pair;
 	type ExtrinsicSigner = ExtrinsicSigner<Self>;
 	type Block = Block<Self::Header, OpaqueExtrinsic>;
@@ -39,4 +39,4 @@ impl Config for DefaultRuntimeConfig {
 
 /// A struct representing the signed extra and additional parameters required
 /// to construct a transaction and pay in token fees.
-pub type PlainTipExtrinsicParams<T> = GenericExtrinsicParams<T, PlainTip<<T as Config>::Balance>>;
+pub type DefaultPlainTipExtrinsicParams<T> = GenericExtrinsicParams<T, PlainTip<<T as Config>::Balance>>;

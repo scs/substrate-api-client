@@ -16,7 +16,7 @@
 //! This example shows how to use the compose_extrinsic_offline macro which generates an extrinsic
 //! without asking the node for nonce and does not need to know the metadata
 
-use rococo_runtime::{BalancesCall, RuntimeCall};
+use resonance_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, MultiAddress};
 use substrate_api_client::{

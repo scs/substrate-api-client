@@ -24,7 +24,7 @@ use substrate_api_client::{
 
 // This module depends on the specific node runtime.
 // Replace this crate by your own if you run a custom substrate node to get your custom events.
-use rococo_runtime::RuntimeEvent;
+use resonance_runtime::RuntimeEvent;
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
 // own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.

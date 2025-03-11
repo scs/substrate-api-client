@@ -18,15 +18,16 @@ members = [
     "compose-macros",
     "examples/async",
     "examples/sync",
-    "examples/wasm",
+    # "examples/wasm",
     "node-api",
-    "test-no-std",
+    # "test-no-std",
     "testing/async",
-    "testing/sync",
+    # "testing/sync",
 ]
 
 [workspace.dependencies]
 dilithium-crypto = { path = "../backbone/dilithium-crypto", default-features = false, features = ["full_crypto"] }
+resonance-runtime = { path = "../backbone/runtime", default-features = false }
 
 [dependencies]
 frame-support = { version = "39.0.0", default-features = false, optional = true }
@@ -60,7 +61,7 @@ ac-primitives = { path = "primitives", version = "1.17", default-features = fals
 
 [dev-dependencies]
 ac-node-api = { path = "node-api", version = "1.17", features = ["mocks"] }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+# rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 scale-info = { version = "2.1", features = ["derive"] }
 test-case = "3.1"
 

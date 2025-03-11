@@ -236,7 +236,7 @@ mod tests {
 	use ac_primitives::RococoRuntimeConfig;
 	use codec::{Decode, Encode};
 	use frame_metadata::RuntimeMetadataPrefixed;
-	use rococo_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
+	use resonance_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
 	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
 	use sp_runtime::{
@@ -265,8 +265,8 @@ mod tests {
 		Api::new_offline(genesis_hash, metadata, runtime_version, client)
 	}
 
-	fn default_header() -> rococo_runtime::Header {
-		rococo_runtime::Header {
+	fn default_header() -> resonance_runtime::Header {
+		resonance_runtime::Header {
 			number: Default::default(),
 			parent_hash: Default::default(),
 			state_root: Default::default(),

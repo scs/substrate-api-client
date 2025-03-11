@@ -15,9 +15,6 @@ use codec::{Decode, Encode};
 use core::fmt::Debug;
 use dilithium_crypto::types::ResonanceSignatureScheme;
 use dilithium_crypto::types::ResonancePair;
-use dilithium_crypto::types::ResonanceSigner;
-use dilithium_crypto::types::ResonancePublic;
-use sp_runtime::traits::IdentifyAccount;
 
 
 /// Standard runtime config for Substrate and Polkadot nodes.
@@ -43,6 +40,6 @@ impl Config for ResonanceRuntimeConfig {
 	type StakingBalance = u128;
 }
 
-/// A struct representing the signed extra and additional parameters required
-/// to construct a transaction and pay in token fees.
+// A struct representing the signed extra and additional parameters required
+// to construct a transaction and pay in token fees.
 pub type PlainTipExtrinsicParams<T> = GenericExtrinsicParams<T, PlainTip<<T as Config>::Balance>>;
