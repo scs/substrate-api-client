@@ -28,6 +28,7 @@ members = [
 [workspace.dependencies]
 dilithium-crypto = { path = "../backbone/dilithium-crypto", default-features = false, features = ["full_crypto"] }
 resonance-runtime = { path = "../backbone/runtime", default-features = false }
+poseidon-resonance = { path = "../backbone/poseidon", default-features = false }
 
 [dependencies]
 frame-support = { version = "39.0.0", default-features = false, optional = true }

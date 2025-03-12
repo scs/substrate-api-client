@@ -12,6 +12,7 @@ categories = ["no-std"]
 
 [dependencies]
 dilithium-crypto = { workspace = true, default-features = false, features = ["full_crypto"] }
+poseidon-resonance = { workspace = true, default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ['derive'] }
 impl-serde = { version = "0.5", default-features = false }

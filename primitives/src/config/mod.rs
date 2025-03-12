@@ -81,7 +81,7 @@ pub trait Config {
 
 	/// The block header.
 	type Header: Debug
-		+ HeaderTrait<Number = Self::BlockNumber, Hashing = Self::Hasher>
+		+ HeaderTrait<Number = Self::BlockNumber>//, Hashing = Self::Hasher>  <-- runtime does not require this
 		+ Send
 		+ DeserializeOwned;
 
