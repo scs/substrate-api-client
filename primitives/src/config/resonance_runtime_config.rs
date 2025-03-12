@@ -15,7 +15,7 @@ use codec::{Decode, Encode};
 use core::fmt::Debug;
 use dilithium_crypto::types::ResonanceSignatureScheme;
 use dilithium_crypto::types::ResonancePair;
-
+use poseidon_resonance::PoseidonHasher;
 
 /// Standard runtime config for Substrate and Polkadot nodes.
 #[derive(Decode, Encode, Clone, Eq, PartialEq, Debug)]
@@ -29,7 +29,7 @@ impl Config for ResonanceRuntimeConfig {
 	type Address = MultiAddress<Self::AccountId, u32>;
 	type Signature = ResonanceSignatureScheme;
 	type Hasher = BlakeTwo256;
-	type Header = Header<Self::BlockNumber, BlakeTwo256>;
+	type Header = Header<Self::BlockNumber, PoseidonHasher>;
 	type AccountData = AccountData<Self::Balance>;
 	type ExtrinsicParams = PlainTipExtrinsicParams<Self>;
 	type CryptoKey = ResonancePair;
