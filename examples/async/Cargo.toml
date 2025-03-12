@@ -16,7 +16,6 @@ wabt = "0.10"
 # Substrate dependencies
 frame-support = { version = "39.0.0" }
 frame-system = { version = "39.1.0" }
-# rococo-runtime = { version = "21.0.0" }
 pallet-balances = { version = "40.0.1" }
 pallet-identity = { version = "39.0.0" }
 pallet-recovery = { version = "39.0.0" }
