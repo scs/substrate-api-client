@@ -33,7 +33,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-identity",
  "pallet-recovery",
  "pallet-staking",
@@ -116,7 +116,7 @@ dependencies = [
  "frame-system",
  "impl-serde",
  "pallet-assets",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-contracts",
  "pallet-staking",
  "parity-scale-codec",
@@ -142,7 +142,7 @@ version = "1.17.0"
 dependencies = [
  "frame-support",
  "jsonrpsee",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-society",
  "parity-scale-codec",
  "resonance-runtime",
@@ -1135,17 +1135,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "derive-hex"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b6618553c32cd1c1f4fbdb9418cc035f3168422f24406ebb08576f6db5ed6ec"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "derive-syn-parse"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1301,65 +1290,6 @@ name = "downcast-rs"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
-
-[[package]]
-name = "dusk-bls12_381"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc2bd68f9bed48c2e64860e1fd1f5dbb7733eb07d0288fbdcc3763678c742139"
-dependencies = [
- "blake2b_simd",
- "dusk-bytes",
- "ff",
- "rand_core 0.6.4",
- "subtle",
- "zeroize",
-]
-
-[[package]]
-name = "dusk-bytes"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5d209b92f0741edf1d99369bd4c1a1ef2fd0a85e885220f9e3fb0df3c61337f"
-dependencies = [
- "derive-hex",
-]
-
-[[package]]
-name = "dusk-jubjub"
-version = "0.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60cf411356f864945374d908e86de908e91bf00a3cada6bbcd1360e506088696"
-dependencies = [
- "bitvec",
- "blake2b_simd",
- "dusk-bls12_381",
- "dusk-bytes",
- "ff",
- "group",
- "rand_core 0.6.4",
- "subtle",
-]
-
-[[package]]
-name = "dusk-poseidon"
-version = "0.40.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5acb405df5e90ca91e8ce3c5aa48117e27632396665aaf9e8950f2af971acfc9"
-dependencies = [
- "dusk-bls12_381",
- "dusk-jubjub",
- "dusk-safe",
-]
-
-[[package]]
-name = "dusk-safe"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b1984b4b78f1f5d862dc482c73ab5f4e26bca829e8d30dfa443131c53933088"
-dependencies = [
- "zeroize",
-]
 
 [[package]]
 name = "dyn-clonable"
@@ -3268,6 +3198,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
@@ -3419,6 +3350,20 @@ dependencies = [
 [[package]]
 name = "pallet-balances"
 version = "40.0.1"
+dependencies = [
+ "docify",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-balances"
+version = "40.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b3d18caaae72674d6536d339c1ae5b5063b55de5813a43ee045847d28c0a128"
 dependencies = [
@@ -3445,7 +3390,7 @@ dependencies = [
  "frame-system",
  "impl-trait-for-tuples",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-contracts-proc-macro",
  "pallet-contracts-uapi",
  "parity-scale-codec",
@@ -3515,6 +3460,7 @@ dependencies = [
  "log",
  "num-bigint",
  "num-traits",
+ "pallet-timestamp",
  "parity-scale-codec",
  "primitive-types 0.13.1",
  "scale-info",
@@ -3523,6 +3469,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -3619,17 +3566,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-template"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
-]
-
-[[package]]
 name = "pallet-timestamp"
 version = "38.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3687,7 +3623,7 @@ dependencies = [
  "frame-system",
  "lazy_static",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1",
  "parity-scale-codec",
  "plonky2",
  "scale-info",
@@ -3978,11 +3914,11 @@ dependencies = [
 [[package]]
 name = "poseidon-resonance"
 version = "0.1.0"
+source = "git+https://github.com/Resonance-Network/poseidon-resonance#56e20159654cd1221c1e0fcc6334458455da18ae"
 dependencies = [
- "dusk-bls12_381",
- "dusk-poseidon",
  "log",
  "parity-scale-codec",
+ "plonky2",
  "scale-info",
  "serde",
  "sp-core",
@@ -4340,10 +4276,9 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1",
  "pallet-qpow",
  "pallet-sudo",
- "pallet-template",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
