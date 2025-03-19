@@ -33,7 +33,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-identity",
  "pallet-recovery",
  "pallet-staking",
@@ -116,7 +116,7 @@ dependencies = [
  "frame-system",
  "impl-serde",
  "pallet-assets",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-contracts",
  "pallet-staking",
  "parity-scale-codec",
@@ -142,7 +142,7 @@ version = "1.17.0"
 dependencies = [
  "frame-support",
  "jsonrpsee",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-society",
  "parity-scale-codec",
  "resonance-runtime",
@@ -3350,20 +3350,6 @@ dependencies = [
 [[package]]
 name = "pallet-balances"
 version = "40.0.1"
-dependencies = [
- "docify",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
-]
-
-[[package]]
-name = "pallet-balances"
-version = "40.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b3d18caaae72674d6536d339c1ae5b5063b55de5813a43ee045847d28c0a128"
 dependencies = [
@@ -3390,7 +3376,7 @@ dependencies = [
  "frame-system",
  "impl-trait-for-tuples",
  "log",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-contracts-proc-macro",
  "pallet-contracts-uapi",
  "parity-scale-codec",
@@ -3566,6 +3552,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-template"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "pallet-timestamp"
 version = "38.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3623,7 +3620,7 @@ dependencies = [
  "frame-system",
  "lazy_static",
  "log",
- "pallet-balances 40.0.1",
+ "pallet-balances",
  "parity-scale-codec",
  "plonky2",
  "scale-info",
@@ -4276,9 +4273,10 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "log",
- "pallet-balances 40.0.1",
+ "pallet-balances",
  "pallet-qpow",
  "pallet-sudo",
+ "pallet-template",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
