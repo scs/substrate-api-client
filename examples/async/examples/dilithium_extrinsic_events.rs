@@ -14,18 +14,18 @@
 */
 
 
-// pub use types::{ResonancePublic, ResonanceSignature, ResonancePair, ResonanceSignatureScheme, ResonanceSigner, WrappedPublicBytes, WrappedSignatureBytes};
-// pub use crypto::{PUB_KEY_BYTES, SECRET_KEY_BYTES, SIGNATURE_BYTES};
-// pub use pair::{crystal_alice, dilithium_bob, crystal_charlie};
+pub use dilithium_crypto::types::{ResonancePublic, ResonanceSignature, ResonancePair, ResonanceSignatureScheme, ResonanceSigner, WrappedPublicBytes, WrappedSignatureBytes};
+pub use dilithium_crypto::crypto::{PUB_KEY_BYTES, SECRET_KEY_BYTES, SIGNATURE_BYTES};
+pub use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
-	ac_primitives::{ExtrinsicSigner, Config, resonance_runtime_config::ResonanceRuntimeConfig},
+	ac_primitives::{UncheckedExtrinsic, ExtrinsicSigner, Config, resonance_runtime_config::ResonanceRuntimeConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
 };
-use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use sp_runtime::traits::IdentifyAccount;
+
 type Hash = <ResonanceRuntimeConfig as Config>::Hash;
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
@@ -99,10 +99,13 @@ async fn main() {
 
 	// Next, we send an extrinsic that should succeed:
 	let balance_to_transfer = 1000;
-	let good_transfer_extrinsic = api
+	let good_transfer_extrinsic: UncheckedExtrinsic<_, _, _, _> = api
 		.balance_transfer_allow_death(bob.clone().into(), balance_to_transfer)
 		.await
 		.unwrap();
+
+	// let encoded = good_transfer_extrinsic.encode(); // don't need this
+
 	println!("[+] Composed good extrinsic: {good_transfer_extrinsic:?}\n",);
 	// Send and watch extrinsic until InBlock.
 	let result = api

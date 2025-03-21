@@ -29,3 +29,6 @@ resonance-runtime = { workspace = true, default-features = false, features=["std
 
 # local deps
 substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt", "jsonrpsee-client"] }
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ['derive'] }
