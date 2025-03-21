@@ -14,8 +14,6 @@
 */
 
 
-pub use dilithium_crypto::types::{ResonancePublic, ResonanceSignature, ResonancePair, ResonanceSignatureScheme, ResonanceSigner, WrappedPublicBytes, WrappedSignatureBytes};
-pub use dilithium_crypto::crypto::{PUB_KEY_BYTES, SECRET_KEY_BYTES, SIGNATURE_BYTES};
 pub use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use substrate_api_client::{
 	ac_node_api::RawEventDetails,
