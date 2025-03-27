@@ -11,13 +11,10 @@ log = "0.4"
 serde_json = "1.0"
 tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 tokio-util = "0.7"
-wabt = "0.10"
 
 # Substrate dependencies
-frame-support = { version = "39.0.0" }
 frame-system = { version = "39.1.0" }
 pallet-balances = { version = "40.0.1" }
-pallet-identity = { version = "39.0.0" }
 pallet-recovery = { version = "39.0.0" }
 pallet-staking = { version = "39.0.1" }
 sp-core = { version = "35.0.0" }
@@ -26,7 +23,11 @@ sp-runtime = { version = "40.1.0" }
 sp-weights = { version = "31.0.0" }
 dilithium-crypto = { workspace = true, default-features = false, features = ["full_crypto"] }
 resonance-runtime = { workspace = true, default-features = false, features=["std"] }
-
+poseidon-resonance = { git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
+trie-db = { version = "0.29.1", default-features = false }
+sp-trie = { version = "38.0.0", default-features = false }
+sp-state-machine = { version = "0.44.0", default-features = false }
+hex = { version = "0.4.3", default-features = false }
 # local deps
 substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt", "jsonrpsee-client"] }
 

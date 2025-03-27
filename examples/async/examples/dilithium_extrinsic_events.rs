@@ -12,22 +12,15 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-
-
-pub use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
-use substrate_api_client::{
-	ac_node_api::RawEventDetails,
-	ac_primitives::{UncheckedExtrinsic, ExtrinsicSigner, Config, resonance_runtime_config::ResonanceRuntimeConfig},
-	extrinsic::BalancesExtrinsics,
-	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
-};
+use substrate_api_client::{ac_node_api::RawEventDetails, ac_primitives::{ExtrinsicSigner, Config, resonance_runtime_config::ResonanceRuntimeConfig}, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, GetAccountInformation, GetChainInfo, GetStorage, SubmitAndWatch, TransactionStatus, XtStatus};
+use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use sp_runtime::traits::IdentifyAccount;
 
 type Hash = <ResonanceRuntimeConfig as Config>::Hash;
+use hex;
+use trie_db::TrieLayout;
 
-// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
-// own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
+mod verify_proof;
 
 #[tokio::main]
 async fn main() {
@@ -139,7 +132,11 @@ async fn main() {
 	println!("[+] Crystal Bob's Free Balance is now {}\n", new_balance_of_bob);
 	let expected_balance_of_bob = balance_of_bob + balance_to_transfer;
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
+
+	let verified = verify_proof::verify_transfer_proof(api, alice, bob, balance_to_transfer).await;
+
 }
+
 
 fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	// First event
