@@ -16,29 +16,32 @@
 //! Very simple example that shows how to get some simple storage values.
 
 use codec::Encode;
+use dilithium_crypto::{crystal_alice, dilithium_bob};
 use frame_system::AccountInfo as GenericAccountInfo;
 use pallet_recovery::ActiveRecovery;
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{Config, RococoRuntimeConfig},
+	ac_primitives::{Config, ResonanceRuntimeConfig},
 	rpc::JsonrpseeClient,
 	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
 };
 
-// To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
+use sp_runtime::traits::IdentifyAccount;
+
+// To test this example with CI we run it against the Polkadot node. Remember to switch the Config to match your
 // own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
 type AccountInfo = GenericAccountInfo<
-	<RococoRuntimeConfig as Config>::Index,
-	<RococoRuntimeConfig as Config>::AccountData,
+	<ResonanceRuntimeConfig as Config>::Index,
+	<ResonanceRuntimeConfig as Config>::AccountData,
 >;
 
-type Balance = <RococoRuntimeConfig as Config>::Balance;
-type AccountId = <RococoRuntimeConfig as Config>::AccountId;
-type BlockNumber = <RococoRuntimeConfig as Config>::BlockNumber;
+type Balance = <ResonanceRuntimeConfig as Config>::Balance;
+type AccountId = <ResonanceRuntimeConfig as Config>::AccountId;
+type BlockNumber = <ResonanceRuntimeConfig as Config>::BlockNumber;
 type Friends = Vec<AccountId>;
-type Address = <RococoRuntimeConfig as Config>::Address;
+type Address = <ResonanceRuntimeConfig as Config>::Address;
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +49,7 @@ async fn main() {
 
 	// Initialize the api.
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
-	let mut api = Api::<RococoRuntimeConfig, _>::new(client).await.unwrap();
+	let mut api = Api::<ResonanceRuntimeConfig, _>::new(client).await.unwrap();
 
 	// Get some plain storage values.
 	let (balance, proof) = tokio::try_join!(
@@ -70,9 +73,9 @@ async fn main() {
 
 	// Get Alice's and Bobs AccountNonce with api.get_nonce(). Alice will be set as the signer for
 	// the current api, so the nonce retrieval can be simplified:
-	let signer = Sr25519Keyring::Alice.pair();
+	let signer = crystal_alice();
 	api.set_signer(signer.into());
-	let bob = Sr25519Keyring::Bob.to_account_id();
+	let bob = dilithium_bob().into_account();
 
 	let (alice_nonce, bob_nonce) =
 		tokio::try_join!(api.get_nonce(), api.get_account_nonce(&bob)).unwrap();

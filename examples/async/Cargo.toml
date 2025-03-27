@@ -30,3 +30,6 @@ sp-state-machine = { version = "0.44.0", default-features = false }
 hex = { version = "0.4.3", default-features = false }
 # local deps
 substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt", "jsonrpsee-client"] }
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ['derive'] }
