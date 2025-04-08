@@ -28,17 +28,21 @@ dependencies = [
 name = "ac-examples-async"
 version = "1.17.0"
 dependencies = [
+ "blake2",
+ "clap",
  "dilithium-crypto",
  "env_logger",
  "frame-system",
  "hex",
  "log",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
+ "pallet-merkle-airdrop",
  "pallet-recovery",
  "pallet-staking",
  "parity-scale-codec",
  "poseidon-resonance",
  "resonance-runtime",
+ "serde",
  "serde_json",
  "sp-core",
  "sp-keyring",
@@ -118,7 +122,7 @@ dependencies = [
  "frame-system",
  "impl-serde",
  "pallet-assets",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-contracts",
  "pallet-staking",
  "parity-scale-codec",
@@ -144,7 +148,7 @@ version = "1.17.0"
 dependencies = [
  "frame-support",
  "jsonrpsee",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-society",
  "parity-scale-codec",
  "resonance-runtime",
@@ -765,6 +769,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6088f3ae8c3608d19260cd7445411865a485688711b78b5be70d78cd96136f83"
 dependencies = [
  "clap_builder",
+ "clap_derive",
 ]
 
 [[package]]
@@ -773,9 +778,22 @@ version = "4.5.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22a7ef7f676155edfb82daa97f99441f3ebf4a58d5e32f295a56259f1b6facc8"
 dependencies = [
+ "anstream",
  "anstyle",
  "clap_lex",
  "strsim",
+]
+
+[[package]]
+name = "clap_derive"
+version = "4.5.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09176aae279615badda0765c0c0b3f6ed53f4709118af73cf4655d85d1530cd7"
+dependencies = [
+ "heck 0.5.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.100",
 ]
 
 [[package]]
@@ -1224,7 +1242,6 @@ dependencies = [
 [[package]]
 name = "dilithium-crypto"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "hdwallet",
  "log",
@@ -2102,7 +2119,6 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hdwallet"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "rusty-crystals-dilithium",
 ]
@@ -3333,22 +3349,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-balances"
-version = "40.0.1"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
-dependencies = [
- "docify",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "poseidon-resonance",
- "scale-info",
- "sp-runtime",
-]
-
-[[package]]
 name = "pallet-contracts"
 version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3361,7 +3361,7 @@ dependencies = [
  "frame-system",
  "impl-trait-for-tuples",
  "log",
- "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances",
  "pallet-contracts-proc-macro",
  "pallet-contracts-uapi",
  "parity-scale-codec",
@@ -3405,18 +3405,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-mining-rewards"
+name = "pallet-merkle-airdrop"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
+ "binary-merkle-tree",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
- "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
+ "pallet-balances",
  "parity-scale-codec",
+ "poseidon-resonance",
  "scale-info",
- "sp-consensus-pow",
+ "sha2 0.10.8",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -3424,7 +3427,6 @@ dependencies = [
 [[package]]
 name = "pallet-qpow"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3538,6 +3540,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-template"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "pallet-timestamp"
 version = "38.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3590,13 +3603,12 @@ dependencies = [
 [[package]]
 name = "pallet-wormhole"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "frame-support",
  "frame-system",
  "lazy_static",
  "log",
- "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
+ "pallet-balances",
  "parity-scale-codec",
  "plonky2",
  "scale-info",
@@ -4238,7 +4250,6 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 [[package]]
 name = "resonance-runtime"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "dilithium-crypto",
  "frame-benchmarking",
@@ -4250,10 +4261,11 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "log",
- "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
- "pallet-mining-rewards",
+ "pallet-balances",
+ "pallet-merkle-airdrop",
  "pallet-qpow",
  "pallet-sudo",
+ "pallet-template",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
@@ -5037,21 +5049,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-consensus-pow"
-version = "0.41.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6e6c87b5b8c2f96eb095b179681f18f0751e89339bdb2ba89e8779198f1f341"
-dependencies = [
- "parity-scale-codec",
- "sp-api",
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
 name = "sp-consensus-qpow"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "parity-scale-codec",
  "primitive-types 0.13.1",
@@ -6375,7 +6374,6 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 [[package]]
 name = "verify"
 version = "0.1.0"
-source = "git+https://gitlab.com/resonance-network/backbone.git#67e8b9f8b035b82f18e72849c57879fd097fb3c5"
 dependencies = [
  "rusty-crystals-dilithium",
 ]

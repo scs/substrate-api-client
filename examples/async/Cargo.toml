@@ -5,9 +5,12 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
+blake2 = "0.10.6"
+clap = { version = "4.5", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.7", features = ['derive'] }
 env_logger = "0.11"
 log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.24", features = ["rt-multi-thread", "macros", "time"] }
 tokio-util = "0.7"
@@ -23,6 +26,7 @@ sp-runtime = { version = "40.1.0" }
 sp-weights = { version = "31.0.0" }
 dilithium-crypto = { workspace = true, default-features = false, features = ["full_crypto"] }
 resonance-runtime = { workspace = true, default-features = false, features=["std"] }
+pallet-merkle-airdrop = { workspace = true, default-features = false, features=["std"] }
 poseidon-resonance = { git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
 trie-db = { version = "0.29.1", default-features = false }
 sp-trie = { version = "38.0.0", default-features = false }
