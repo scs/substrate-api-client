@@ -28,13 +28,13 @@ members = [
 [workspace.dependencies]
 
 ## Note: Use these local paths for testing the latest changes you made
-dilithium-crypto = { path = "../backbone/dilithium-crypto", default-features = false, features = ["full_crypto"] }
-resonance-runtime = { path = "../backbone/runtime", default-features = false }
+# dilithium-crypto = { path = "../backbone/dilithium-crypto", default-features = false, features = ["full_crypto"] }
+# resonance-runtime = { path = "../backbone/runtime", default-features = false }
 pallet-merkle-airdrop = { path = "../backbone/pallets/merkle-airdrop", default-features = false }
 
 # See readme how to set up access to private repos 
-# dilithium-crypto = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
-# resonance-runtime = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
+dilithium-crypto = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
+resonance-runtime = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
 # pallet-merkle-airdrop = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
 poseidon-resonance = { git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
 
