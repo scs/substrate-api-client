@@ -43,22 +43,24 @@ pub async fn verify_transfer_proof(
         .map(|bytes| bytes.as_ref().to_vec()) // Convert each Bytes to Vec<u8>
         .collect::<Vec<_>>(); // Collect into Vec<Vec<u8>>
 
+
     for (i, node_data) in proof_as_u8.iter().enumerate() {
+        let node_hash = PoseidonHasher::hash(node_data);
         match <sp_trie::LayoutV1<PoseidonHasher> as TrieLayout>::Codec::decode(node_data) {
             Ok(node) => {
                 match &node {
                     Node::Empty => log::info!("Proof node {}: Empty", i),
                     Node::Leaf(partial, value) => {
                         let nibbles: Vec<u8> = partial.right_iter().collect();
-                        log::info!("Proof node {}: Leaf, partial: {:?}, value: {:?}",
-                        i, hex::encode(&nibbles), value);
+                        log::info!("Proof node {}: Leaf, partial: {:?}, value: {:?} hash: {:?} bytes: {:?}",
+                        i, hex::encode(&nibbles), value, node_hash, hex::encode(&node_data));
                     },
                     Node::Extension(partial, _) => {
                         let nibbles: Vec<u8> = partial.right_iter().collect();
-                        log::info!("Proof node {}: Extension, partial: {:?}", i, hex::encode(&nibbles));
+                        log::info!("Proof node {}: Extension, partial: {:?} hash: {:?} bytes: {:?}", i, hex::encode(&nibbles), node_hash, hex::encode(&node_data));
                     },
                     Node::Branch(children, value) => {
-                        log::info!("Proof node {}: Branch, value: {:?}", i, value);
+                        log::info!("Proof node {}: Branch, value: {:?} hash: {:?} bytes: {:?}", i, value, node_hash, hex::encode(&node_data));
                         for (j, child) in children.iter().enumerate() {
                             if let Some(child) = child {
                                 log::info!("  Child {}: {:?}", j, child);
@@ -74,8 +76,8 @@ pub async fn verify_transfer_proof(
                                     NodeHandle::Inline(i) => hex::encode(i)
                                 })
                             ).collect::<Vec<String>>();
-                        log::info!("Proof node {}: NibbledBranch, partial: {:?}, value: {:?}, children: {:?}",
-                        i, hex::encode(&nibbles), value, children);
+                        log::info!("Proof node {}: NibbledBranch, partial: {:?}, value: {:?}, children: {:?} hash: {:?} bytes: {:?}",
+                        i, hex::encode(&nibbles), value, children, node_hash, hex::encode(&node_data));
                     },
                 }
             },
@@ -89,6 +91,10 @@ pub async fn verify_transfer_proof(
 
     let header = api.get_header(Some(block_hash)).await.unwrap().unwrap();
     let state_root = header.state_root;
+
+    prepare_proof_for_circuit(proof_as_u8.clone(), hex::encode(state_root));
+
+
     println!("Header: {:?} State root: {:?}", header, state_root);
     let expected_value = true.encode();
     println!("Expected value: {:?}", expected_value);
@@ -192,6 +198,65 @@ pub async fn verify_transfer_proof(
     //     },
     //     Err(e) => println!("Failed to check proof: {:?}", e),
     // }
+}
+
+fn prepare_proof_for_circuit(proof: Vec<Vec<u8>>, state_root: String) -> (Vec<String>, Vec<String>, Vec<usize>) {
+    let mut hashes = Vec::<String>::new();
+    let mut bytes = Vec::<String>::new();
+    let mut indices = Vec::<usize>::new();
+    let mut storage_proof = Vec::<String>::new();
+    for node_data in proof.iter() {
+        let hash = hex::encode(PoseidonHasher::hash(node_data));
+        let node_bytes = hex::encode(node_data);
+        if hash == state_root {
+            storage_proof.push(node_bytes);
+        } else {
+            // don't put the hash in if it is the root
+            hashes.push(hash);
+            bytes.push(node_bytes.clone());
+        }
+    }
+
+    log::info!("Finished constructing bytes and hashes vectors {:?} {:?}", bytes, hashes);
+    let mut ordered_hashes = Vec::<String>::new();
+    while !hashes.is_empty() {
+        for i in (0..hashes.len()).rev() {
+            let hash = hashes[i].clone();
+            match storage_proof.last() {
+                Some(last) => {
+                    match last.find(&hash) {
+                        Some(index) => {
+                            indices.push(index);
+                            storage_proof.push(bytes[i].clone());
+                            ordered_hashes.push(hash.clone());
+                            hashes.remove(i);
+                            bytes.remove(i);
+                        },
+                        None => {}
+                    }
+                },
+                None => {}
+            }
+        }
+    }
+
+    // log::info!("Storage proof generated: {:?} {:?}", &storage_proof, ordered_hashes);
+    //
+    // for (i, node) in storage_proof.iter().enumerate() {
+    //     if i == indices.len() {
+    //         break
+    //     }
+    //     let index = indices[i];
+    //     let hash = ordered_hashes[i].clone();
+    //     // log::info!("{:?} =? {:?}", node[index..index + 64], hash);
+    //     if node[index..index + 64] != hash {
+    //         log::error!("storage proof index incorrect {:?} != {:?}", index, hash);
+    //     } else {
+    //         log::warn!("storage proof index correct")
+    //     }
+    // }
+
+    (storage_proof, ordered_hashes, indices)
 }
 
 fn main() {}
