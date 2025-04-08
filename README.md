@@ -1,6 +1,6 @@
-# substrate-api-client
+# resonance-api-client
 
-The substrate-api-client is a Rust library for connecting to a [substrate](https://substrate.io/)-based node via RPC. It's particularly useful for setups with no-std environment (which are typical for trusted execution environmnets or embedded devices). It provides similar functionalities as [Polkadot-js](https://wiki.polkadot.network/docs/polkadotjs), such as easy extrinsic submission and state queries. With an RPC client, developers can easily interact with any [Polkadot](https://polkadot.network/) or [Kusama](https://kusama.network/) chain. There are several [RPC clients](https://wiki.polkadot.network/docs/build-tools-index#rpc-and-api-tools) available in different programming languages. For Rust, the most popular RPC client is [subxt](https://github.com/paritytech/subxt). The substrate-api-client provides a simpler, less extensive alternative to subxt, focused on providing as many features as possible for no-std environments.
+resonance-api-client is based on substrate-api-client with our signature schemes added.
 
 The substrate-api-client connects to the substrate's RPC interface via WebSockets allowing to
 
@@ -10,6 +10,17 @@ The substrate-api-client connects to the substrate's RPC interface via WebSocket
 * Parse and print the node metadata.
 * Support async and sync implementations.
 * Support three different websocket crates (`jsonrpsee`, `tungstenite` and `ws`). See `Cargo.toml` for more information and limitations.
+
+## Dependencies
+
+This crate depends on private repositories so you have to set them up using the following command:
+```
+git ls-remote https://oauth2:<YOUR_OAUTH_TOKEN>@gitlab.com/resonance-network/backbone.git
+```
+
+Get this token by going into Gitlab/Github settings -> Authentication Tokens -> Create Token -> "repository read access"
+
+Save the token somewhere locally on your computer, and use it in the above command.
 
 ## Prerequisites
 
@@ -38,44 +49,16 @@ To run an example, clone the `substrate-api-client` repository and run the desir
 git clone https://github.com/scs/substrate-api-client.git
 cd substrate-api-client
 # Run an async example:
-cargo run -p ac-examples-async --example get_storage
+cargo run -p ac-examples-async --example dilithium_extrinsic_events
 # Run a sync example:
 cargo run -p ac-examples-sync --example runtime_update_sync
-```
-
-or download the already built binaries from [GitHub Actions](https://github.com/scs/substrate-api-client/actions) and run them without any previous building:
-
-```bash
-# Enter the async or sync example directory and add execution rights to the chosen example.
-cd examples-<sync/async>
-chmod +x <example>
-# And run it.
-./<example>
 ```
 
 
 Set the output verbosity by prepending `RUST_LOG=info` or `RUST_LOG=debug`.
 
-The following async examples can be found in the [async examples](/examples/async/examples) folder:
-* [benchmark_bulk_xt](/examples/async/examples/benchmark_bulk_xt.rs): Float the node with a series of transactions.
-* [check_extrinsic_events](/examples/async/examples/check_extrinsic_events.rs): Check and react according to events associated to an extrinsic.
-* [compose_extrinsic](/examples/async/examples/compose_extrinsic.rs): Compose an extrinsic without interacting with the node or in no_std mode.
-* [custom_nonce](/examples/async/examples/custom_nonce.rs): Compose an with a custom nonce.
-* [get_blocks](/examples/async/examples/get_blocks.rs): Read header, block and signed block from storage.
-* [get_storage](/examples/async/examples/get_storage.rs): Read storage values.
-* [new_json_rpc_api_calls](examples/async/examples/new_json_rpc_api_calls.rs): Call the unstable rpc api with self defined functions.
-* [print_metadata](/examples/async/examples/print_metadata.rs): Print the metadata of the node in a readable way.
-* [query_runtime_api](/examples/async/examples/query_runtime_api.rs): How to query the runtime api.
-* [runtime_update_async](/examples/async/examples/runtime_update_async.rs): How to do an runtime upgrade asynchronously.
-* [staking_batch_payout](/examples/async/examples/staking_batch_payout.rs): Batch reward payout for validator.
-* [subscribe_events](/examples/async/examples/subscribe_events.rs): Subscribe and react on events.
-* [sudo](/examples/async/examples/sudo.rs): Create and send a sudo wrapped call.
 
-The following sync examples can be found in the [sync examples](/examples/sync/examples) folder:
-* [runtime_update_sync](/examples/sync/examples/runtime_update_sync.rs): How to do an runtime upgrade synchronously.
-* [transfer_with_tungstenite_client](/examples/sync/examples/transfer_with_tungstenite_client.rs): Transfer tokens by using a wrapper of compose_extrinsic with an account generated with a seed.
 
-More, less well documented calls can be found in the testing crate.
 
 ## `no_std` build
 Almost everything in the api-client, except for the [rpc-clients](https://github.com/scs/substrate-api-client/tree/master/src/rpc) and a few additional features, is `no_std` compatible.
