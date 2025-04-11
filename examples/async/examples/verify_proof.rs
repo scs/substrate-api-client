@@ -200,10 +200,10 @@ pub async fn verify_transfer_proof(
     // }
 }
 
-fn prepare_proof_for_circuit(proof: Vec<Vec<u8>>, state_root: String) -> (Vec<String>, Vec<String>, Vec<usize>) {
+fn prepare_proof_for_circuit(proof: Vec<Vec<u8>>, state_root: String) -> (Vec<String>, Vec<String>, Vec<(String, String)>) {
     let mut hashes = Vec::<String>::new();
     let mut bytes = Vec::<String>::new();
-    let mut indices = Vec::<usize>::new();
+    let mut parts = Vec::<(String, String)>::new();
     let mut storage_proof = Vec::<String>::new();
     for node_data in proof.iter() {
         let hash = hex::encode(PoseidonHasher::hash(node_data));
@@ -226,7 +226,8 @@ fn prepare_proof_for_circuit(proof: Vec<Vec<u8>>, state_root: String) -> (Vec<St
                 Some(last) => {
                     match last.find(&hash) {
                         Some(index) => {
-                            indices.push(index);
+                            let (left, right) = last.split_at(index);
+                            parts.push((left.to_string(), right.to_string()));
                             storage_proof.push(bytes[i].clone());
                             ordered_hashes.push(hash.clone());
                             hashes.remove(i);
@@ -240,23 +241,23 @@ fn prepare_proof_for_circuit(proof: Vec<Vec<u8>>, state_root: String) -> (Vec<St
         }
     }
 
-    // log::info!("Storage proof generated: {:?} {:?}", &storage_proof, ordered_hashes);
-    //
-    // for (i, node) in storage_proof.iter().enumerate() {
-    //     if i == indices.len() {
-    //         break
-    //     }
-    //     let index = indices[i];
-    //     let hash = ordered_hashes[i].clone();
-    //     // log::info!("{:?} =? {:?}", node[index..index + 64], hash);
-    //     if node[index..index + 64] != hash {
-    //         log::error!("storage proof index incorrect {:?} != {:?}", index, hash);
-    //     } else {
-    //         log::warn!("storage proof index correct")
-    //     }
-    // }
+    log::info!("Storage proof generated: {:?} {:?} {:?}", &storage_proof, parts, ordered_hashes);
 
-    (storage_proof, ordered_hashes, indices)
+    for (i, node) in storage_proof.iter().enumerate() {
+        if i == parts.len() {
+            break
+        }
+        let part = parts[i].clone();
+        let hash = ordered_hashes[i].clone();
+        // log::info!("{:?} =? {:?}", node[index..index + 64], hash);
+        if part.1[..64] != hash {
+            log::error!("storage proof index incorrect {:?} != {:?}", part.1, hash);
+        } else {
+            log::warn!("storage proof index correct")
+        }
+    }
+
+    (storage_proof, ordered_hashes, parts)
 }
 
 fn main() {}
