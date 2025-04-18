@@ -12,7 +12,7 @@ jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport
 
 resonance-runtime = { workspace = true, default-features = false }
 # Substrate dependencies
-frame-support = { version = "39.0.0" }
+frame-support = { version = "39.1.0" }
 sp-core = { version = "35.0.0" }
 sp-crypto-hashing = { version = "0.1.0" }
 sp-keyring = { version = "40.0.0" }

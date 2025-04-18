@@ -13,6 +13,7 @@ categories = ["no-std"]
 [dependencies]
 log = { version = "0.4", default-features = false }
 maybe-async = { version = "0.2" }
+sp-core = { version = "35.0.0" }
 
 # local
 ac-primitives = { path = "../primitives", version = "1.17", default-features = false }

@@ -22,6 +22,12 @@ Get this token by going into Gitlab/Github settings -> Authentication Tokens -> 
 
 Save the token somewhere locally on your computer, and use it in the above command.
 
+And make sure to set:
+
+```
+export CARGO_NET_GIT_FETCH_WITH_CLI=true
+```
+
 ## Prerequisites
 
 In order to build the substrate-api-client and the examples, Rust and the wasm target are needed. For Linux:
