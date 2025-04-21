@@ -71,9 +71,12 @@ async fn main() {
 	let bob_data = maybe_data_of_bob.unwrap_or_default();
 	let balance_of_bob = bob_data.clone().free;
 	let reserve_of_bob = bob_data.reserved;
+	let frozen_of_bob = bob_data.frozen;
 	println!("[+] Crystal Alice's Free Balance is {balance_of_alice}\n");
 	println!("[+] Crystal Bob's Free Balance is {balance_of_bob}\n");
 	println!("[+] Crystal Bob's Reserve Balance is {reserve_of_bob}\n");
+	println!("[+] Crystal Bob's Frozen Balance is {frozen_of_bob}\n");
+	println!("[+] Crystal Bob's data {:?}\n", bob_data);
 
 	// Get the last finalized header to retrieve information for Era for mortal transactions (online).
 	let recipient: Address = bob.clone().into();
@@ -137,7 +140,9 @@ async fn main() {
 	let new_bob_account = api.get_account_data(&bob).await.unwrap().unwrap();
 	let new_balance_of_bob = new_bob_account.free;
 	let new_reserve_of_bob = new_bob_account.reserved;
+	let new_frozen_of_bob = new_bob_account.frozen;
 	println!("[+] New reserve balance: {new_reserve_of_bob:?}\n",);
+	println!("[+] New frozen balance: {new_frozen_of_bob:?}\n",);
 
 	let expected_balance_of_bob = balance_of_bob - scheduled_amount;
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
