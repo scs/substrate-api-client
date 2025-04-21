@@ -68,9 +68,12 @@ async fn main() {
 	let (maybe_data_of_alice, maybe_data_of_bob) =
 		tokio::try_join!(api.get_account_data(&alice), api.get_account_data(&bob)).unwrap();
 	let balance_of_alice = maybe_data_of_alice.unwrap().free;
-	let balance_of_bob = maybe_data_of_bob.unwrap_or_default().free;
+	let bob_data = maybe_data_of_bob.unwrap_or_default();
+	let balance_of_bob = bob_data.clone().free;
+	let reserve_of_bob = bob_data.reserved;
 	println!("[+] Crystal Alice's Free Balance is {balance_of_alice}\n");
 	println!("[+] Crystal Bob's Free Balance is {balance_of_bob}\n");
+	println!("[+] Crystal Bob's Reserve Balance is {reserve_of_bob}\n");
 
 	// Get the last finalized header to retrieve information for Era for mortal transactions (online).
 	let recipient: Address = bob.clone().into();
@@ -105,19 +108,19 @@ async fn main() {
 		"set_reversibility",
 		None::<u64>,
 		DelayPolicy::Intercept
-	)
-	.unwrap();
+	).unwrap();
 
 	// Send and watch extrinsic until InBlock.
-	// let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
-	// check_result(result, false);
+	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
+	check_result(result, false);
 
+	let scheduled_amount = 10000_u128;
 	let schedule_transfer_extrinsic: UncheckedExtrinsic<_, _, _, _> = compose_extrinsic!(
 		api,
 		"ReversibleTransfers",
 		"schedule_transfer",
 		recipients_extrinsic_address,
-		10000_u128
+		scheduled_amount
 	)
 	.unwrap();
 	println!("[+] Composed schedule transfer extrinsic: {schedule_transfer_extrinsic:?}\n",);
@@ -125,11 +128,19 @@ async fn main() {
 	let result = api
 		.submit_and_watch_extrinsic_until(schedule_transfer_extrinsic, XtStatus::InBlock)
 		.await;
-	println!("[+] Sent the schedule transfer extrinsic that should be intercepted and failed");
+	println!("[+] Sent the schedule transfer extrinsic\n");
 	// Check if the transfer really was successful:
 	check_result(result, false);
 
 	println!("[+] Sent set_reversibility extrinsic.");
+
+	let new_bob_account = api.get_account_data(&bob).await.unwrap().unwrap();
+	let new_balance_of_bob = new_bob_account.free;
+	let new_reserve_of_bob = new_bob_account.reserved;
+	println!("[+] New reserve balance: {new_reserve_of_bob:?}\n",);
+
+	let expected_balance_of_bob = balance_of_bob - scheduled_amount;
+	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
 
 	// Next, we send an extrinsic that should succeed:
 	let balance_to_transfer = 1000;
@@ -143,7 +154,7 @@ async fn main() {
 	let result = api
 		.submit_and_watch_extrinsic_until(failing_transfer_extrinsic, XtStatus::InBlock)
 		.await;
-	println!("[+] Sent the transfer extrinsic that should be intercepted and failed");
+	println!("[+] Sent the transfer extrinsic that should be intercepted and fail");
 
 	// Check if the transfer really was successful:
 	check_result(result, true);
@@ -167,6 +178,9 @@ async fn main() {
 fn check_result(result: Result<ExtrinsicReport<H256>>, expect_panic: bool) {
 	match result {
 		Ok(report) => {
+			if expect_panic {
+				panic!("[+] Extrinsic report did not panic");
+			}
 			let extrinsic_hash = report.extrinsic_hash;
 			let block_hash = report.block_hash.unwrap();
 			let extrinsic_status = report.status;
@@ -185,7 +199,7 @@ fn check_result(result: Result<ExtrinsicReport<H256>>, expect_panic: bool) {
 		},
 		Err(e) => {
 			if expect_panic {
-				println!("[+] Expected the transfer to succeed. Instead, it failed due to {e:?}");
+				println!("[+] Expected extrinsic to fail and it did: {e:?}");
 				return;
 			}
 			panic!("Expected the transfer to succeed. Instead, it failed due to {e:?}");
