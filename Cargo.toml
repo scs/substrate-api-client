@@ -30,16 +30,16 @@ members = [
 ## Note: Use these local paths for testing the latest changes you made
 # dilithium-crypto = { path = "../backbone/dilithium-crypto", default-features = false, features = ["full_crypto"] }
 # resonance-runtime = { path = "../backbone/runtime", default-features = false }
-pallet-merkle-airdrop = { path = "../backbone/pallets/merkle-airdrop", default-features = false }
+# pallet-merkle-airdrop = { path = "../backbone/pallets/merkle-airdrop", default-features = false }
 
 # See readme how to set up access to private repos 
 dilithium-crypto = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
 resonance-runtime = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
 # pallet-merkle-airdrop = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
-poseidon-resonance = { git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
+poseidon-resonance = { version = "0.3.0",git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
 
 [dependencies]
-frame-support = { version = "39.0.0", default-features = false, optional = true }
+frame-support = { version = "39.1.0", default-features = false, optional = true }
 frame-system = { version = "39.1.0" }
 sp-core = { version = "35.0.0" }
 sp-runtime = { version = "40.1.0" }

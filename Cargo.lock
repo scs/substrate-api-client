@@ -35,8 +35,7 @@ dependencies = [
  "frame-system",
  "hex",
  "log",
- "pallet-balances",
- "pallet-merkle-airdrop",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-recovery",
  "pallet-staking",
  "parity-scale-codec",
@@ -122,7 +121,7 @@ dependencies = [
  "frame-system",
  "impl-serde",
  "pallet-assets",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-contracts",
  "pallet-staking",
  "parity-scale-codec",
@@ -148,7 +147,7 @@ version = "1.17.0"
 dependencies = [
  "frame-support",
  "jsonrpsee",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-society",
  "parity-scale-codec",
  "resonance-runtime",
@@ -449,6 +448,12 @@ name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
+
+[[package]]
+name = "assert_matches"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
 name = "async-trait"
@@ -1242,6 +1247,7 @@ dependencies = [
 [[package]]
 name = "dilithium-crypto"
 version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
 dependencies = [
  "hdwallet",
  "log",
@@ -1644,9 +1650,9 @@ dependencies = [
 
 [[package]]
 name = "frame-executive"
-version = "39.0.0"
+version = "39.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c883a3f584c13832c6fa79f49ea19ae48694029408b0aa457da16424a2518e2"
+checksum = "e71d2a46f2dfabd97d597de29b69c331fc3ca5602848aa0a235823e675fd0678"
 dependencies = [
  "aquamarine",
  "frame-support",
@@ -1692,9 +1698,9 @@ dependencies = [
 
 [[package]]
 name = "frame-support"
-version = "39.0.0"
+version = "39.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4547b03c9267b2d545ddddd8967d1d39277a090814da2466176dc65ff489d0a"
+checksum = "3aba77ba276576c4dbd1b2e5e3dc7d95346787cccee610c846dd0e5292add9e2"
 dependencies = [
  "aquamarine",
  "array-bytes 6.2.3",
@@ -1736,9 +1742,9 @@ dependencies = [
 
 [[package]]
 name = "frame-support-procedural"
-version = "31.0.1"
+version = "31.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e204cb5972b66489923ff201b11e0f605496dd5809bfee62258a42b6341e1c34"
+checksum = "4ad7560a3fb472e43f45e404af919c955badcc64269114de0ce22445ab043119"
 dependencies = [
  "Inflector",
  "cfg-expr",
@@ -2119,6 +2125,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hdwallet"
 version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
 dependencies = [
  "rusty-crystals-dilithium",
 ]
@@ -3349,6 +3356,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-balances"
+version = "40.0.1"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
+dependencies = [
+ "docify",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "poseidon-resonance",
+ "scale-info",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-contracts"
 version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3361,7 +3384,7 @@ dependencies = [
  "frame-system",
  "impl-trait-for-tuples",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-contracts-proc-macro",
  "pallet-contracts-uapi",
  "parity-scale-codec",
@@ -3405,41 +3428,70 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-merkle-airdrop"
-version = "0.1.0"
+name = "pallet-conviction-voting"
+version = "39.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eef3dfc63a89280ca3836c756d1ac5c00fe6c74aef8b20b44f4dad00386d4c61"
 dependencies = [
- "binary-merkle-tree",
+ "assert_matches",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-mining-rewards"
+version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
+dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
  "parity-scale-codec",
- "poseidon-resonance",
  "scale-info",
- "sha2 0.10.8",
- "sp-core",
- "sp-io",
+ "sp-consensus-pow",
  "sp-runtime",
  "sp-std",
 ]
 
 [[package]]
-name = "pallet-qpow"
-version = "0.1.0"
+name = "pallet-preimage"
+version = "39.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20ec2a4d010514ad9d90c638f1b0270173d08d69b8f455ae8ab29c39aa9e2a21"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
- "num-bigint",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-qpow"
+version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
  "num-traits",
  "pallet-timestamp",
  "parity-scale-codec",
- "primitive-types 0.13.1",
+ "qpow-math",
  "scale-info",
- "sha2 0.10.8",
- "sha3",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -3459,6 +3511,42 @@ dependencies = [
  "scale-info",
  "sp-io",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-referenda"
+version = "39.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf7e29cbddff53bf7e6083be3bca25bd3ab7c36fcb3b49ac4aacd14c2d57b8aa"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-scheduler"
+version = "40.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6efb66648d83ce14caaa5cb062fa54021222e964dc58c7326aee44f27db96b46"
+dependencies = [
+ "docify",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-weights",
 ]
 
 [[package]]
@@ -3540,17 +3628,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-template"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
-]
-
-[[package]]
 name = "pallet-timestamp"
 version = "38.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3572,9 +3649,9 @@ dependencies = [
 
 [[package]]
 name = "pallet-transaction-payment"
-version = "39.0.0"
+version = "39.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33ee68d52c4f65063624f02ac83691ca6e46b471c8eb3bfb6f60b441f24a23ab"
+checksum = "ec542f9f25723838a843029278d6a16e96b539d8a8593e7b00d0e14c76b7dcb5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3601,14 +3678,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-utility"
+version = "39.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2edbaec3296bc377dce78d9c639513d0d6f3b8a56484ee61cfb36fb0a027498"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-vesting"
+version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-consensus-pow",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-wormhole"
 version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
 dependencies = [
  "frame-support",
  "frame-system",
  "lazy_static",
  "log",
- "pallet-balances",
+ "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
  "parity-scale-codec",
  "plonky2",
  "scale-info",
@@ -3898,8 +4011,8 @@ dependencies = [
 
 [[package]]
 name = "poseidon-resonance"
-version = "0.1.0"
-source = "git+https://github.com/Resonance-Network/poseidon-resonance#56e20159654cd1221c1e0fcc6334458455da18ae"
+version = "0.3.0"
+source = "git+https://github.com/Resonance-Network/poseidon-resonance#f9a27a21d5797d5861765e01dad59c4add31913d"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -4028,6 +4141,18 @@ dependencies = [
  "rand_xorshift",
  "regex-syntax 0.8.5",
  "unarray",
+]
+
+[[package]]
+name = "qpow-math"
+version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "primitive-types 0.13.1",
+ "sha2 0.10.8",
+ "sha3",
 ]
 
 [[package]]
@@ -4250,6 +4375,7 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 [[package]]
 name = "resonance-runtime"
 version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
 dependencies = [
  "dilithium-crypto",
  "frame-benchmarking",
@@ -4261,14 +4387,19 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "log",
- "pallet-balances",
- "pallet-merkle-airdrop",
+ "pallet-balances 40.0.1 (git+https://gitlab.com/resonance-network/backbone.git)",
+ "pallet-conviction-voting",
+ "pallet-mining-rewards",
+ "pallet-preimage",
  "pallet-qpow",
+ "pallet-referenda",
+ "pallet-scheduler",
  "pallet-sudo",
- "pallet-template",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-utility",
+ "pallet-vesting",
  "pallet-wormhole",
  "parity-scale-codec",
  "poseidon-resonance",
@@ -5049,8 +5180,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-consensus-pow"
+version = "0.41.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6e6c87b5b8c2f96eb095b179681f18f0751e89339bdb2ba89e8779198f1f341"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "sp-consensus-qpow"
 version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
 dependencies = [
  "parity-scale-codec",
  "primitive-types 0.13.1",
@@ -6374,6 +6518,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 [[package]]
 name = "verify"
 version = "0.1.0"
+source = "git+https://gitlab.com/resonance-network/backbone.git#ca1aaed2cc3f8b061b8a16093b37415a0b1994fc"
 dependencies = [
  "rusty-crystals-dilithium",
 ]
