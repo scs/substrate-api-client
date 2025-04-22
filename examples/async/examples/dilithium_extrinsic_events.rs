@@ -1,3 +1,4 @@
+use sp_core::crypto::Ss58Codec;
 /*
 	Copyright 2019 Supercomputing Systems AG
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +15,7 @@
 */
 use substrate_api_client::{ac_node_api::RawEventDetails, ac_primitives::{UncheckedExtrinsic, ExtrinsicSigner, Config, resonance_runtime_config::ResonanceRuntimeConfig}, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api, GetAccountInformation, GetChainInfo, GetStorage, SubmitAndWatch, TransactionStatus, XtStatus};
 use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
-use sp_runtime::traits::IdentifyAccount;
+use sp_runtime::{traits::IdentifyAccount, AccountId32};
 
 type Hash = <ResonanceRuntimeConfig as Config>::Hash;
 use hex;
@@ -33,6 +34,9 @@ async fn main() {
 	// let bob = dilithium_bob.into_account();
 	let alice = crystal_alice().into_account();  // Get public key and convert to account
 	let bob = dilithium_bob().into_account();
+
+	// test some other account for send to
+	// let bob = AccountId32::from_string("5FktBKPnRkY5QvF2NmFNUNh55mJvBtgMth5QoBjFJ4E4BbFf").unwrap();
 
 
 	let client = JsonrpseeClient::with_default_url().await.unwrap();
@@ -89,7 +93,7 @@ async fn main() {
 	// assert!(balance_of_alice > new_balance_of_alice);
 
 	// Next, we send an extrinsic that should succeed:
-	let balance_to_transfer = 1000;
+	let balance_to_transfer = 1000000000;
 	let good_transfer_extrinsic: UncheckedExtrinsic<_, _, _, _> = api
 		.balance_transfer_allow_death(bob.clone().into(), balance_to_transfer)
 		.await
