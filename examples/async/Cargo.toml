@@ -26,8 +26,8 @@ sp-runtime = { version = "40.1.0" }
 sp-weights = { version = "31.0.0" }
 dilithium-crypto = { workspace = true, default-features = false, features = ["full_crypto"] }
 resonance-runtime = { workspace = true, default-features = false, features=["std"] }
-#pallet-merkle-airdrop = { workspace = true, default-features = false, features=["std"] }
-poseidon-resonance = { git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
+# pallet-merkle-airdrop = { workspace = true, default-features = false, features=["std"] }
+poseidon-resonance = { workspace = true, default-features = false }
 trie-db = { version = "0.29.1", default-features = false }
 sp-trie = { version = "38.0.0", default-features = false }
 sp-state-machine = { version = "0.44.0", default-features = false }
