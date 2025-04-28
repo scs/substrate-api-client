@@ -16,7 +16,7 @@
 */
 
 use crate::config::Config;
-use codec::{Codec, Decode, Encode};
+use codec::{Codec, Decode, DecodeWithMemTracking, Encode};
 use primitive_types::H256;
 use scale_info::{StaticTypeInfo, TypeInfo};
 use sp_runtime::{
@@ -55,10 +55,33 @@ impl<Tip, Index> GenericTxExtension<Tip, Index> {
 impl<Call, Tip, Index> TransactionExtension<Call> for GenericTxExtension<Tip, Index>
 where
 	Call: Dispatchable,
-	GenericTxExtension<Tip, Index>:
-		Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
-	Tip: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
-	Index: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
+	GenericTxExtension<Tip, Index>: Codec
+		+ core::fmt::Debug
+		+ Sync
+		+ Send
+		+ Clone
+		+ Eq
+		+ PartialEq
+		+ StaticTypeInfo
+		+ DecodeWithMemTracking,
+	Tip: Codec
+		+ core::fmt::Debug
+		+ Sync
+		+ Send
+		+ Clone
+		+ Eq
+		+ PartialEq
+		+ StaticTypeInfo
+		+ DecodeWithMemTracking,
+	Index: Codec
+		+ core::fmt::Debug
+		+ Sync
+		+ Send
+		+ Clone
+		+ Eq
+		+ PartialEq
+		+ StaticTypeInfo
+		+ DecodeWithMemTracking,
 {
 	const IDENTIFIER: &'static str = "GenericTxExtension";
 	type Implicit = ();
