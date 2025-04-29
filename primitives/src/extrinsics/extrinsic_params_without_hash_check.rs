@@ -33,7 +33,7 @@ use crate::{
 	config::Config,
 	extrinsic_params::{ExtrinsicParams, GenericAdditionalParams, GenericTxExtension},
 };
-use codec::{Codec, Decode, Encode};
+use codec::{Codec, Decode, DecodeWithMemTracking, Encode};
 use scale_info::{StaticTypeInfo, TypeInfo};
 use sp_runtime::{
 	generic::Era,
@@ -60,10 +60,33 @@ impl<Tip, Index> TxExtensionWithoutHashCheck<Tip, Index> {
 impl<Call, Tip, Index> TransactionExtension<Call> for TxExtensionWithoutHashCheck<Tip, Index>
 where
 	Call: Dispatchable,
-	TxExtensionWithoutHashCheck<Tip, Index>:
-		Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
-	Tip: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
-	Index: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
+	TxExtensionWithoutHashCheck<Tip, Index>: Codec
+		+ core::fmt::Debug
+		+ Sync
+		+ Send
+		+ Clone
+		+ Eq
+		+ PartialEq
+		+ StaticTypeInfo
+		+ DecodeWithMemTracking,
+	Tip: Codec
+		+ core::fmt::Debug
+		+ Sync
+		+ Send
+		+ Clone
+		+ Eq
+		+ PartialEq
+		+ StaticTypeInfo
+		+ DecodeWithMemTracking,
+	Index: Codec
+		+ core::fmt::Debug
+		+ Sync
+		+ Send
+		+ Clone
+		+ Eq
+		+ PartialEq
+		+ StaticTypeInfo
+		+ DecodeWithMemTracking,
 {
 	const IDENTIFIER: &'static str = "TxExtensionWithoutHashCheck";
 	type Implicit = ();
