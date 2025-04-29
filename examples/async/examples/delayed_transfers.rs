@@ -183,6 +183,13 @@ async fn main() {
 	let expected_balance_of_bob = balance_of_bob + scheduled_amount;
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
 
+	let new_alice_account = api.get_account_data(&alice).await.unwrap().unwrap();
+	let new_reserve_of_alice = new_alice_account.reserved;
+	let new_frozen_of_alice = new_alice_account.frozen;
+	assert_eq!(new_reserve_of_alice, 0);
+	assert_eq!(new_frozen_of_alice, 0);
+
+
 	let verified = verify_proof::verify_transfer_proof(api, alice, bob, scheduled_amount).await;
 	assert!(verified, "Failed to verify transfer proof");
 }
