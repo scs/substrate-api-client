@@ -133,10 +133,14 @@ async fn main() {
 	// Check if the transfer really was successful:
 	let fee = check_result(result, false).unwrap();
 
+	println!("[+] Sleeping for 1 second");
+	tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+
 	let new_alice_account = api.get_account_data(&alice).await.unwrap().unwrap();
 	let new_balance_of_alice = new_alice_account.free;
 	let new_reserve_of_alice = new_alice_account.reserved;
 	let new_frozen_of_alice = new_alice_account.frozen;
+	println!("[+] fee: {fee:?}\n",);
 	println!("[+] New free balance: {new_balance_of_alice:?}\n",);
 	println!("[+] New reserve balance: {new_reserve_of_alice:?}\n",);
 	println!("[+] New frozen balance: {new_frozen_of_alice:?}\n",);
