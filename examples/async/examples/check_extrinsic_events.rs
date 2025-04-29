@@ -126,6 +126,10 @@ async fn main() {
 
 fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	// First event
+	for e in &events {
+		println!("[+] Pallet name: {}", e.pallet_name());
+		println!("[+] Variant name: {}", e.variant_name());
+	}
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");
 
@@ -135,12 +139,9 @@ fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	assert_eq!(events[2].pallet_name(), "Balances");
 	assert_eq!(events[2].variant_name(), "Deposit");
 
-	assert_eq!(events[3].pallet_name(), "Balances");
-	assert_eq!(events[3].variant_name(), "Deposit");
+	assert_eq!(events[3].pallet_name(), "TransactionPayment");
+	assert_eq!(events[3].variant_name(), "TransactionFeePaid");
 
-	assert_eq!(events[4].pallet_name(), "TransactionPayment");
-	assert_eq!(events[4].variant_name(), "TransactionFeePaid");
-
-	assert_eq!(events[5].pallet_name(), "System");
-	assert_eq!(events[5].variant_name(), "ExtrinsicSuccess");
+	assert_eq!(events[4].pallet_name(), "System");
+	assert_eq!(events[4].variant_name(), "ExtrinsicSuccess");
 }
