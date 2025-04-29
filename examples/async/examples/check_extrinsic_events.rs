@@ -126,10 +126,6 @@ async fn main() {
 
 fn assert_associated_events_match_expected(events: Vec<RawEventDetails<Hash>>) {
 	// First event
-	for e in &events {
-		println!("[+] Pallet name: {}", e.pallet_name());
-		println!("[+] Variant name: {}", e.variant_name());
-	}
 	assert_eq!(events[0].pallet_name(), "Balances");
 	assert_eq!(events[0].variant_name(), "Withdraw");
 
