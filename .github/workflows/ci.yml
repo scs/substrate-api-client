@@ -188,7 +188,7 @@ jobs:
         uses: baptiste0928/cargo-install@v3
         with:
           crate: cargo-about
-          version: "0.6"
+          version: "0.7"
 
       - name: Run license check
         # Explicitly use stable because otherwise cargo will trigger a download of
