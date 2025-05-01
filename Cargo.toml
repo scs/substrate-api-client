@@ -35,6 +35,7 @@ tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "time"] }
 scale-bits = { version = "0.7", default-features = false, features = ["scale-info", "serde"] }
 scale-decode = { version = "0.16", default-features = false, features = ["primitive-types", "derive"] }
 scale-encode = { version = "0.10", default-features = false, features = ["bits", "primitive-types", "derive"] }
+scale-info = { version = "2.1", default-features = false, features = ["derive"] }
 scale-value = { version = "0.18", default-features = false }
 
 # crates.io std only
@@ -72,17 +73,14 @@ sc-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch =
 sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
-ac-keystore = { path = "keystore", version = "1.17", default-features = false }
-ac-compose-macros = { path = "compose-macros", version = "1.17", default-features = false }
-ac-node-api = { path = "node-api", version = "1.17", default-features = false }
-ac-primitives = { path = "primitives", version = "1.17", default-features = false }
-ac-testing-async = { path = "testing/async", version = "1.17", default-features = false }
-ac-testing-sync = { path = "testing/sync", version = "1.17", default-features = false }
-substrate-api-client = { path = "api-client", version = "1.17", default-features = false }
+ac-keystore = { default-features = false, path = "keystore", version = "1.17" }
+ac-compose-macros = { default-features = false, path = "compose-macros", version = "1.17" }
+ac-node-api = { default-features = false, path = "node-api", version = "1.17" }
+ac-primitives = { default-features = false, path = "primitives", version = "1.17" }
+substrate-api-client = { default-features = false, path = "api-client", version = "1.17" }
 
 # Only used as dev-dependencies
 rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-scale-info = { version = "2.1", features = ["derive"] }
 test-case = "3.1"
 frame-metadata-hash-extension = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
