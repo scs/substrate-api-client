@@ -30,7 +30,7 @@ use log::{debug, info};
 use sp_core::Bytes;
 use sp_version::RuntimeVersion;
 
-pub const KSM_V14_METADATA_PATH: &'static str = "./../ksm_metadata_v14.bin";
+pub const KSM_V14_METADATA_PATH: &str = "./../ksm_metadata_v14.bin";
 
 /// Api to talk with substrate-nodes
 ///
