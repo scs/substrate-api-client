@@ -9,7 +9,7 @@ description = "Keystore (and session key management) for ed25519 based chains li
 readme = "README.md"
 
 [dependencies]
-array-bytes = {workspace = true}
+array-bytes = { workspace = true }
 parking_lot = { workspace = true }
 serde_json = { workspace = true, features = ["std"] }
 
