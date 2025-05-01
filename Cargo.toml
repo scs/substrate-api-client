@@ -47,6 +47,7 @@ tungstenite = { version = "0.26", features = ["native-tls", "url"] }
 ws = { version = "0.9", features = ["ssl"] }
 
 # Substrate no_std dependencies
+pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
@@ -63,7 +64,6 @@ sp-weights = { default-features = false, features = ["serde"], git = "https://gi
 frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-contracts = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 pallet-recovery = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
