@@ -6,11 +6,11 @@ edition = "2021"
 
 [dev-dependencies]
 codec = { workspace = true, features = ["std"] }
-env_logger = {  workspace = true }
+env_logger = { workspace = true }
 log = { workspace = true }
 serde_json = { workspace = true, features = ["std"] }
-tokio = {workspace = true, features = ["rt-multi-thread", "macros", "time"] }
-tokio-util = {workspace = true}
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+tokio-util = { workspace = true }
 
 # Substrate dependencies
 frame-support = { workspace = true, features = ["std"] }
