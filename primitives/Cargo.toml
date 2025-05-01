@@ -65,7 +65,7 @@ std = [
     # substrate std
     "frame-system",
     "pallet-assets",
-    "pallet-balances",
+    "pallet-balances/std",
 ]
 staking-xt = ["std", "pallet-staking"]
 contracts-xt = ["std", "pallet-contracts"]

@@ -21,6 +21,7 @@ bitvec = { version = "1.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ["derive"] }
 derive_more = { version = "2.0", default-features = false, features = ["from"] }
 either = { version = "1.6", default-features = false }
+env_logger = "0.11.8"
 impl-serde = { version = "0.5", default-features = false }
 frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
 futures-util = { version = "0.3", default-features = false }
@@ -31,6 +32,7 @@ primitive-types = { version = "0.13", default-features = false, features = ["ser
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0", default-features = false }
 tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "time"] }
+tokio-util = "0.7.15"
 
 scale-bits = { version = "0.7", default-features = false, features = ["scale-info", "serde"] }
 scale-decode = { version = "0.16", default-features = false, features = ["primitive-types", "derive"] }

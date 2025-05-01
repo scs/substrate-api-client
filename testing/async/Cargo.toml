@@ -6,21 +6,20 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-codec = { workspace = true }
+codec = { workspace = true, features = ["std"] }
 tokio = { workspace = true }
 jsonrpsee = { workspace = true }
 
 
 # Substrate dependencies
-frame-support = { workspace = true }
-rococo-runtime = { workspace = true }
-sp-core = { workspace = true }
-sp-crypto-hashing = { workspace = true }
-sp-keyring = { workspace = true }
-sp-runtime = { workspace = true }
-sp-staking = { workspace = true }
-pallet-balances = { workspace = true }
-pallet-society = { workspace = true }
+frame-support = { workspace = true, features = ["std"] }
+rococo-runtime = { workspace = true, features = ["std"] }
+sp-core = { workspace = true, features = ["std"] }
+sp-crypto-hashing = { workspace = true, features = ["std"] }
+sp-keyring = { workspace = true, features = ["std"] }
+sp-runtime = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-society = { workspace = true, features = ["std"] }
 
 # local deps
-substrate-api-client = { workspace = true }
+substrate-api-client = { workspace = true, features = ["std"] }

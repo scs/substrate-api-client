@@ -5,26 +5,25 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-codec = { package = "parity-scale-codec", version = "3.7", features = ['derive'] }
-env_logger = "0.11"
-log = "0.4"
-serde_json = "1.0"
-tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "time"] }
-tokio-util = "0.7"
-wabt = "0.10"
+codec = { workspace = true, features = ["std"] }
+env_logger = {  workspace = true }
+log = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+tokio = {workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+tokio-util = {workspace = true}
 
 # Substrate dependencies
-frame-support = { workspace = true }
-frame-system = { workspace = true }
-rococo-runtime = { workspace = true }
-pallet-balances = { workspace = true }
-pallet-identity = { workspace = true }
-pallet-recovery = { workspace = true }
-pallet-staking = { workspace = true }
-sp-core = { workspace = true }
-sp-keyring = { workspace = true }
-sp-runtime = { workspace = true }
-sp-weights = { workspace = true }
+frame-support = { workspace = true, features = ["std"] }
+frame-system = { workspace = true, features = ["std"] }
+rococo-runtime = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-identity = { workspace = true, features = ["std"] }
+pallet-recovery = { workspace = true, features = ["std"] }
+pallet-staking = { workspace = true, features = ["std"] }
+sp-core = { workspace = true, features = ["std"] }
+sp-keyring = { workspace = true, features = ["std"] }
+sp-runtime = { workspace = true, features = ["std"] }
+sp-weights = { workspace = true, features = ["std"] }
 
 # local deps
-substrate-api-client = { workspace = true, features = ["staking-xt", "contracts-xt"] }
+substrate-api-client = { workspace = true, features = ["std", "staking-xt", "contracts-xt"] }
