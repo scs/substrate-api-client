@@ -5,7 +5,7 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-substrate-api-client = { path = "../..", version = "1.17", default-features = false }
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-balances = { workspace = true }
+sp-core = { workspace = true, features = ["full_crypto", "serde"] }
+sp-runtime = { workspace = true }
+substrate-api-client = { workspace = true }

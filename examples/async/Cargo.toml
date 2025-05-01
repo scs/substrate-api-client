@@ -27,4 +27,4 @@ sp-runtime = { workspace = true }
 sp-weights = { workspace = true }
 
 # local deps
-substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt"] }
+substrate-api-client = { workspace = true, features = ["staking-xt", "contracts-xt"] }
