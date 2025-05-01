@@ -29,11 +29,9 @@ name = "ac-examples-async"
 version = "1.17.0"
 dependencies = [
  "env_logger",
- "frame-support",
  "frame-system",
  "log",
  "pallet-balances",
- "pallet-identity",
  "pallet-recovery",
  "pallet-staking",
  "parity-scale-codec",
@@ -89,7 +87,6 @@ dependencies = [
 name = "ac-node-api"
 version = "1.17.0"
 dependencies = [
- "ac-primitives",
  "bitvec",
  "derive_more 2.0.1",
  "either",
@@ -97,7 +94,6 @@ dependencies = [
  "hex",
  "log",
  "parity-scale-codec",
- "scale-bits",
  "scale-decode",
  "scale-encode",
  "scale-info",
@@ -117,7 +113,6 @@ dependencies = [
 name = "ac-primitives"
 version = "1.17.0"
 dependencies = [
- "frame-metadata-hash-extension",
  "frame-system",
  "impl-serde",
  "pallet-assets",

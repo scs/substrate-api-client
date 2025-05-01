@@ -17,7 +17,6 @@ either = { workspace = true }
 frame-metadata = { workspace = true, features = ["current", "serde_full", "decode"] }
 hex = { workspace = true }
 log = { workspace = true }
-scale-bits = { workspace = true }
 scale-decode = { workspace = true, features = ["primitive-types", "derive"] }
 scale-encode = { workspace = true, features = ["bits", "primitive-types", "derive"] }
 scale-info = { workspace = true, features = ["derive", "decode", "bitvec"] }
@@ -34,9 +33,6 @@ sp-storage = { workspace = true, features = ["serde"] }
 # need to add this for `no_std`
 sp-application-crypto = { workspace = true, features = ["full_crypto"] }
 sp-runtime-interface = { workspace = true }
-
-# local
-ac-primitives = { workspace = true }
 
 [dev-dependencies]
 test-case = { workspace = true }

@@ -13,11 +13,9 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
 tokio-util = { workspace = true }
 
 # Substrate dependencies
-frame-support = { workspace = true, features = ["std"] }
 frame-system = { workspace = true, features = ["std"] }
 rococo-runtime = { workspace = true, features = ["std"] }
 pallet-balances = { workspace = true, features = ["std"] }
-pallet-identity = { workspace = true, features = ["std"] }
 pallet-recovery = { workspace = true, features = ["std"] }
 pallet-staking = { workspace = true, features = ["std"] }
 sp-core = { workspace = true, features = ["std"] }
