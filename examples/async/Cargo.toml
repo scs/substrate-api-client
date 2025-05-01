@@ -24,4 +24,4 @@ sp-runtime = { workspace = true, features = ["std"] }
 sp-weights = { workspace = true, features = ["std"] }
 
 # local deps
-substrate-api-client = { workspace = true, features = ["std", "staking-xt", "contracts-xt"] }
+substrate-api-client = { workspace = true, features = ["std", "jsonrpsee-client", "staking-xt", "contracts-xt"] }

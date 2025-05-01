@@ -22,4 +22,4 @@ pallet-balances = { workspace = true, features = ["std"] }
 pallet-society = { workspace = true, features = ["std"] }
 
 # local deps
-substrate-api-client = { workspace = true, features = ["std"] }
+substrate-api-client = { workspace = true, features = ["std", "staking-xt", "contracts-xt", "jsonrpsee-client"] }
