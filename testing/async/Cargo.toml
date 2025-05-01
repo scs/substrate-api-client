@@ -8,7 +8,7 @@ edition = "2021"
 [dev-dependencies]
 codec = { workspace = true, features = ["std"] }
 tokio = { workspace = true }
-jsonrpsee = { workspace = true }
+jsonrpsee = { workspace = true, features = ["server"] }
 
 
 # Substrate dependencies
