@@ -76,13 +76,11 @@ name = "ac-keystore"
 version = "1.17.0"
 dependencies = [
  "array-bytes 9.1.2",
- "async-trait",
  "parking_lot",
  "sc-keystore",
  "serde_json",
  "sp-application-crypto",
  "sp-core",
- "sp-keyring",
  "sp-keystore",
  "tempfile",
 ]
