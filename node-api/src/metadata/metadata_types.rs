@@ -525,7 +525,7 @@ mod tests {
 	use std::fs;
 
 	fn metadata() -> Metadata {
-		let encoded_metadata: Bytes = fs::read("./../ksm_metadata_v14.bin").unwrap().into();
+		let encoded_metadata: Bytes = fs::read("./../polkadot_metadata_v15.bin").unwrap().into();
 		Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap()
 	}
 
@@ -549,5 +549,25 @@ mod tests {
 		let custom_metadata = metadata.custom();
 
 		assert!(custom_metadata.map.is_empty());
+	}
+
+	#[test]
+	fn metadata_test() {
+		use std::io::Write;
+		let metadata = metadata();
+		//let runtime_metadata = metadata.runtime_metadata().pallets[2].clone();
+		//let runtime_metadata = metadata.extrinsic().clone();
+		let runtime_metadata = metadata.runtime_metadata();
+		let mut file = std::fs::File::create("foo.txt").unwrap();
+		let string = format!("{:?}", runtime_metadata);
+		file.write_all(string.as_bytes()).unwrap();
+
+		// 		let timestamp_call_id = metadata.pallet_by_name("Timestamp").unwrap().call_ty_id().unwrap();
+		// 		let timestamp_call_type = metadata.types().types.get(timestamp_call_id as usize).unwrap();
+		//
+		// 		let timestamp_pallet_name = &timestamp_call_type.ty.path.segments[0];
+		// 		assert_eq!(timestamp_pallet_name, "pallet_timestamp");
+		//
+		// 		println!("{:?}", timestamp_pallet_name);
 	}
 }
