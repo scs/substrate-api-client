@@ -11,34 +11,33 @@ categories = ["no-std"]
 
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ['derive'] }
-impl-serde = { version = "0.5", default-features = false }
-primitive-types = { version = "0.13", default-features = false, features = ["serde_no_std", "scale-info"] }
-scale-info = { version = "2.1", default-features = false, features = ["derive"] }
-serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
-serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+codec = { workspace = true, features = ['derive'] }
+impl-serde = { workspace = true }
+primitive-types = { workspace = true, features = ["serde_no_std", "scale-info"] }
+scale-info = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "alloc"] }
+serde_json = { workspace = true, features = ["alloc"] }
 
 # substrate no_std
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-staking = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { workspace = true, features = ["full_crypto", "serde"] }
+sp-crypto-hashing = { workspace = true }
+sp-runtime = { workspace = true, features = ["serde"] }
+sp-runtime-interface = { workspace = true }
+sp-staking = { workspace = true, features = ["serde"] }
+sp-version = { workspace = true, features = ["serde"] }
+sp-weights = { workspace = true, features = ["serde"] }
 # need to add this for the app_crypto macro
-sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-application-crypto = { workspace = true, features = ["full_crypto"] }
 
 # substrate std / wasm only
-frame-system = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-assets = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-contracts = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-staking = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-system = { optional = true, workspace = true }
+pallet-assets = { optional = true, workspace = true }
+pallet-balances = { optional = true, workspace = true }
+pallet-contracts = { optional = true, workspace = true }
+pallet-staking = { optional = true, workspace = true }
 
 [dev-dependencies]
-frame-metadata-hash-extension = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keyring = { workspace = true }
 
 
 [features]
@@ -65,7 +64,7 @@ std = [
     # substrate std
     "frame-system",
     "pallet-assets",
-    "pallet-balances",
+    "pallet-balances/std",
 ]
 staking-xt = ["std", "pallet-staking"]
 contracts-xt = ["std", "pallet-contracts"]

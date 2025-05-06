@@ -354,7 +354,7 @@ mod tests {
 	#[test]
 	fn retrieve_extrinsic_index_from_block_works() {
 		// We need a pallet balance in the metadata, so ` api.balance_transfer` can create the extrinsic.
-		let encoded_metadata = fs::read("./ksm_metadata_v14.bin").unwrap();
+		let encoded_metadata = fs::read("./../ksm_metadata_v14.bin").unwrap();
 		let metadata: RuntimeMetadataPrefixed =
 			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
 		let metadata = Metadata::try_from(metadata).unwrap();

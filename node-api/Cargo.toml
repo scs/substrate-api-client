@@ -10,36 +10,32 @@ readme = "README.md"
 categories = ["no-std"]
 
 [dependencies]
-bitvec = { version = "1.0", default-features = false, features = ["alloc"] }
-codec = { package = "parity-scale-codec", version = "3.7", features = ["derive", "bit-vec"], default-features = false }
-derive_more = { version = "2.0", default-features = false, features = ["from"] }
-either = { version = "1.6", default-features = false }
-frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
-hex = { version = "0.4", default-features = false }
-log = { version = "0.4", default-features = false }
-scale-bits = { version = "0.7", default-features = false, features = ["scale-info", "serde"] }
-scale-decode = { version = "0.16", default-features = false, features = ["primitive-types", "derive"] }
-scale-encode = { version = "0.10", default-features = false, features = ["bits", "primitive-types", "derive"] }
-scale-info = { version = "2.0", features = ["derive", "decode", "bitvec"], default-features = false }
-scale-value = { version = "0.18", default-features = false }
-serde = { version = "1.0", features = ["derive"], default-features = false }
-serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+bitvec = { workspace = true }
+codec = { workspace = true }
+derive_more = { workspace = true }
+either = { workspace = true }
+frame-metadata = { workspace = true, features = ["current", "serde_full", "decode"] }
+hex = { workspace = true }
+log = { workspace = true }
+scale-decode = { workspace = true, features = ["primitive-types", "derive"] }
+scale-encode = { workspace = true, features = ["bits", "primitive-types", "derive"] }
+scale-info = { workspace = true, features = ["derive", "decode", "bitvec"] }
+scale-value = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, features = ["alloc"] }
 
 # substrate
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { workspace = true, features = ["full_crypto", "serde"] }
+sp-crypto-hashing = { workspace = true }
+sp-runtime = { workspace = true, features = ["serde"] }
+sp-storage = { workspace = true, features = ["serde"] }
 
 # need to add this for `no_std`
-sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-
-# local
-ac-primitives = { path = "../primitives", version = "1.17", default-features = false }
+sp-application-crypto = { workspace = true, features = ["full_crypto"] }
+sp-runtime-interface = { workspace = true }
 
 [dev-dependencies]
-test-case = "3.1"
+test-case = { workspace = true }
 
 [features]
 default = ["std"]

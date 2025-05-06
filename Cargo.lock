@@ -29,11 +29,9 @@ name = "ac-examples-async"
 version = "1.17.0"
 dependencies = [
  "env_logger",
- "frame-support",
  "frame-system",
  "log",
  "pallet-balances",
- "pallet-identity",
  "pallet-recovery",
  "pallet-staking",
  "parity-scale-codec",
@@ -46,7 +44,6 @@ dependencies = [
  "substrate-api-client",
  "tokio",
  "tokio-util",
- "wabt",
 ]
 
 [[package]]
@@ -77,13 +74,11 @@ name = "ac-keystore"
 version = "1.17.0"
 dependencies = [
  "array-bytes 9.1.2",
- "async-trait",
  "parking_lot",
  "sc-keystore",
  "serde_json",
  "sp-application-crypto",
  "sp-core",
- "sp-keyring",
  "sp-keystore",
  "tempfile",
 ]
@@ -92,7 +87,6 @@ dependencies = [
 name = "ac-node-api"
 version = "1.17.0"
 dependencies = [
- "ac-primitives",
  "bitvec",
  "derive_more 2.0.1",
  "either",
@@ -100,7 +94,6 @@ dependencies = [
  "hex",
  "log",
  "parity-scale-codec",
- "scale-bits",
  "scale-decode",
  "scale-encode",
  "scale-info",
@@ -120,7 +113,6 @@ dependencies = [
 name = "ac-primitives"
 version = "1.17.0"
 dependencies = [
- "frame-metadata-hash-extension",
  "frame-system",
  "impl-serde",
  "pallet-assets",
@@ -157,7 +149,6 @@ dependencies = [
  "sp-crypto-hashing",
  "sp-keyring",
  "sp-runtime",
- "sp-staking",
  "substrate-api-client",
  "tokio",
 ]
@@ -968,15 +959,6 @@ name = "clap_lex"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
-
-[[package]]
-name = "cmake"
-version = "0.1.54"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7caa3f9de89ddbe2c607f4101924c5abec803763ae9534e4f4d7d8f84aa81f0"
-dependencies = [
- "cc",
-]
 
 [[package]]
 name = "codespan-reporting"
@@ -2270,12 +2252,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "glob"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8be18de09a56b60ed0edf84bc9df007e30040691af7acd1c41874faac5895bfb"
-
-[[package]]
 name = "group"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3448,9 +3424,9 @@ checksum = "d05e27ee213611ffe7d6348b942e8f942b37114c00cc03cec254295a4a17852e"
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.107"
+version = "0.9.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8288979acd84749c744a9014b4382d42b8f7b2592847b5afb2ed29e5d16ede07"
+checksum = "e145e1651e858e820e4860f7b9c5e169bc1d8ce1c86043be79fa7b7634821847"
 dependencies = [
  "cc",
  "libc",
@@ -5289,9 +5265,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "1.0.5"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d97817398dd4bb2e6da002002db259209759911da105da92bec29ccb12cf58bf"
+checksum = "c71e83d6afe7ff64890ec6b71d6a69bb8a610ab78ce364b3352876bb4c801266"
 dependencies = [
  "bitflags 2.9.0",
  "errno",
@@ -6797,9 +6773,9 @@ dependencies = [
 
 [[package]]
 name = "synstructure"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8af7666ab7b6390ab78131fb5b0fce11d6b7a6951602017c35fa82800708971"
+checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7431,29 +7407,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "wabt"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00bef93d5e6c81a293bccf107cf43aa47239382f455ba14869d36695d8963b9c"
-dependencies = [
- "serde",
- "serde_derive",
- "serde_json",
- "wabt-sys",
-]
-
-[[package]]
-name = "wabt-sys"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a4e043159f63e16986e713e9b5e1c06043df4848565bf672e27c523864c7791"
-dependencies = [
- "cc",
- "cmake",
- "glob",
-]
-
-[[package]]
 name = "walkdir"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7584,9 +7537,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-root-certs"
-version = "0.26.9"
+version = "0.26.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "180d2741b6115c3d906577e6533ad89472d48d96df00270fccb78233073d77f7"
+checksum = "c99403924bc5f23afefc319b8ac67ed0e50669f6e52a413314cccb1fdbc93ba0"
 dependencies = [
  "rustls-pki-types",
 ]

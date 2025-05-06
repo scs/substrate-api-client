@@ -9,10 +9,10 @@ env_logger = "0.11"
 log = "0.4"
 
 # Substrate dependencies
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-core = { workspace = true }
+sp-keyring = { workspace = true }
+sp-runtime = { workspace = true }
+sp-weights = { workspace = true }
 
 # local deps
-substrate-api-client = { path = "../..", version = "1.17", default-features = false, features = ["tungstenite-client", "ws-client"] }
+substrate-api-client = { workspace = true, features = ["tungstenite-client", "ws-client"] }

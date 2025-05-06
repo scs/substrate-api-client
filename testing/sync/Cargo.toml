@@ -7,10 +7,10 @@ edition = "2021"
 
 [dev-dependencies]
 # Substrate dependencies
-sp-application-crypto = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-application-crypto = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
 
 # local deps
-substrate-api-client = { path = "../..", version = "1.17", default-features = false, features = ["tungstenite-client", "ws-client"] }
-ac-keystore = { path = "../../keystore", version = "1.17" }
+substrate-api-client = { workspace = true, features = ["tungstenite-client", "ws-client"] }
+ac-keystore = { workspace = true }

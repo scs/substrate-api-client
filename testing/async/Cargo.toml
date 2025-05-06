@@ -6,21 +6,20 @@ license = "Apache-2.0"
 edition = "2021"
 
 [dev-dependencies]
-codec = { package = "parity-scale-codec", version = "3.7", features = ['derive'] }
-tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "time"] }
-jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types", "server"] }
+codec = { workspace = true, features = ["std"] }
+tokio = { workspace = true }
+jsonrpsee = { workspace = true, features = ["server"] }
 
 
 # Substrate dependencies
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-society = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { workspace = true, features = ["std"] }
+rococo-runtime = { workspace = true, features = ["std"] }
+sp-core = { workspace = true, features = ["std"] }
+sp-crypto-hashing = { workspace = true, features = ["std"] }
+sp-keyring = { workspace = true, features = ["std"] }
+sp-runtime = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-society = { workspace = true, features = ["std"] }
 
 # local deps
-substrate-api-client = { path = "../..", version = "1.17", features = ["staking-xt", "contracts-xt"] }
+substrate-api-client = { workspace = true, features = ["std", "staking-xt", "contracts-xt", "jsonrpsee-client"] }

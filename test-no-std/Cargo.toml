@@ -9,13 +9,13 @@ edition = "2021"
 libc = { version = "0.2", default-features = false }
 
 # local dependencies
-ac-compose-macros = { path = "../compose-macros", version = "1.17", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
-ac-node-api = { path = "../node-api", version = "1.17", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
-ac-primitives = { path = "../primitives", version = "1.17", default-features = false, optional = true, features = ["disable_target_static_assertions"] }
-substrate-api-client = { path = "..", version = "1.17", default-features = false, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
+ac-compose-macros = { workspace = true, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
+ac-node-api = { workspace = true, optional = true, features = ["disable_target_static_assertions"] }
+ac-primitives = { workspace = true, optional = true, features = ["disable_target_static_assertions"] }
+substrate-api-client = { workspace = true, optional = true, features = ["disable_target_static_assertions", "sync-api"] }
 
 # substrate dependencies
-sp-io = { default-features = false, features = ["disable_oom", "disable_panic_handler"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-io = { workspace = true, features = ["disable_oom", "disable_panic_handler"] }
 
 [features]
 # It is better to test the no-std crates standalone (don't enable both features at the same time) because dependency

@@ -57,22 +57,22 @@ jobs:
                 cargo build --release -p test-no-std --features node-api,
                 cargo build --release -p test-no-std --features primitives,
 
-                 # Check build of stand-alone features.
-                cargo check --no-default-features,
-                cargo check --no-default-features --features sync-api,
-                cargo check --no-default-features --features jsonrpsee-client,
-                cargo check --no-default-features --features tungstenite-client,
-                cargo check --no-default-features --features ws-client,
-                cargo check --no-default-features --features staking-xt,
-                cargo check --no-default-features --features contracts-xt,
-                cargo check --no-default-features --features std,
+                # Check build of stand-alone features.
+                cargo check --no-default-features -p substrate-api-client,
+                cargo check --no-default-features -p substrate-api-client --features sync-api,
+                cargo check --no-default-features -p substrate-api-client --features jsonrpsee-client,
+                cargo check --no-default-features -p substrate-api-client --features tungstenite-client,
+                cargo check --no-default-features -p substrate-api-client --features ws-client,
+                cargo check --no-default-features -p substrate-api-client --features staking-xt,
+                cargo check --no-default-features -p substrate-api-client --features contracts-xt,
+                cargo check --no-default-features -p substrate-api-client --features std,
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
-                cargo build --target wasm32-unknown-unknown --no-default-features --features sync-api,
+                cargo build -p substrate-api-client --target wasm32-unknown-unknown --no-default-features --features sync-api,
                 cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown,
 
                 # Test for 32 bit and wasm32-wasip1 compatibility
-                cargo build --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
+                cargo build -p substrate-api-client --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
 
                 # Compile examples and integration test separately to ensure features are not cross-imported
                 cargo test --release -p ac-examples-async,
@@ -81,9 +81,9 @@ jobs:
                 cargo test --release -p ac-testing-sync,
 
                 # Clippy
-                cargo clippy -- -D warnings,
-                cargo clippy --no-default-features -- -D warnings,
-                cargo clippy --all-features --examples -- -D warnings,
+                cargo clippy -p substrate-api-client -- -D warnings,
+                cargo clippy -p substrate-api-client --no-default-features -- -D warnings,
+                cargo clippy -p substrate-api-client --all-features --examples -- -D warnings,
 
                 # Run unit tests
                 cargo test --release --all-features --workspace --exclude test-no-std --exclude "ac-examples-*" --exclude "ac-testing-*",

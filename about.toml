@@ -12,7 +12,8 @@ accepted = [
     "Unicode-3.0",
     "NOASSERTION",
     "Zlib",
-    "GPL-3.0"
+    "GPL-3.0",
+    "GPL-3.0 WITH Classpath-exception-2.0"
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true

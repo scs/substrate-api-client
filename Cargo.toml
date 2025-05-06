@@ -1,21 +1,10 @@
-[package]
-name = "substrate-api-client"
-version = "1.17.0"
-authors = ["Supercomputing Systems AG <info@scs.ch>"]
-license = "Apache-2.0"
-edition = "2021"
-repository = "https://github.com/scs/substrate-api-client"
-description = "Json-rpc client with helper functions compatible with any Substrate node"
-readme = "README.md"
-keywords = ["json", "rpc", "polkadot", "api", "blockchain"]
-categories = ["no-std", "wasm"]
-
-
 [workspace]
+resolver = "3"
 members = [
-    ".",
+    "api-client",
     "keystore",
     "compose-macros",
+    "primitives",
     "examples/async",
     "examples/sync",
     "examples/wasm",
@@ -25,108 +14,76 @@ members = [
     "testing/sync",
 ]
 
-[dependencies]
+[workspace.dependencies]
 # crates.io no_std
 async-trait = "0.1"
+array-bytes = "9.1"
+bitvec = { version = "1.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ["derive"] }
 derive_more = { version = "2.0", default-features = false, features = ["from"] }
+either = { version = "1.6", default-features = false }
+env_logger = "0.11.8"
+impl-serde = { version = "0.5", default-features = false }
 frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
 futures-util = { version = "0.3", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 log = { version = "0.4", default-features = false }
 maybe-async = { version = "0.2" }
+parking_lot = "0.12"
+primitive-types = { version = "0.13", default-features = false, features = ["serde_no_std", "scale-info"] }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0", default-features = false }
+tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "time"] }
+tokio-util = "0.7.15"
 
+scale-bits = { version = "0.7", default-features = false, features = ["scale-info", "serde"] }
+scale-decode = { version = "0.16", default-features = false, features = ["primitive-types", "derive"] }
+scale-encode = { version = "0.10", default-features = false, features = ["bits", "primitive-types", "derive"] }
+scale-info = { version = "2.1", default-features = false, features = ["derive"] }
+scale-value = { version = "0.18", default-features = false }
 
 # crates.io std only
-url = { version = "2.5", optional = true }
+url = { version = "2.5" }
 
 # websocket dependent features
-jsonrpsee = { version = "0.24", optional = true, features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
-tungstenite = { version = "0.26", optional = true, features = ["native-tls", "url"] }
-ws = { version = "0.9", optional = true, features = ["ssl"] }
+jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
+tungstenite = { version = "0.26", features = ["native-tls", "url"] }
+ws = { version = "0.9", features = ["ssl"] }
 
 # Substrate no_std dependencies
+pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-io = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-inherents = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-staking = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # substrate std / wasm only
-frame-support = { optional = true, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-contracts = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-recovery = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-society = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sc-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 
 # local deps
-ac-compose-macros = { path = "compose-macros", version = "1.17", default-features = false }
-ac-node-api = { path = "node-api", version = "1.17", default-features = false }
-ac-primitives = { path = "primitives", version = "1.17", default-features = false }
+ac-keystore = { default-features = false, path = "keystore", version = "1.17" }
+ac-compose-macros = { default-features = false, path = "compose-macros", version = "1.17" }
+ac-node-api = { default-features = false, path = "node-api", version = "1.17" }
+ac-primitives = { default-features = false, path = "primitives", version = "1.17" }
+substrate-api-client = { default-features = false, path = "api-client", version = "1.17" }
 
-
-[dev-dependencies]
-ac-node-api = { path = "node-api", version = "1.17", features = ["mocks"] }
+# Only used as dev-dependencies
 rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-scale-info = { version = "2.1", features = ["derive"] }
 test-case = "3.1"
-
-[features]
-default = ["std", "jsonrpsee-client"]
-# To support `no_std` builds in non-32 bit environments.
-disable_target_static_assertions = [
-    "sp-runtime-interface/disable_target_static_assertions",
-]
-
-# If this is active all the code compiles in synchronous mode. If not selected, code will compile to async mode.
-sync-api = ["ac-compose-macros/sync-api", "maybe-async/is_sync"]
-
-# Use the `jsonrpsee` crate for websocket communication. Does only provide async support and needs a tokio runtime.
-# Provides convenience functions such as subscription callbacks.
-# Most examples use the `jsonrpsee` feature and can be used for reference.
-jsonrpsee-client = ["std", "jsonrpsee"]
-
-# Use the `tungstenite` crate for websocket communication. No async support but has some reconnection capabilities.
-# See the example `transfer_with_tungstenite_client` on how to use it.
-tungstenite-client = ["std", "tungstenite", "sync-api"]
-
-# Use the `ws` crate for websocket communication. No async support.
-# Establishes a new connection for each request and therefore is limited in terms of performance.
-# See the example `transfer_with_ws_client` on how to use it.
-ws-client = ["std", "ws", "sync-api"]
-
-# Enables functionality that helps to create extrinsics for `pallet-staking`.
-# See the `StakingExtrinsics` trait and the `staking_batch_payout` example to get an understanding
-# of the functionality this feature provides
-staking-xt = ["std", "ac-primitives/staking-xt"]
-
-# Enables functionality that helps to create extrinsics for `pallet-contracts`.
-# See the `ContractsExtrinsics` trait and the `contract_instantiate_with_code` example to get an understanding
-# of the functionality this feature provides.
-contracts-xt = ["std", "ac-primitives/contracts-xt"]
-
-# Enables all std features of dependencies in case of std build.
-std = [
-    # crates.io no_std
-    "codec/std",
-    "frame-metadata/std",
-    "hex/std",
-    "log/std",
-    "serde/std",
-    "serde_json/std",
-    "futures-util/std",
-    # crates.io std only
-    "url",
-    # substrate no_std
-    "sp-core/std",
-    "sp-runtime/std",
-    "sp-runtime-interface/std",
-    "sp-storage/std",
-    "sp-version/std",
-    # substrate std
-    "frame-support",
-    # local deps
-    "ac-compose-macros/std",
-    "ac-node-api/std",
-    "ac-primitives/std",
-]
+sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }

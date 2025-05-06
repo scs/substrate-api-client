@@ -30,6 +30,8 @@ use log::{debug, info};
 use sp_core::Bytes;
 use sp_version::RuntimeVersion;
 
+pub const KSM_V14_METADATA_PATH: &str = "./../ksm_metadata_v14.bin";
+
 /// Api to talk with substrate-nodes
 ///
 /// It is generic over the `Request` trait, so you can use any rpc-backend you like.
@@ -290,7 +292,7 @@ mod tests {
 		// Create new api.
 		let genesis_hash = H256::random();
 		let runtime_version = RuntimeVersion::default();
-		let encoded_metadata = fs::read("./ksm_metadata_v14.bin").unwrap();
+		let encoded_metadata = fs::read(KSM_V14_METADATA_PATH).unwrap();
 		let metadata: RuntimeMetadataPrefixed =
 			Decode::decode(&mut encoded_metadata.as_slice()).unwrap();
 		let metadata = Metadata::try_from(metadata).unwrap();
@@ -320,7 +322,7 @@ mod tests {
 	fn api_runtime_update_works() {
 		let runtime_version = RuntimeVersion { spec_version: 10, ..Default::default() };
 		// Update metadata
-		let encoded_metadata: Bytes = fs::read("./ksm_metadata_v14.bin").unwrap().into();
+		let encoded_metadata: Bytes = fs::read(KSM_V14_METADATA_PATH).unwrap().into();
 		let runtime_metadata_prefixed: RuntimeMetadataPrefixed =
 			Decode::decode(&mut encoded_metadata.0.as_slice()).unwrap();
 		let mut runtime_metadata = match runtime_metadata_prefixed.1 {
