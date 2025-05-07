@@ -46,7 +46,7 @@ jobs:
         check: [
                 # Test for no-std compatibility.
                 # `--locked` to enforce an up-to-date Cargo.lock
-                cargo build --release --workspace --locked --exclude test-no-std,
+                cargo build --release --workspace --locked,
 
                 # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
                 #
@@ -58,14 +58,14 @@ jobs:
                 cargo build --release -p test-no-std --features primitives,
 
                 # Check build of stand-alone features.
-                cargo check --no-default-features --workspace --exclude test-no-std,
-                cargo check --no-default-features --workspace --exclude test-no-std --features sync-api,
-                cargo check --no-default-features --workspace --exclude test-no-std --features jsonrpsee-client,
-                cargo check --no-default-features --workspace --exclude test-no-std --features tungstenite-client,
-                cargo check --no-default-features --workspace --exclude test-no-std --features ws-client,
-                cargo check --no-default-features --workspace --exclude test-no-std --features staking-xt,
-                cargo check --no-default-features --workspace --exclude test-no-std --features contracts-xt,
-                cargo check --no-default-features --workspace --exclude test-no-std --features std,
+                cargo check --no-default-features --workspace,
+                cargo check --no-default-features --workspace --features sync-api,
+                cargo check --no-default-features --workspace --features jsonrpsee-client,
+                cargo check --no-default-features --workspace --features tungstenite-client,
+                cargo check --no-default-features --workspace --features ws-client,
+                cargo check --no-default-features --workspace --features staking-xt,
+                cargo check --no-default-features --workspace --features contracts-xt,
+                cargo check --no-default-features --workspace --features std,
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build -p substrate-api-client --target wasm32-unknown-unknown --no-default-features --features sync-api,
@@ -81,12 +81,12 @@ jobs:
                 cargo test --release -p ac-testing-sync,
 
                 # Clippy
-                cargo clippy --workspace --exclude test-no-std -- -D warnings,
-                cargo clippy --workspace --exclude test-no-std --no-default-features -- -D warnings,
-                cargo clippy --workspace --exclude test-no-std --all-features --examples -- -D warnings,
+                cargo clippy --workspace -- -D warnings,
+                cargo clippy --workspace --no-default-features -- -D warnings,
+                cargo clippy --workspace --all-features --examples -- -D warnings,
 
                 # Run unit tests
-                cargo test --release --all-features --workspace --exclude test-no-std --exclude "ac-examples-*" --exclude "ac-testing-*",
+                cargo test --release --all-features --workspace --exclude "ac-examples-*" --exclude "ac-testing-*",
 
                 # Fmt
                 cargo fmt --all -- --check
