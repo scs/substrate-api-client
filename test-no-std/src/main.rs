@@ -1,4 +1,4 @@
-#![feature(start, libc, lang_items)]
+#![feature(libc, lang_items)]
 #![feature(alloc_error_handler)]
 #![no_std]
 #![no_main]
