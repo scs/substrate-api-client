@@ -58,14 +58,14 @@ jobs:
                 cargo build --release -p test-no-std --features primitives,
 
                 # Check build of stand-alone features.
-                cargo check --no-default-features -p substrate-api-client,
-                cargo check --no-default-features -p substrate-api-client --features sync-api,
-                cargo check --no-default-features -p substrate-api-client --features jsonrpsee-client,
-                cargo check --no-default-features -p substrate-api-client --features tungstenite-client,
-                cargo check --no-default-features -p substrate-api-client --features ws-client,
-                cargo check --no-default-features -p substrate-api-client --features staking-xt,
-                cargo check --no-default-features -p substrate-api-client --features contracts-xt,
-                cargo check --no-default-features -p substrate-api-client --features std,
+                cargo check --no-default-features --workspace --exclude test-no-std,
+                cargo check --no-default-features --workspace --exclude test-no-std --features sync-api,
+                cargo check --no-default-features --workspace --exclude test-no-std --features jsonrpsee-client,
+                cargo check --no-default-features --workspace --exclude test-no-std --features tungstenite-client,
+                cargo check --no-default-features --workspace --exclude test-no-std --features ws-client,
+                cargo check --no-default-features --workspace --exclude test-no-std --features staking-xt,
+                cargo check --no-default-features --workspace --exclude test-no-std --features contracts-xt,
+                cargo check --no-default-features --workspace --exclude test-no-std --features std,
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build -p substrate-api-client --target wasm32-unknown-unknown --no-default-features --features sync-api,
@@ -81,9 +81,9 @@ jobs:
                 cargo test --release -p ac-testing-sync,
 
                 # Clippy
-                cargo clippy -p substrate-api-client -- -D warnings,
-                cargo clippy -p substrate-api-client --no-default-features -- -D warnings,
-                cargo clippy -p substrate-api-client --all-features --examples -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std --no-default-features -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std --all-features --examples -- -D warnings,
 
                 # Run unit tests
                 cargo test --release --all-features --workspace --exclude test-no-std --exclude "ac-examples-*" --exclude "ac-testing-*",
