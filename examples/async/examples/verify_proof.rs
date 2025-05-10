@@ -1,7 +1,7 @@
 use codec::Encode;
 use poseidon_resonance::PoseidonHasher;
 use sp_core::crypto::AccountId32;
-use sp_core::twox_128;
+use sp_core::{twox_128, H256};
 use sp_state_machine::read_proof_check;
 use sp_trie::StorageProof;
 use trie_db::node::{Node, NodeHandle};
@@ -10,6 +10,30 @@ use substrate_api_client::ac_primitives::{HashTrait, ResonanceRuntimeConfig, Sto
 use substrate_api_client::{Api, GetStorage, GetChainInfo};
 use substrate_api_client::rpc::JsonrpseeClient;
 use substrate_api_client::runtime_api::AccountNonceApi;
+
+/// Function to compute the leaf hash for the TransferProof storage map key.
+/// Parameters:
+/// - tx_count: The nonce of the transaction.
+/// - from: The sender's AccountId.
+/// - to: The recipient's AccountId.
+/// - amount: The balance amount transferred.
+/// Returns: The hashed leaf as a `T::Hash`.
+pub fn compute_transfer_proof_leaf(
+    tx_count: u32,
+    from: &AccountId32,
+    to: &AccountId32,
+    amount: u128,
+) -> H256 {
+    // Step 1: Encode the key components into a single byte vector
+    let mut key_bytes = Vec::new();
+    key_bytes.extend_from_slice(&tx_count.encode());
+    key_bytes.extend_from_slice(&from.encode());
+    key_bytes.extend_from_slice(&to.encode());
+    key_bytes.extend_from_slice(&amount.encode());
+
+    // Step 2: Hash the concatenated bytes using PoseidonHasher
+    PoseidonHasher::hash(&key_bytes)
+}
 
 pub async fn verify_transfer_proof(
     api: Api::<ResonanceRuntimeConfig, JsonrpseeClient>,
@@ -22,8 +46,10 @@ pub async fn verify_transfer_proof(
     tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
 
     let nonce = api.runtime_api().account_nonce(from.clone(), None).await.unwrap();
-    let key_tuple = (nonce, from, to, amount);
+    let key_tuple = (nonce, from.clone(), to.clone(), amount);
     println!("[+] Transaction nonce: {nonce:?} key: {key_tuple:?}");
+    let leaf_hash = compute_transfer_proof_leaf(nonce, &from.clone(), &to.clone(), amount);
+    println!("[+] Leaf hash: {leaf_hash:?}");
 
     let pallet_prefix = twox_128("Balances".as_bytes());
     let storage_prefix = twox_128("TransferProof".as_bytes());
