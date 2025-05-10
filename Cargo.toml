@@ -33,11 +33,11 @@ members = [
 # pallet-merkle-airdrop = { path = "../backbone/pallets/merkle-airdrop", default-features = false }
 
 # See readme how to set up access to private repos 
-dilithium-crypto = { git = "https://gitlab.com/resonance-network/backbone.git", branch = "feat/reversible-txs", default-features = false }
-resonance-runtime = { git = "https://gitlab.com/resonance-network/backbone.git", branch = "feat/reversible-txs", default-features = false }
-# pallet-merkle-airdrop = { git = "https://gitlab.com/resonance-network/backbone.git", branch = "feat/reversible-txs", default-features = false }
-poseidon-resonance = { git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
-pallet-reversible-transfers = { git = "https://gitlab.com/resonance-network/backbone.git", branch = "feat/reversible-txs", default-features = false }
+dilithium-crypto = { git = "https://github.com/Quantus-Network/chain", default-features = false }
+resonance-runtime = { git = "https://github.com/Quantus-Network/chain", default-features = false }
+# pallet-merkle-airdrop = { git = "https://gitlab.com/resonance-network/backbone.git", default-features = false }
+poseidon-resonance = { version = "0.3.0",git = "https://github.com/Resonance-Network/poseidon-resonance", default-features = false }
+pallet-reversible-transfers = { git = "https://github.com/Quantus-Network/chain", default-features = false }
 
 [dependencies]
 frame-support = { version = "39.1.0", default-features = false, optional = true }

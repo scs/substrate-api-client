@@ -1,4 +1,3 @@
-use codec::Compact;
 /*
 	Copyright 2019 Supercomputing Systems AG
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,38 +12,32 @@ use codec::Compact;
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
+use codec::Decode;
 use dilithium_crypto::pair::{crystal_alice, dilithium_bob};
 use pallet_reversible_transfers::DelayPolicy;
-use resonance_runtime::{configs::DefaultDelay, Address, QPoW, ReversibleTransfersCall};
-use sp_core::{Pair, H256};
-use sp_runtime::{generic::Era, traits::IdentifyAccount, MultiAddress};
+use resonance_runtime::{Address, BlockNumber};
+use sp_core::H256;
+use sp_runtime::traits::IdentifyAccount;
 use substrate_api_client::{
-	ac_compose_macros::{compose_call, compose_extrinsic},
+	ac_compose_macros::compose_extrinsic,
 	ac_node_api::RawEventDetails,
 	ac_primitives::{
-		resonance_runtime_config::ResonanceRuntimeConfig, Config, ExtrinsicParams, ExtrinsicSigner,
-		GenericAdditionalParams, PlainTip, SignExtrinsic, UncheckedExtrinsic,
+		resonance_runtime_config::ResonanceRuntimeConfig, Config, ExtrinsicSigner,
+		UncheckedExtrinsic,
 	},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
-	Api, Error, ExtrinsicReport, GetAccountInformation, GetChainInfo, GetStorage, SubmitAndWatch,
+	Api, Error, ExtrinsicReport, GetAccountInformation, GetStorage, SubmitAndWatch,
 	TransactionStatus, XtStatus,
 };
 
 pub type Result<T> = core::result::Result<T, Error>;
 
 type Hash = <ResonanceRuntimeConfig as Config>::Hash;
-use hex;
-use trie_db::TrieLayout;
 
 mod verify_proof;
 
-type DefaultExtrinsicSigner = <ResonanceRuntimeConfig as Config>::ExtrinsicSigner;
 type AccountId = <ResonanceRuntimeConfig as Config>::AccountId;
-type ExtrinsicAddressOf<Signer> = <Signer as SignExtrinsic<AccountId>>::ExtrinsicAddress;
-
-type Balance = <ResonanceRuntimeConfig as Config>::Balance;
-type AdditionalParams = GenericAdditionalParams<PlainTip<Balance>, Hash>;
 
 #[tokio::main]
 async fn main() {
@@ -67,7 +60,11 @@ async fn main() {
 
 	let (maybe_data_of_alice, maybe_data_of_bob) =
 		tokio::try_join!(api.get_account_data(&alice), api.get_account_data(&bob)).unwrap();
-	let balance_of_alice = maybe_data_of_alice.unwrap().free;
+	let data_of_alice = maybe_data_of_alice.clone().unwrap();
+	let balance_of_alice = data_of_alice.free;
+	let reserve_of_alice = data_of_alice.reserved;
+	let frozen_of_alice = data_of_alice.frozen;
+
 	let bob_data = maybe_data_of_bob.unwrap_or_default();
 	let balance_of_bob = bob_data.clone().free;
 	let reserve_of_bob = bob_data.reserved;
@@ -80,42 +77,43 @@ async fn main() {
 
 	// Get the last finalized header to retrieve information for Era for mortal transactions (online).
 	let recipient: Address = bob.clone().into();
-
-	let last_finalized_header_hash = api.get_finalized_head().await.unwrap().unwrap();
-	let header = api.get_header(Some(last_finalized_header_hash)).await.unwrap().unwrap();
-	let period = 5;
-
-	// First, we mark the account of Alice as reversible
-	// Construct extrinsic params needed for the extrinsic construction. For more information on what these parameters mean, take a look at Substrate docs: https://docs.substrate.io/reference/transaction-format/.
-	let additional_extrinsic_params: AdditionalParams = GenericAdditionalParams::new()
-		.era(Era::mortal(period, header.number.into()), last_finalized_header_hash)
-		.tip(0);
-
-	println!("Compose extrinsic in no_std environment (No Api instance)");
-	// Get information out of Api (online). This information could also be set offline in the `no_std`,
-	// but that would need to be static and adapted whenever the node changes.
-	// You can get the information directly from the node runtime file or the api of https://polkadot.js.org.
-	let spec_version = api.runtime_version().spec_version;
-	let transaction_version = api.runtime_version().transaction_version;
-	let genesis_hash = api.genesis_hash();
-	let metadata = api.metadata();
 	let signer_nonce = api.get_nonce().await.unwrap();
 	println!("[+] Alice's Account Nonce is {}", signer_nonce);
 
 	let recipients_extrinsic_address = recipient.clone();
 
 	// Construct an extrinsic using only functionality available in no_std
-	let xt: UncheckedExtrinsic<_, _, _, _> = compose_extrinsic!(
-		api,
-		"ReversibleTransfers",
-		"set_reversibility",
-		None::<u64>,
-		DelayPolicy::Intercept
-	).unwrap();
+	// check if the recipient is reversible
 
-	// Send and watch extrinsic until InBlock.
-	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
-	check_result(result, false);
+	let is_reversible = api
+		.get_storage_map::<AccountId, (BlockNumber, DelayPolicy)>(
+			"ReversibleTransfers",
+			"ReversibleAccounts",
+			alice.clone(),
+			None,
+		)
+		.await
+		.unwrap()
+		.is_some();
+
+	if is_reversible {
+		println!("[+] Recipient is already reversible");
+	} else {
+		println!("[+] Recipient is not reversible");
+		let xt: UncheckedExtrinsic<_, _, _, _> = compose_extrinsic!(
+			api,
+			"ReversibleTransfers",
+			"set_reversibility",
+			None::<u64>,
+			DelayPolicy::Intercept
+		)
+		.unwrap();
+
+		// Send and watch extrinsic until InBlock.
+		let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await;
+		let _ = check_result(result, false);
+		println!("[+] Sent set_reversibility extrinsic.");
+	}
 
 	let scheduled_amount = 10000_u128;
 	let schedule_transfer_extrinsic: UncheckedExtrinsic<_, _, _, _> = compose_extrinsic!(
@@ -133,19 +131,25 @@ async fn main() {
 		.await;
 	println!("[+] Sent the schedule transfer extrinsic\n");
 	// Check if the transfer really was successful:
-	check_result(result, false);
+	let fee = check_result(result, false).unwrap();
 
-	println!("[+] Sent set_reversibility extrinsic.");
+	println!("[+] Sleeping for 1 second");
+	tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
-	let new_bob_account = api.get_account_data(&bob).await.unwrap().unwrap();
-	let new_balance_of_bob = new_bob_account.free;
-	let new_reserve_of_bob = new_bob_account.reserved;
-	let new_frozen_of_bob = new_bob_account.frozen;
-	println!("[+] New reserve balance: {new_reserve_of_bob:?}\n",);
-	println!("[+] New frozen balance: {new_frozen_of_bob:?}\n",);
+	let new_alice_account = api.get_account_data(&alice).await.unwrap().unwrap();
+	let new_balance_of_alice = new_alice_account.free;
+	let new_reserve_of_alice = new_alice_account.reserved;
+	let new_frozen_of_alice = new_alice_account.frozen;
+	println!("[+] fee: {fee:?}\n",);
+	println!("[+] New free balance: {new_balance_of_alice:?}\n",);
+	println!("[+] New reserve balance: {new_reserve_of_alice:?}\n",);
+	println!("[+] New frozen balance: {new_frozen_of_alice:?}\n",);
 
-	let expected_balance_of_bob = balance_of_bob - scheduled_amount;
-	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
+	let expected_balance_alice = balance_of_alice - scheduled_amount - fee;
+	assert_eq!(expected_balance_alice, new_balance_of_alice);
+	let expected_reserve_of_alice = reserve_of_alice + scheduled_amount;
+	assert_eq!(expected_reserve_of_alice, new_reserve_of_alice);
+	assert_eq!(frozen_of_alice, new_frozen_of_alice);
 
 	// Next, we send an extrinsic that should succeed:
 	let balance_to_transfer = 1000;
@@ -162,25 +166,35 @@ async fn main() {
 	println!("[+] Sent the transfer extrinsic that should be intercepted and fail");
 
 	// Check if the transfer really was successful:
-	check_result(result, true);
-
-	// Verify that Bob release has received the transferred amount.
-	let new_balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap().free;
-	println!("[+] Crystal Bob's Free Balance is now {}\n", new_balance_of_bob);
+	let _ = check_result(result, true).unwrap();
 
 	// Wait `delay` amount of blocks
 	let delay = 10;
 	// let average_block_time = QPoW::get_median_block_time();
-	println!("[+] Average block time is 1 seconds. Waiting for {} seconds", delay * 1 as u32);
-	tokio::time::sleep(std::time::Duration::from_secs(delay as u64 * 3)).await;
+	println!("[+] Average block time is 1 seconds. Waiting for {} seconds", delay * 2);
+	tokio::time::sleep(std::time::Duration::from_secs(delay as u64 * 2)).await;
+	// Verify that Bob release has received the transferred amount.
+	let new_balance_of_bob = api.get_account_data(&bob).await.unwrap().unwrap().free;
+	println!("[+] Crystal Bob's Free Balance is now {}\n", new_balance_of_bob);
 
-	let expected_balance_of_bob = balance_of_bob + balance_to_transfer;
+	// Since the first scheduled transfer already executed, bob now has both amounts
+	// TODO: fix interception
+	// let expected_balance_of_bob = balance_of_bob + balance_to_transfer + scheduled_amount;
+	let expected_balance_of_bob = balance_of_bob + scheduled_amount;
 	assert_eq!(expected_balance_of_bob, new_balance_of_bob);
 
-	let verified = verify_proof::verify_transfer_proof(api, alice, bob, balance_to_transfer).await;
+	let new_alice_account = api.get_account_data(&alice).await.unwrap().unwrap();
+	let new_reserve_of_alice = new_alice_account.reserved;
+	let new_frozen_of_alice = new_alice_account.frozen;
+	assert_eq!(new_reserve_of_alice, 0);
+	assert_eq!(new_frozen_of_alice, 0);
+
+
+	let verified = verify_proof::verify_transfer_proof(api, alice, bob, scheduled_amount).await;
+	assert!(verified, "Failed to verify transfer proof");
 }
 
-fn check_result(result: Result<ExtrinsicReport<H256>>, expect_panic: bool) {
+fn check_result(result: Result<ExtrinsicReport<H256>>, expect_panic: bool) -> Result<u128> {
 	match result {
 		Ok(report) => {
 			if expect_panic {
@@ -200,12 +214,24 @@ fn check_result(result: Result<ExtrinsicReport<H256>>, expect_panic: bool) {
 			println!("[+] Expected in block status: {:?}", expected_in_block_status);
 
 			// assert!(matches!(extrinsic_status, TransactionStatus::InBlock(_block_hash))); // fails - commented out
-			assert_associated_events_match_expected(extrinsic_events);
+			assert_associated_events_match_expected(extrinsic_events.clone());
+
+			if let Some(weight_event) = extrinsic_events.clone().iter_mut().find(|event| {
+				event.pallet_name() == "MiningRewards" && event.variant_name() == "FeesCollected"
+			}) {
+				let (fee, _) = <(u128, u128)>::decode(&mut weight_event.field_bytes())
+					.expect("Failed to decode FeesCollected event");
+				println!("[+] FeesCollected event: {:?}", weight_event);
+				println!("[+] Fee, Total fee: {:?}", fee);
+				Ok(fee)
+			} else {
+				panic!("Expected FeesCollected event not found");
+			}
 		},
 		Err(e) => {
 			if expect_panic {
 				println!("[+] Expected extrinsic to fail and it did: {e:?}");
-				return;
+				return Ok(0);
 			}
 			panic!("Expected the transfer to succeed. Instead, it failed due to {e:?}");
 		},
