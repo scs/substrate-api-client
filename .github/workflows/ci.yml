@@ -86,7 +86,7 @@ jobs:
                 cargo clippy --workspace --exclude ac-keystore --exclude test-no-std --all-features --examples -- -D warnings,
 
                 # Run unit tests
-                cargo test --release --all-features --exclude "ac-examples-*" --exclude "ac-testing-*",
+                cargo test --release --all-features --workspace --exclude "ac-examples-*" --exclude "ac-testing-*" --exclude "test-no-std",
 
                 # Fmt
                 cargo fmt --all -- --check
