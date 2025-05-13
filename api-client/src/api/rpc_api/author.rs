@@ -76,7 +76,7 @@ where
 
 	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: &Bytes) -> Result<Self::Hash> {
 		let hex_encoded_xt = rpc_params![encoded_extrinsic];
-		debug!("sending extrinsic: {:?}", hex_encoded_xt);
+		debug!("sending extrinsic: {hex_encoded_xt:?}");
 		let xt_hash = self.client().request("author_submitExtrinsic", hex_encoded_xt).await?;
 		Ok(xt_hash)
 	}
@@ -283,7 +283,7 @@ where
 		}
 		self.populate_events(&mut report).await?;
 		report.check_events_for_dispatch_error(self.metadata())?;
-		return Ok(report);
+		Ok(report)
 	}
 
 	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()> {
