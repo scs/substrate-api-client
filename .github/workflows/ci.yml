@@ -82,7 +82,7 @@ jobs:
 
                 # Clippy
                 cargo clippy --workspace --exclude ac-keystore --exclude test-no-std -- -D warnings,
-                cargo clippy --workspace --exclude ac-keystore --exclude test-no-std --no-default-features -- -D warnings
+                cargo clippy --workspace --exclude ac-keystore --exclude test-no-std --no-default-features -- -D warnings,
                 cargo clippy --workspace --exclude ac-keystore --exclude test-no-std --all-features --examples -- -D warnings,
 
                 # Run unit tests
