@@ -16,7 +16,7 @@
 */
 
 use ac_primitives::RpcParams;
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use serde::de::DeserializeOwned;

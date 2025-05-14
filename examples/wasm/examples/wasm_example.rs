@@ -42,9 +42,8 @@ fn main() -> Result<ExitCode, i32> {
 	assert_eq!(es_converted.signer().public(), es_new.signer().public());
 
 	let extrinsic = UncheckedExtrinsic::from_bytes(&[]);
-	match extrinsic {
-		Ok(_) => panic!("Extrinsic should be invalid"),
-		Err(_) => (),
+	if extrinsic.is_ok() {
+		panic!("Extrinsic should be invalid")
 	}
 	Ok(ExitCode::from(0))
 }

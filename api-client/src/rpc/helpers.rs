@@ -28,7 +28,7 @@ pub fn read_subscription_id(value: &Value) -> Option<String> {
 pub fn read_error_message(value: &Value, msg: &str) -> String {
 	match value["error"].as_str() {
 		Some(error_message) => error_message.to_string(),
-		None => format!("Unexpected Response: {}", msg),
+		None => format!("Unexpected Response: {msg}"),
 	}
 }
 

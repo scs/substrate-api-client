@@ -20,7 +20,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{Config, ExtrinsicParams, SignExtrinsic};
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::sync::Arc;
 use codec::Decode;
@@ -149,9 +149,9 @@ where
 			runtime_version_future,
 		)
 		.await?;
-		info!("Got genesis hash: {:?}", genesis_hash);
-		debug!("Metadata: {:?}", metadata);
-		info!("Runtime Version: {:?}", runtime_version);
+		info!("Got genesis hash: {genesis_hash:?}");
+		debug!("Metadata: {metadata:?}");
+		info!("Runtime Version: {runtime_version:?}");
 		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
 
@@ -159,13 +159,13 @@ where
 	#[maybe_async::sync_impl]
 	pub fn new(client: Client) -> Result<Self> {
 		let genesis_hash = Self::get_genesis_hash(&client)?;
-		info!("Got genesis hash: {:?}", genesis_hash);
+		info!("Got genesis hash: {genesis_hash:?}");
 
 		let metadata = Self::get_metadata(&client)?;
-		debug!("Metadata: {:?}", metadata);
+		debug!("Metadata: {metadata:?}");
 
 		let runtime_version = Self::get_runtime_version(&client)?;
-		info!("Runtime Version: {:?}", runtime_version);
+		info!("Runtime Version: {runtime_version:?}");
 
 		Ok(Self::new_offline(genesis_hash, metadata, runtime_version, client))
 	}
@@ -189,8 +189,8 @@ where
 		let metadata = Self::get_metadata(&self.client)?;
 		let runtime_version = Self::get_runtime_version(&self.client)?;
 
-		debug!("Metadata: {:?}", metadata);
-		info!("Runtime Version: {:?}", runtime_version);
+		debug!("Metadata: {metadata:?}");
+		info!("Runtime Version: {runtime_version:?}");
 
 		self.metadata = metadata;
 		self.runtime_version = runtime_version;

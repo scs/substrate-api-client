@@ -19,7 +19,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
 use ac_primitives::config::Config;
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};
 use codec::{Decode, Encode};
@@ -197,7 +197,7 @@ where
 			.iter()
 			.position(|xt| {
 				let xt_hash = T::Hasher::hash_of(&xt);
-				trace!("Looking for: {:?}, got xt_hash {:?}", extrinsic_hash, xt_hash);
+				trace!("Looking for: {extrinsic_hash:?}, got xt_hash {xt_hash:?}");
 				extrinsic_hash == xt_hash
 			})
 			.ok_or(Error::ExtrinsicNotFound)?;

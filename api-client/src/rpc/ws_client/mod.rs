@@ -91,7 +91,7 @@ impl HandleMessage for RequestHandler {
 		out.close(CloseCode::Normal)
 			.unwrap_or_else(|_| warn!("Could not close Websocket normally"));
 
-		trace!("Got get_request_msg {}", msg);
+		trace!("Got get_request_msg {msg}");
 		let result_str = serde_json::from_str(msg.as_text()?)
 			.map(|v: serde_json::Value| v["result"].to_string())
 			.map_err(RpcClientError::SerdeJson);
@@ -114,7 +114,7 @@ impl HandleMessage for SubscriptionHandler {
 		let out = &context.out;
 		let msg = &context.msg.as_text()?;
 
-		trace!("got on_subscription_msg {}", msg);
+		trace!("got on_subscription_msg {msg}");
 		let value: serde_json::Value = serde_json::from_str(msg).map_err(Box::new)?;
 
 		let send_result = match self.subscription_id.as_ref() {
@@ -131,7 +131,7 @@ impl HandleMessage for SubscriptionHandler {
 
 		if let Err(e) = send_result {
 			// This may happen if the receiver has unsubscribed.
-			trace!("SendError: {:?}. will close ws", e);
+			trace!("SendError: {e:?}. will close ws");
 			out.close(CloseCode::Normal)?;
 		};
 		Ok(())

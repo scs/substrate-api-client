@@ -56,7 +56,7 @@ impl<Notification: DeserializeOwned> HandleSubscription<Notification>
 impl<Notification> Drop for WsSubscriptionWrapper<Notification> {
 	fn drop(&mut self) {
 		if let Err(e) = self.ws_sender.shutdown() {
-			log::error!("Could not properly shutdown websocket connection due to {:?}", e);
+			log::error!("Could not properly shutdown websocket connection due to {e:?}");
 		}
 	}
 }

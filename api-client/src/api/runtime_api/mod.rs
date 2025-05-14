@@ -30,7 +30,7 @@ pub mod transaction_payment_call;
 use crate::{api::Result, rpc::Request};
 use ac_compose_macros::rpc_params;
 use ac_primitives::config::Config;
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::{sync::Arc, vec::Vec};
 use codec::Decode;
