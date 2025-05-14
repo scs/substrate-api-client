@@ -14,7 +14,7 @@
 use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
 use ac_primitives::{config::Config, FeeDetails, RuntimeDispatchInfo, Weight};
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::vec;
 use sp_core::Encode;

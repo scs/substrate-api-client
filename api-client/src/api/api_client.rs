@@ -20,7 +20,7 @@ use crate::{
 use ac_compose_macros::rpc_params;
 use ac_node_api::metadata::Metadata;
 use ac_primitives::{Config, ExtrinsicParams, SignExtrinsic};
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::sync::Arc;
 use codec::Decode;

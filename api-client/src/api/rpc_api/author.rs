@@ -20,7 +20,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsic};
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use codec::{Decode, Encode};
 use log::*;

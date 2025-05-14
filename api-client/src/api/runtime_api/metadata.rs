@@ -15,7 +15,7 @@ use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
 use ac_node_api::{error::MetadataError, Metadata};
 use ac_primitives::config::Config;
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::{
 	string::{String, ToString},
