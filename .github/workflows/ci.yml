@@ -81,9 +81,9 @@ jobs:
                 cargo test --release -p ac-testing-sync,
 
                 # Clippy
-                cargo clippy --workspace --exclude ac-keystore --exclude test-no-std -- -D warnings,
-                cargo clippy --workspace --exclude ac-keystore --exclude test-no-std --no-default-features -- -D warnings,
-                cargo clippy --workspace --exclude ac-keystore --exclude test-no-std --all-features -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std --no-default-features -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std --all-features -- -D warnings,
 
                 # Run unit tests
                 cargo test --release --all-features --workspace --exclude "ac-examples-*" --exclude "ac-testing-*" --exclude "test-no-std",
