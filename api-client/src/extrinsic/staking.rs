@@ -73,6 +73,7 @@ pub trait StakingExtrinsics {
 	type Extrinsic<Call>;
 
 	/// Bond `value` amount to `controller`.
+	#[allow(clippy::type_complexity)]
 	async fn staking_bond(
 		&self,
 		controller: Self::Address,

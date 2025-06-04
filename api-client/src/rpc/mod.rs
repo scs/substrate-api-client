@@ -22,8 +22,10 @@ use alloc::string::{String, ToString};
 use serde::de::DeserializeOwned;
 
 #[cfg(feature = "ws-client")]
+#[allow(deprecated)]
 pub use ws_client::WsRpcClient;
 #[cfg(feature = "ws-client")]
+#[allow(deprecated)]
 pub mod ws_client;
 
 #[cfg(feature = "tungstenite-client")]
