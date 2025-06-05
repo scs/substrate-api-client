@@ -91,5 +91,5 @@ pub fn send_code_update_extrinsic(
 		.unwrap()
 		.block_hash
 		.unwrap();
-	println!("[+] Extrinsic got included. Block Hash: {:?}", block_hash);
+	println!("[+] Extrinsic got included. Block Hash: {block_hash:?}");
 }

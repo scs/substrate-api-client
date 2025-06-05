@@ -46,7 +46,7 @@ jobs:
         check: [
                 # Test for no-std compatibility.
                 # `--locked` to enforce an up-to-date Cargo.lock
-                cargo build --release --workspace --locked --exclude test-no-std,
+                cargo build --release --locked,
 
                 # We need to compile `test-no-std` separately, otherwise we have std leaks from the build-deps.
                 #
@@ -58,14 +58,14 @@ jobs:
                 cargo build --release -p test-no-std --features primitives,
 
                 # Check build of stand-alone features.
-                cargo check --no-default-features -p substrate-api-client,
-                cargo check --no-default-features -p substrate-api-client --features sync-api,
-                cargo check --no-default-features -p substrate-api-client --features jsonrpsee-client,
-                cargo check --no-default-features -p substrate-api-client --features tungstenite-client,
-                cargo check --no-default-features -p substrate-api-client --features ws-client,
-                cargo check --no-default-features -p substrate-api-client --features staking-xt,
-                cargo check --no-default-features -p substrate-api-client --features contracts-xt,
-                cargo check --no-default-features -p substrate-api-client --features std,
+                cargo check --no-default-features,
+                cargo check --no-default-features --features sync-api,
+                cargo check --no-default-features --features jsonrpsee-client,
+                cargo check --no-default-features --features tungstenite-client,
+                cargo check --no-default-features --features ws-client,
+                cargo check --no-default-features --features staking-xt,
+                cargo check --no-default-features --features contracts-xt,
+                cargo check --no-default-features --features std,
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
                 cargo build -p substrate-api-client --target wasm32-unknown-unknown --no-default-features --features sync-api,
@@ -81,12 +81,12 @@ jobs:
                 cargo test --release -p ac-testing-sync,
 
                 # Clippy
-                cargo clippy -p substrate-api-client -- -D warnings,
-                cargo clippy -p substrate-api-client --no-default-features -- -D warnings,
-                cargo clippy -p substrate-api-client --all-features --examples -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std --no-default-features -- -D warnings,
+                cargo clippy --workspace --exclude test-no-std --all-features -- -D warnings,
 
                 # Run unit tests
-                cargo test --release --all-features --workspace --exclude test-no-std --exclude "ac-examples-*" --exclude "ac-testing-*",
+                cargo test --release --all-features --workspace --exclude "ac-examples-*" --exclude "ac-testing-*" --exclude "test-no-std",
 
                 # Fmt
                 cargo fmt --all -- --check
@@ -168,15 +168,16 @@ jobs:
             !target/release/examples/*.d
             !target/release/examples/*-*
 
-  taplo-fmt:
-    name: "Taplo fmt"
-    runs-on: ubuntu-latest
-    container: "tamasfe/taplo:latest"
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Taplo fmt
-        run: taplo fmt --check
+# Remove taplo until https://github.com/tamasfe/taplo/issues/793 is resolved.
+#   taplo-fmt:
+#     name: "Taplo fmt"
+#     runs-on: ubuntu-latest
+#     container: "tamasfe/taplo:latest"
+#     steps:
+#       - uses: actions/checkout@v4
+# 
+#       - name: Run Taplo fmt
+#         run: taplo fmt --check
 
   license-check:
     name: "License check"

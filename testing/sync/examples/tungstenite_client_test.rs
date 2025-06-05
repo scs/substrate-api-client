@@ -43,12 +43,12 @@ fn main() {
 		.balance_transfer_allow_death(MultiAddress::Id(bob.into()), bob_balance + 1)
 		.unwrap();
 	let result = api.submit_and_watch_extrinsic_until(xt.clone(), XtStatus::InBlock);
-	assert!(format!("{:?}", result).contains("FundsUnavailable"));
+	assert!(format!("{result:?}").contains("FundsUnavailable"));
 
 	// Check directly failed extrinsic (before actually submitted to a block)
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	assert!(result.is_err());
-	assert!(format!("{:?}", result).contains("ExtrinsicFailed"));
+	assert!(format!("{result:?}").contains("ExtrinsicFailed"));
 
 	// Check for successful extrinisc
 	let xt = api

@@ -16,7 +16,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, FeeDetails, InclusionFee, NumberOrHex, RuntimeDispatchInfo};
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use core::str::FromStr;
 use sp_core::Bytes;

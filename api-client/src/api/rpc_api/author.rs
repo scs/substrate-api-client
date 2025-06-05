@@ -20,7 +20,7 @@ use crate::{
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::{config::Config, UncheckedExtrinsic};
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use codec::{Decode, Encode};
 use log::*;
@@ -76,7 +76,7 @@ where
 
 	async fn submit_opaque_extrinsic(&self, encoded_extrinsic: &Bytes) -> Result<Self::Hash> {
 		let hex_encoded_xt = rpc_params![encoded_extrinsic];
-		debug!("sending extrinsic: {:?}", hex_encoded_xt);
+		debug!("sending extrinsic: {hex_encoded_xt:?}");
 		let xt_hash = self.client().request("author_submitExtrinsic", hex_encoded_xt).await?;
 		Ok(xt_hash)
 	}
@@ -283,7 +283,7 @@ where
 		}
 		self.populate_events(&mut report).await?;
 		report.check_events_for_dispatch_error(self.metadata())?;
-		return Ok(report);
+		Ok(report)
 	}
 
 	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()> {

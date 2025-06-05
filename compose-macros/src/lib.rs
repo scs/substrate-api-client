@@ -56,7 +56,7 @@ macro_rules! compose_call {
 /// * 'pallet_metadata' - This crate's parsed pallet metadata as field of the API.
 /// * 'call_name' - Call name as &str
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
-///    As of now the user needs to check himself that the correct arguments are supplied.
+///   As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_call_for_pallet_metadata {
 ($pallet_metadata: expr, $call_name: expr $(, $args: expr) *) => {

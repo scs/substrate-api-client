@@ -109,7 +109,7 @@ impl TungsteniteRpcClient {
 
 		let msg = read_until_text_message(&mut socket)?;
 
-		trace!("Got get_request_msg {}", msg);
+		trace!("Got get_request_msg {msg}");
 		let result_str =
 			serde_json::from_str(msg.as_str()).map(|v: Value| v["result"].to_string())?;
 		Ok(result_str)
@@ -182,7 +182,7 @@ fn send_message_to_client(
 	message: &str,
 	subscription_id: &str,
 ) -> Result<()> {
-	trace!("got on_subscription_msg {}", message);
+	trace!("got on_subscription_msg {message}");
 	let value: Value = serde_json::from_str(message)?;
 
 	if helpers::subscription_id_matches(&value, subscription_id) {
@@ -197,9 +197,9 @@ fn attempt_connection_until(url: &Url, max_attempts: u8) -> Result<(MySocket, Re
 	while current_attempt <= max_attempts {
 		match connect_with_config(url.clone(), None, u8::MAX - 1) {
 			Ok((socket, responses)) => return Ok((socket, responses)),
-			Err(e) => warn!("Connection attempt failed due to {:?}", e),
+			Err(e) => warn!("Connection attempt failed due to {e:?}"),
 		};
-		trace!("Trying to reconnect. Current attempt {}", current_attempt);
+		trace!("Trying to reconnect. Current attempt {current_attempt}");
 		sleep(Duration::from_secs(5));
 		current_attempt += 1;
 	}

@@ -401,9 +401,9 @@ impl Keystore for LocalKeystore {
 	}
 }
 
-impl Into<KeystorePtr> for LocalKeystore {
-	fn into(self) -> KeystorePtr {
-		Arc::new(self)
+impl From<LocalKeystore> for KeystorePtr {
+	fn from(val: LocalKeystore) -> Self {
+		Arc::new(val)
 	}
 }
 
@@ -571,12 +571,11 @@ impl KeystoreInner {
 		let mut public_keys: Vec<Vec<u8>> = self
 			.additional
 			.keys()
-			.into_iter()
 			.filter_map(|k| if k.0 == key_type { Some(k.1.clone()) } else { None })
 			.collect();
 
 		if let Some(path) = &self.path {
-			for entry in fs::read_dir(&path)? {
+			for entry in fs::read_dir(path)? {
 				let entry = entry?;
 				let path = entry.path();
 

@@ -49,7 +49,7 @@ fn main() {
 		.unwrap();
 
 	let bob_balance = api.get_account_data(&bob.into()).unwrap().unwrap_or_default().free;
-	println!("[+] Bob's Free Balance is {}\n", bob_balance);
+	println!("[+] Bob's Free Balance is {bob_balance}\n");
 
 	// We first generate an extrinsic that will fail to be executed due to missing funds.
 	let xt = api
@@ -60,12 +60,12 @@ fn main() {
 		alice.public(),
 		bob
 	);
-	println!("[+] Composed extrinsic: {:?}\n", xt);
+	println!("[+] Composed extrinsic: {xt:?}\n");
 
 	// Send and watch extrinsic until it fails onchain.
 	let result = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock);
 	assert!(result.is_err());
-	println!("[+] Extrinsic did not get included due to: {:?}\n", result);
+	println!("[+] Extrinsic did not get included due to: {result:?}\n");
 
 	// This time, we generate an extrinsic that will succeed.
 	let xt = api
@@ -76,7 +76,7 @@ fn main() {
 		alice.public(),
 		bob
 	);
-	println!("[+] Composed extrinsic: {:?}\n", xt);
+	println!("[+] Composed extrinsic: {xt:?}\n");
 
 	// Send and watch extrinsic until in block.
 	let block_hash = api
@@ -84,10 +84,10 @@ fn main() {
 		.unwrap()
 		.block_hash
 		.unwrap();
-	println!("[+] Extrinsic got included. Block Hash: {:?}\n", block_hash);
+	println!("[+] Extrinsic got included. Block Hash: {block_hash:?}\n");
 
 	// Verify that Bob's free Balance increased.
 	let bob_new_balance = api.get_account_data(&bob.into()).unwrap().unwrap().free;
-	println!("[+] Bob's Free Balance is now {}\n", bob_new_balance);
+	println!("[+] Bob's Free Balance is now {bob_new_balance}\n");
 	assert!(bob_new_balance > bob_balance);
 }

@@ -16,14 +16,16 @@
 */
 
 use ac_primitives::RpcParams;
-#[cfg(not(feature = "sync-api"))]
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use serde::de::DeserializeOwned;
 
 #[cfg(feature = "ws-client")]
+#[allow(deprecated)]
 pub use ws_client::WsRpcClient;
 #[cfg(feature = "ws-client")]
+#[allow(deprecated)]
 pub mod ws_client;
 
 #[cfg(feature = "tungstenite-client")]
@@ -34,6 +36,8 @@ pub mod tungstenite_client;
 #[cfg(all(feature = "jsonrpsee-client", not(feature = "sync-api")))]
 pub use jsonrpsee_client::JsonrpseeClient;
 #[cfg(all(feature = "jsonrpsee-client", not(feature = "sync-api")))]
+#[allow(dead_code)]
+#[allow(unused_imports)]
 pub mod jsonrpsee_client;
 
 pub mod error;
