@@ -14,7 +14,7 @@ If a new release is released, the following tasks need to be done:
 	cargo publish -p ac-keystore
 	cargo publish -p ac-node-api
 	cargo publish -p ac-compose-macros
-	cargo publish
+	cargo publish -p substrate-api-client
 	```
 
 ## Automatic Release Generation

@@ -1,12 +1,12 @@
 [package]
 name = "substrate-api-client"
-version = "1.17.0"
+version = "1.18.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
 edition = "2021"
 repository = "https://github.com/scs/substrate-api-client"
 description = "Json-rpc client with helper functions compatible with any Substrate node"
-readme = "README.md"
+readme = "../README.md"
 keywords = ["json", "rpc", "polkadot", "api", "blockchain"]
 categories = ["no-std", "wasm"]
 
