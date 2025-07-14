@@ -78,7 +78,7 @@ impl JsonrpseeClient {
 	/// This method is cancel-safe
 	#[deprecated = "Use on_disconnect instead."]
 	pub async fn disconnect_reason(&self) -> JsonrpseeError {
-			self.inner.on_disconnect().await
+		self.inner.on_disconnect().await
 	}
 
 	/// Completes when the client is disconnected or the client's background task encountered an error.
