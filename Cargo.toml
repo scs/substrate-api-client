@@ -31,14 +31,14 @@ default-members = [
 [workspace.dependencies]
 # crates.io no_std
 async-trait = "0.1"
-array-bytes = "9.1"
+array-bytes = "9.3"
 bitvec = { version = "1.0", default-features = false, features = ["alloc"] }
 codec = { package = "parity-scale-codec", version = "3.7", default-features = false, features = ["derive"] }
 derive_more = { version = "2.0", default-features = false, features = ["from"] }
 either = { version = "1.6", default-features = false }
 env_logger = "0.11.8"
 impl-serde = { version = "0.5", default-features = false }
-frame-metadata = { version = "18.0", default-features = false, features = ["current", "serde_full", "decode"] }
+frame-metadata = { version = "23.0", default-features = false, features = ["current", "serde_full", "decode"] }
 futures-util = { version = "0.3", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 log = { version = "0.4", default-features = false }
@@ -47,7 +47,7 @@ parking_lot = "0.12"
 primitive-types = { version = "0.13", default-features = false, features = ["serde_no_std", "scale-info"] }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0", default-features = false }
-tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "time"] }
+tokio = { version = "1.46", features = ["rt-multi-thread", "macros", "time"] }
 tokio-util = "0.7.15"
 
 scale-bits = { version = "0.7", default-features = false, features = ["scale-info", "serde"] }
@@ -60,8 +60,8 @@ scale-value = { version = "0.18", default-features = false }
 url = { version = "2.5" }
 
 # websocket dependent features
-jsonrpsee = { version = "0.24", features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
-tungstenite = { version = "0.26", features = ["native-tls", "url"] }
+jsonrpsee = { version = "0.25", features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
+tungstenite = { version = "0.27", features = ["native-tls", "url"] }
 ws = { version = "0.9", features = ["ssl"] }
 
 # Substrate no_std dependencies
