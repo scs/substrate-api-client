@@ -9,7 +9,7 @@ codec = { workspace = true, features = ["std"] }
 env_logger = { workspace = true }
 log = { workspace = true }
 serde_json = { workspace = true, features = ["std"] }
-tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+tokio = { workspace = true }
 tokio-util = { workspace = true }
 
 # Substrate dependencies
