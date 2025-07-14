@@ -11,7 +11,7 @@ categories = ["no-std"]
 
 
 [dependencies]
-codec = { workspace = true, features = ['derive'] }
+codec = { workspace = true, features = ["derive"] }
 impl-serde = { workspace = true }
 primitive-types = { workspace = true, features = ["serde_no_std", "scale-info"] }
 scale-info = { workspace = true, features = ["derive"] }
