@@ -21,13 +21,6 @@ use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use serde::de::DeserializeOwned;
 
-#[cfg(feature = "ws-client")]
-#[allow(deprecated)]
-pub use ws_client::WsRpcClient;
-#[cfg(feature = "ws-client")]
-#[allow(deprecated)]
-pub mod ws_client;
-
 #[cfg(feature = "tungstenite-client")]
 pub use tungstenite_client::TungsteniteRpcClient;
 #[cfg(feature = "tungstenite-client")]
@@ -41,7 +34,7 @@ pub use jsonrpsee_client::JsonrpseeClient;
 pub mod jsonrpsee_client;
 
 pub mod error;
-#[cfg(any(feature = "ws-client", feature = "tungstenite-client"))]
+#[cfg(feature = "tungstenite-client")]
 mod helpers;
 
 pub use error::{Error, Result};
@@ -49,14 +42,14 @@ pub use error::{Error, Result};
 #[cfg(test)]
 pub mod mocks;
 
-/// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
+/// Trait to be implemented by the rpc-client for sending rpc requests and extrinsic.
 #[maybe_async::maybe_async(?Send)]
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
 	async fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
 }
 
-/// Trait to be implemented by the ws-client for subscribing to the substrate node.
+/// Trait to be implemented by the rpc-client for subscribing to the substrate node.
 #[maybe_async::maybe_async(?Send)]
 pub trait Subscribe {
 	type Subscription<Notification>: HandleSubscription<Notification>
