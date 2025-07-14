@@ -73,7 +73,7 @@ impl<Hash: Encode + Decode> EventDetails<Hash> {
 	}
 
 	/// Fetch details from the metadata for this event.
-	pub fn event_metadata(&self) -> EventMetadataDetails {
+	pub fn event_metadata(&self) -> EventMetadataDetails<'_> {
 		self.inner.event_metadata_unchecked(&self.metadata)
 	}
 
