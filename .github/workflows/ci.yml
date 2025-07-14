@@ -72,7 +72,9 @@ jobs:
                 cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown,
 
                 # Test for 32 bit and wasm32-wasip1 compatibility
-                cargo build -p substrate-api-client --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
+                # As of PR https://github.com/scs/substrate-api-client/pull/858 this check fails
+                # See https://github.com/scs/substrate-api-client/issues/513 for more infos.
+                # cargo build -p substrate-api-client --target wasm32-wasip1 --no-default-features --features std --features staking-xt --features contracts-xt --features sync-api,
 
                 # Compile examples and integration test separately to ensure features are not cross-imported
                 cargo test --release -p ac-examples-async,
