@@ -2229,12 +2229,22 @@ dependencies = [
  "sp-tracing",
 ]
 
+[[package]]
+name = "frame-metadata"
+version = "20.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26de808fa6461f2485dc51811aefed108850064994fb4a62b3ac21ffa62ac8df"
+dependencies = [
+ "cfg-if 1.0.1",
+ "parity-scale-codec",
+ "scale-info",
+]
 
 [[package]]
 name = "frame-metadata"
-version = "23.0.0"
+version = "21.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8c26fcb0454397c522c05fdad5380c4e622f8a875638af33bff5a320d1fc965"
+checksum = "20dfd1d7eae1d94e32e869e2fb272d81f52dd8db57820a373adb83ea24d7d862"
 dependencies = [
  "cfg-if",
  "parity-scale-codec",
@@ -3033,8 +3043,8 @@ version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b86e202f00093dcba4275d4636b93ef9dd75d025ae560d2521b45ea28ab49013"
 dependencies = [
- "bitflags 2.9.0",
- "cfg-if 1.0.0",
+ "bitflags 2.9.1",
+ "cfg-if 1.0.1",
  "libc",
 ]
 
@@ -7594,6 +7604,12 @@ dependencies = [
  "quote",
  "syn 2.0.104",
 ]
+
+[[package]]
+name = "sync_wrapper"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 
 [[package]]
 name = "synstructure"
