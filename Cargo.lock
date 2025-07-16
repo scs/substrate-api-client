@@ -2235,7 +2235,7 @@ version = "20.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26de808fa6461f2485dc51811aefed108850064994fb4a62b3ac21ffa62ac8df"
 dependencies = [
- "cfg-if 1.0.1",
+ "cfg-if",
  "parity-scale-codec",
  "scale-info",
 ]
@@ -3044,16 +3044,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b86e202f00093dcba4275d4636b93ef9dd75d025ae560d2521b45ea28ab49013"
 dependencies = [
  "bitflags 2.9.1",
- "cfg-if 1.0.1",
- "libc",
-]
-
-[[package]]
-name = "iovec"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2b3ea6ff95e175473f8ffe6a7eb7c00d054240321b84c57051175fe3c1e075e"
-dependencies = [
+ "cfg-if",
  "libc",
 ]
 
