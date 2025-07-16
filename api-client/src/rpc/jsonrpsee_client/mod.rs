@@ -74,17 +74,11 @@ impl JsonrpseeClient {
 		self.inner.is_connected()
 	}
 
-	/// This is similar to [`Client::on_disconnect`] but it can be used to get
-	/// the reason why the client was disconnected but it's not cancel-safe.
-	///
-	/// The typical use-case is that this method will be called after
-	/// [`Client::on_disconnect`] has returned in a "select loop".
-	///
-	/// # Cancel-safety
-	///
-	/// This method is not cancel-safe
+	/// This is now equal to [`Client::on_disconnect`] and will be removed soon.
+	/// This method is cancel-safe
+	#[deprecated = "Use on_disconnect instead."]
 	pub async fn disconnect_reason(&self) -> JsonrpseeError {
-		self.inner.disconnect_reason().await
+		self.inner.on_disconnect().await
 	}
 
 	/// Completes when the client is disconnected or the client's background task encountered an error.
