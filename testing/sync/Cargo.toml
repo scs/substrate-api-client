@@ -12,5 +12,5 @@ sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 
 # local deps
-substrate-api-client = { workspace = true, features = ["tungstenite-client", "ws-client"] }
+substrate-api-client = { workspace = true, features = ["tungstenite-client"] }
 ac-keystore = { workspace = true }

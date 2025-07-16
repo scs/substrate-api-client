@@ -62,7 +62,6 @@ jobs:
                 cargo check --no-default-features --features sync-api,
                 cargo check --no-default-features --features jsonrpsee-client,
                 cargo check --no-default-features --features tungstenite-client,
-                cargo check --no-default-features --features ws-client,
                 cargo check --no-default-features --features staking-xt,
                 cargo check --no-default-features --features contracts-xt,
                 cargo check --no-default-features --features std,

@@ -31,7 +31,6 @@ url = { workspace = true, optional = true }
 # websocket dependent features
 jsonrpsee = { workspace = true, optional = true, features = ["async-client", "client-ws-transport-tls", "jsonrpsee-types"] }
 tungstenite = { workspace = true, optional = true, features = ["native-tls", "url"] }
-ws = { workspace = true, optional = true, features = ["ssl"] }
 
 # Substrate no_std dependencies
 sp-core = { workspace = true, features = ["full_crypto", "serde"] }
@@ -75,11 +74,6 @@ jsonrpsee-client = ["std", "dep:jsonrpsee"]
 # Use the `tungstenite` crate for websocket communication. No async support but has some reconnection capabilities.
 # See the example `transfer_with_tungstenite_client` on how to use it.
 tungstenite-client = ["std", "tungstenite", "sync-api"]
-
-# Use the `ws` crate for websocket communication. No async support.
-# Establishes a new connection for each request and therefore is limited in terms of performance.
-# See the example `transfer_with_ws_client` on how to use it.
-ws-client = ["std", "ws", "sync-api"]
 
 # Enables functionality that helps to create extrinsics for `pallet-staking`.
 # See the `StakingExtrinsics` trait and the `staking_batch_payout` example to get an understanding

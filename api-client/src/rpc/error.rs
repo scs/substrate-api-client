@@ -39,13 +39,6 @@ impl From<serde_json::error::Error> for Error {
 	}
 }
 
-#[cfg(feature = "ws-client")]
-impl From<ws::Error> for Error {
-	fn from(error: ws::Error) -> Self {
-		Self::Client(Box::new(error))
-	}
-}
-
 #[cfg(feature = "tungstenite-client")]
 impl From<tungstenite::Error> for Error {
 	fn from(error: tungstenite::Error) -> Self {

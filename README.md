@@ -93,7 +93,7 @@ Depending on the usage, there are two traits that the RPC Client needs to implem
 #### Request
 For simple requests (send one request and receive one answer) the trait [`Request`](https://github.com/scs/substrate-api-client/blob/d0a875e70f688c8ae2ce641935189c6374bc0ced/src/rpc/mod.rs#L44-L48) is required:
 ```rust
-/// Trait to be implemented by the ws-client for sending rpc requests and extrinsic.
+/// Trait to be implemented by the rpc-client for sending rpc requests and extrinsic.
 pub trait Request {
 	/// Sends a RPC request to the substrate node and returns the answer as string.
 	(async) fn request<R: DeserializeOwned>(&self, method: &str, params: RpcParams) -> Result<R>;
@@ -107,7 +107,7 @@ Currently, there is no `no_std` example available. But the [`tungstenite_client`
 Two traits need to be implemented for this feature.
 The `Subscribe` trait itself:
 ```rust
-/// Trait to be implemented by the ws-client for subscribing to the substrate node.
+/// Trait to be implemented by the rpc-client for subscribing to the substrate node.
 pub trait Subscribe {
 	type Subscription<Notification>: HandleSubscription<Notification>
 	where
