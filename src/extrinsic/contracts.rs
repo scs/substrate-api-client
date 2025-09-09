@@ -27,7 +27,7 @@ use ac_primitives::{
 	config::Config,
 	extrinsic_params::ExtrinsicParams,
 	extrinsics::{deprecated::UncheckedExtrinsicV4, CallIndex},
-	SignExtrinsic,
+	SignExtrinsic, UncheckedExtrinsic,
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
@@ -119,8 +119,7 @@ where
 	type Data = Vec<u8>;
 	type Salt = Vec<u8>;
 	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
-	#[allow(deprecated)]
-	type Extrinsic<Call> = UncheckedExtrinsicV4<
+	type Extrinsic<Call> = UncheckedExtrinsic<
 		Self::Address,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
