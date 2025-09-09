@@ -141,7 +141,7 @@ impl<Hash, BlockHash: Encode> TransactionStatus<Hash, BlockHash> {
 			TransactionStatus::Retracted(hash) => {
 				warn!("xt is retracted: block: 0x{}", hex::encode(hash.encode()));
 				Ok(())
-			}
+			},
 			TransactionStatus::Future => Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::Future)),
 			TransactionStatus::FinalityTimeout(_) =>
 				Err(Error::UnexpectedTxStatus(UnexpectedTxStatus::FinalityTimeout)),
