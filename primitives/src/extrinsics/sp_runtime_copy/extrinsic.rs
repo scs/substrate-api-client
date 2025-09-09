@@ -436,19 +436,19 @@ impl<Address: Encode, Signature: Encode, Call: Encode, Extension: Encode> serde:
 	}
 }
 
-// #[cfg(feature = "serde")]
-// impl<'a, Address: Decode, Signature: Decode, Call: Extension: Decode>
-// 	serde::Deserialize<'a> for UncheckedExtrinsic<Address, Call, Signature, Extension>
-// {
-// 	fn deserialize<D>(de: D) -> Result<Self, D::Error>
-// 	where
-// 		D: serde::Deserializer<'a>,
-// 	{
-// 		let r = sp_core::bytes::deserialize(de)?;
-// 		Self::decode(&mut &r[..])
-// 			.map_err(|e| serde::de::Error::custom(format!("Decode error: {}", e)))
-// 	}
-// }
+#[cfg(feature = "serde")]
+impl<'a, Address: Decode, Signature: Decode, Call, Extension: Decode> serde::Deserialize<'a>
+	for UncheckedExtrinsic<Address, Call, Signature, Extension>
+{
+	fn deserialize<D>(de: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'a>,
+	{
+		let r = sp_core::bytes::deserialize(de)?;
+		Self::decode(&mut &r[..])
+			.map_err(|e| serde::de::Error::custom(format!("Decode error: {}", e)))
+	}
+}
 
 /// A payload that has been signed for an unchecked extrinsics.
 ///
