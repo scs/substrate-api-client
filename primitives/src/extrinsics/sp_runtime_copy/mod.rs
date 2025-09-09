@@ -1,4 +1,4 @@
-use sp_runtime::OpaqueExtrinsic;
+pub use crate::SubstrateOpaqueExtrinsic as OpaqueExtrinsic;
 
 pub mod extrinsic;
 pub mod traits;
