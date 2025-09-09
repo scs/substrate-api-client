@@ -72,7 +72,7 @@ async fn main() {
 	// error is returned from the node, the extrinsic has been created correctly.
 	// Sidenote: We could theoretically force a new era with sudo, but this takes at least 10 minutes ( = 1 epoch) in the
 	// kitchensink rutime. We don't want to wait that long.
-	let payout_staker_xt = api.payout_stakers(0, validator_stash);
+	let payout_staker_xt = api.payout_stakers(0, validator_stash).unwrap();
 	let result = api.submit_and_watch_extrinsic_until(payout_staker_xt, XtStatus::InBlock);
 	assert!(result.is_err());
 	assert!(format!("{result:?}").contains("InvalidEraToReward"));
@@ -122,7 +122,7 @@ async fn main() {
 				if exposure.total.to_be_bytes() > 0_u128.to_be_bytes() && is_grace_period_satisfied
 				{
 					let payout_extrinsic =
-						api.payout_stakers(payout_era_index, validator_account.clone());
+						api.payout_stakers(payout_era_index, validator_account.clone()).unwrap();
 					payout_calls.push(payout_extrinsic.function);
 				}
 				i += 1;
@@ -130,7 +130,7 @@ async fn main() {
 			}
 			num_of_claimed_payouts += payout_calls.len();
 			num_of_unclaimed_payouts -= tx_limit_in_current_batch;
-			let batch_xt = api.batch(payout_calls);
+			let batch_xt = api.batch(payout_calls).unwrap();
 
 			let report = api.submit_and_watch_extrinsic_until(batch_xt, XtStatus::InBlock).unwrap();
 			results.push(format!("{report:?}"));

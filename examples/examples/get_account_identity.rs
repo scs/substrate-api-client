@@ -22,7 +22,7 @@ use sp_core::{crypto::Pair, H256};
 use sp_keyring::AccountKeyring;
 use substrate_api_client::{
 	ac_compose_macros::compose_extrinsic,
-	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, UncheckedExtrinsicV4},
+	ac_primitives::{AssetRuntimeConfig, ExtrinsicSigner, UncheckedExtrinsic},
 	rpc::JsonrpseeClient,
 	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
@@ -61,8 +61,8 @@ async fn main() {
 		twitter: Data::None,
 	};
 
-	let xt: UncheckedExtrinsicV4<_, _, _, _> =
-		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone()));
+	let xt: UncheckedExtrinsic<_, _, _, _> =
+		compose_extrinsic!(&api, "Identity", "set_identity", Box::new(info.clone())).unwrap();
 	println!("[+] Composed Extrinsic:\n {:?}\n", xt);
 
 	// Send and watch extrinsic until InBlock.

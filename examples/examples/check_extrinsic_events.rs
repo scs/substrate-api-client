@@ -52,7 +52,7 @@ async fn main() {
 	// Alice tries so transfer all her balance, but that will not work, because
 	// she will not have enough balance left to pay the fees.
 	let bad_transfer_extrinsic =
-		api.balance_transfer_allow_death(bob.clone().into(), balance_of_alice);
+		api.balance_transfer_allow_death(bob.clone().into(), balance_of_alice).unwrap();
 	println!("[+] Composed extrinsic: {bad_transfer_extrinsic:?}\n",);
 
 	// Send and watch extrinsic until InBlock.
@@ -83,8 +83,9 @@ async fn main() {
 
 	// Next, we send an extrinsic that should succeed:
 	let balance_to_transfer = 1000;
-	let good_transfer_extrinsic =
-		api.balance_transfer_allow_death(bob.clone().into(), balance_to_transfer);
+	let good_transfer_extrinsic = api
+		.balance_transfer_allow_death(bob.clone().into(), balance_to_transfer)
+		.unwrap();
 	// Send and watch extrinsic until InBlock.
 	let result = api.submit_and_watch_extrinsic_until(good_transfer_extrinsic, XtStatus::InBlock);
 	println!("[+] Sent the transfer extrinsic.");

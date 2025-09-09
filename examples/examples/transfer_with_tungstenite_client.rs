@@ -56,7 +56,9 @@ fn main() {
 	println!("[+] Bob's Free Balance is {}\n", bob_balance);
 
 	// Generate extrinsic.
-	let xt = api.balance_transfer_allow_death(MultiAddress::Id(bob.into()), 1000000000000);
+	let xt = api
+		.balance_transfer_allow_death(MultiAddress::Id(bob.into()), 1000000000000)
+		.unwrap();
 	println!(
 		"Sending an extrinsic from Alice (Key = {}),\n\nto Bob (Key = {})\n",
 		alice.public(),

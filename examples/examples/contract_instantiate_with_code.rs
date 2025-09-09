@@ -62,13 +62,9 @@ async fn main() {
 "#;
 	let wasm = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
 
-	let xt = api.contract_instantiate_with_code(
-		1_000_000_000_000_000,
-		500_000,
-		wasm,
-		vec![1u8],
-		vec![1u8],
-	);
+	let xt = api
+		.contract_instantiate_with_code(1_000_000_000_000_000, 500_000, wasm, vec![1u8], vec![1u8])
+		.unwrap();
 
 	println!("[+] Creating a contract instance with extrinsic:\n\n{:?}\n", xt);
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).unwrap();
@@ -88,7 +84,7 @@ async fn main() {
 	let contract = contract_instantiated_events[0].contract.clone();
 	println!("[+] Event was received. Contract deployed at: {contract:?}\n");
 
-	let xt = api.contract_call(contract.into(), 500_000, 500_000, vec![0u8]);
+	let xt = api.contract_call(contract.into(), 500_000, 500_000, vec![0u8]).unwrap();
 
 	println!("[+] Calling the contract with extrinsic Extrinsic:\n{:?}\n\n", xt);
 	let report = api.submit_and_watch_extrinsic_until(xt, XtStatus::Finalized).unwrap();

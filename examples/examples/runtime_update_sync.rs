@@ -45,7 +45,7 @@ pub fn send_code_update_extrinsic(
 	// Create a sudo `set_code` call.
 	let call = compose_call!(api.metadata(), "System", "set_code", new_wasm.to_vec());
 	let weight: Weight = 0.into();
-	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight);
+	let xt = compose_extrinsic!(&api, "Sudo", "sudo_unchecked_weight", call, weight).unwrap();
 
 	println!("Sending extrinsic to trigger runtime update");
 	let block_hash = api
