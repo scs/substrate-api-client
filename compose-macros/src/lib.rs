@@ -202,21 +202,16 @@ mod tests {
 		let pallet_metadata = metadata.pallet_by_name("Balances").unwrap();
 
 		let extra_parameter = 10000;
-		let expected_call_one = ([4, 0], extra_parameter);
-		let call_one = compose_call_for_pallet_metadata!(
-			&pallet_metadata,
-			"transfer_allow_death",
-			extra_parameter
-		)
-		.unwrap();
+		let expected_call_one = ([4, 4], extra_parameter);
+		let call_one =
+			compose_call_for_pallet_metadata!(&pallet_metadata, "transfer_all", extra_parameter)
+				.unwrap();
 		assert_eq!(expected_call_one, call_one);
-		let expected_call_two = ([4, 8], extra_parameter);
-		let call_two = compose_call_for_pallet_metadata!(
-			&pallet_metadata,
-			"force_set_balance",
-			extra_parameter
-		)
-		.unwrap();
+
+		let expected_call_two = ([4, 1], extra_parameter);
+		let call_two =
+			compose_call_for_pallet_metadata!(&pallet_metadata, "set_balance", extra_parameter)
+				.unwrap();
 		assert_eq!(expected_call_two, call_two);
 	}
 
@@ -270,10 +265,10 @@ mod tests {
 		let metadata = Metadata::try_from(runtime_metadata_prefixed).unwrap();
 
 		let pallet_name = "Balances";
-		let non_existent_function = "force_set_balance";
+		let non_existent_function = "transfer_all";
 		let extra_parameter = 10000;
 
-		let expected_call = ([4, 8], extra_parameter);
+		let expected_call = ([4, 4], extra_parameter);
 		let call =
 			compose_call!(&metadata, pallet_name, non_existent_function, extra_parameter).unwrap();
 		assert_eq!(call, expected_call);
