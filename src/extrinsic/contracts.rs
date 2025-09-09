@@ -24,8 +24,10 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
-	UncheckedExtrinsicV4,
+	config::Config,
+	extrinsic_params::ExtrinsicParams,
+	extrinsics::{deprecated::UncheckedExtrinsicV4, CallIndex},
+	SignExtrinsic,
 };
 use alloc::vec::Vec;
 use codec::{Compact, Encode};
@@ -74,7 +76,7 @@ pub trait ContractsExtrinsics {
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
-	) -> Self::Extrinsic<PutCodeFor<Self>>;
+	) -> Option<Self::Extrinsic<PutCodeFor<Self>>>;
 
 	async fn contract_instantiate(
 		&self,
@@ -82,7 +84,7 @@ pub trait ContractsExtrinsics {
 		gas_limit: Self::Gas,
 		code_hash: Self::Hash,
 		data: Self::Data,
-	) -> Self::Extrinsic<InstantiateWithHashFor<Self>>;
+	) -> Option<Self::Extrinsic<InstantiateWithHashFor<Self>>>;
 
 	async fn contract_instantiate_with_code(
 		&self,
@@ -91,7 +93,7 @@ pub trait ContractsExtrinsics {
 		code: Self::Code,
 		data: Self::Data,
 		salt: Self::Salt,
-	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>>;
+	) -> Option<Self::Extrinsic<InstantiateWithCodeFor<Self>>>;
 
 	async fn contract_call(
 		&self,
@@ -99,7 +101,7 @@ pub trait ContractsExtrinsics {
 		value: Self::Currency,
 		gas_limit: Self::Gas,
 		data: Self::Data,
-	) -> Self::Extrinsic<ContractCallFor<Self>>;
+	) -> Option<Self::Extrinsic<ContractCallFor<Self>>>;
 }
 
 #[cfg(feature = "std")]
@@ -117,18 +119,19 @@ where
 	type Data = Vec<u8>;
 	type Salt = Vec<u8>;
 	type Address = <T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::ExtrinsicAddress;
+	#[allow(deprecated)]
 	type Extrinsic<Call> = UncheckedExtrinsicV4<
 		Self::Address,
 		Call,
 		<T::ExtrinsicSigner as SignExtrinsic<T::AccountId>>::Signature,
-		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::SignedExtra,
+		<T::ExtrinsicParams as ExtrinsicParams<T::Index, T::Hash>>::TxExtension,
 	>;
 
 	async fn contract_put_code(
 		&self,
 		gas_limit: Self::Gas,
 		code: Self::Code,
-	) -> Self::Extrinsic<PutCodeFor<Self>> {
+	) -> Option<Self::Extrinsic<PutCodeFor<Self>>> {
 		compose_extrinsic!(self, CONTRACTS_MODULE, PUT_CODE, Compact(gas_limit), code)
 	}
 
@@ -138,7 +141,7 @@ where
 		gas_limit: Self::Gas,
 		code_hash: Self::Hash,
 		data: Self::Data,
-	) -> Self::Extrinsic<InstantiateWithHashFor<Self>> {
+	) -> Option<Self::Extrinsic<InstantiateWithHashFor<Self>>> {
 		compose_extrinsic!(
 			self,
 			CONTRACTS_MODULE,
@@ -157,7 +160,7 @@ where
 		code: Self::Code,
 		data: Self::Data,
 		salt: Self::Salt,
-	) -> Self::Extrinsic<InstantiateWithCodeFor<Self>> {
+	) -> Option<Self::Extrinsic<InstantiateWithCodeFor<Self>>> {
 		compose_extrinsic!(
 			self,
 			CONTRACTS_MODULE,
@@ -176,7 +179,7 @@ where
 		value: Self::Currency,
 		gas_limit: Self::Gas,
 		data: Self::Data,
-	) -> Self::Extrinsic<ContractCallFor<Self>> {
+	) -> Option<Self::Extrinsic<ContractCallFor<Self>>> {
 		compose_extrinsic!(
 			self,
 			CONTRACTS_MODULE,
