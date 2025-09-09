@@ -24,6 +24,8 @@ use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsic,
 };
+#[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
+use alloc::boxed::Box;
 use alloc::vec::Vec;
 use codec::{Decode, Encode};
 
@@ -46,13 +48,13 @@ pub trait UtilityExtrinsics {
 	async fn batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> Self::Extrinsic<BatchCall<Call>>;
+	) -> Option<Self::Extrinsic<BatchCall<Call>>>;
 
 	// Send a batch of dispatch calls. Unlike batch, it allows errors and won't interrupt.
 	async fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> Self::Extrinsic<BatchCall<Call>>;
+	) -> Option<Self::Extrinsic<BatchCall<Call>>>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -71,7 +73,7 @@ where
 	async fn batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> Self::Extrinsic<BatchCall<Call>> {
+	) -> Option<Self::Extrinsic<BatchCall<Call>>> {
 		let calls = Batch { calls };
 		compose_extrinsic!(self, UTILITY_MODULE, BATCH, calls)
 	}
@@ -79,7 +81,7 @@ where
 	async fn force_batch<Call: Encode + Clone>(
 		&self,
 		calls: Vec<Call>,
-	) -> Self::Extrinsic<BatchCall<Call>> {
+	) -> Option<Self::Extrinsic<BatchCall<Call>>> {
 		let calls = Batch { calls };
 		compose_extrinsic!(self, UTILITY_MODULE, FORCE_BATCH, calls)
 	}

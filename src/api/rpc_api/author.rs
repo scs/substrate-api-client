@@ -19,14 +19,13 @@ use crate::{
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, UncheckedExtrinsic};
+use ac_primitives::{config::Config, Hasher, UncheckedExtrinsic};
 #[cfg(not(feature = "sync-api"))]
 use alloc::boxed::Box;
 use codec::{Decode, Encode};
 use log::*;
 use serde::de::DeserializeOwned;
 use sp_core::Bytes;
-use sp_runtime::traits::Hash as HashTrait;
 
 pub type TransactionSubscriptionFor<Client, Hash> =
 	<Client as Subscribe>::Subscription<TransactionStatus<Hash, Hash>>;
@@ -210,12 +209,6 @@ pub trait SubmitAndWatch {
 		encoded_extrinsic: &Bytes,
 		watch_until: XtStatus,
 	) -> Result<ExtrinsicReport<Self::Hash>>;
-
-	/// Query the events for the specified `report` and attaches them to the mutable report.
-	/// If the function fails events might still be added to the report.
-	///
-	/// This method is blocking if the sync-api feature is activated
-	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()>;
 }
 
 #[maybe_async::maybe_async(?Send)]
@@ -281,20 +274,15 @@ where
 		if watch_until < XtStatus::InBlock {
 			return Ok(report)
 		}
-		self.populate_events(&mut report).await?;
-		report.check_events_for_dispatch_error(self.metadata())?;
-		return Ok(report);
-	}
-
-	async fn populate_events(&self, report: &mut ExtrinsicReport<Self::Hash>) -> Result<()> {
-		if report.events.is_some() {
-			return Err(Error::EventsAlreadyPresent)
-		}
 		let block_hash = report.block_hash.ok_or(Error::BlockHashNotFound)?;
 		let extrinsic_events =
 			self.fetch_events_for_extrinsic(block_hash, report.extrinsic_hash).await?;
-		report.add_events(extrinsic_events);
-		Ok(())
+		// Ensure that the extrinsic has been successful. If not, return an error.
+		for event in &extrinsic_events {
+			event.check_if_failed()?;
+		}
+		report.events = Some(extrinsic_events);
+		Ok(report)
 	}
 
 	async fn submit_and_watch_extrinsic_until_without_events<
