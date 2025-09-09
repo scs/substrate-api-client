@@ -1,6 +1,9 @@
+use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 
 pub mod transaction_extension;
+
+pub use transaction_extension::TransactionExtension;
 
 /// Something that acts like a [`SignaturePayload`](Extrinsic::SignaturePayload) of an
 /// [`Extrinsic`].
@@ -62,3 +65,36 @@ pub trait ExtrinsicCall: ExtrinsicLike {
 	/// Get the call of the extrinsic.
 	fn call(&self) -> &Self::Call;
 }
+
+/// Dispatchable impl containing an arbitrary value which panics if it actually is dispatched.
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Debug, TypeInfo)]
+pub struct FakeDispatchable<Inner>(pub Inner);
+impl<Inner> From<Inner> for FakeDispatchable<Inner> {
+	fn from(inner: Inner) -> Self {
+		Self(inner)
+	}
+}
+impl<Inner> FakeDispatchable<Inner> {
+	/// Take `self` and return the underlying inner value.
+	pub fn deconstruct(self) -> Inner {
+		self.0
+	}
+}
+impl<Inner> AsRef<Inner> for FakeDispatchable<Inner> {
+	fn as_ref(&self) -> &Inner {
+		&self.0
+	}
+}
+
+// impl<Inner> Dispatchable for FakeDispatchable<Inner> {
+// 	type RuntimeOrigin = ();
+// 	type Config = ();
+// 	type Info = ();
+// 	type PostInfo = ();
+// 	fn dispatch(
+// 		self,
+// 		_origin: Self::RuntimeOrigin,
+// 	) -> crate::DispatchResultWithInfo<Self::PostInfo> {
+// 		panic!("This implementation should not be used for actual dispatch.");
+// 	}
+// }

@@ -732,7 +732,8 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::UncheckedExtrinsicV4;
+	#[allow(deprecated)]
+	use crate::extrinsics::deprecated::UncheckedExtrinsicV4;
 	use codec::Encode;
 	use core::str::FromStr;
 	use node_template_runtime::{BalancesCall, RuntimeCall, SignedExtra};
@@ -837,6 +838,7 @@ mod tests {
 		assert_eq!(header.number(), 4);
 	}
 	#[test]
+	#[allow(deprecated)]
 	fn deserialize_block_works() {
 		//header
 		let header = SubstrateHeader::<u32, BlakeTwo256> {

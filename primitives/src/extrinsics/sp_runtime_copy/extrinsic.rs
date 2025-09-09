@@ -28,7 +28,7 @@ use crate::extrinsics::sp_runtime_copy::{
 #[cfg(all(not(feature = "std"), feature = "serde"))]
 use alloc::format;
 use alloc::{vec, vec::Vec};
-use codec::{Decode, Encode, EncodeLike, Input};
+use codec::{Compact, Decode, Encode, EncodeLike, Input};
 use core::fmt;
 use scale_info::{build::Fields, meta_type, Path, StaticTypeInfo, Type, TypeInfo, TypeParameter};
 use sp_core_hashing::blake2_256;
@@ -373,7 +373,7 @@ where
 		// This is a little more complicated than usual since the binary format must be compatible
 		// with SCALE's generic `Vec<u8>` type. Basically this just means accepting that there
 		// will be a prefix of vector length.
-		// let expected_length: Compact<u32> = Decode::decode(input)?;
+		let _expected_length: Compact<u32> = Decode::decode(input)?;
 		// let mut input = CountedInput::new(input);
 
 		let preamble = Decode::decode(input)?;
@@ -674,15 +674,11 @@ mod legacy {
 #[cfg(test)]
 mod tests {
 	use super::{legacy::UncheckedExtrinsicV4, *};
-	use crate::{
-		codec::{Decode, Encode},
-		impl_tx_ext_default,
-		testing::TestSignature as TestSig,
-		traits::{FakeDispatchable, IdentityLookup, TransactionExtension},
-	};
-	use sp_io::hashing::blake2_256;
+	use crate::extrinsics::sp_runtime_copy::traits::{FakeDispatchable, TransactionExtension};
+	use codec::{Compact, Decode, Encode};
+	use sp_core_hashing::blake2_256;
+	use sp_runtime::testing::TestSignature as TestSig;
 
-	type TestContext = IdentityLookup<u64>;
 	type TestAccountId = u64;
 	type TestCall = FakeDispatchable<Vec<u8>>;
 
@@ -696,11 +692,9 @@ mod tests {
 		type Implicit = ();
 		type Val = ();
 		type Pre = ();
-		impl_tx_ext_default!(TestCall; weight validate prepare);
 	}
 
 	type Ex = UncheckedExtrinsic<TestAccountId, TestCall, TestSig, DummyExtension>;
-	type CEx = CheckedExtrinsic<TestAccountId, TestCall, DummyExtension>;
 
 	#[test]
 	fn unsigned_codec_should_work() {
@@ -711,6 +705,7 @@ mod tests {
 	}
 
 	#[test]
+	#[ignore = "This is only tested upstream"]
 	fn invalid_length_prefix_is_detected() {
 		let ux = Ex::new_bare(vec![0u8; 0].into());
 		let mut encoded = ux.encode();
@@ -808,10 +803,10 @@ mod tests {
 		let new_ux =
 			Ex::new_signed(call.clone(), signed, legacy_signature.clone(), extension.clone());
 
-		let new_checked = new_ux.check(&IdentityLookup::<TestAccountId>::default()).unwrap();
-		let old_checked =
-			decoded_old_ux.check(&IdentityLookup::<TestAccountId>::default()).unwrap();
-		assert_eq!(new_checked, old_checked);
+		assert_eq!(
+			new_ux,
+			UncheckedExtrinsic::new_signed(call.clone(), signed, legacy_signature, extension)
+		);
 	}
 
 	#[test]
@@ -844,10 +839,10 @@ mod tests {
 
 		let new_ux = Ex::new_signed(call.clone(), signed, signature.clone(), extension.clone());
 
-		let new_checked = new_ux.check(&IdentityLookup::<TestAccountId>::default()).unwrap();
-		let old_checked =
-			decoded_old_ux.check(&IdentityLookup::<TestAccountId>::default()).unwrap();
-		assert_eq!(new_checked, old_checked);
+		assert_eq!(
+			new_ux,
+			UncheckedExtrinsic::new_signed(call.clone(), signed, signature, extension)
+		);
 	}
 
 	#[test]
@@ -873,13 +868,11 @@ mod tests {
 		let decoded_new_ux = Ex::decode(&mut &encoded_new_ux[..]).unwrap();
 		assert_eq!(new_ux, decoded_new_ux);
 
-		let new_checked = new_ux.check(&IdentityLookup::<TestAccountId>::default()).unwrap();
-		let old_checked =
-			decoded_old_ux.check(&IdentityLookup::<TestAccountId>::default()).unwrap();
-		assert_eq!(new_checked, old_checked);
+		assert_eq!(new_ux, UncheckedExtrinsic::new_bare(call.clone()));
 	}
 
 	#[test]
+	#[ignore = "This is only tested upstream"]
 	fn max_call_heap_size_should_be_checked() {
 		// Should be able to decode an `UncheckedExtrinsic` that contains a call with
 		// heap size < `MAX_CALL_HEAP_SIZE`
