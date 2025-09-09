@@ -17,7 +17,6 @@
 
 //! Primitives for substrate extrinsics.
 
-use crate::OpaqueExtrinsic;
 use alloc::{format, vec::Vec};
 use codec::{Decode, Encode, Error, Input};
 use core::fmt;
@@ -31,6 +30,7 @@ const V4: u8 = 4;
 #[allow(deprecated)]
 pub mod deprecated {
 	use super::*;
+	use sp_runtime::OpaqueExtrinsic;
 	/// Mirrors the currently used Extrinsic format (V4) from substrate. Has less traits and methods though.
 	/// The SignedExtra used does not need to implement SignedExtension here.
 	// see https://github.com/paritytech/substrate/blob/7d233c2446b5a60662400a0a4bcfb78bb3b79ff7/primitives/runtime/src/generic/unchecked_extrinsic.rs

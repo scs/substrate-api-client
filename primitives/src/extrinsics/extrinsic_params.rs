@@ -15,15 +15,17 @@
 
 */
 
-use crate::config::Config;
+use crate::{
+	config::Config,
+	extrinsics::sp_runtime_copy::traits::transaction_extension::TransactionExtension,
+};
 use codec::{Codec, Decode, Encode};
 #[cfg(feature = "disable-metadata-hash-check")]
 use primitive_types::H256;
 use scale_info::{StaticTypeInfo, TypeInfo};
 use sp_runtime::{
 	generic::Era,
-	impl_tx_ext_default,
-	traits::{BlakeTwo256, Dispatchable, Hash, TransactionExtension},
+	traits::{BlakeTwo256, Hash},
 };
 
 /// TxExtension that is compatible with a default Substrate / Polkadot node.
@@ -61,7 +63,7 @@ impl<Tip, Index> GenericTxExtension<Tip, Index> {
 
 impl<Call, Tip, Index> TransactionExtension<Call> for GenericTxExtension<Tip, Index>
 where
-	Call: Dispatchable,
+	Call: Codec,
 	GenericTxExtension<Tip, Index>:
 		Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
 	Tip: Codec + core::fmt::Debug + Sync + Send + Clone + Eq + PartialEq + StaticTypeInfo,
@@ -71,8 +73,6 @@ where
 	type Implicit = ();
 	type Pre = ();
 	type Val = ();
-
-	impl_tx_ext_default!(Call; weight validate prepare);
 }
 
 /// Default implicit fields of a Polkadot/Substrate node.
@@ -353,7 +353,7 @@ impl From<AssetTip<u128>> for u128 {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use sp_crypto_hashing::blake2_256;
+	use sp_core_hashing::blake2_256;
 
 	#[test]
 	fn encode_blake2_256_works_as_expected() {

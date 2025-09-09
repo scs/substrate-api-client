@@ -1,3 +1,4 @@
+#![feature(return_position_impl_trait_in_trait)]
 /*
    Copyright 2019 Supercomputing Systems AG
 
@@ -14,7 +15,6 @@
    limitations under the License.
 
 */
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate alloc;

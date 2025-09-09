@@ -24,7 +24,6 @@ use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsic,
 };
-use alloc::borrow::ToOwned;
 use codec::{Compact, Encode};
 
 pub const BALANCES_MODULE: &str = "Balances";

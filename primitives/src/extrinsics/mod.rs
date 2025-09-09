@@ -24,7 +24,8 @@ pub use extrinsic_params::{
 #[allow(deprecated)]
 pub use extrinsic_v4::deprecated;
 pub use signer::{ExtrinsicSigner, SignExtrinsic};
-pub use sp_runtime::generic::{Preamble, UncheckedExtrinsic};
+
+pub use sp_runtime_copy::generic::{Preamble, UncheckedExtrinsic};
 
 /// Call Index used a prefix of every extrinsic call.
 pub type CallIndex = [u8; 2];
@@ -32,3 +33,4 @@ pub type CallIndex = [u8; 2];
 pub mod extrinsic_params;
 mod extrinsic_v4;
 pub mod signer;
+pub mod sp_runtime_copy;

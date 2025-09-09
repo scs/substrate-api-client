@@ -24,7 +24,7 @@ use ac_primitives::{
 	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
 	UncheckedExtrinsic,
 };
-use alloc::{borrow::ToOwned, vec::Vec};
+use alloc::vec::Vec;
 use codec::{Decode, Encode};
 
 const UTILITY_MODULE: &str = "Utility";
