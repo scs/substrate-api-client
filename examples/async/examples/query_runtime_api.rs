@@ -26,8 +26,6 @@ use substrate_api_client::{
 	Api, GetChainInfo,
 };
 
-const UNSTABLE_METADATA_VERSION: u32 = u32::MAX;
-
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your
 // own runtime if it uses different parameter configurations. Several pre-compiled runtimes are available in the ac-primitives crate.
 
@@ -66,7 +64,7 @@ async fn main() {
 
 	// Query the available metadata versions.
 	let metadata_versions = runtime_api.metadata_versions(None).await.unwrap();
-	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
+	assert_eq!(metadata_versions, [14, 15, 16]);
 
 	// List all apis and functions thereof.
 	let trait_names = runtime_api.list_traits(None).await.unwrap();
