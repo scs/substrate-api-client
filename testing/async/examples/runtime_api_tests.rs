@@ -23,12 +23,10 @@ use substrate_api_client::{
 	rpc::JsonrpseeClient,
 	runtime_api::{
 		AccountNonceApi, AuthorityDiscoveryApi, BlockBuilderApi, CoreApi, MetadataApi, RuntimeApi,
-		StakingApi, TransactionPaymentApi, TransactionPaymentCallApi,
+		TransactionPaymentApi,
 	},
 	Api, GetChainInfo,
 };
-
-const UNSTABLE_METADATA_VERSION: u32 = u32::MAX;
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +44,7 @@ async fn main() {
 	// General Runtime Api
 	let bytes = runtime_api.rpc_call("Metadata_metadata_versions", None, None).await.unwrap();
 	let metadata_versions = Vec::<u32>::decode(&mut bytes.0.as_slice()).unwrap();
-	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
+	assert_eq!(metadata_versions, [14, 15, 16]);
 
 	// AccountNonce
 	let alice_nonce = runtime_api.account_nonce(alice, None).await.unwrap();
@@ -75,7 +73,7 @@ async fn main() {
 	let _method_names = runtime_api.list_methods_of_trait("BabeApi", None).await.unwrap();
 	let _trait_names = runtime_api.list_traits(None).await.unwrap();
 	let metadata_versions = runtime_api.metadata_versions(None).await.unwrap();
-	assert_eq!(metadata_versions, [14, 15, UNSTABLE_METADATA_VERSION]);
+	assert_eq!(metadata_versions, [14, 15, 16]);
 
 	// MMR
 	// This doesn't seem to work with the current substrate node. Tried it on polkadot.js aswell, but it keeps on runtime panicking.
