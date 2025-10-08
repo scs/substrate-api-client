@@ -205,8 +205,8 @@ where
 		let (metadata, runtime_version) =
 			futures_util::future::try_join(metadata_future, runtime_version_future).await?;
 
-		debug!("Metadata: {:?}", metadata);
-		info!("Runtime Version: {:?}", runtime_version);
+		debug!("Metadata: {metadata:?}");
+		info!("Runtime Version: {runtime_version:?}");
 
 		self.metadata = metadata;
 		self.runtime_version = runtime_version;
