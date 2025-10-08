@@ -209,7 +209,7 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 			.ok_or(MetadataError::VariantIndexNotFound(variant_index))?;
 		let pallet_name = event_pallet.name().to_string();
 		let variant_name = event_variant.name.to_string();
-		debug!("Decoding Event '{}::{}'", &pallet_name, &variant_name);
+		debug!("Decoding Event '{pallet_name}::{variant_name}'");
 
 		// Skip over the bytes belonging to this event.
 		for field_metadata in &event_variant.fields {
