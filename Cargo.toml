@@ -65,30 +65,30 @@ tungstenite = { version = "0.27", features = ["native-tls", "url"] }
 ws = { version = "0.9", features = ["ssl"] }
 
 # Substrate no_std dependencies
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-application-crypto = { default-features = false, features = ["full_crypto"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-core = { default-features = false, features = ["full_crypto", "serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-crypto-hashing = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-io = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-inherents = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-runtime-interface = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-staking = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-storage = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-version = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-weights = { default-features = false, features = ["serde"], git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+pallet-balances = { version = "42.0.0", default-features = false }
+sp-application-crypto = { version = "41.0.0", default-features = false, features = ["full_crypto"] }
+sp-core = { version = "37.0.0", default-features = false, features = ["full_crypto", "serde"] }
+sp-crypto-hashing = { version = "0.1.0", default-features = false }
+sp-io = { version = "41.0.1", default-features = false }
+sp-inherents = { version = "37.0.0", default-features = false }
+sp-runtime = { version = "42.0.0", default-features = false, features = ["serde"] }
+sp-runtime-interface = { version = "30.0.0", default-features = false }
+sp-staking = { version = "39.0.0", default-features = false, features = ["serde"] }
+sp-storage = { version = "22.0.0", default-features = false, features = ["serde"] }
+sp-version = { version = "40.0.0", default-features = false, features = ["serde"] }
+sp-weights = { version = "32.0.0", default-features = false, features = ["serde"] }
 
 # substrate std / wasm only
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-contracts = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-recovery = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-society = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-pallet-staking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sc-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
-sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+frame-support = { version = "41.0.0" }
+frame-system = { version = "41.0.2" }
+pallet-assets = { version = "43.0.0" }
+pallet-contracts = { version = "41.0.0" }
+pallet-identity = { version = "41.0.0" }
+pallet-recovery = { version = "41.0.0" }
+pallet-society = { version = "41.0.0" }
+pallet-staking = { version = "41.0.0" }
+sc-keystore = { version = "36.0.0" }
+sp-keystore = { version = "0.43.0" }
 
 # local deps
 ac-keystore = { default-features = false, path = "keystore", version = "1.17" }
@@ -98,6 +98,6 @@ ac-primitives = { default-features = false, path = "primitives", version = "1.17
 substrate-api-client = { default-features = false, path = "api-client", version = "1.17" }
 
 # Only used as dev-dependencies
-rococo-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+rococo-runtime = { version = "24.0.1" }
 test-case = "3.1"
-sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+sp-keyring = { version = "42.0.0" }
