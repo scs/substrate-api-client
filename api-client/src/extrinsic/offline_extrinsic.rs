@@ -42,7 +42,7 @@ impl<T: Config, Client> Api<T, Client> {
 	) -> UncheckedExtrinsic<ExtrinsicAddress<T>, Call, Signature<T>, TxExtension<T>> {
 		match self.signer() {
 			Some(signer) => compose_extrinsic_offline!(signer, call, self.extrinsic_params(nonce)),
-			None => UncheckedExtrinsic { preamble: Preamble::Bare(5), function: call },
+			None => UncheckedExtrinsic::from_parts(call, Preamble::Bare(5)),
 		}
 	}
 }

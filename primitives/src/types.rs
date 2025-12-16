@@ -197,11 +197,22 @@ mod serde_balance {
 /// [DispatchClass::all] and [DispatchClass::non_mandatory] helper functions.
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/support/src/dispatch.rs#L133-L177
 #[derive(
-	PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo, Serialize, Deserialize,
+	PartialEq,
+	Eq,
+	Clone,
+	Copy,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	TypeInfo,
+	Serialize,
+	Deserialize,
+	Default,
 )]
 #[serde(rename_all = "camelCase")]
 pub enum DispatchClass {
 	/// A normal dispatch.
+	#[default]
 	Normal,
 	/// An operational dispatch.
 	Operational,
@@ -219,12 +230,6 @@ pub enum DispatchClass {
 	/// block. Essentially, we assume that in these exceptional circumstances, it is better to
 	/// allow an overweight block to be created than to not allow any block at all to be created.
 	Mandatory,
-}
-
-impl Default for DispatchClass {
-	fn default() -> Self {
-		Self::Normal
-	}
 }
 
 impl DispatchClass {
