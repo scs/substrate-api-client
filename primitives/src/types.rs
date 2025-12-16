@@ -20,9 +20,9 @@
 
 use alloc::{string::String, vec::Vec};
 use codec::{Decode, Encode, MaxEncodedLen};
+use core::fmt::Debug;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_core::RuntimeDebug;
 use sp_runtime::traits::{AtLeast32BitUnsigned, Zero};
 
 /// Type used to encode the number of references an account has.
@@ -30,7 +30,7 @@ pub type RefCount = u32;
 
 /// All balance information for an account.
 //https://github.com/paritytech/substrate/blob/d6f278b9685ac871c79e45551b66111b77cb1b71/frame/balances/src/types.rs#L95
-#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, Debug, MaxEncodedLen, TypeInfo)]
 pub struct AccountData<Balance> {
 	/// Non-reserved part of the balance which the account holder may be able to control.
 	///
@@ -52,7 +52,7 @@ pub struct AccountData<Balance> {
 
 const IS_NEW_LOGIC: u128 = 0x80000000_00000000_00000000_00000000u128;
 
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Debug, MaxEncodedLen, TypeInfo)]
 pub struct ExtraFlags(u128);
 impl Default for ExtraFlags {
 	fn default() -> Self {
@@ -197,17 +197,7 @@ mod serde_balance {
 /// [DispatchClass::all] and [DispatchClass::non_mandatory] helper functions.
 // https://github.com/paritytech/substrate/blob/a1c1286d2ca6360a16d772cc8bea2190f77f4d8f/frame/support/src/dispatch.rs#L133-L177
 #[derive(
-	PartialEq,
-	Eq,
-	Clone,
-	Copy,
-	Encode,
-	Decode,
-	RuntimeDebug,
-	TypeInfo,
-	Serialize,
-	Deserialize,
-	Default,
+	PartialEq, Eq, Clone, Copy, Encode, Decode, Debug, TypeInfo, Serialize, Deserialize, Default,
 )]
 #[serde(rename_all = "camelCase")]
 pub enum DispatchClass {
@@ -245,9 +235,7 @@ impl DispatchClass {
 }
 
 /// A destination account for payment.
-#[derive(
-	PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen, Default,
-)]
+#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug, TypeInfo, MaxEncodedLen, Default)]
 pub enum RewardDestination<AccountId> {
 	/// Pay into the stash account, increasing the amount at stake accordingly.
 	#[default]
@@ -317,7 +305,7 @@ pub struct EncodableOpaqueLeaf(pub Vec<u8>);
 
 /// An MMR proof data for a group of leaves.
 // https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L351-L360
-#[derive(codec::Encode, codec::Decode, RuntimeDebug, Clone, PartialEq, Eq, TypeInfo)]
+#[derive(codec::Encode, codec::Decode, Debug, Clone, PartialEq, Eq, TypeInfo)]
 pub struct Proof<Hash> {
 	/// The indices of the leaves the proof is for.
 	pub leaf_indices: Vec<LeafIndex>,
@@ -340,7 +328,7 @@ pub type NodeIndex = u64;
 
 /// Merkle Mountain Range operation error.
 // https://github.com/paritytech/polkadot-sdk/blob/a190e0e9253562fdca9c1b6e9541a7ea0a50c018/substrate/primitives/merkle-mountain-range/src/lib.rs#L362-L396
-#[derive(Encode, Decode, PartialEq, Eq, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, PartialEq, Eq, TypeInfo, Debug)]
 pub enum MmrError {
 	/// Error during translation of a block number into a leaf index.
 	InvalidNumericOp,
@@ -365,7 +353,7 @@ pub enum MmrError {
 }
 
 /// Defines the required determinism level of a wasm blob when either running or uploading code.
-#[derive(Clone, Copy, Encode, Decode, TypeInfo, MaxEncodedLen, RuntimeDebug, PartialEq, Eq)]
+#[derive(Clone, Copy, Encode, Decode, TypeInfo, MaxEncodedLen, Debug, PartialEq, Eq)]
 pub enum Determinism {
 	/// The execution should be deterministic and hence no indeterministic instructions are
 	/// allowed.
