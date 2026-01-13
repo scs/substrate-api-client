@@ -35,10 +35,17 @@ jobs:
         docker-images: false
         swap-storage: false
 
+  configure-rustflags:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure rustflags to support no-std/wasm builds
+      run: echo "RUSTFLAGS=$RUSTFLAGS --cfg substrate_runtime" >> "$GITHUB_ENV"
+
+
   build:
     name: ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
-    needs: free-disk-space
+    needs: [free-disk-space, configure-rustflags]
     strategy:
       fail-fast: false
       matrix:
