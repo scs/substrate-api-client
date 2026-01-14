@@ -118,9 +118,11 @@ jobs:
         with:
           key: ${{ matrix.check }}
 
+      - name: Set RUSTFLAGS
+        if: contains(matrix.check, 'test-no-std') || contains(matrix.check, 'wasm32')
+        run: echo "RUSTFLAGS=\"--cfg substrate_runtime\"" >> "$GITHUB_ENV"
+          
       - name: ${{ matrix.check }}
-        env: 
-           RUSTFLAGS: '--cfg substrate_runtime'
         run: ${{ matrix.check }}
 
       - name: Upload async examples
