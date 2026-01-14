@@ -52,10 +52,10 @@ jobs:
                 #
                 # `test-no-std` is only meant to check if the `substrate-api-client` compiles to `no_std`, hence
                 # we omit clippy and test there.
-                RUSTFLAGS='--cfg substrate_runtime' cargo build --release -p test-no-std --features api-client,
-                RUSTFLAGS='--cfg substrate_runtime' cargo build --release -p test-no-std --features compose-macros,
-                RUSTFLAGS='--cfg substrate_runtime' cargo build --release -p test-no-std --features node-api,
-                RUSTFLAGS='--cfg substrate_runtime' cargo build --release -p test-no-std --features primitives,
+                cargo build --release -p test-no-std --features api-client,
+                cargo build --release -p test-no-std --features compose-macros,
+                cargo build --release -p test-no-std --features node-api,
+                cargo build --release -p test-no-std --features primitives,
 
                 # Check build of stand-alone features.
                 cargo check --no-default-features,
@@ -67,8 +67,8 @@ jobs:
                 cargo check --no-default-features --features std,
 
                 # Test for 32 bit and wasm32-unknown-unknown compatibility
-                RUSTFLAGS='--cfg substrate_runtime' cargo build -p substrate-api-client --target wasm32-unknown-unknown --no-default-features --features sync-api,
-                RUSTFLAGS='--cfg substrate_runtime' cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown,
+                cargo build -p substrate-api-client --target wasm32-unknown-unknown --no-default-features --features sync-api,
+                cargo build --release -p ac-examples-wasm --examples --target wasm32-unknown-unknown,
 
                 # Test for 32 bit and wasm32-wasip1 compatibility
                 # As of PR https://github.com/scs/substrate-api-client/pull/858 this check fails
@@ -119,6 +119,8 @@ jobs:
           key: ${{ matrix.check }}
 
       - name: ${{ matrix.check }}
+        env: 
+           RUSTFLAGS: '--cfg substrate_runtime'
         run: ${{ matrix.check }}
 
       - name: Upload async examples
