@@ -117,10 +117,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.check }}
-
-      - name: Set RUSTFLAGS
-        if: contains(matrix.check, 'test-no-std') || contains(matrix.check, 'wasm32')
-        run: echo "RUSTFLAGS=\"--cfg substrate_runtime\"" >> "$GITHUB_ENV"
           
       - name: ${{ matrix.check }}
         run: ${{ matrix.check }}
