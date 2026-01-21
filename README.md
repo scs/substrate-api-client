@@ -217,4 +217,4 @@ _In alphabetical order_
 
 4. Q: I get a compilation error when compiling for `no-std` or `wasm`. For example "unresolved import `sp_core::storage::Storage`" in `sp-state-machine`. What is wrong?
 
-    A: You might have to specify `RUSTFLAGS` for compilation. See the [substrate documentation](https://github.com/paritytech/polkadot-sdk?tab=readme-ov-file#wasm).
+    A: You might have to specify `RUSTFLAGS` for compilation. See the [substrate documentation](https://github.com/paritytech/polkadot-sdk?tab=readme-ov-file#wasm). If you still get an error like `error[E0308]: mismatched types` in `sp-io` you might have to switch to the `master` branch (instead of using a release branch). This is a temporary issue do to incompatible versions being published on crates.io and should be fixed in the future. 
