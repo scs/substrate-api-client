@@ -13,7 +13,7 @@
 
 use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
-use ac_node_api::{error::MetadataError, Metadata};
+use ac_node_api::{Metadata, error::MetadataError};
 use ac_primitives::config::Config;
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;

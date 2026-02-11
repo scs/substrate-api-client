@@ -548,11 +548,7 @@ impl KeystoreInner {
 
 		let pair = Pair::from_string(&phrase, self.password()).map_err(|_| Error::InvalidPhrase)?;
 
-		if &pair.public() == public {
-			Ok(Some(pair))
-		} else {
-			Err(Error::PublicKeyMismatch)
-		}
+		if &pair.public() == public { Ok(Some(pair)) } else { Err(Error::PublicKeyMismatch) }
 	}
 
 	/// Get the file path for the given public key and key type.
@@ -614,8 +610,8 @@ impl KeystoreInner {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use sp_application_crypto::{ed25519, sr25519, AppPublic};
-	use sp_core::{crypto::Ss58Codec, testing::SR25519, Pair};
+	use sp_application_crypto::{AppPublic, ed25519, sr25519};
+	use sp_core::{Pair, crypto::Ss58Codec, testing::SR25519};
 	use std::{fs, str::FromStr};
 	use tempfile::TempDir;
 

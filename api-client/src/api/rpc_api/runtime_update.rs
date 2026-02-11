@@ -10,7 +10,7 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-use crate::{api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor, Result};
+use crate::{Result, api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor};
 use alloc::sync::Arc;
 use codec::{Decode, Encode};
 use core::sync::atomic::{AtomicBool, Ordering};

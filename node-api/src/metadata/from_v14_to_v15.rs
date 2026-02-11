@@ -269,10 +269,10 @@ mod tests {
 	use super::*;
 	use codec::Decode;
 	use frame_metadata::{
-		v14::{ExtrinsicMetadata, RuntimeMetadataV14},
 		RuntimeMetadata, RuntimeMetadataPrefixed,
+		v14::{ExtrinsicMetadata, RuntimeMetadataV14},
 	};
-	use scale_info::{meta_type, IntoPortable, TypeInfo};
+	use scale_info::{IntoPortable, TypeInfo, meta_type};
 	use sp_core::Bytes;
 	use std::{fs, marker::PhantomData};
 

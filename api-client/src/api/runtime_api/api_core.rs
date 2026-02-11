@@ -13,7 +13,7 @@
 
 use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
-use ac_primitives::{config::Config, RuntimeVersion};
+use ac_primitives::{RuntimeVersion, config::Config};
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::vec;

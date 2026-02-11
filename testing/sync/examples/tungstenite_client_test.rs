@@ -19,8 +19,8 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
-	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
+	Api, GetAccountInformation, SubmitAndWatch, XtStatus, ac_primitives::RococoRuntimeConfig,
+	extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
 };
 
 fn main() {

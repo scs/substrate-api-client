@@ -22,8 +22,8 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, Determinism,
-	SignExtrinsic, UncheckedExtrinsic, Weight,
+	Determinism, SignExtrinsic, UncheckedExtrinsic, Weight, config::Config,
+	extrinsic_params::ExtrinsicParams, extrinsics::CallIndex,
 };
 use codec::{Compact, Encode};
 use sp_core::Bytes;

@@ -15,9 +15,10 @@
 
 //! Tests for the runtime api.
 
-use sp_core::{sr25519, Decode};
+use sp_core::{Decode, sr25519};
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
+	Api, GetChainInfo,
 	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
@@ -25,7 +26,6 @@ use substrate_api_client::{
 		AccountNonceApi, AuthorityDiscoveryApi, BlockBuilderApi, CoreApi, MetadataApi, RuntimeApi,
 		TransactionPaymentApi,
 	},
-	Api, GetChainInfo,
 };
 
 #[tokio::main]

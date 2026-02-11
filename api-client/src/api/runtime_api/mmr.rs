@@ -13,7 +13,7 @@
 
 use super::{RuntimeApi, RuntimeApiClient};
 use crate::{api::Result, rpc::Request};
-use ac_primitives::{config::Config, EncodableOpaqueLeaf, MmrError, Proof};
+use ac_primitives::{EncodableOpaqueLeaf, MmrError, Proof, config::Config};
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};

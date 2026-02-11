@@ -12,9 +12,9 @@
 */
 
 use crate::{
+	Error,
 	api::{Api, Result},
 	rpc::{Request, Subscribe},
-	Error,
 };
 use ac_compose_macros::rpc_params;
 use ac_primitives::config::Config;
@@ -37,7 +37,7 @@ pub trait GetChainInfo {
 	async fn get_header(&self, hash: Option<Self::Hash>) -> Result<Option<Self::Header>>;
 
 	async fn get_block_hash(&self, number: Option<Self::BlockNumber>)
-		-> Result<Option<Self::Hash>>;
+	-> Result<Option<Self::Hash>>;
 
 	/// Returns the genesis block
 	async fn get_genesis_block(&self) -> Result<Self::Block>;

@@ -17,9 +17,9 @@
 //! To compile this example for async you need to set the `--no-default-features` flag
 
 use substrate_api_client::{
+	Api, GetChainInfo, SubscribeChain,
 	ac_primitives::RococoRuntimeConfig,
 	rpc::{HandleSubscription, JsonrpseeClient},
-	Api, GetChainInfo, SubscribeChain,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

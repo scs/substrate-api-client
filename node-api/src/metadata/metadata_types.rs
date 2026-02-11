@@ -9,7 +9,7 @@
 //! Handle substrate chain metadata.
 
 use crate::{
-	metadata::{v14_to_v15, variant_index::VariantIndex, MetadataConversionError, MetadataError},
+	metadata::{MetadataConversionError, MetadataError, v14_to_v15, variant_index::VariantIndex},
 	storage::GetStorageTypes,
 };
 use alloc::{
@@ -19,15 +19,15 @@ use alloc::{
 };
 use codec::{Decode, Encode};
 use frame_metadata::{
+	META_RESERVED, RuntimeMetadata, RuntimeMetadataPrefixed,
 	v15::{
 		CustomMetadata, ExtrinsicMetadata, OuterEnums, PalletConstantMetadata,
 		RuntimeApiMethodMetadata, RuntimeMetadataLastVersion, StorageEntryMetadata,
 	},
-	RuntimeMetadata, RuntimeMetadataPrefixed, META_RESERVED,
 };
 use scale_info::{
-	form::{Form, PortableForm},
 	PortableRegistry, Type, Variant,
+	form::{Form, PortableForm},
 };
 use sp_storage::StorageKey;
 

@@ -21,11 +21,11 @@ use serde_json::Value;
 use sp_core::Bytes;
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
+	Api,
 	ac_compose_macros::rpc_params,
 	ac_primitives::RococoRuntimeConfig,
 	extrinsic::BalancesExtrinsics,
 	rpc::{HandleSubscription, JsonrpseeClient, Request, Subscribe},
-	Api,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

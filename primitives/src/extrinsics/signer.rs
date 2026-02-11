@@ -20,7 +20,7 @@
 use crate::config::Config;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
-use sp_core::{crypto::AccountId32, Pair};
+use sp_core::{Pair, crypto::AccountId32};
 use sp_runtime::MultiAddress;
 
 pub trait SignExtrinsic<AccountId: Clone + Encode> {

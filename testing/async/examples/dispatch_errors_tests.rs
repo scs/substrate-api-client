@@ -19,8 +19,8 @@ use sp_core::H256;
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
-	Error, GetAccountInformation, GetBalance, SubmitAndWatch, XtStatus,
+	Api, Error, GetAccountInformation, GetBalance, SubmitAndWatch, XtStatus,
+	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient,
 };
 
 #[tokio::main]

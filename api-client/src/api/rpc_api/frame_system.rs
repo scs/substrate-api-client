@@ -18,7 +18,7 @@ use crate::{
 	rpc::Request,
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, AccountInfo};
+use ac_primitives::{AccountInfo, config::Config};
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use alloc::{string::String, vec::Vec};

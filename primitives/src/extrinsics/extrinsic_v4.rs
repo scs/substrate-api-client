@@ -210,9 +210,9 @@ pub mod deprecated {
 	{
 		fn from(extrinsic: UncheckedExtrinsicV4<Address, Call, Signature, Extra>) -> Self {
 			Self::from_bytes(extrinsic.encode().as_slice()).expect(
-			"both OpaqueExtrinsic and UncheckedExtrinsic have encoding that is compatible with \
+				"both OpaqueExtrinsic and UncheckedExtrinsic have encoding that is compatible with \
 				raw Vec<u8> encoding; qed",
-		)
+			)
 		}
 	}
 

@@ -21,8 +21,8 @@ use sp_core::{
 };
 use sp_runtime::MultiAddress;
 use substrate_api_client::{
-	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
-	Api, GetAccountInformation, SubmitAndWatch, XtStatus,
+	Api, GetAccountInformation, SubmitAndWatch, XtStatus, ac_primitives::RococoRuntimeConfig,
+	extrinsic::BalancesExtrinsics, rpc::TungsteniteRpcClient,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

@@ -18,11 +18,11 @@
 //! Extrinsics for `pallet-utility`.
 //! https://polkadot.js.org/docs/substrate/extrinsics/#utility
 
-use crate::{rpc::Request, Api};
+use crate::{Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
-	UncheckedExtrinsic,
+	SignExtrinsic, UncheckedExtrinsic, config::Config, extrinsic_params::ExtrinsicParams,
+	extrinsics::CallIndex,
 };
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
