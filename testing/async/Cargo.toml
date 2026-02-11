@@ -3,7 +3,7 @@ name = "ac-testing-async"
 version = "1.22.0"
 authors = ["Supercomputing Systems AG <info@scs.ch>"]
 license = "Apache-2.0"
-edition = "2021"
+edition = "2024"
 
 [dev-dependencies]
 codec = { workspace = true, features = ["std"] }
