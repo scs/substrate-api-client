@@ -46,7 +46,7 @@ pub struct GenericTxExtension<Tip, Index> {
 
 impl<Tip, Index> GenericTxExtension<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		{ Self { era, nonce, tip, check_hash: 0 } }
+		Self { era, nonce, tip, check_hash: 0 }
 	}
 }
 
