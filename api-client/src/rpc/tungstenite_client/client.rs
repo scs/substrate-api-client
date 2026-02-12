@@ -127,10 +127,9 @@ impl TungsteniteRpcClient {
 			while current_attempt <= max_attempts {
 				if let Err(error) =
 					subscribe_to_server(&url, max_attempts, json_req.clone(), result_in.clone())
+					&& !do_reconnect(&error)
 				{
-					if !do_reconnect(&error) {
-						break
-					}
+					break
 				}
 				current_attempt += 1;
 			}
