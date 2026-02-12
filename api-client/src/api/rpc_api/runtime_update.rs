@@ -49,10 +49,10 @@ where
 	#[maybe_async::maybe_async(?Send)]
 	pub async fn detect_runtime_update(&mut self) -> Result<bool> {
 		'outer: loop {
-			if let Some(canceled) = &self.external_cancellation {
-				if canceled.load(Ordering::SeqCst) {
-					return Ok(false)
-				}
+			if let Some(canceled) = &self.external_cancellation
+				&& canceled.load(Ordering::SeqCst)
+			{
+				return Ok(false)
 			}
 			let event_records = self
 				.subscription
