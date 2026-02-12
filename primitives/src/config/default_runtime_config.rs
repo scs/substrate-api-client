@@ -8,8 +8,9 @@
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/polkadot.rs
 
 use crate::{
-	config::Config, sr25519, types::AccountData, AccountId32, BlakeTwo256, Block, ExtrinsicSigner,
-	GenericExtrinsicParams, Header, MultiAddress, MultiSignature, OpaqueExtrinsic, PlainTip, H256,
+	AccountId32, BlakeTwo256, Block, ExtrinsicSigner, GenericExtrinsicParams, H256, Header,
+	MultiAddress, MultiSignature, OpaqueExtrinsic, PlainTip, config::Config, sr25519,
+	types::AccountData,
 };
 use codec::{Decode, Encode};
 use core::fmt::Debug;

@@ -19,7 +19,7 @@
 use log::debug;
 use sp_core::H256 as Hash;
 use substrate_api_client::{
-	ac_primitives::RococoRuntimeConfig, rpc::JsonrpseeClient, Api, SubscribeEvents,
+	Api, SubscribeEvents, ac_primitives::RococoRuntimeConfig, rpc::JsonrpseeClient,
 };
 
 // This module depends on the specific node runtime.

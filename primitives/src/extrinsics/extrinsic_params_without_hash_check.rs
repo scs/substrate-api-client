@@ -51,9 +51,7 @@ pub struct TxExtensionWithoutHashCheck<Tip, Index> {
 
 impl<Tip, Index> TxExtensionWithoutHashCheck<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		{
-			Self { era, nonce, tip }
-		}
+		Self { era, nonce, tip }
 	}
 }
 

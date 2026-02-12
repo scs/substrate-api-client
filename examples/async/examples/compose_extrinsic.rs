@@ -20,15 +20,15 @@
 use codec::Compact;
 use rococo_runtime::{Address, BalancesCall, RuntimeCall};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic::Era, MultiAddress};
+use sp_runtime::{MultiAddress, generic::Era};
 use substrate_api_client::{
+	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 	ac_compose_macros::{compose_call, compose_extrinsic_offline},
 	ac_primitives::{
-		config::Config, ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, PlainTip,
-		RococoRuntimeConfig, SignExtrinsic,
+		ExtrinsicParams, ExtrinsicSigner, GenericAdditionalParams, PlainTip, RococoRuntimeConfig,
+		SignExtrinsic, config::Config,
 	},
 	rpc::JsonrpseeClient,
-	Api, GetChainInfo, SubmitAndWatch, XtStatus,
 };
 
 type DefaultExtrinsicSigner = <RococoRuntimeConfig as Config>::ExtrinsicSigner;

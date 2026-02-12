@@ -14,12 +14,12 @@
 use codec::{Decode, Encode};
 use pallet_staking::{ActiveEraInfo, Exposure};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{app_crypto::Ss58Codec, AccountId32};
+use sp_runtime::{AccountId32, app_crypto::Ss58Codec};
 use substrate_api_client::{
+	Api, GetStorage, SubmitAndWatch, XtStatus,
 	ac_primitives::RococoRuntimeConfig,
 	extrinsic::{StakingExtrinsics, UtilityExtrinsics},
 	rpc::JsonrpseeClient,
-	Api, GetStorage, SubmitAndWatch, XtStatus,
 };
 
 const MAX_BATCHED_TRANSACTION: u32 = 9;

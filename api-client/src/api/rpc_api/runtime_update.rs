@@ -10,7 +10,7 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-use crate::{api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor, Result};
+use crate::{Result, api::Error, rpc::Subscribe, rpc_api::EventSubscriptionFor};
 use alloc::sync::Arc;
 use codec::{Decode, Encode};
 use core::sync::atomic::{AtomicBool, Ordering};
@@ -49,10 +49,10 @@ where
 	#[maybe_async::maybe_async(?Send)]
 	pub async fn detect_runtime_update(&mut self) -> Result<bool> {
 		'outer: loop {
-			if let Some(canceled) = &self.external_cancellation {
-				if canceled.load(Ordering::SeqCst) {
-					return Ok(false)
-				}
+			if let Some(canceled) = &self.external_cancellation
+				&& canceled.load(Ordering::SeqCst)
+			{
+				return Ok(false)
 			}
 			let event_records = self
 				.subscription

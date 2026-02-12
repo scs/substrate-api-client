@@ -15,11 +15,11 @@
 
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
+	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
 	ac_node_api::RawEventDetails,
 	ac_primitives::{Config, RococoRuntimeConfig},
 	extrinsic::BalancesExtrinsics,
 	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, SubmitAndWatch, TransactionStatus, XtStatus,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

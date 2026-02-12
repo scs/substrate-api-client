@@ -18,11 +18,11 @@
 use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
+	Api, SubmitExtrinsic,
 	ac_primitives::{
 		Config, ExtrinsicSigner as GenericExtrinsicSigner, RococoRuntimeConfig, SignExtrinsic,
 	},
 	rpc::JsonrpseeClient,
-	Api, SubmitExtrinsic,
 };
 
 // Define an extrinsic signer type which sets the generic types of the `GenericExtrinsicSigner`.

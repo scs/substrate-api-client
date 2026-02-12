@@ -46,9 +46,7 @@ pub struct GenericTxExtension<Tip, Index> {
 
 impl<Tip, Index> GenericTxExtension<Tip, Index> {
 	pub fn new(era: Era, nonce: Index, tip: Tip) -> Self {
-		{
-			Self { era, nonce, tip, check_hash: 0 }
-		}
+		Self { era, nonce, tip, check_hash: 0 }
 	}
 }
 
@@ -281,11 +279,7 @@ where
 	/// Payloads longer than 256 bytes are going to be `blake2_256`-hashed.
 	pub fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
 		self.0.using_encoded(|payload| {
-			if payload.len() > 256 {
-				f(&BlakeTwo256::hash(payload)[..])
-			} else {
-				f(payload)
-			}
+			if payload.len() > 256 { f(&BlakeTwo256::hash(payload)[..]) } else { f(payload) }
 		})
 	}
 }

@@ -6,7 +6,7 @@
 //! https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/metadata/src/utils/variant_index.rs
 
 use alloc::{borrow::ToOwned, collections::BTreeMap, string::String};
-use scale_info::{form::PortableForm, PortableRegistry, TypeDef, Variant};
+use scale_info::{PortableRegistry, TypeDef, Variant, form::PortableForm};
 
 /// Given some type ID and type registry, build a couple of
 /// indexes to look up variants by index or name. If the ID provided

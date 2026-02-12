@@ -20,7 +20,7 @@
 use crate::Api;
 use ac_compose_macros::compose_extrinsic_offline;
 use ac_primitives::{
-	config::Config, extrinsic_params::ExtrinsicParams, Preamble, SignExtrinsic, UncheckedExtrinsic,
+	Preamble, SignExtrinsic, UncheckedExtrinsic, config::Config, extrinsic_params::ExtrinsicParams,
 };
 use codec::Encode;
 

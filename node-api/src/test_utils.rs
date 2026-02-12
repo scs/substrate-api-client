@@ -11,6 +11,7 @@
 use crate::{Events, Metadata, Phase};
 use codec::{Compact, Decode, Encode};
 use frame_metadata::{
+	RuntimeMetadataPrefixed,
 	v14::{
 		ExtrinsicMetadata as ExtrinsicMetadataV14, PalletEventMetadata as PalletEventMetadataV14,
 		PalletMetadata as PalletMetadataV14, RuntimeMetadataV14,
@@ -20,9 +21,8 @@ use frame_metadata::{
 		PalletEventMetadata as PalletEventMetadataV15, PalletMetadata as PalletMetadataV15,
 		RuntimeMetadataV15,
 	},
-	RuntimeMetadataPrefixed,
 };
-use scale_info::{meta_type, TypeInfo};
+use scale_info::{TypeInfo, meta_type};
 use sp_core::H256;
 
 /// An "outer" events enum containing exactly one event.

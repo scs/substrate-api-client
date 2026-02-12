@@ -38,11 +38,11 @@ use core::{
 };
 
 // A list of C functions that are being imported
-extern "C" {
+unsafe extern "C" {
 	pub fn printf(format: *const u8, ...) -> i32;
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 // The main function, with its input arguments ignored, and an exit status is returned
 pub extern "C" fn main(_nargs: i32, _args: *const *const u8) -> i32 {
 	// Print "Hello, World" to stdout using printf
@@ -55,7 +55,7 @@ pub extern "C" fn main(_nargs: i32, _args: *const *const u8) -> i32 {
 }
 
 #[lang = "eh_personality"]
-extern "C" fn eh_personality() {}
+unsafe extern "C" fn eh_personality() {}
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
@@ -64,7 +64,7 @@ fn panic(_panic: &PanicInfo<'_>) -> ! {
 
 #[alloc_error_handler]
 fn foo(_: core::alloc::Layout) -> ! {
-	extern "C" {
+	unsafe extern "C" {
 		fn abort() -> !;
 	}
 	unsafe { abort() }

@@ -17,7 +17,7 @@
 //! debugging tool.
 
 use substrate_api_client::{
-	ac_primitives::RococoRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient, Api,
+	Api, ac_primitives::RococoRuntimeConfig, api_client::UpdateRuntime, rpc::JsonrpseeClient,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

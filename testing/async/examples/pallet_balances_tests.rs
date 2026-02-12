@@ -18,8 +18,8 @@
 use codec::Encode;
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
-	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient, Api,
-	GetAccountInformation, GetBalance, GetTransactionPayment, SubmitAndWatch, XtStatus,
+	Api, GetAccountInformation, GetBalance, GetTransactionPayment, SubmitAndWatch, XtStatus,
+	ac_primitives::RococoRuntimeConfig, extrinsic::BalancesExtrinsics, rpc::JsonrpseeClient,
 };
 
 #[tokio::main]
