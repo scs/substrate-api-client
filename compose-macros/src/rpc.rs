@@ -36,7 +36,7 @@
 /// Panics if the serialization of parameters fails.
 #[macro_export]
 macro_rules! rpc_params {
-	($($param:expr),*) => {
+	($($param:expr_2021),*) => {
 		{
             use $crate::primitives::RpcParams;
 
