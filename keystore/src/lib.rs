@@ -476,10 +476,13 @@ impl KeystoreInner {
 	/// it into the memory cache only.
 	fn generate_by_type<Pair: CorePair>(&mut self, key_type: KeyTypeId) -> Result<Pair> {
 		let (pair, phrase, _) = Pair::generate_with_phrase(self.password());
-		if let Some(path) = self.key_file_path(pair.public().as_slice(), key_type) {
-			Self::write_to_file(path, &phrase)?;
-		} else {
-			self.insert_ephemeral_pair(&pair, &phrase, key_type);
+		match self.key_file_path(pair.public().as_slice(), key_type) {
+			Some(path) => {
+				Self::write_to_file(path, &phrase)?;
+			},
+			_ => {
+				self.insert_ephemeral_pair(&pair, &phrase, key_type);
+			},
 		}
 
 		Ok(pair)
