@@ -89,7 +89,8 @@ impl<Hash: Copy + Encode + Decode> Events<Hash> {
 	// use of it with our `FilterEvents` stuff.
 	pub fn iter(
 		&self,
-	) -> impl Iterator<Item = Result<EventDetails<Hash>, Error>> + Send + Sync + 'static {
+	) -> impl Iterator<Item = Result<EventDetails<Hash>, Error>> + Send + Sync + 'static + use<Hash>
+	{
 		// The event bytes ignoring the compact encoded length on the front:
 		let event_bytes = self.event_bytes.clone();
 		let metadata = self.metadata.clone();
