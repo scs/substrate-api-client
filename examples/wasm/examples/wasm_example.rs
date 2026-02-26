@@ -15,8 +15,9 @@
 
 pub use pallet_balances::Call as BalancesCall;
 use sp_core::{
+	Pair,
 	crypto::{AccountId32, Ss58Codec},
-	sr25519, Pair,
+	sr25519,
 };
 use sp_runtime::MultiAddress;
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;

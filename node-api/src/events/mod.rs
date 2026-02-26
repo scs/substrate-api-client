@@ -9,7 +9,7 @@
 //! A representation of a block of events.
 //! This file bases on https://github.com/paritytech/subxt/blob/8413c4d2dd625335b9200dc2289670accdf3391a/subxt/src/events/events_type.rs#L19-L196
 
-use crate::{error::Error, metadata::PalletMetadata, Metadata, StaticEvent};
+use crate::{Metadata, StaticEvent, error::Error, metadata::PalletMetadata};
 use alloc::{sync::Arc, vec::Vec};
 use codec::{Compact, Decode, Encode};
 
@@ -89,7 +89,8 @@ impl<Hash: Copy + Encode + Decode> Events<Hash> {
 	// use of it with our `FilterEvents` stuff.
 	pub fn iter(
 		&self,
-	) -> impl Iterator<Item = Result<EventDetails<Hash>, Error>> + Send + Sync + 'static {
+	) -> impl Iterator<Item = Result<EventDetails<Hash>, Error>> + Send + Sync + 'static + use<Hash>
+	{
 		// The event bytes ignoring the compact encoded length on the front:
 		let event_bytes = self.event_bytes.clone();
 		let metadata = self.metadata.clone();
@@ -177,10 +178,10 @@ pub struct EventMetadataDetails<'a> {
 mod tests {
 	use super::*;
 	use crate::{
-		test_utils::{
-			event_record, events, events_raw, metadata_with_version, SupportedMetadataVersions,
-		},
 		Phase,
+		test_utils::{
+			SupportedMetadataVersions, event_record, events, events_raw, metadata_with_version,
+		},
 	};
 	use codec::Encode;
 	use scale_info::TypeInfo;

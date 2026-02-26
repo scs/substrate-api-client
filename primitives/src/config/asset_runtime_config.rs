@@ -8,7 +8,7 @@
 //! https://github.com/paritytech/subxt/blob/ce0a82e3227efb0eae131f025da5f839d9623e15/subxt/src/config/substrate.rs
 
 use crate::{
-	config::WithExtrinsicParams, AssetTip, Config, DefaultRuntimeConfig, GenericExtrinsicParams,
+	AssetTip, Config, DefaultRuntimeConfig, GenericExtrinsicParams, config::WithExtrinsicParams,
 };
 /// Standard runtime config for Substrate and Polkadot nodes that use the asset pallet.
 pub type AssetRuntimeConfig =

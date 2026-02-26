@@ -21,8 +21,8 @@
 use crate::{api::Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	config::Config, extrinsic_params::ExtrinsicParams, extrinsics::CallIndex, SignExtrinsic,
-	UncheckedExtrinsic,
+	SignExtrinsic, UncheckedExtrinsic, config::Config, extrinsic_params::ExtrinsicParams,
+	extrinsics::CallIndex,
 };
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;

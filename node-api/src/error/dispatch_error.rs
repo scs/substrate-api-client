@@ -19,7 +19,7 @@ use codec::{Decode, Encode};
 use core::{fmt::Debug, marker::PhantomData};
 use derive_more::From;
 use log::*;
-use scale_decode::{visitor::DecodeAsTypeResult, DecodeAsType, TypeResolver};
+use scale_decode::{DecodeAsType, TypeResolver, visitor::DecodeAsTypeResult};
 
 /// An error dispatching a transaction. See Substrate DispatchError
 // https://github.com/paritytech/polkadot-sdk/blob/0c5dcca9e3cef6b2f456fccefd9f6c5e43444053/substrate/primitives/runtime/src/lib.rs#L561-L598
@@ -154,7 +154,9 @@ impl DispatchError {
 						error: [module_bytes[1], module_bytes[2], module_bytes[3], module_bytes[4]],
 					}
 				} else {
-					warn!("Can't decode error sp_runtime::DispatchError: bytes do not match known shapes");
+					warn!(
+						"Can't decode error sp_runtime::DispatchError: bytes do not match known shapes"
+					);
 					// Return _all_ of the bytes; every "unknown" return should be consistent.
 					return Err(Error::Unknown(bytes.to_vec()))
 				};

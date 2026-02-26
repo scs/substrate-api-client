@@ -18,11 +18,11 @@
 
 use rococo_runtime::{BalancesCall, RuntimeCall};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic::Era, MultiAddress};
+use sp_runtime::{MultiAddress, generic::Era};
 use substrate_api_client::{
+	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 	ac_primitives::{GenericAdditionalParams, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
-	Api, Error, GetChainInfo, SubmitAndWatch, UnexpectedTxStatus, XtStatus,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

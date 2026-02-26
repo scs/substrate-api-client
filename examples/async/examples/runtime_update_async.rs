@@ -19,12 +19,12 @@
 use sp_keyring::Sr25519Keyring;
 use sp_weights::Weight;
 use substrate_api_client::{
+	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{Config, RococoRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::JsonrpseeClient,
 	rpc_api::RuntimeUpdateDetector,
-	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 use tokio::select;
 use tokio_util::sync::CancellationToken;

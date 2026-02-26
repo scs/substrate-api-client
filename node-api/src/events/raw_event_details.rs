@@ -9,10 +9,10 @@
 //! A representation of a block of events.
 
 use crate::{
+	EventDetails, Metadata, Phase, StaticEvent,
 	error::{DispatchError, Error},
 	events::{EventMetadataDetails, RootEvent},
 	metadata::MetadataError,
-	EventDetails, Metadata, Phase, StaticEvent,
 };
 use alloc::{
 	string::{String, ToString},
@@ -330,16 +330,16 @@ impl<Hash: Encode + Decode> RawEventDetails<Hash> {
 #[cfg(test)]
 pub(crate) mod test_utils {
 	use super::*;
-	use crate::{events::Compact, Events};
+	use crate::{Events, events::Compact};
 	use codec::Encode;
 	use frame_metadata::{
+		RuntimeMetadataPrefixed,
 		v15::{
 			CustomMetadata, ExtrinsicMetadata, OuterEnums, PalletEventMetadata, PalletMetadata,
 			RuntimeMetadataV15,
 		},
-		RuntimeMetadataPrefixed,
 	};
-	use scale_info::{meta_type, TypeInfo};
+	use scale_info::{TypeInfo, meta_type};
 	use sp_core::H256;
 
 	/// An "outer" events enum containing exactly one event.
@@ -470,7 +470,7 @@ pub(crate) mod test_utils {
 #[cfg(test)]
 mod tests {
 	use super::{
-		test_utils::{event_record, events, events_raw, EventRecord},
+		test_utils::{EventRecord, event_record, events, events_raw},
 		*,
 	};
 	use codec::Encode;

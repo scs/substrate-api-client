@@ -18,7 +18,7 @@ use ac_primitives::config::Config;
 use alloc::boxed::Box;
 use alloc::{vec, vec::Vec};
 use codec::Encode;
-use sp_core::{crypto::KeyTypeId, Bytes};
+use sp_core::{Bytes, crypto::KeyTypeId};
 
 #[maybe_async::maybe_async(?Send)]
 pub trait SessionKeysApi: RuntimeApi {

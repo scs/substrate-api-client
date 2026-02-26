@@ -15,8 +15,8 @@
 
 */
 use crate::rpc::{
-	helpers, to_json_req, tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
-	Error as RpcClientError, Request, Result, Subscribe,
+	Error as RpcClientError, Request, Result, Subscribe, helpers, to_json_req,
+	tungstenite_client::subscription::TungsteniteSubscriptionWrapper,
 };
 use ac_primitives::RpcParams;
 use log::*;
@@ -25,14 +25,14 @@ use serde_json::Value;
 use std::{
 	fmt::Debug,
 	net::TcpStream,
-	sync::mpsc::{channel, Sender as ThreadOut},
+	sync::mpsc::{Sender as ThreadOut, channel},
 	thread,
 	thread::sleep,
 	time::Duration,
 };
 use tungstenite::{
-	client::connect_with_config, handshake::client::Response, stream::MaybeTlsStream, Message,
-	WebSocket,
+	Message, WebSocket, client::connect_with_config, handshake::client::Response,
+	stream::MaybeTlsStream,
 };
 use url::Url;
 
@@ -127,10 +127,9 @@ impl TungsteniteRpcClient {
 			while current_attempt <= max_attempts {
 				if let Err(error) =
 					subscribe_to_server(&url, max_attempts, json_req.clone(), result_in.clone())
+					&& !do_reconnect(&error)
 				{
-					if !do_reconnect(&error) {
-						break
-					}
+					break
 				}
 				current_attempt += 1;
 			}

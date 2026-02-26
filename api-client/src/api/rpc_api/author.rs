@@ -14,12 +14,12 @@
 //! Interface to common author rpc functions and helpers thereof.
 
 use crate::{
-	api::{rpc_api::events::FetchEvents, Error, Result},
-	rpc::{HandleSubscription, Request, Subscribe},
 	Api, ExtrinsicReport, TransactionStatus, XtStatus,
+	api::{Error, Result, rpc_api::events::FetchEvents},
+	rpc::{HandleSubscription, Request, Subscribe},
 };
 use ac_compose_macros::rpc_params;
-use ac_primitives::{config::Config, UncheckedExtrinsic};
+use ac_primitives::{UncheckedExtrinsic, config::Config};
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
 use codec::{Decode, Encode};

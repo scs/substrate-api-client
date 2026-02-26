@@ -18,11 +18,11 @@
 //! Extrinsics for `pallet-staking`.
 //! https://polkadot.js.org/docs/substrate/extrinsics#staking
 
-use crate::{rpc::Request, Api};
+use crate::{Api, rpc::Request};
 use ac_compose_macros::compose_extrinsic;
 use ac_primitives::{
-	config::Config, CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic,
-	UncheckedExtrinsic,
+	CallIndex, ExtrinsicParams, RewardDestination, SignExtrinsic, UncheckedExtrinsic,
+	config::Config,
 };
 use codec::{Compact, Decode, Encode};
 

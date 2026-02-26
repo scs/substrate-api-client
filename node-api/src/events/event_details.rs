@@ -9,9 +9,9 @@
 //! A representation of a block of events.
 
 use crate::{
+	Metadata, Phase, StaticEvent,
 	error::{DispatchError, Error},
 	events::{EventMetadataDetails, RawEventDetails, RootEvent},
-	Metadata, Phase, StaticEvent,
 };
 use alloc::sync::Arc;
 use codec::{Decode, Encode};

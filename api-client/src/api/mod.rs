@@ -16,7 +16,7 @@
 */
 
 use crate::error::FailedExtrinsicError;
-use ac_node_api::{events::RawEventDetails, EventDetails, Metadata};
+use ac_node_api::{EventDetails, Metadata, events::RawEventDetails};
 use alloc::{string::String, vec::Vec};
 use codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};

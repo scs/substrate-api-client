@@ -15,6 +15,6 @@
 
 */
 
-use crate::{config::WithAddress, AccountId32, DefaultRuntimeConfig, MultiAddress};
+use crate::{AccountId32, DefaultRuntimeConfig, MultiAddress, config::WithAddress};
 
 pub type RococoRuntimeConfig = WithAddress<DefaultRuntimeConfig, MultiAddress<AccountId32, ()>>;

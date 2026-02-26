@@ -34,14 +34,13 @@ pub mod types;
 
 // Re-export substrate types for easy import on user side.
 pub use sp_core::{
-	sr25519,
+	Bytes, H256, sr25519,
 	storage::{StorageChangeSet, StorageData, StorageKey},
-	Bytes, H256,
 };
 pub use sp_runtime::{
+	AccountId32, ConsensusEngineId, Justifications, MultiAddress, MultiSignature, OpaqueExtrinsic,
 	generic::{Block, Digest, DigestItem, Header, SignedBlock},
 	traits::{BlakeTwo256, Block as BlockTrait, Hash as HashTrait, Header as HeaderTrait},
-	AccountId32, ConsensusEngineId, Justifications, MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
 pub use sp_version::RuntimeVersion;
 pub use sp_weights::Weight;

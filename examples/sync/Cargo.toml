@@ -2,7 +2,7 @@
 name = "ac-examples-sync"
 version = "1.22.0"
 license = "Apache-2.0"
-edition = "2021"
+edition = "2024"
 
 [dev-dependencies]
 env_logger = "0.11"

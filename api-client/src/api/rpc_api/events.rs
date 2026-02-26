@@ -12,12 +12,12 @@
 */
 
 use crate::{
+	GetChainInfo, GetStorage,
 	api::{Api, Error, Result},
 	rpc::{HandleSubscription, Request, Subscribe},
-	GetChainInfo, GetStorage,
 };
 use ac_compose_macros::rpc_params;
-use ac_node_api::{metadata::Metadata, EventDetails, EventRecord, Events, Phase};
+use ac_node_api::{EventDetails, EventRecord, Events, Phase, metadata::Metadata};
 use ac_primitives::config::Config;
 #[cfg(all(not(feature = "sync-api"), not(feature = "std")))]
 use alloc::boxed::Box;
@@ -238,10 +238,10 @@ mod tests {
 	use frame_metadata::RuntimeMetadataPrefixed;
 	use rococo_runtime::{BalancesCall, RuntimeCall, UncheckedExtrinsic};
 	use scale_info::TypeInfo;
-	use sp_core::{crypto::Ss58Codec, sr25519, Bytes, H256};
+	use sp_core::{Bytes, H256, crypto::Ss58Codec, sr25519};
 	use sp_runtime::{
-		generic::{Block, SignedBlock},
 		AccountId32, MultiAddress,
+		generic::{Block, SignedBlock},
 	};
 	use sp_storage::StorageData;
 	use sp_version::RuntimeVersion;

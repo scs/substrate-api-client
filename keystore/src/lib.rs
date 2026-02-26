@@ -476,10 +476,13 @@ impl KeystoreInner {
 	/// it into the memory cache only.
 	fn generate_by_type<Pair: CorePair>(&mut self, key_type: KeyTypeId) -> Result<Pair> {
 		let (pair, phrase, _) = Pair::generate_with_phrase(self.password());
-		if let Some(path) = self.key_file_path(pair.public().as_slice(), key_type) {
-			Self::write_to_file(path, &phrase)?;
-		} else {
-			self.insert_ephemeral_pair(&pair, &phrase, key_type);
+		match self.key_file_path(pair.public().as_slice(), key_type) {
+			Some(path) => {
+				Self::write_to_file(path, &phrase)?;
+			},
+			_ => {
+				self.insert_ephemeral_pair(&pair, &phrase, key_type);
+			},
 		}
 
 		Ok(pair)
@@ -548,11 +551,7 @@ impl KeystoreInner {
 
 		let pair = Pair::from_string(&phrase, self.password()).map_err(|_| Error::InvalidPhrase)?;
 
-		if &pair.public() == public {
-			Ok(Some(pair))
-		} else {
-			Err(Error::PublicKeyMismatch)
-		}
+		if &pair.public() == public { Ok(Some(pair)) } else { Err(Error::PublicKeyMismatch) }
 	}
 
 	/// Get the file path for the given public key and key type.
@@ -614,8 +613,8 @@ impl KeystoreInner {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use sp_application_crypto::{ed25519, sr25519, AppPublic};
-	use sp_core::{crypto::Ss58Codec, testing::SR25519, Pair};
+	use sp_application_crypto::{AppPublic, ed25519, sr25519};
+	use sp_core::{Pair, crypto::Ss58Codec, testing::SR25519};
 	use std::{fs, str::FromStr};
 	use tempfile::TempDir;
 

@@ -11,9 +11,9 @@
    limitations under the License.
 */
 use crate::{
+	Api, ReadProof,
 	api::Result,
 	rpc::{Request, Subscribe},
-	Api, ReadProof,
 };
 use ac_compose_macros::rpc_params;
 use ac_node_api::MetadataError;

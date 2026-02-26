@@ -21,9 +21,9 @@ use pallet_society::Vote;
 use sp_core::{crypto::Ss58Codec, sr25519};
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
+	Api, GetChainInfo, GetStorage,
 	ac_primitives::{Config, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
-	Api, GetChainInfo, GetStorage,
 };
 
 type KitchensinkConfig = RococoRuntimeConfig;

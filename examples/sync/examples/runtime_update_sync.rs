@@ -24,12 +24,12 @@ use sp_keyring::Sr25519Keyring;
 use sp_weights::Weight;
 use std::{sync::Arc, thread};
 use substrate_api_client::{
+	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 	ac_compose_macros::{compose_call, compose_extrinsic},
 	ac_primitives::{Config, RococoRuntimeConfig},
 	api_client::UpdateRuntime,
 	rpc::TungsteniteRpcClient,
 	rpc_api::RuntimeUpdateDetector,
-	Api, SubmitAndWatch, SubscribeEvents, XtStatus,
 };
 
 type Hash = <RococoRuntimeConfig as Config>::Hash;

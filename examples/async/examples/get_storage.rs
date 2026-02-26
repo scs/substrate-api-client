@@ -20,10 +20,10 @@ use frame_system::AccountInfo as GenericAccountInfo;
 use pallet_recovery::ActiveRecovery;
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
+	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
 	ac_compose_macros::compose_extrinsic,
 	ac_primitives::{Config, RococoRuntimeConfig},
 	rpc::JsonrpseeClient,
-	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
 };
 
 // To test this example with CI we run it against the Polkadot Rococo node. Remember to switch the Config to match your

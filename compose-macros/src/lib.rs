@@ -35,7 +35,7 @@ mod rpc;
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 #[macro_export]
 macro_rules! compose_call {
-($node_metadata: expr, $pallet_name: expr, $call_name: expr $(, $args: expr) *) => {
+($node_metadata: expr_2021, $pallet_name: expr_2021, $call_name: expr_2021 $(, $args: expr_2021) *) => {
         {
 			let maybe_pallet = $node_metadata.pallet_by_name($pallet_name);
 			let maybe_call = match  maybe_pallet {
@@ -59,7 +59,7 @@ macro_rules! compose_call {
 ///   As of now the user needs to check himself that the correct arguments are supplied.
 #[macro_export]
 macro_rules! compose_call_for_pallet_metadata {
-($pallet_metadata: expr, $call_name: expr $(, $args: expr) *) => {
+($pallet_metadata: expr_2021, $call_name: expr_2021 $(, $args: expr_2021) *) => {
         {
 
 			let maybe_call_variant = $pallet_metadata.call_variant_by_name($call_name);
@@ -81,9 +81,9 @@ macro_rules! compose_call_for_pallet_metadata {
 /// * 'params' - Instance of `ExtrinsicParams` that can be used to fetch signed extra and additional signed
 #[macro_export]
 macro_rules! compose_extrinsic_offline {
-	($signer: expr,
-    $call: expr,
-    $params: expr) => {{
+	($signer: expr_2021,
+    $call: expr_2021,
+    $params: expr_2021) => {{
 		use $crate::primitives::extrinsics::{
 			ExtrinsicParams, SignExtrinsic, SignedPayload, UncheckedExtrinsic,
 		};
@@ -108,11 +108,11 @@ macro_rules! compose_extrinsic_offline {
 /// * 'args' - Optional sequence of arguments of the call. They are not checked against the metadata.
 #[macro_export]
 macro_rules! compose_extrinsic_with_nonce {
-	($api: expr,
-	$nonce: expr,
-	$pallet_name: expr,
-	$call_name: expr
-	$(, $args: expr) *) => {
+	($api: expr_2021,
+	$nonce: expr_2021,
+	$pallet_name: expr_2021,
+	$call_name: expr_2021
+	$(, $args: expr_2021) *) => {
 		{
             use $crate::log::debug;
             use $crate::primitives::UncheckedExtrinsic;
@@ -152,10 +152,10 @@ macro_rules! compose_extrinsic_with_nonce {
 #[macro_export]
 #[cfg(feature = "sync-api")]
 macro_rules! compose_extrinsic {
-	($api: expr,
-	$pallet_name: expr,
-	$call_name: expr
-	$(, $args: expr) *) => {
+	($api: expr_2021,
+	$pallet_name: expr_2021,
+	$call_name: expr_2021
+	$(, $args: expr_2021) *) => {
 		{
 			let nonce = $api.get_nonce().unwrap_or_default();
 			let maybe_extrinisc = $crate::compose_extrinsic_with_nonce!($api, nonce, $pallet_name, $call_name $(, ($args)) *);

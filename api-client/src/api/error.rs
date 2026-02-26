@@ -15,7 +15,7 @@
 
 */
 
-use crate::{api::UnexpectedTxStatus, rpc::Error as RpcClientError, ExtrinsicReport};
+use crate::{ExtrinsicReport, api::UnexpectedTxStatus, rpc::Error as RpcClientError};
 use ac_node_api::{
 	error::DispatchError,
 	metadata::{MetadataConversionError, MetadataError},

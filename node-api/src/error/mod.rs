@@ -14,7 +14,7 @@ use derive_more::From;
 
 // Re-expose the errors we use from other crates here:
 pub use crate::metadata::{MetadataConversionError, MetadataError};
-pub use scale_decode::{visitor::DecodeError as VisitorDecodeError, Error as DecodeError};
+pub use scale_decode::{Error as DecodeError, visitor::DecodeError as VisitorDecodeError};
 pub use scale_encode::Error as EncodeError;
 pub use sp_core::crypto::SecretStringError;
 pub use sp_runtime::transaction_validity::TransactionValidityError;
