@@ -13,11 +13,11 @@
 	limitations under the License.
 */
 
-//! Very simple example that shows how to get some simple storage values.
+//! Very simple example that shows how to get some storage values.
 
 use codec::Encode;
 use frame_system::AccountInfo as GenericAccountInfo;
-use pallet_recovery::ActiveRecovery;
+use pallet_recovery::FriendGroup;
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
@@ -136,7 +136,7 @@ async fn main() {
 	for storage_key in double_map_storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
 		// We're expecting Exposure as return value because we fetch a storage value with prefix combination of "Staking" + "EraStakers" + 0.
-		let storage_data: ActiveRecovery<BlockNumber, Balance, Friends> =
+		let storage_data: FriendGroup<BlockNumber, AccountId, Friends> =
 			api.get_storage_by_key(storage_key.clone(), None).await.unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}
