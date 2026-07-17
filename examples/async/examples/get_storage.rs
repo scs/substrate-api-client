@@ -134,7 +134,7 @@ async fn main() {
 	// let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
 	let storage_double_map_key_prefix = api
-		.get_storage_double_map_key_prefix("Recovery", "FriendGroup", &alice)
+		.get_storage_double_map_key_prefix("Recovery", "Attempt", &alice)
 		.await
 		.unwrap();
 	let double_map_storage_keys = api
