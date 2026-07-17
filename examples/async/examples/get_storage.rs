@@ -96,12 +96,13 @@ async fn main() {
 
 	// Create a friend Group, so we can fetch an actual Attempt from the chain.
 	let alice = Sr25519Keyring::Alice.to_account_id();
+	let bob = Sr25519Keyring::Bob.to_account_id();
 	// let alice_multiaddress: Address = alice.clone().into();
 	let charlie = Sr25519Keyring::Charlie.to_account_id();
 	let ferdie = Sr25519Keyring::Ferdie.to_account_id();
 
 	let friend_group = FriendGroup {
-		friends: vec![&alice, &charlie],
+		friends: vec![&bob, &charlie],
 		friends_needed: 2,
 		inheritor: ferdie,
 		inheritance_delay: 10,
