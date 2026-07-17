@@ -96,35 +96,42 @@ async fn main() {
 		println!("Retrieved data {:?}", storage_data);
 	}
 
-	// Create a recovery, so we can fetch an actual ActiveRecovery state from the chain.
+	// Create a friend Group, so we can fetch an actual Attempt from the chain.
 	let alice = Sr25519Keyring::Alice.to_account_id();
-	let alice_multiaddress: Address = alice.clone().into();
+	// let alice_multiaddress: Address = alice.clone().into();
 	let charlie = Sr25519Keyring::Charlie.to_account_id();
-	let threshold: u16 = 2;
-	let delay_period: u32 = 1000;
+	let friends_needed: u16 = 2;
+	let inheritor = Sr25519Keyring::Ferdie.to_account_id();
+	let inheritance_delay: u32 = 10;
+	let inheritance_priority: u32 = 0;
+	let cancel_delay: u32 = 1000;
 
 	let xt = compose_extrinsic!(
 		&api,
 		"Recovery",
-		"create_recovery",
+		"set_friend_groups",
 		vec![bob, charlie],
-		threshold,
-		delay_period
+		friends_needed,
+		inheritor,
+		inheritance_delay,
+		inheritance_priority,
+		cancel_delay
 	)
 	.unwrap();
 
 	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
-	// Set Bob as signer, so we can send the recevory extrinsic as Bob.
-	let signer2 = Sr25519Keyring::Bob.pair();
-	api.set_signer(signer2.into());
-	let xt = compose_extrinsic!(&api, "Recovery", "initiate_recovery", alice_multiaddress).unwrap();
+	// // Set Bob as signer, so we can send the attempt extrinsic as Bob.
+	// let signer2 = Sr25519Keyring::Bob.pair();
+	// api.set_signer(signer2.into());
+	// let xt =
+	// 	compose_extrinsic!(&api, "Recovery", "initiate_attempt", alice_multiaddress, 0).unwrap();
 
-	println!("{:?}", xt.encode());
-	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
+	// println!("{:?}", xt.encode());
+	// let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
 	let storage_double_map_key_prefix = api
-		.get_storage_double_map_key_prefix("Recovery", "ActiveRecoveries", &alice)
+		.get_storage_double_map_key_prefix("Recovery", "FriendGroup", &alice)
 		.await
 		.unwrap();
 	let double_map_storage_keys = api
@@ -135,7 +142,6 @@ async fn main() {
 	// Get the storage values that belong to the retrieved storage keys.
 	for storage_key in double_map_storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
-		// We're expecting Exposure as return value because we fetch a storage value with prefix combination of "Staking" + "EraStakers" + 0.
 		let storage_data: FriendGroup<BlockNumber, AccountId, Friends> =
 			api.get_storage_by_key(storage_key.clone(), None).await.unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
