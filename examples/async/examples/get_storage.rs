@@ -15,7 +15,6 @@
 
 //! Very simple example that shows how to get some storage values.
 
-use codec::Encode;
 use frame_system::AccountInfo as GenericAccountInfo;
 use pallet_recovery::FriendGroup;
 use sp_keyring::Sr25519Keyring;
@@ -38,7 +37,6 @@ type Balance = <RococoRuntimeConfig as Config>::Balance;
 type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 type BlockNumber = <RococoRuntimeConfig as Config>::BlockNumber;
 type Friends = Vec<AccountId>;
-type Address = <RococoRuntimeConfig as Config>::Address;
 
 #[tokio::main]
 async fn main() {
@@ -100,24 +98,18 @@ async fn main() {
 	let alice = Sr25519Keyring::Alice.to_account_id();
 	// let alice_multiaddress: Address = alice.clone().into();
 	let charlie = Sr25519Keyring::Charlie.to_account_id();
-	let friends_needed: u16 = 2;
-	let inheritor = Sr25519Keyring::Ferdie.to_account_id();
-	let inheritance_delay: u32 = 10;
-	let inheritance_priority: u32 = 0;
-	let cancel_delay: u32 = 1000;
+	let ferdie = Sr25519Keyring::Ferdie.to_account_id();
 
-	let xt = compose_extrinsic!(
-		&api,
-		"Recovery",
-		"set_friend_groups",
-		vec![bob, charlie],
-		friends_needed,
-		inheritor,
-		inheritance_delay,
-		inheritance_priority,
-		cancel_delay
-	)
-	.unwrap();
+	let friend_group = FriendGroup {
+		friends: vec![&alice, &charlie],
+		friends_needed: 2,
+		inheritor: ferdie,
+		inheritance_delay: 10,
+		inheritance_priority: 0,
+		cancel_delay: 10,
+	};
+
+	let xt = compose_extrinsic!(&api, "Recovery", "set_friend_groups", vec![friend_group]).unwrap();
 
 	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
