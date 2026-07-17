@@ -15,8 +15,10 @@
 
 //! Very simple example that shows how to get some storage values.
 
+use codec::Encode;
 use frame_system::AccountInfo as GenericAccountInfo;
-use pallet_recovery::FriendGroup;
+use pallet_recovery::{ApprovalBitfield, Attempt, FriendGroup};
+use rococo_runtime::{Address, MaxFriends};
 use sp_keyring::Sr25519Keyring;
 use substrate_api_client::{
 	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
@@ -36,7 +38,8 @@ type AccountInfo = GenericAccountInfo<
 type Balance = <RococoRuntimeConfig as Config>::Balance;
 type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 type BlockNumber = <RococoRuntimeConfig as Config>::BlockNumber;
-type Friends = Vec<AccountId>;
+//type Friends = Vec<AccountId>;
+type ApprovalBitfieldType = ApprovalBitfield<MaxFriends>;
 
 #[tokio::main]
 async fn main() {
@@ -97,7 +100,7 @@ async fn main() {
 	// Create a friend Group, so we can fetch an actual Attempt from the chain.
 	let alice = Sr25519Keyring::Alice.to_account_id();
 	let bob = Sr25519Keyring::Bob.to_account_id();
-	// let alice_multiaddress: Address = alice.clone().into();
+	let alice_multiaddress: Address = alice.clone().into();
 	let charlie = Sr25519Keyring::Charlie.to_account_id();
 	let ferdie = Sr25519Keyring::Ferdie.to_account_id();
 
@@ -105,7 +108,7 @@ async fn main() {
 		friends: vec![&bob, &charlie],
 		friends_needed: 2,
 		inheritor: ferdie,
-		inheritance_delay: 10,
+		inheritance_delay: 0,
 		inheritance_priority: 0,
 		cancel_delay: 10,
 	};
@@ -114,12 +117,19 @@ async fn main() {
 
 	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
-	// // Set Bob as signer, so we can send the attempt extrinsic as Bob.
-	// let signer2 = Sr25519Keyring::Bob.pair();
+	// Set Bob as signer, so we can send the attempt initiation extrinsic as Bob.
+	let signer2 = Sr25519Keyring::Bob.pair();
+	api.set_signer(signer2.into());
+	let xt =
+		compose_extrinsic!(&api, "Recovery", "initiate_attempt", &alice_multiaddress, 0).unwrap();
+	println!("{:?}", xt.encode());
+	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
+
+	// // Set Charlie as signer, so we can send the attempt approval extrinsic as Bob.
+	// let signer2 = Sr25519Keyring::Charlie.pair();
 	// api.set_signer(signer2.into());
 	// let xt =
-	// 	compose_extrinsic!(&api, "Recovery", "initiate_attempt", alice_multiaddress, 0).unwrap();
-
+	// 	compose_extrinsic!(&api, "Recovery", "approve_attempt", &alice_multiaddress, 0).unwrap();
 	// println!("{:?}", xt.encode());
 	// let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
@@ -135,7 +145,7 @@ async fn main() {
 	// Get the storage values that belong to the retrieved storage keys.
 	for storage_key in double_map_storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
-		let storage_data: FriendGroup<BlockNumber, AccountId, Friends> =
+		let storage_data: Attempt<BlockNumber, ApprovalBitfieldType, AccountId> =
 			api.get_storage_by_key(storage_key.clone(), None).await.unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}
