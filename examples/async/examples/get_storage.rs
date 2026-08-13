@@ -18,8 +18,9 @@
 use codec::Encode;
 use frame_system::AccountInfo as GenericAccountInfo;
 use pallet_recovery::{ApprovalBitfield, Attempt, FriendGroup};
-use rococo_runtime::{Address, MaxFriends};
+use rococo_runtime::Address;
 use sp_keyring::Sr25519Keyring;
+use sp_runtime::traits::ConstU32;
 use substrate_api_client::{
 	Api, GetAccountInformation, GetStorage, SubmitAndWatch, XtStatus,
 	ac_compose_macros::compose_extrinsic,
@@ -38,8 +39,7 @@ type AccountInfo = GenericAccountInfo<
 type Balance = <RococoRuntimeConfig as Config>::Balance;
 type AccountId = <RococoRuntimeConfig as Config>::AccountId;
 type BlockNumber = <RococoRuntimeConfig as Config>::BlockNumber;
-//type Friends = Vec<AccountId>;
-type ApprovalBitfieldType = ApprovalBitfield<MaxFriends>;
+type MaxFriendsPerConfig = ConstU32<100>;
 
 #[tokio::main]
 async fn main() {
@@ -145,7 +145,7 @@ async fn main() {
 	// Get the storage values that belong to the retrieved storage keys.
 	for storage_key in double_map_storage_keys.iter() {
 		println!("Retrieving value for key {:?}", storage_key);
-		let storage_data: Attempt<BlockNumber, ApprovalBitfieldType, AccountId> =
+		let storage_data: Attempt<BlockNumber, ApprovalBitfield<MaxFriendsPerConfig>, AccountId> =
 			api.get_storage_by_key(storage_key.clone(), None).await.unwrap().unwrap();
 		println!("Retrieved data {:?}", storage_data);
 	}
