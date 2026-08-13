@@ -97,7 +97,7 @@ async fn main() {
 		println!("Retrieved data {:?}", storage_data);
 	}
 
-	// Create a friend Group, so we can fetch an actual Attempt from the chain.
+	// Create a friend group, so we can fetch an actual Attempt from the chain.
 	let alice = Sr25519Keyring::Alice.to_account_id();
 	let bob = Sr25519Keyring::Bob.to_account_id();
 	let alice_multiaddress: Address = alice.clone().into();
@@ -124,14 +124,6 @@ async fn main() {
 		compose_extrinsic!(&api, "Recovery", "initiate_attempt", &alice_multiaddress, 0).unwrap();
 	println!("{:?}", xt.encode());
 	let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
-
-	// // Set Charlie as signer, so we can send the attempt approval extrinsic as Bob.
-	// let signer2 = Sr25519Keyring::Charlie.pair();
-	// api.set_signer(signer2.into());
-	// let xt =
-	// 	compose_extrinsic!(&api, "Recovery", "approve_attempt", &alice_multiaddress, 0).unwrap();
-	// println!("{:?}", xt.encode());
-	// let _report = api.submit_and_watch_extrinsic_until(xt, XtStatus::InBlock).await.unwrap();
 
 	let storage_double_map_key_prefix = api
 		.get_storage_double_map_key_prefix("Recovery", "Attempt", &alice)
