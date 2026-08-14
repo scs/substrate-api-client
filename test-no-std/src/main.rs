@@ -101,7 +101,7 @@ unsafe impl GlobalAlloc for SimpleAllocator {
 		let mut allocated = 0;
 		if self
 			.remaining
-			.fetch_update(SeqCst, SeqCst, |mut remaining| {
+			.try_update(SeqCst, SeqCst, |mut remaining| {
 				if size > remaining {
 					return None;
 				}
