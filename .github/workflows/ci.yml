@@ -169,16 +169,14 @@ jobs:
             !target/release/examples/*.d
             !target/release/examples/*-*
 
-# Remove taplo until https://github.com/tamasfe/taplo/issues/793 is resolved.
-#   taplo-fmt:
-#     name: "Taplo fmt"
-#     runs-on: ubuntu-latest
-#     container: "tamasfe/taplo:latest"
-#     steps:
-#       - uses: actions/checkout@v4
-# 
-#       - name: Run Taplo fmt
-#         run: taplo fmt --check
+  taplo-fmt:
+    name: "Taplo fmt"
+    runs-on: ubuntu-latest
+    container: "tamasfe/taplo:latest"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Taplo fmt
+        run: taplo fmt --check
 
   license-check:
     name: "License check"
