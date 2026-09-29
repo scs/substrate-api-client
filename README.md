@@ -1,5 +1,5 @@
 #  Status
-This library is currently not maintained anymore. However, PRs will be still accepted.
+This library is currently not maintained anymore.
 
 # substrate-api-client
 
