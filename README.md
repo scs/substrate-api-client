@@ -1,3 +1,6 @@
+#  Status
+This library is currently not maintained anymore.
+
 # substrate-api-client
 
 The substrate-api-client is a Rust library for connecting to a [substrate](https://substrate.io/)-based node via RPC. It's particularly useful for setups with no-std environment (which are typical for trusted execution environmnets or embedded devices). It provides similar functionalities as [Polkadot-js](https://wiki.polkadot.network/docs/polkadotjs), such as easy extrinsic submission and state queries. With an RPC client, developers can easily interact with any [Polkadot](https://polkadot.network/) or [Kusama](https://kusama.network/) chain. There are several [RPC clients](https://wiki.polkadot.network/docs/build-tools-index#rpc-and-api-tools) available in different programming languages. For Rust, the most popular RPC client is [subxt](https://github.com/paritytech/subxt). The substrate-api-client provides a simpler, less extensive alternative to subxt, focused on providing as many features as possible for no-std environments.
